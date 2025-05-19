@@ -1,0 +1,12 @@
+[flake8]
+max-line-length = 100
+ignore=
+    E702
+    E731
+    F
+    W503
+    W504
+
+per-file-ignores =
+    test_*.py: E303
+    *_test.py: E303
