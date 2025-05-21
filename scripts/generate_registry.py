@@ -9,7 +9,7 @@ import re
 import sys
 import time
 from urllib.parse import urljoin, urlparse
-from typing import Iterable, Mapping, TypedDict
+from typing import Iterable, Mapping, NotRequired, TypedDict
 from itertools import chain
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
@@ -26,6 +26,7 @@ type Url = str
 class PackageEntry(TypedDict, total=False):
     source: Url
     schema_version: str
+    tombstoned: NotRequired[bool]
 
 
 class PackageDb(TypedDict):
@@ -42,9 +43,16 @@ class RepositorySchema(TypedDict):
 
 
 async def main(output_file: str, channels: list[str]) -> None:
+    # Try to read previous db if it exists
+    try:
+        with open(output_file, 'r') as f:
+            prev_db = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        prev_db = {}
+
     try:
         async with asyncio.timeout(GLOBAL_TIMEOUT):
-            db = await fetch_packages(channels)
+            db = await fetch_packages(channels, prev_db)
             with open(output_file, 'w') as f:
                 json.dump(db, f, indent=2)
             print(f"Saved registry as {output_file}")
@@ -52,7 +60,7 @@ async def main(output_file: str, channels: list[str]) -> None:
         print(f"Timeout: script took more than {GLOBAL_TIMEOUT} seconds")
 
 
-async def fetch_packages(channels: list[str]) -> PackageDb:
+async def fetch_packages(channels: list[str], db: PackageDb = {}) -> PackageDb:
     print("Fetching registered packages...")
     now = time.monotonic()
 
@@ -81,30 +89,51 @@ async def fetch_packages(channels: list[str]) -> PackageDb:
     dependencies: list[dict] = []
     unseen = Unseen()
     for url in repos:
-        if repo := result.get(url):
-            repo_info: PackageEntry = {
-                "source": repo["self"],
-                "schema_version": repo["schema_version"],
-            }
-            for pkg in repo["packages"]:
-                pkg_name = extract_package_name(pkg)
-                if not pkg_name:
-                    print(
-                        f"Package {pkg} in {repo['self']} has no name, skipping",
-                        file=sys.stderr,
-                    )
-                    continue
-                if unseen.see(pkg_name):
-                    print(
-                        f"Package {pkg_name} in {repo['self']} already seen, skipping",
-                        file=sys.stderr
-                    )
-                    continue
-                pkg = pkg.copy() | repo_info
-                packages.append(pkg)
-            for dep in repo["dependencies"]:
-                dep = dep.copy() | repo_info
-                dependencies.append(dep)
+        repo = result.get(url)
+        if not repo:
+            # recreate the repo from db
+            packages = [
+                pkg | {"tombstoned": True}
+                for pkg in db.get("packages", [])
+                if pkg.get("source") == url
+            ]
+            dependencies = [
+                dep | {"tombstoned": True}
+                for dep in db.get("dependencies", [])
+                if dep.get("source") == url
+            ]
+            if packages or dependencies:
+                schema_version = (packages or dependencies)[0].get("schema_version")
+                repo = {
+                    "self": url,
+                    "schema_version": schema_version,
+                    "packages": packages,
+                    "dependencies": dependencies,
+                }
+            else:
+                continue
+
+        repo_info: PackageEntry = {
+            "source": repo["self"],
+            "schema_version": repo["schema_version"],
+        }
+        for pkg in repo["packages"]:
+            pkg_name = extract_package_name(pkg)
+            if not pkg_name:
+                print(
+                    f"Package {pkg} in {repo['self']} has no name, skipping",
+                    file=sys.stderr,
+                )
+                continue
+            if unseen.see(pkg_name):
+                print(
+                    f"Package {pkg_name} in {repo['self']} already seen, skipping",
+                    file=sys.stderr
+                )
+                continue
+            packages.append(pkg | repo_info)
+        for dep in repo["dependencies"]:
+            dependencies.append(dep | repo_info)
 
     print(
         f"Found {len(packages)} packages "
