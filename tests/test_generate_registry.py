@@ -133,7 +133,7 @@ async def test_main_with_duplicate_package_rejected(tmp_path, capsys):
 
     # Check that an error message was printed to stderr
     captured = capsys.readouterr()
-    expected_msg = f"Package DuplicatePackage in {repo2_path.as_uri()} already seen, skipping"
+    expected_msg = f"Package DuplicatePackage from {repo2_path.as_uri()} already seen, skipping"
     assert expected_msg in captured.err
 
 

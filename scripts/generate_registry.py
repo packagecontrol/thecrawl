@@ -3,13 +3,14 @@ from __future__ import annotations
 import argparse
 import asyncio
 import aiohttp
+from functools import partial
 import json
 import os
 import re
 import sys
 import time
 from urllib.parse import urljoin, urlparse
-from typing import Iterable, Mapping, NotRequired, TypedDict
+from typing import Callable, Iterable, Mapping, NotRequired, TypedDict
 from itertools import chain
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
@@ -32,14 +33,14 @@ class PackageEntry(TypedDict, total=False):
 class PackageDb(TypedDict):
     repositories: list[str]
     packages: list[PackageEntry]
-    dependencies: list[dict]
+    dependencies: list[PackageEntry]
 
 
 class RepositorySchema(TypedDict):
     self: Url
     schema_version: str
     packages: list[PackageEntry]
-    dependencies: list[dict]
+    dependencies: list[PackageEntry]
 
 
 async def main(output_file: str, channels: list[str]) -> None:
@@ -60,7 +61,7 @@ async def main(output_file: str, channels: list[str]) -> None:
         print(f"Timeout: script took more than {GLOBAL_TIMEOUT} seconds")
 
 
-async def fetch_packages(channels: list[str], db: PackageDb = {}) -> PackageDb:
+async def fetch_packages(channels: list[str], db: PackageDb = None) -> PackageDb:
     print("Fetching registered packages...")
     now = time.monotonic()
 
@@ -86,54 +87,33 @@ async def fetch_packages(channels: list[str], db: PackageDb = {}) -> PackageDb:
 
     # Flatten packages and dependencies, adding source and schema_version
     packages: list[PackageEntry] = []
-    dependencies: list[dict] = []
-    unseen = Unseen()
+    dependencies: list[PackageEntry] = []
+    add_package = partial(add_unique, "Package", packages, set(), extract_package_name)
+    add_dependency = partial(add_unique, "Dependency", dependencies, set(), extract_package_name)
     for url in repos:
-        repo = result.get(url)
-        if not repo:
-            # recreate the repo from db
-            packages = [
-                pkg | {"tombstoned": True}
-                for pkg in db.get("packages", [])
-                if pkg.get("source") == url
-            ]
-            dependencies = [
-                dep | {"tombstoned": True}
-                for dep in db.get("dependencies", [])
-                if dep.get("source") == url
-            ]
-            if packages or dependencies:
-                schema_version = (packages or dependencies)[0].get("schema_version")
-                repo = {
-                    "self": url,
-                    "schema_version": schema_version,
-                    "packages": packages,
-                    "dependencies": dependencies,
-                }
-            else:
-                continue
+        if repo := result.get(url):
+            repo_info: PackageEntry
+            repo_info = {
+                "source": repo["self"],
+                "schema_version": repo["schema_version"],
+            }
+            for pkg in repo["packages"]:
+                add_package(pkg | repo_info)
 
-        repo_info: PackageEntry = {
-            "source": repo["self"],
-            "schema_version": repo["schema_version"],
-        }
-        for pkg in repo["packages"]:
-            pkg_name = extract_package_name(pkg)
-            if not pkg_name:
-                print(
-                    f"Package {pkg} in {repo['self']} has no name, skipping",
-                    file=sys.stderr,
-                )
-                continue
-            if unseen.see(pkg_name):
-                print(
-                    f"Package {pkg_name} in {repo['self']} already seen, skipping",
-                    file=sys.stderr
-                )
-                continue
-            packages.append(pkg | repo_info)
-        for dep in repo["dependencies"]:
-            dependencies.append(dep | repo_info)
+            for dep in repo["dependencies"]:
+                add_dependency(dep | repo_info)
+
+        elif db:
+            # recreate the repo from db
+            tombstoned: PackageEntry
+            tombstoned = {"tombstoned": True}
+            for pkg in db.get("packages", []):
+                if pkg.get("source") == url:
+                    add_package(pkg | tombstoned)
+
+            for dep in db.get("dependencies", []):
+                if dep.get("source") == url:
+                    add_dependency(dep | tombstoned)
 
     print(
         f"Found {len(packages)} packages "
@@ -147,6 +127,23 @@ async def fetch_packages(channels: list[str], db: PackageDb = {}) -> PackageDb:
         "packages": packages,
         "dependencies": dependencies,
     }
+
+
+def add_unique[T, K](
+    topic: str,
+    container: list[PackageEntry],
+    seen: set[K],
+    key_fn: Callable[[PackageEntry], K],
+    item: PackageEntry
+):
+    key = key_fn(item)
+    if not key:
+        print(f"{topic} {item} in {item['source']} has no name, skipping", file=sys.stderr)
+    elif key in seen:
+        print(f"{topic} {key} from {item['source']} already seen, skipping", file=sys.stderr)
+    else:
+        seen.add(key)
+        container.append(item)
 
 
 def extract_package_name(package: Mapping) -> str | None:
