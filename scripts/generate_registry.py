@@ -269,16 +269,14 @@ def flatten[T](list_of_lists: list[list[T]]) -> list[T]:
 
 
 class Unseen[T]:
-    def __init__(self, items: Iterable[T] | None = None) -> None:
+    def __init__(self, seen: Iterable[T]) -> None:
         """
         Initialize an Unseen tracker.
 
         Args:
-            items (Iterable[T] | None): Optional iterable of items to mark as seen initially.
+            seen (Iterable[T] | None): Optional iterable of items to mark as seen initially.
         """
-        self._seen: set[T] = set()
-        if items:
-            self.extend(items)
+        self._seen = set(seen)
 
     def extend(self, items: Iterable[T]) -> Iterable[T]:
         """
@@ -291,27 +289,14 @@ class Unseen[T]:
         Yields:
             T: Items not previously seen.
         """
-        return (
+        rv = [
             item
             for item in items
-            if not self.see(item)
-        )
+            if item not in self._seen
+        ]
+        self._seen.update(items)
+        return rv
     __call__ = extend
-
-    def see(self, item: T) -> bool:
-        """
-        Mark an item as seen. Returns True if the item was already seen, False otherwise.
-
-        Args:
-            item (T): The item to check and mark as seen.
-
-        Returns:
-            bool: True if the item was already seen, False if it was not.
-        """
-        if item not in self._seen:
-            self._seen.add(item)
-            return False
-        return True
 
 
 def parse_args() -> argparse.Namespace:
