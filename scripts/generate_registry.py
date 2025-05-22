@@ -86,10 +86,22 @@ async def fetch_packages(channels: list[str], db: PackageDb = None) -> PackageDb
         }
 
     # Flatten packages and dependencies, adding source and schema_version
+
+    def add_unique_(container: list[PackageEntry], kind: str) -> Callable[[PackageEntry], None]:
+        def on_err(key: str | None, item: PackageEntry):
+            msg = (
+                "{kind} {key} from {item[source]} already seen, skipping"
+                if key else
+                "{kind} {item} in {item[source]} has no name, skipping"
+            ).format(kind=kind, key=key, item=item)
+            print(msg, file=sys.stderr)
+
+        return partial(add_unique, container, set(), extract_package_name, on_err)
+
     packages: list[PackageEntry] = []
     dependencies: list[PackageEntry] = []
-    add_package = partial(add_unique, "Package", packages, set(), extract_package_name)
-    add_dependency = partial(add_unique, "Dependency", dependencies, set(), extract_package_name)
+    add_package = add_unique_(packages, "Package")
+    add_dependency = add_unique_(dependencies, "Dependency")
     for url in repos:
         if repo := result.get(url):
             repo_info: PackageEntry
@@ -130,20 +142,18 @@ async def fetch_packages(channels: list[str], db: PackageDb = None) -> PackageDb
 
 
 def add_unique[T, K](
-    topic: str,
-    container: list[PackageEntry],
+    container: list[T],
     seen: set[K],
-    key_fn: Callable[[PackageEntry], K],
-    item: PackageEntry
+    key_fn: Callable[[T], K],
+    err_fn: Callable[[K, T], None],
+    item: T
 ):
     key = key_fn(item)
-    if not key:
-        print(f"{topic} {item} in {item['source']} has no name, skipping", file=sys.stderr)
-    elif key in seen:
-        print(f"{topic} {key} from {item['source']} already seen, skipping", file=sys.stderr)
-    else:
+    if key and key not in seen:
         seen.add(key)
         container.append(item)
+    else:
+        err_fn(key, item)
 
 
 def extract_package_name(package: Mapping) -> str | None:
