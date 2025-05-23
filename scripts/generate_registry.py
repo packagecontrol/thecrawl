@@ -27,10 +27,11 @@ type Url = str
 class PackageEntry(TypedDict, total=False):
     source: Url
     schema_version: str
+    name: str
     tombstoned: NotRequired[bool]
 
 
-class PackageDb(TypedDict):
+class Registry(TypedDict):
     repositories: list[str]
     packages: list[PackageEntry]
     dependencies: list[PackageEntry]
@@ -61,7 +62,7 @@ async def main(output_file: str, channels: list[str]) -> None:
         print(f"Timeout: script took more than {GLOBAL_TIMEOUT} seconds")
 
 
-async def fetch_packages(channels: list[str], db: PackageDb = None) -> PackageDb:
+async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
     print("Fetching registered packages...")
     now = time.monotonic()
 
@@ -85,18 +86,26 @@ async def fetch_packages(channels: list[str], db: PackageDb = None) -> PackageDb
             if not repo.get("schema_version", "1.").startswith("1.")
         }
 
-    # Flatten packages and dependencies, adding source and schema_version
+    # Flatten packages and dependencies, adding source, schema_version, and
+    # ensuring a unique name.
 
     def add_unique_(container: list[PackageEntry], kind: str) -> Callable[[PackageEntry], None]:
-        def on_err(key: str | None, item: PackageEntry):
-            msg = (
-                "{kind} {key} from {item[source]} already seen, skipping"
-                if key else
-                "{kind} {item} in {item[source]} has no name, skipping"
-            ).format(kind=kind, key=key, item=item)
-            print(msg, file=sys.stderr)
+        seen = set()
 
-        return partial(add_unique, container, set(), extract_package_name, on_err)
+        def add(entry: PackageEntry) -> None:
+            name = extract_package_name(entry)
+            if name and name not in seen:
+                seen.add(name)
+                container.append(entry | {"name": name})
+            else:
+                msg = (
+                    f"{kind} {name} from {entry['source']} already seen, skipping"
+                    if name else
+                    "{kind} {entry} in {entry['source']} has no name, skipping"
+                )
+                print(msg, file=sys.stderr)
+
+        return add
 
     packages: list[PackageEntry] = []
     dependencies: list[PackageEntry] = []
@@ -139,21 +148,6 @@ async def fetch_packages(channels: list[str], db: PackageDb = None) -> PackageDb
         "packages": packages,
         "dependencies": dependencies,
     }
-
-
-def add_unique[T, K](
-    container: list[T],
-    seen: set[K],
-    key_fn: Callable[[T], K],
-    err_fn: Callable[[K, T], None],
-    item: T
-):
-    key = key_fn(item)
-    if key and key not in seen:
-        seen.add(key)
-        container.append(item)
-    else:
-        err_fn(key, item)
 
 
 def extract_package_name(package: Mapping) -> str | None:
