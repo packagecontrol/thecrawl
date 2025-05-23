@@ -397,18 +397,17 @@ class BranchesPager:
             pass
 
 
-async def main():
-    url = "https://github.com/timbrel/GitSavvy"
-    info = await fetch_repo_info(url, ("METADATA", "TAGS"))
-    # for tag in info.get("tags", []):
-    #     print(tag["version"], tag["name"], tag["url"])
-    async for tag in info["tags"]:
-        print(tag["version"], tag["name"], tag["url"])
-    async for branch in info["branches"]:
-        print(branch["name"], branch["sha"], branch["date"])
-
-    print("rate_limit_info", info["rate_limit_info"])
-
-
 if __name__ == "__main__":
+    async def main():
+        url = "https://github.com/timbrel/GitSavvy"
+        info = await fetch_repo_info(url, ("METADATA", "TAGS"))
+        # for tag in info.get("tags", []):
+        #     print(tag["version"], tag["name"], tag["url"])
+        async for tag in info["tags"]:
+            print(tag["version"], tag["name"], tag["url"])
+        async for branch in info["branches"]:
+            print(branch["name"], branch["sha"], branch["date"])
+
+        print("rate_limit_info", info["rate_limit_info"])
+
     asyncio.run(main())
