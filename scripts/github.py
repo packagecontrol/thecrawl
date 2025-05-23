@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime
 import os
 import aiohttp
@@ -9,6 +10,57 @@ from typing import AsyncIterable, Literal, Iterable, TypedDict
 
 from .utils import drop_falsy
 
+
+type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
+type Query = str | tuple[str, str]
+type Url = str
+type Sha = str
+type IsoTimestamp = str
+
+
+class RepoInfo(TypedDict):
+    metadata: RepoMetadata
+    tags: AsyncIterable[TagInfo]
+    branches: AsyncIterable[BranchInfo]
+    rate_limit_info: RateLimitInfo
+
+
+class RepoMetadata(TypedDict, total=False):
+    name: str
+    description: str
+    homepage: Url
+    author: str
+    readme: Url
+    issues: Url
+    donate: Url
+    default_branch: str
+
+
+class TagInfo(TypedDict):
+    name: str     # name if the ref-/ or tagname
+    version: str  # version is the name without prefixes (e.g. "v")
+    url: Url
+    date: IsoTimestamp
+    sha: Sha
+
+
+class BranchInfo(TypedDict):
+    name: str
+    url: Url
+    date: IsoTimestamp
+    sha: Sha
+
+
+class RateLimitInfo(TypedDict):
+    limit: int
+    remaining: int
+    used: int
+    reset: int            # epoch seconds
+    reset_formatted: str  # human-readable local timestamp
+    resource: str
+
+
+GITHUB_API_URL = "https://api.github.com/graphql"
 
 STD_VARS = "$owner: String!, $name: String!"
 METADATA = (
@@ -95,6 +147,11 @@ TAGS = (
     }
     """
 )
+scope_to_query: dict[str, Query] = {
+    "METADATA": METADATA,
+    "TAGS": TAGS,
+    "BRANCHES": BRANCHES,
+}
 
 
 def build_query(sub_queries: Iterable[str | tuple[str, str]]) -> str:
@@ -119,9 +176,6 @@ _readme_filenames = {
     'readme', 'readme.txt', 'readme.md', 'readme.mkd', 'readme.mdown',
     'readme.markdown', 'readme.textile', 'readme.creole', 'readme.rst'
 }
-
-
-GITHUB_API_URL = "https://api.github.com/graphql"
 
 
 async def make_graphql_query(query: str, variables: dict) -> dict:
@@ -169,61 +223,7 @@ def parse_owner_repo(url: str):
     return path_parts[0], path_parts[1]
 
 
-type Scopes = Literal["METADATA", "TAGS", "BRANCHES"]
-type Query = str | tuple[str, str]
-type Url = str
-type Sha = str
-type IsoTimestamp = str
-scope_to_query: dict[str, Query] = {
-    "METADATA": METADATA,
-    "TAGS": TAGS,
-    "BRANCHES": BRANCHES,
-}
-
-
-class RepoMetadata(TypedDict, total=False):
-    name: str
-    description: str
-    homepage: str
-    author: str
-    readme: str
-    issues: str
-    donate: str
-    default_branch: str
-
-
-class TagInfo(TypedDict):
-    name: str     # name if the ref-/ or tagname
-    version: str  # version is the name without prefixes (e.g. "v")
-    url: Url
-    date: IsoTimestamp
-    sha: Sha
-
-
-class BranchInfo(TypedDict):
-    name: str
-    url: Url
-    date: IsoTimestamp
-    sha: Sha
-
-
-class RateLimitInfo(TypedDict):
-    limit: int
-    remaining: int
-    used: int
-    reset: int  # epoch seconds
-    reset_formatted: str  # human-readable local timestamp
-    resource: str
-
-
-class RepoInfo(TypedDict):
-    metadata: RepoMetadata
-    tags: AsyncIterable[TagInfo]
-    branches: AsyncIterable[BranchInfo]
-    rate_limit_info: RateLimitInfo
-
-
-async def fetch_repo_info(github_url: str, scopes: Iterable[Scopes]) -> RepoInfo:
+async def fetch_repo_info(github_url: str, scopes: Iterable[QueryScope]) -> RepoInfo:
     owner, repo = parse_owner_repo(github_url)
     variables = {
         "owner": owner,
