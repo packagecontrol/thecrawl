@@ -11,6 +11,11 @@ from typing import AsyncIterable, Literal, Iterable, TypedDict
 
 from .utils import drop_falsy
 
+# This module exposes a single entrypoint
+# fetch_repo_info(Url, Iterable[QueryScope]) -> RepoInfo
+# fetch_repo_info("https://github.com/timbrel/GitSavvy", ("METADATA", "TAGS"))
+# "tags" and "branches" are lazy fetched, unless you provide TAGS or BRANCHES as
+# initial QueryScope, until exhausted. (Ref: TagPager and BranchesPager)
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 type Query = str | tuple[str, str]
