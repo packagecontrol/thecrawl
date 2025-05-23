@@ -4,6 +4,7 @@ import os
 import aiohttp
 import asyncio
 import re
+from time import time
 from urllib.parse import urlparse
 
 from typing import AsyncIterable, Literal, Iterable, TypedDict
@@ -60,6 +61,14 @@ class RateLimitInfo(TypedDict):
     resource: str
 
 
+rate_limit_info: RateLimitInfo = {
+    "limit": 1000,
+    "remaining": 1000,
+    "used": 0,
+    "reset": int(time()) + 3600,
+    "reset_formatted": datetime.fromtimestamp(time() + 3600).strftime("%Y-%m-%d %H:%M:%S"),
+    "resource": "core",
+}
 GITHUB_API_URL = "https://api.github.com/graphql"
 
 STD_VARS = "$owner: String!, $name: String!"
@@ -179,6 +188,8 @@ _readme_filenames = {
 
 
 async def make_graphql_query(query: str, variables: dict) -> dict:
+    global rate_limit_info
+
     token = os.getenv("GITHUB_TOKEN")
     if not token:
         raise RuntimeError("GITHUB_TOKEN env var is not set")
@@ -198,9 +209,8 @@ async def make_graphql_query(query: str, variables: dict) -> dict:
             data = await resp.json()
             if "errors" in data:
                 raise RuntimeError(f"GraphQL errors: {data['errors']}")
-            rv = data["data"]
             reset_time = int(resp.headers.get("x-ratelimit-reset", 0))
-            rv["rate_limit_info"] = {
+            rate_limit_info = {
                 "limit": int(resp.headers.get("x-ratelimit-limit", 0)),
                 "remaining": int(resp.headers.get("x-ratelimit-remaining", 0)),
                 "used": int(resp.headers.get("x-ratelimit-used", 0)),
@@ -208,6 +218,8 @@ async def make_graphql_query(query: str, variables: dict) -> dict:
                 "resource": resp.headers.get("x-ratelimit-resource", "core"),
                 "reset_formatted": datetime.fromtimestamp(reset_time).strftime("%Y-%m-%d %H:%M:%S")
             }
+            rv = data["data"]
+            rv["rate_limit_info"] = rate_limit_info
             return rv
 
 
