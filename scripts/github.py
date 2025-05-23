@@ -38,8 +38,14 @@ METADATA = (
     }
     """
 )
-BRANCHES = """
-    branches: refs(refPrefix: "refs/heads/", first: 100) {
+BRANCHES = (
+    '$branches_after: String',
+    """
+    branches: refs(
+      refPrefix: "refs/heads/",
+      first: 100
+      after: $branches_after
+    ) {
       pageInfo {
         hasNextPage
         endCursor
@@ -54,7 +60,8 @@ BRANCHES = """
         }
       }
     }
-"""
+    """
+)
 TAGS = (
     '$tags_after: String',
     """
@@ -202,13 +209,21 @@ async def fetch_repo_info(github_url: str, scopes: Iterable[Scopes]) -> dict[str
         "donate": repo_data.get("fundingLinks", [{}])[0].get("url"),
         "default_branch": default_branch,
         "tags": TagPager(owner, repo, initial_data=repo_data.get("tags")),
+        "branches": BranchesPager(owner, repo, initial_data=repo_data.get("branches")),
         "rate_limit_info": data["rate_limit_info"]
     })
 
 
 class TagInfo(TypedDict):
+    name: str     # name if the ref-/ or tagname
+    version: str  # version is the name without prefixes (e.g. "v")
+    url: Url
+    date: IsoTimestamp
+    sha: Sha
+
+
+class BranchInfo(TypedDict):
     name: str
-    version: str
     url: Url
     date: IsoTimestamp
     sha: Sha
@@ -219,14 +234,28 @@ def grab_tags(repo: str, entries) -> list[TagInfo]:
     for node in entries["nodes"]:
         t = node["target"]
         commit = t.get("target", t)
+        branch_name = node["name"]
         all_tags.append({
-            "name": node["name"],
+            "name": branch_name,
             "version": strip_possible_prefix(node["name"]),
             "sha": commit["oid"],
             "date": commit["committedDate"][:19].replace('T', ' '),
-            "url": f"https://codeload.github.com/{repo}/zip/{node['name']}"
+            "url": f"https://codeload.github.com/{repo}/zip/{branch_name}"
         })
     return all_tags
+
+def grab_branches(repo: str, entries) -> list[BranchInfo]:
+    new_branches: list[BranchInfo] = []
+    for node in entries.get("nodes", []):
+        commit = node["target"]
+        tag_name = node["name"]
+        new_branches.append({
+            "name": tag_name,
+            "sha": commit["oid"],
+            "date": commit["committedDate"][:19].replace('T', ' '),
+            "url": f"https://codeload.github.com/{repo}/zip/{tag_name}"
+        })
+    return new_branches
 
 
 def strip_possible_prefix(version: str) -> str:
@@ -297,6 +326,62 @@ class TagPager:
             pass
 
 
+class BranchesPager:
+    def __init__(self, owner: str, repo: str, initial_data: dict | None = None):
+        self.owner = owner
+        self.repo = repo
+        self._cache: list[BranchInfo] = []
+        self._fetched_all = False
+        self._next_cursor: str | None = None
+
+        if initial_data:
+            self._process_branch_data(initial_data)
+
+    def _process_branch_data(self, branch_data: dict) -> list[BranchInfo]:
+        branches = grab_branches(f"{self.owner}/{self.repo}", branch_data)
+        self._cache.extend(branches)
+        page_info = branch_data.get("pageInfo", {})
+        self._fetched_all = not page_info.get("hasNextPage", False)
+        self._next_cursor = page_info.get("endCursor")
+        return branches
+
+    def __aiter__(self):
+        return self._generator()
+
+    async def _generator(self):
+        idx = 0
+        while True:
+            if idx < len(self._cache):
+                yield self._cache[idx]
+                idx += 1
+                continue
+
+            if self._fetched_all:
+                break
+
+            query = build_query([BRANCHES])
+            variables = {
+                "owner": self.owner,
+                "name": self.repo,
+                "branches_after": self._next_cursor
+            }
+            result = await make_graphql_query(query, variables)
+            branch_data = result["repository"]["branches"]
+            new_branches = self._process_branch_data(branch_data)
+
+            for branch in new_branches:
+                yield branch
+                idx += 1
+
+            if self._fetched_all:
+                break
+
+    async def prefetch(self):
+        """Optional: Eagerly load all branches."""
+        async for _ in self:
+            pass
+
+
 async def main():
     url = "https://github.com/timbrel/GitSavvy"
     info = await fetch_repo_info(url, ("METADATA", "TAGS"))
@@ -304,6 +389,9 @@ async def main():
     #     print(tag["version"], tag["name"], tag["url"])
     async for tag in info["tags"]:
         print(tag["version"], tag["name"], tag["url"])
+    async for branch in info["branches"]:
+        print(branch["name"], branch["sha"], branch["date"])
+
     print("rate_limit_info", info["rate_limit_info"])
 
 
