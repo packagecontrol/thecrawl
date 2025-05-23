@@ -5,7 +5,7 @@ import asyncio
 import re
 from urllib.parse import urlparse
 
-from typing import Literal, Iterable, TypedDict
+from typing import AsyncIterable, Literal, Iterable, TypedDict
 
 from .utils import drop_falsy
 
@@ -97,7 +97,6 @@ TAGS = (
 )
 
 
-
 def build_query(sub_queries: Iterable[str | tuple[str, str]]) -> str:
     queries, vars = [], []
     for q in sub_queries:
@@ -114,6 +113,7 @@ def build_query(sub_queries: Iterable[str | tuple[str, str]]) -> str:
       }}
     }}
     """
+
 
 _readme_filenames = {
     'readme', 'readme.txt', 'readme.md', 'readme.mkd', 'readme.mdown',
@@ -181,37 +181,15 @@ scope_to_query: dict[str, Query] = {
 }
 
 
-async def fetch_repo_info(github_url: str, scopes: Iterable[Scopes]) -> dict[str, object]:
-    owner, repo = parse_owner_repo(github_url)
-    variables = {
-        "owner": owner,
-        "name": repo,
-        "expression": "HEAD:"
-    }
-    query = build_query(scope_to_query[scope] for scope in scopes)
-    data = await make_graphql_query(query, variables)
-    repo_data = data["repository"]
-
-    default_branch = repo_data.get("defaultBranchRef", {}).get("name", "master")
-
-    return drop_falsy({
-        "name": repo_data.get("name"),
-        "description": repo_data.get("description"),
-        "homepage": repo_data.get("homepageUrl") or repo_data.get("url"),
-        "author": repo_data.get("owner", {}).get("login"),
-        "readme": find_readme_url(
-            repo_data.get("files", {}).get("entries", []),
-            owner,
-            repo,
-            default_branch,
-        ),
-        "issues": repo_data.get("issuesUrl"),
-        "donate": repo_data.get("fundingLinks", [{}])[0].get("url"),
-        "default_branch": default_branch,
-        "tags": TagPager(owner, repo, initial_data=repo_data.get("tags")),
-        "branches": BranchesPager(owner, repo, initial_data=repo_data.get("branches")),
-        "rate_limit_info": data["rate_limit_info"]
-    })
+class RepoMetadata(TypedDict, total=False):
+    name: str
+    description: str
+    homepage: str
+    author: str
+    readme: str
+    issues: str
+    donate: str
+    default_branch: str
 
 
 class TagInfo(TypedDict):
@@ -229,6 +207,57 @@ class BranchInfo(TypedDict):
     sha: Sha
 
 
+class RateLimitInfo(TypedDict):
+    limit: int
+    remaining: int
+    used: int
+    reset: int  # epoch seconds
+    reset_formatted: str  # human-readable local timestamp
+    resource: str
+
+
+class RepoInfo(TypedDict):
+    metadata: RepoMetadata
+    tags: AsyncIterable[TagInfo]
+    branches: AsyncIterable[BranchInfo]
+    rate_limit_info: RateLimitInfo
+
+
+async def fetch_repo_info(github_url: str, scopes: Iterable[Scopes]) -> RepoInfo:
+    owner, repo = parse_owner_repo(github_url)
+    variables = {
+        "owner": owner,
+        "name": repo,
+        "expression": "HEAD:"
+    }
+    query = build_query(scope_to_query[scope] for scope in scopes)
+    data = await make_graphql_query(query, variables)
+    repo_data = data["repository"]
+
+    default_branch = repo_data.get("defaultBranchRef", {}).get("name", "master")
+
+    return {
+        "metadata": drop_falsy({
+            "name": repo_data.get("name"),
+            "description": repo_data.get("description"),
+            "homepage": repo_data.get("homepageUrl") or repo_data.get("url"),
+            "author": repo_data.get("owner", {}).get("login"),
+            "readme": find_readme_url(
+                repo_data.get("files", {}).get("entries", []),
+                owner,
+                repo,
+                default_branch,
+            ),
+            "issues": repo_data.get("issuesUrl"),
+            "donate": repo_data.get("fundingLinks", [{}])[0].get("url"),
+            "default_branch": default_branch,
+        }),
+        "tags": TagPager(owner, repo, initial_data=repo_data.get("tags")),
+        "branches": BranchesPager(owner, repo, initial_data=repo_data.get("branches")),
+        "rate_limit_info": data["rate_limit_info"],
+    }
+
+
 def grab_tags(repo: str, entries) -> list[TagInfo]:
     all_tags: list[TagInfo] = []
     for node in entries["nodes"]:
@@ -243,6 +272,7 @@ def grab_tags(repo: str, entries) -> list[TagInfo]:
             "url": f"https://codeload.github.com/{repo}/zip/{branch_name}"
         })
     return all_tags
+
 
 def grab_branches(repo: str, entries) -> list[BranchInfo]:
     new_branches: list[BranchInfo] = []
