@@ -293,13 +293,10 @@ class TagPager:
         return self._generator()
 
     async def _generator(self):
-        idx = 0
-        while True:
-            if idx < len(self._cache):
-                yield self._cache[idx]
-                idx += 1
-                continue
+        for tag in self._cache:
+            yield tag
 
+        while True:
             if self._fetched_all:
                 break
 
@@ -314,11 +311,6 @@ class TagPager:
 
             for tag in new_tags:
                 yield tag
-                idx += 1
-
-            if self._fetched_all:
-                break
-
 
     async def prefetch(self):
         """Optional helper to fetch and cache all tags eagerly."""
@@ -349,13 +341,10 @@ class BranchesPager:
         return self._generator()
 
     async def _generator(self):
-        idx = 0
-        while True:
-            if idx < len(self._cache):
-                yield self._cache[idx]
-                idx += 1
-                continue
+        for branch in self._cache:
+            yield branch
 
+        while True:
             if self._fetched_all:
                 break
 
@@ -371,10 +360,6 @@ class BranchesPager:
 
             for branch in new_branches:
                 yield branch
-                idx += 1
-
-            if self._fetched_all:
-                break
 
     async def prefetch(self):
         """Optional: Eagerly load all branches."""
