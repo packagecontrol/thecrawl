@@ -55,10 +55,13 @@ BRANCHES = """
       }
     }
 """
-TAGS = """
+TAGS = (
+    '$tags_after: String',
+    """
     tags: refs(
       refPrefix: "refs/tags/"
       first: 100
+      after: $tags_after
       orderBy: {field: TAG_COMMIT_DATE, direction: DESC}
     ) {
       pageInfo {
@@ -83,7 +86,9 @@ TAGS = """
         }
       }
     }
-"""
+    """
+)
+
 
 
 def build_query(sub_queries: Iterable[str | tuple[str, str]]) -> str:
@@ -196,7 +201,7 @@ async def fetch_repo_info(github_url: str, scopes: Iterable[Scopes]) -> dict[str
         "issues": repo_data.get("issuesUrl"),
         "donate": repo_data.get("fundingLinks", [{}])[0].get("url"),
         "default_branch": default_branch,
-        "tags": grab_tags(f"{owner}/{repo}", repo_data.get("tags", [])),
+        "tags": TagPager(owner, repo, initial_data=repo_data.get("tags")),
         "rate_limit_info": data["rate_limit_info"]
     })
 
@@ -236,6 +241,60 @@ def find_readme_url(entries, owner, repo, branch) -> str | None:
     return None
 
 
+class TagPager:
+    def __init__(self, owner: str, repo: str, initial_data: dict | None = None):
+        self.owner = owner
+        self.repo = repo
+        self._cache: list[TagInfo] = []
+        self._fetched_all = False
+        self._next_cursor: str | None = None
+
+        if initial_data:
+            self._process_tags_data(initial_data)
+
+    def _process_tags_data(self, tag_data: dict):
+        tags = grab_tags(f"{self.owner}/{self.repo}", tag_data)
+        self._cache.extend(tags)
+        page_info = tag_data.get("pageInfo", {})
+        self._fetched_all = not page_info.get("hasNextPage", False)
+        self._next_cursor = page_info.get("endCursor")
+        return tags
+
+    def __aiter__(self):
+        return self._generator()
+
+    async def _generator(self):
+        idx = 0
+        while True:
+            if idx < len(self._cache):
+                yield self._cache[idx]
+                idx += 1
+                continue
+
+            if self._fetched_all:
+                break
+
+            query = build_query([TAGS])
+            variables = {
+                "owner": self.owner,
+                "name": self.repo,
+                "tags_after": self._next_cursor
+            }
+            result = await make_graphql_query(query, variables)
+            new_tags = self._process_tags_data(result["repository"]["tags"])
+
+            for tag in new_tags:
+                yield tag
+                idx += 1
+
+            if self._fetched_all:
+                break
+
+
+    async def prefetch(self):
+        """Optional helper to fetch and cache all tags eagerly."""
+        async for _ in self:
+            pass
 
 
 async def main():
@@ -243,6 +302,8 @@ async def main():
     info = await fetch_repo_info(url, ("METADATA", "TAGS"))
     # for tag in info.get("tags", []):
     #     print(tag["version"], tag["name"], tag["url"])
+    async for tag in info["tags"]:
+        print(tag["version"], tag["name"], tag["url"])
     print("rate_limit_info", info["rate_limit_info"])
 
 
