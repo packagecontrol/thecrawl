@@ -75,12 +75,12 @@ async def fetch_(session: aiohttp.ClientSession, url: str):
         headers["PRIVATE-TOKEN"] = token
     async with session.get(url, headers=headers) as resp:
         resp.raise_for_status()
-        return resp
+        data = await resp.json()
+        return data, dict(resp.headers)
 
 
 async def fetch_json(session: aiohttp.ClientSession, url: str):
-    resp = await fetch_(session, url)
-    data = await resp.json()
+    data, _ = await fetch_(session, url)
     return data
 
 
@@ -115,10 +115,10 @@ async def find_readme_url(session, owner, repo, branch) -> Url | None:
 class _Pager:
     _next_url: Url | None
 
-    def _get_next_url(self, response) -> Url | None:
+    def _get_next_url(self, headers: dict) -> Url | None:
         # GitLab paginates with 'X-Next-Page' header
         assert self._next_url
-        next_page = response.headers.get('X-Next-Page')
+        next_page = headers.get('X-Next-Page')
         if next_page:
             next_url = re.sub(r'([&?])page=\d+', r'\1page=' + next_page, self._next_url)
             if 'page=' not in next_url:
@@ -144,8 +144,7 @@ class TagPager(_Pager):
             yield tag
 
         while self._next_url:
-            resp = await fetch_(self._session, self._next_url)
-            data = await resp.json()
+            data, headers = await fetch_(self._session, self._next_url)
             new_tags = [
                 {
                     "name": tag["name"],
@@ -157,7 +156,7 @@ class TagPager(_Pager):
                 for tag in data
             ]
             self._cache.extend(new_tags)
-            self._next_url = self._get_next_url(resp)
+            self._next_url = self._get_next_url(headers)
 
             for tag_obj in new_tags:
                 yield tag_obj
@@ -179,8 +178,7 @@ class BranchesPager(_Pager):
             yield branch
         next_url = self._next_url
         while next_url:
-            resp = await fetch_(self._session, next_url)
-            data = await resp.json()
+            data, headers = await fetch_(self._session, next_url)
             new_branches = [
                 {
                     "name": branch["name"],
@@ -192,7 +190,7 @@ class BranchesPager(_Pager):
                 for branch in data
             ]
             self._cache.extend(new_branches)
-            self._next_url = self._get_next_url(resp)
+            self._next_url = self._get_next_url(headers)
 
             for branch_obj in new_branches:
                 yield branch_obj
