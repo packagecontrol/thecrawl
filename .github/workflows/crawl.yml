@@ -63,7 +63,8 @@ jobs:
           {
             echo "$DATE  ([logs]($REPO_URL))"
             echo ""
-            cat crawl.log
+            # Insert a blank line before lines that are exactly '---'
+            awk '{ if ($0 == "---") print ""; print }' crawl.log
           } > notes.txt
 
           echo "Updating release notes..."
