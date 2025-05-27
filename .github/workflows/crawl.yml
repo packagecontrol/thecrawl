@@ -12,7 +12,7 @@ jobs:
   crawl:
     runs-on: ubuntu-latest
     env:
-      RELEASE_TAG: 'crawler-status'
+      RELEASE_TAG: crawler-status
       GH_TOKEN: ${{ github.token }}
       GITHUB_TOKEN: ${{ github.token }}
     steps:
@@ -44,7 +44,10 @@ jobs:
       - name: Run crawler
         run: |
           set -o pipefail
-          uv run -m scripts.crawl --registry ./wrk/registry.json --workspace ./wrk/workspace.json 2>&1 | tee crawl.log
+          PYTHONUNBUFFERED=1 uv run -m scripts.crawl \
+            --registry ./wrk/registry.json \
+            --workspace ./wrk/workspace.json \
+            2>&1 | tee crawl.log
 
       - name: Update release notes
         run: |
