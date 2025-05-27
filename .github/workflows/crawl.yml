@@ -15,6 +15,7 @@ jobs:
       RELEASE_TAG: crawler-status
       GH_TOKEN: ${{ github.token }}
       GITHUB_TOKEN: ${{ github.token }}
+      GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
