@@ -33,6 +33,9 @@ jobs:
           restore-keys: |
             wrk-cache-
 
+      - name: Generate registry
+        run: uv run -m scripts.generate_registry -o ./wrk/registry.json
+
       - name: Run crawler
         run: |
           set -o pipefail
