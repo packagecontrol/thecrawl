@@ -220,7 +220,10 @@ async def crawl(
         out["failing_since"] = existing.get("failing_since", now_string)
 
         if isinstance(e, aiohttp.ClientResponseError):
-            err(f"HTTP error during crawl for {package['name']}: {e.status} {e.message}", end=" ")
+            err(
+                f"HTTP error during crawl for {package['name']}: "
+                f"{e.status} {e.message.removesuffix(".")}", end=". "
+            )
             out["fail_reason"] = f"{e.status} {e.message}"
         else:
             err(f"Exception while crawling {package['name']}")
