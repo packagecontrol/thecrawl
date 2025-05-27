@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 from typing import AsyncIterable, Literal, Iterable, TypedDict
 
-from .utils import drop_falsy
+from .utils import is_semver, drop_falsy
 
 # This module exposes a single entrypoint
 # fetch_repo_info(Url, Iterable[QueryScope]) -> RepoInfo
@@ -43,8 +43,8 @@ class RepoMetadata(TypedDict, total=False):
 
 
 class TagInfo(TypedDict):
-    name: str     # name if the ref-/ or tagname
-    version: str  # version is the name without prefixes (e.g. "v")
+    name: str     # the ref-/ or tagname, e.g. v1.2.5
+    version: str  # the name without prefixes, e.g. "1.2.3"
     url: Url
     date: IsoTimestamp
     sha: Sha
@@ -52,6 +52,7 @@ class TagInfo(TypedDict):
 
 class BranchInfo(TypedDict):
     name: str
+    version: str  # fake version constructed from the date
     url: Url
     date: IsoTimestamp
     sha: Sha
@@ -192,7 +193,7 @@ _readme_filenames = {
 }
 
 
-async def make_graphql_query(query: str, variables: dict) -> dict:
+async def make_graphql_query(session: aiohttp.ClientSession, query: str, variables: dict) -> dict:
     global rate_limit_info
 
     token = os.getenv("GITHUB_TOKEN")
@@ -204,28 +205,40 @@ async def make_graphql_query(query: str, variables: dict) -> dict:
         "Accept": "application/json",
     }
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            GITHUB_API_URL,
-            json={"query": query, "variables": variables},
-            headers=headers,
-            raise_for_status=True
-        ) as resp:
-            data = await resp.json()
-            if "errors" in data:
+    async with session.post(
+        GITHUB_API_URL,
+        json={"query": query, "variables": variables},
+        headers=headers,
+        raise_for_status=True
+    ) as resp:
+        data = await resp.json()
+        if "errors" in data:
+            first_error = data["errors"][0]
+            message = first_error.get("message", "Unknown GraphQL error")
+            error_type = first_error.get("type", None)
+            if error_type == "NOT_FOUND":
+                raise aiohttp.ClientResponseError(
+                    request_info=resp.request_info,
+                    history=resp.history,
+                    status=404,
+                    message=message,
+                    headers=resp.headers
+                )
+            else:
                 raise RuntimeError(f"GraphQL errors: {data['errors']}")
-            reset_time = int(resp.headers.get("x-ratelimit-reset", 0))
-            rate_limit_info = {
-                "limit": int(resp.headers.get("x-ratelimit-limit", 0)),
-                "remaining": int(resp.headers.get("x-ratelimit-remaining", 0)),
-                "used": int(resp.headers.get("x-ratelimit-used", 0)),
-                "reset": reset_time,
-                "resource": resp.headers.get("x-ratelimit-resource", "core"),
-                "reset_formatted": datetime.fromtimestamp(reset_time).strftime("%Y-%m-%d %H:%M:%S")
-            }
-            rv = data["data"]
-            rv["rate_limit_info"] = rate_limit_info
-            return rv
+
+        reset_time = int(resp.headers.get("x-ratelimit-reset", 0))
+        rv = data["data"]
+        rv["rate_limit_info"] = {
+            "limit": int(resp.headers.get("x-ratelimit-limit", 0)),
+            "remaining": int(resp.headers.get("x-ratelimit-remaining", 0)),
+            "used": int(resp.headers.get("x-ratelimit-used", 0)),
+            "reset": reset_time,
+            "resource": resp.headers.get("x-ratelimit-resource", "core"),
+            "reset_formatted": datetime.fromtimestamp(reset_time).strftime("%Y-%m-%d %H:%M:%S")
+        }
+        rate_limit_info.update(rv["rate_limit_info"])
+        return rv
 
 
 def parse_owner_repo(url: str):
@@ -240,7 +253,11 @@ def parse_owner_repo(url: str):
     return path_parts[0], path_parts[1]
 
 
-async def fetch_repo_info(github_url: str, scopes: Iterable[QueryScope]) -> RepoInfo:
+async def fetch_repo_info(
+    session: aiohttp.ClientSession,
+    github_url: str,
+    scopes: Iterable[QueryScope]
+) -> RepoInfo:
     owner, repo = parse_owner_repo(github_url)
     variables = {
         "owner": owner,
@@ -248,7 +265,7 @@ async def fetch_repo_info(github_url: str, scopes: Iterable[QueryScope]) -> Repo
         "expression": "HEAD:"
     }
     query = build_query(scope_to_query[scope] for scope in scopes)
-    data = await make_graphql_query(query, variables)
+    data = await make_graphql_query(session, query, variables)
     repo_data = data["repository"]
 
     default_branch = repo_data.get("defaultBranchRef", {}).get("name", "master")
@@ -266,43 +283,49 @@ async def fetch_repo_info(github_url: str, scopes: Iterable[QueryScope]) -> Repo
                 default_branch,
             ),
             "issues": repo_data.get("issuesUrl"),
-            "donate": repo_data.get("fundingLinks", [{}])[0].get("url"),
+            "donate": (repo_data.get("fundingLinks") or [{}])[0].get("url"),
             "default_branch": default_branch,
         }),
-        "tags": TagPager(owner, repo, initial_data=repo_data.get("tags")),
-        "branches": BranchesPager(owner, repo, initial_data=repo_data.get("branches")),
+        "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
+        "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
         "rate_limit_info": data["rate_limit_info"],
     }
 
 
 def grab_tags(repo: str, entries) -> list[TagInfo]:
-    all_tags: list[TagInfo] = []
+    tags: list[TagInfo] = []
     for node in entries["nodes"]:
+        tag_name = node["name"]
         t = node["target"]
         commit = t.get("target", t)
-        branch_name = node["name"]
-        all_tags.append({
-            "name": branch_name,
-            "version": strip_possible_prefix(node["name"]),
-            "sha": commit["oid"],
-            "date": commit["committedDate"][:19].replace('T', ' '),
-            "url": f"https://codeload.github.com/{repo}/zip/{branch_name}"
-        })
-    return all_tags
-
-
-def grab_branches(repo: str, entries) -> list[BranchInfo]:
-    new_branches: list[BranchInfo] = []
-    for node in entries.get("nodes", []):
-        commit = node["target"]
-        tag_name = node["name"]
-        new_branches.append({
+        if "oid" not in commit:
+            print("no tag oid", node, "for", repo)
+            continue
+        version = strip_possible_prefix(tag_name)
+        tags.append({
             "name": tag_name,
+            # "version": version,
             "sha": commit["oid"],
             "date": commit["committedDate"][:19].replace('T', ' '),
             "url": f"https://codeload.github.com/{repo}/zip/{tag_name}"
         })
-    return new_branches
+    return tags
+
+
+def grab_branches(repo: str, entries) -> list[BranchInfo]:
+    branches: list[BranchInfo] = []
+    for node in entries.get("nodes", []):
+        commit = node["target"]
+        branch_name = node["name"]
+        date = commit["committedDate"][:19].replace('T', ' ')
+        branches.append({
+            "name": branch_name,
+            "version": re.sub(r'\D', '.', date),
+            "sha": commit["oid"],
+            "date": date,
+            "url": f"https://codeload.github.com/{repo}/zip/{branch_name}"
+        })
+    return branches
 
 
 def strip_possible_prefix(version: str) -> str:
@@ -318,7 +341,14 @@ def find_readme_url(entries, owner, repo, branch) -> str | None:
 
 
 class TagPager:
-    def __init__(self, owner: str, repo: str, initial_data: dict | None = None):
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        owner: str,
+        repo: str,
+        initial_data: dict | None = None
+    ):
+        self._session = session
         self.owner = owner
         self.repo = repo
         self._cache: list[TagInfo] = []
@@ -353,7 +383,7 @@ class TagPager:
                 "name": self.repo,
                 "tags_after": self._next_cursor
             }
-            result = await make_graphql_query(query, variables)
+            result = await make_graphql_query(self._session, query, variables)
             new_tags = self._process_tags_data(result["repository"]["tags"])
 
             for tag in new_tags:
@@ -366,7 +396,14 @@ class TagPager:
 
 
 class BranchesPager:
-    def __init__(self, owner: str, repo: str, initial_data: dict | None = None):
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        owner: str,
+        repo: str,
+        initial_data: dict | None = None
+    ):
+        self._session = session
         self.owner = owner
         self.repo = repo
         self._cache: list[BranchInfo] = []
@@ -401,7 +438,7 @@ class BranchesPager:
                 "name": self.repo,
                 "branches_after": self._next_cursor
             }
-            result = await make_graphql_query(query, variables)
+            result = await make_graphql_query(self._session, query, variables)
             branch_data = result["repository"]["branches"]
             new_branches = self._process_branch_data(branch_data)
 
@@ -416,14 +453,15 @@ class BranchesPager:
 
 if __name__ == "__main__":
     async def main():
-        url = "https://github.com/timbrel/GitSavvy"
-        info = await fetch_repo_info(url, ("METADATA", "TAGS"))
-        # for tag in info.get("tags", []):
-        #     print(tag["version"], tag["name"], tag["url"])
-        async for tag in info["tags"]:
-            print(tag["version"], tag["name"], tag["url"])
-        async for branch in info["branches"]:
-            print(branch["name"], branch["sha"], branch["date"])
+        url = "https://github.com/daverosoff/PreTeXtual"
+        async with aiohttp.ClientSession() as session:
+            info = await fetch_repo_info(session, url, ("METADATA", "TAGS"))
+            # for tag in info.get("tags", []):
+            #     print(tag["version"], tag["name"], tag["url"])
+            async for tag in info["tags"]:
+                print(tag["name"], tag["url"])
+            async for branch in info["branches"]:
+                print(branch["name"], branch["sha"], branch["date"])
 
         print("rate_limit_info", info["rate_limit_info"])
 

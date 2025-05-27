@@ -13,6 +13,9 @@ from urllib.parse import urljoin, urlparse
 from typing import Callable, Iterable, Mapping, NotRequired, TypedDict
 from itertools import chain
 
+from .utils import resolve_urls, update_url
+
+
 DEFAULT_OUTPUT_FILE = "./registry.json"
 DEFAULT_CHANNEL = (
     "https://raw.githubusercontent.com/wbond/package_control_channel"
@@ -28,6 +31,7 @@ class PackageEntry(TypedDict, total=False):
     source: Url
     schema_version: str
     name: str
+    details: NotRequired[str]
     tombstoned: NotRequired[bool]
 
 
@@ -238,33 +242,6 @@ async def http_get(location: str, session: aiohttp.ClientSession) -> str:
     headers = {'User-Agent': 'Mozilla/5.0'}
     async with session.get(location, headers=headers, raise_for_status=True) as resp:
         return await resp.text()
-
-
-def resolve_urls(root_url, uris):
-    for url in uris:
-        if not url:
-            continue
-        if url.startswith('./') or url.startswith('../'):
-            url = urljoin(root_url, url)
-        yield url
-
-
-def update_url(url: str) -> str:
-    if not url:
-        return url
-    url = url.replace('://raw.github.com/', '://raw.githubusercontent.com/')
-    url = url.replace('://nodeload.github.com/', '://codeload.github.com/')
-    url = re.sub(
-        r'^(https://codeload\.github\.com/[^/#?]+/[^/#?]+/)zipball(/.*)$',
-        '\\1zip\\2',
-        url
-    )
-    if url in {
-        'https://sublime.wbond.net/repositories.json',
-        'https://sublime.wbond.net/channel.json',
-    }:
-        url = 'https://packagecontrol.io/channel_v3.json'
-    return url
 
 
 def flatten[T](list_of_lists: list[list[T]]) -> list[T]:

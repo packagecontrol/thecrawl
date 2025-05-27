@@ -1,0 +1,35 @@
+name: Crawl Registry
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Ensure wrk directory exists
+        run: mkdir -p ./wrk
+
+      - name: Restore wrk cache
+        uses: actions/cache@v4
+        with:
+          path: ./wrk
+          key: wrk-cache-${{ github.run_id }}
+          restore-keys: |
+            wrk-cache-
+
+      - name: Run crawler
+        run: uv run -m scripts.crawl --registry ./wrk/registry.json --workspace ./wrk/workspace.json
