@@ -355,9 +355,9 @@ async def crawl_(
                         break
                 else:
                     if tag_prefix:
-                        err(f"No prefixed release found for {url} matching ^{tag_prefix}")
+                        err(f"No prefixed tag found for {url} matching ^{tag_prefix}")
                     else:
-                        err(f"No release found for {url}")
+                        err(f"No tagged version found for {url}")
                     release_definitions.remove(r)
             elif branches_defintion := r.get("branch"):
                 default_branch = info["metadata"].get("default_branch", "master")
