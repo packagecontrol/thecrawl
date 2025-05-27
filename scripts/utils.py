@@ -1,8 +1,13 @@
 from __future__ import annotations
 import re
+import sys
 from urllib.parse import urljoin
 
 from typing import Iterable, Iterator, overload
+
+
+def err(*args, **kwargs):
+    print(*args, **kwargs, file=sys.stderr)
 
 
 @overload

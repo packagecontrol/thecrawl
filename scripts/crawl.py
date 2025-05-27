@@ -9,8 +9,10 @@ import os
 import sys
 from typing import Iterable, Literal, NotRequired, Required, TypedDict
 
+
+from .bitbucket import fetch_bitbucket_info
 from .generate_registry import Registry, PackageEntry as PackageEntryV1
-from .github import fetch_repo_info, is_semver, rate_limit_info, strip_possible_prefix, QueryScope
+from .github import fetch_github_info, is_semver, rate_limit_info, strip_possible_prefix, QueryScope
 from .utils import resolve_url, update_url
 import traceback
 
@@ -316,52 +318,53 @@ async def crawl_(
     for url, scopes in uow.items():
         match which_hub(url):
             case "github":
-                info = await fetch_repo_info(session, url, scopes)
-                out = info["metadata"] | out
-
-                for r in release_definitions[:]:
-                    if tag_defintion := r.get("tags"):
-                        tag_prefix = "" if tag_defintion is True else tag_defintion
-                        async for tag in info["tags"]:
-                            if (
-                                tag["name"].startswith(tag_prefix)
-                                and (version := (
-                                    tag["name"].removeprefix(tag_prefix)
-                                    if tag_prefix
-                                    else strip_possible_prefix(tag["name"])
-                                ))
-                                and is_semver(version)
-                            ):
-                                r.pop("tags")
-                                r |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
-                                r |= {"version": version}
-                                break
-                        else:
-                            if tag_prefix:
-                                err(f"No prefixed release found for {url} matching ^{tag_prefix}")
-                            else:
-                                err(f"No release found for {url}")
-                            release_definitions.remove(r)
-                    elif branches_defintion := r.get("branch"):
-                        default_branch = info["metadata"].get("default_branch", "master")
-                        wanted_branch = (
-                            default_branch
-                            if branches_defintion is True
-                            else branches_defintion
-                        )
-                        async for branch in info["branches"]:
-                            if branch["name"] == wanted_branch:
-                                r.pop("branch")
-                                r |= pluck(branch, ("version", "url", "date"))  # type: ignore[arg-type]
-                                break
-                        else:
-                            err(f"Branch {wanted_branch} not found on {url}")
-                            release_definitions.remove(r)
-
-
+                info = await fetch_github_info(session, url, scopes)
+            case "bitbucket":
+                info = await fetch_bitbucket_info(session, url, scopes)
             case _:
                 err(f"Backend for {url} not implemented yet")
-                ...
+                continue
+
+        out = info["metadata"] | out
+
+        for r in release_definitions[:]:
+            if tag_defintion := r.get("tags"):
+                tag_prefix = "" if tag_defintion is True else tag_defintion
+                async for tag in info["tags"]:
+                    if (
+                        tag["name"].startswith(tag_prefix)
+                        and (version := (
+                            tag["name"].removeprefix(tag_prefix)
+                            if tag_prefix
+                            else strip_possible_prefix(tag["name"])
+                        ))
+                        and is_semver(version)
+                    ):
+                        r.pop("tags")
+                        r |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
+                        r |= {"version": version}
+                        break
+                else:
+                    if tag_prefix:
+                        err(f"No prefixed release found for {url} matching ^{tag_prefix}")
+                    else:
+                        err(f"No release found for {url}")
+                    release_definitions.remove(r)
+            elif branches_defintion := r.get("branch"):
+                default_branch = info["metadata"].get("default_branch", "master")
+                wanted_branch = (
+                    default_branch
+                    if branches_defintion is True
+                    else branches_defintion
+                )
+                async for branch in info["branches"]:
+                    if branch["name"] == wanted_branch:
+                        r.pop("branch")
+                        r |= pluck(branch, ("version", "url", "date"))  # type: ignore[arg-type]
+                        break
+                else:
+                    err(f"Branch {wanted_branch} not found on {url}")
+                    release_definitions.remove(r)
 
     for r in release_definitions[:]:
         if any(k not in r for k in {"sublime_text", "platforms", "version", "url", "date"}):

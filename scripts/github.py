@@ -253,7 +253,7 @@ def parse_owner_repo(url: str):
     return path_parts[0], path_parts[1]
 
 
-async def fetch_repo_info(
+async def fetch_github_info(
     session: aiohttp.ClientSession,
     github_url: str,
     scopes: Iterable[QueryScope]
@@ -455,7 +455,7 @@ if __name__ == "__main__":
     async def main():
         url = "https://github.com/daverosoff/PreTeXtual"
         async with aiohttp.ClientSession() as session:
-            info = await fetch_repo_info(session, url, ("METADATA", "TAGS"))
+            info = await fetch_github_info(session, url, ("METADATA", "TAGS"))
             # for tag in info.get("tags", []):
             #     print(tag["version"], tag["name"], tag["url"])
             async for tag in info["tags"]:
