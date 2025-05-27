@@ -8,6 +8,8 @@ on:
 jobs:
   crawl:
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: 'crawler-status'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,4 +34,26 @@ jobs:
             wrk-cache-
 
       - name: Run crawler
-        run: uv run -m scripts.crawl --registry ./wrk/registry.json --workspace ./wrk/workspace.json
+        run: |
+          set -o pipefail
+          uv run -m scripts.crawl --registry ./wrk/registry.json --workspace ./wrk/workspace.json 2>&1 | tee crawl.log
+
+      - name: Update release notes
+        run: |
+          # Create or update the release
+          gh release view ${{ env.RELEASE_TAG }} || \
+          gh release create ${{ env.RELEASE_TAG }} \
+            --title "The Crawler Logs" \
+            --notes "..."
+
+          DATE=$(TZ=Europe/Berlin date +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
+          REPO_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          # Build new notes
+          {
+            echo "$DATE  ([logs]($REPO_URL))"
+            echo ""
+            cat crawl.log
+          } > notes.txt
+
+          echo "Updating release notes..."
+          gh release edit ${{ env.RELEASE_TAG }} --notes-file notes.txt
