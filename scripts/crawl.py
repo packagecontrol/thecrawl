@@ -121,9 +121,11 @@ async def main_(registry: Registry, workspace: Workspace, name: str | None, limi
             if len(results) == 1:
                 print(new_entry)
 
-    if len(tocrawl) > 0:
-        print(rate_limit_info)
+    print("---")
     print(f"{len(workspace['packages'].keys())} packages in db.")
+
+    if len(tocrawl) > 0:
+        print("GitHub", rate_limit_info)
 
 
 def next_packages_to_crawl(
