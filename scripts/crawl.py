@@ -13,6 +13,7 @@ from typing import Iterable, Literal, NotRequired, Required, TypedDict
 from .bitbucket import fetch_bitbucket_info
 from .generate_registry import Registry, PackageEntry as PackageEntryV1
 from .github import fetch_github_info, is_semver, rate_limit_info, strip_possible_prefix, QueryScope
+from .gitlab import fetch_gitlab_info
 from .utils import resolve_url, update_url
 import traceback
 
@@ -326,6 +327,8 @@ async def crawl_(
                 info = await fetch_github_info(session, url, scopes)
             case "bitbucket":
                 info = await fetch_bitbucket_info(session, url, scopes)
+            case "gitlab":
+                info = await fetch_gitlab_info(session, url, scopes)
             case _:
                 err(f"Backend for {url} not implemented yet")
                 continue
