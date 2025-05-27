@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: 'crawler-status'
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
