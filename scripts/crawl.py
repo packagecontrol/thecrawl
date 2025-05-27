@@ -248,7 +248,8 @@ async def crawl(
 
         out["next_crawl"] = (now + interval).strftime("%Y-%m-%d %H:%M:%S")
         hours_str = str(interval.total_seconds() / 3600).removesuffix(".0")
-        err(f"Retrying in {hours_str} hours")
+        s = "s" if hours_str != "1" else ""
+        err(f"Retrying in {hours_str} hour{s}.")
         return out
 
     out["first_seen"] = existing.get("first_seen", now_string)
