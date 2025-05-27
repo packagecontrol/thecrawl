@@ -53,7 +53,7 @@ jobs:
       - name: Update release notes
         run: |
           # Create or update the release
-          gh release view ${{ env.RELEASE_TAG }} || \
+          gh release view ${{ env.RELEASE_TAG }} > /dev/null || \
           gh release create ${{ env.RELEASE_TAG }} \
             --title "The Crawler Logs" \
             --notes "..."
