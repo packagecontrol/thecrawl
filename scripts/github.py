@@ -452,8 +452,20 @@ class BranchesPager:
 
 
 if __name__ == "__main__":
+    import sys
+
     async def main():
-        url = "https://github.com/daverosoff/PreTeXtual"
+        if len(sys.argv) > 1:
+            arg = sys.argv[1]
+            if arg.startswith("https://"):
+                url = arg
+            else:
+                owner_repo = arg.strip("/")
+                url = f"https://github.com/{owner_repo}"
+        else:
+            url = "https://github.com/daverosoff/PreTeXtual"
+
+        print(f"Fetching GitHub info for: {url}")
         async with aiohttp.ClientSession() as session:
             info = await fetch_github_info(session, url, ("METADATA", "TAGS"))
             # for tag in info.get("tags", []):

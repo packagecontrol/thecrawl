@@ -220,8 +220,20 @@ async def ready(value=None):
 
 
 if __name__ == "__main__":
+    import sys
+
     async def main():
-        url = "https://bitbucket.org/hxss/html2scss"
+        if len(sys.argv) > 1:
+            arg = sys.argv[1]
+            if arg.startswith("https://"):
+                url = arg
+            else:
+                owner_repo = arg.strip("/")
+                url = f"https://bitbucket.org/{owner_repo}"
+        else:
+            url = "https://bitbucket.org/hxss/html2scss"
+
+        print(f"Fetching Bitbucket info for: {url}")
         async with aiohttp.ClientSession() as session:
             info = await fetch_bitbucket_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
             print("Metadata:", info["metadata"])

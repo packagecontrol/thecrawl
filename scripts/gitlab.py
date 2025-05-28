@@ -237,8 +237,20 @@ async def ready(value=None):
 
 
 if __name__ == "__main__":
+    import sys
+
     async def main():
-        url = "https://gitlab.com/jiehong/sublime_jq"
+        if len(sys.argv) > 1:
+            arg = sys.argv[1]
+            if arg.startswith("https://"):
+                url = arg
+            else:
+                owner_repo = arg.strip("/")
+                url = f"https://gitlab.com/{owner_repo}"
+        else:
+            url = "https://gitlab.com/jiehong/sublime_jq"
+
+        print(f"Fetching GitLab info for: {url}")
         async with aiohttp.ClientSession() as session:
             info = await fetch_gitlab_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
             print("Metadata:", info["metadata"])
