@@ -66,14 +66,14 @@ def main(registry_path, workspace_path, channel_path):
         sys.exit(1)
 
     # Prepare channel structure
-    channel = {
+    channel: Channel = {
         "schema_version": "4.0.0",
-        "repositories": registry.get("repositories", []),
+        "repositories": [],
         "packages_cache": {},
     }
 
     # Group packages by source
-    packages_by_source = defaultdict(list)
+    packages_by_source: defaultdict[RepositoryUrl, list[Package]] = defaultdict(list)
     drop_count = 0
     for pkg in workspace.get("packages", {}).values():
         if pkg.get("invalid") or pkg.get("removed"):
@@ -83,7 +83,7 @@ def main(registry_path, workspace_path, channel_path):
         if not norm:
             drop_count += 1
             continue
-        source = pkg["source"]
+        source: Url = pkg["source"]
         packages_by_source[source].append(norm)
 
     # Sort packages in each source by name
@@ -91,9 +91,16 @@ def main(registry_path, workspace_path, channel_path):
         pkgs_sorted = sorted(pkgs, key=lambda p: p.get("name", ""))
         channel["packages_cache"][source] = pkgs_sorted
 
+    # Add repositories to channel in order of appearance in the registry
+    channel["repositories"] = [
+        r
+        for r in registry.get("repositories", [])
+        if r in packages_by_source
+    ]
+
     # Write channel.json
     with open(channel_path, "w", encoding="utf-8") as f:
-        json.dump(channel, f, indent=4, ensure_ascii=False)
+        json.dump(channel, f, indent=2, ensure_ascii=False)
     print(f"Wrote {channel_path}")
     print(f"Collated {len(packages_by_source)} sources with {sum(len(pkgs) for pkgs in packages_by_source.values())} packages.")
     print(f"Dropped {drop_count} invalid packages.")
