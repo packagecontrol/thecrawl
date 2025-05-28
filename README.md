@@ -27,7 +27,7 @@ dot notation.
 ```bash
 $ uv run -m scripts.generate_registry
 $ uv run -m scripts.crawl
-$ uv run -m scripts.collate_channel
+$ uv run -m scripts.generate_channel
 ```
 
 For `crawl`, a GITHUB_TOKEN environment variable is *required*.  GitLab and Bitbucket
@@ -74,9 +74,9 @@ $ uv run -m scripts.crawl --name GitSavvy
 
 ---
 
-### 3. `collate_channel.py`
+### 3. `generate_channel.py`
 
-Collates the workspace and registry into a final `channel.json` suitable for use in Sublime Text Package Control.
+Writes the valid packages into a final `channel.json` suitable for use in Sublime Text Package Control.
 
 - Reads the registry and workspace, validates/collates package entries.
 - Drops packages with no valid releases or required fields.
@@ -85,5 +85,5 @@ Collates the workspace and registry into a final `channel.json` suitable for use
 
 **Example:**
 ```bash
-$ uv run -m scripts.collate_channel
+$ uv run -m scripts.generate_channel
 ```

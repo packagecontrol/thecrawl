@@ -72,11 +72,11 @@ def main(registry_path, workspace_path, channel_path):
         "packages_cache": {},
     }
 
-    # Collate packages by source
+    # Group packages by source
     packages_by_source = defaultdict(list)
     drop_count = 0
     for pkg in workspace.get("packages", {}).values():
-        if not is_valid(pkg):
+        if pkg.get("invalid") or pkg.get("removed"):
             drop_count += 1
             continue
         norm = normalize_package(pkg)
@@ -104,8 +104,9 @@ def normalize_package(pkg) -> Package | None:
     if not name:
         err(f"Drop package with no name: {pkg}")
         return None
+
     # releases must be a non-empty list and each must be valid
-    releases = []
+    releases: list[Release] = []
     for rel in pkg.get("releases", []):
         # platforms must be a non-empty list of Platform, and if '*' is present, it must be the only value
         platforms = rel.get("platforms")
@@ -116,9 +117,9 @@ def normalize_package(pkg) -> Package | None:
         # required release fields
         if not all(k in rel and rel[k] for k in ("sublime_text", "version", "url", "date")):
             continue
-        if rel["sublime_text"] == "<3000":
-            # err(f"Drop release from {name} for outdated sublime_text version: {rel['sublime_text']}")
-            continue
+        # if is_outdated(rel):
+        #     # err(f"Drop release from {name} for outdated sublime_text version: {rel['sublime_text']}")
+        #     continue
         releases.append({
             "sublime_text": rel["sublime_text"],
             "platforms": platforms,
@@ -129,6 +130,7 @@ def normalize_package(pkg) -> Package | None:
     if not releases:
         err(f"Drop package {name} with no valid releases")
         return None
+
     # Only accept packages with all required fields
     required_fields = [
         "name", "author", "last_modified", "releases"
@@ -138,6 +140,7 @@ def normalize_package(pkg) -> Package | None:
         if field not in pkg or not pkg[field]:
             err(f"Drop package {name} with missing field '{field}'")
             return None
+
     # Author must be a non-empty list[str]
     author = pkg["author"]
     if isinstance(author, str):
@@ -145,13 +148,16 @@ def normalize_package(pkg) -> Package | None:
     if not all(isinstance(a, str) for a in author):
         err(f"Drop package {name} with invalid author field: {author}")
         return None
+
     out: Package = {
         "name": pkg["name"],
         "author": author,
         "last_modified": pkg["last_modified"],
         "releases": releases,
 
+        # mandatory with fallback
         "homepage": pkg.get("homepage", pkg.get("source")),
+
         # mandatory keys but with null or empty defaults
         "description": pkg.get("description"),
         "previous_names": pkg.get("previous_names", []),
@@ -164,13 +170,9 @@ def normalize_package(pkg) -> Package | None:
     return out
 
 
-def is_valid(pkg):
-    if pkg.get("removed"):
-        return False
-    source = pkg.get("source")
-    if not source:
-        return False
-    return True
+def is_outdated(rel: Release) -> bool:
+    req = rel["sublime_text"].replace(" ", "")
+    return any(test in req for test in ("<3000", "-3", "<40", "-40", "<410", "-410"))
 
 
 def err(*args, **kwargs):
@@ -178,7 +180,7 @@ def err(*args, **kwargs):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Collate workspace and registry into a channel.json.")
+    parser = argparse.ArgumentParser(description="Generate channel from workspace and registry.")
     parser.add_argument(
         "--registry",
         type=str,
@@ -190,7 +192,8 @@ def parse_args():
         default=DEFAULT_WORKSPACE,
         help=f"Path to the workspace JSON file (default: {DEFAULT_WORKSPACE})")
     parser.add_argument(
-        "--channel",
+        "--output",
+        "-o",
         type=str,
         default=DEFAULT_CHANNEL,
         help=f"Path to the output channel JSON file (default: {DEFAULT_CHANNEL})")
@@ -201,5 +204,5 @@ if __name__ == "__main__":
     args = parse_args()
     args.registry = os.path.abspath(args.registry)
     args.workspace = os.path.abspath(args.workspace)
-    args.channel = os.path.abspath(args.channel)
-    main(args.registry, args.workspace, args.channel)
+    args.output = os.path.abspath(args.output)
+    main(args.registry, args.workspace, args.output)
