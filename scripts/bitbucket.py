@@ -87,7 +87,10 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "name": data.get("name"),
         "description": data.get("description"),
         "homepage": data.get("website"),
-        "author": data.get("owner", {}).get("nickname"),
+        "author": (
+            data.get("owner", {}).get("nickname")
+            or data.get("owner", {}).get("username")
+        ),
         "readme": readme_url,
         "issues": data.get("links", {}).get("issues", {}).get("href"),
         "donate": None,  # Not available
