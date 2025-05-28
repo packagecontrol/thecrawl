@@ -1,8 +1,10 @@
 name: Publish channel.json Asset
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'
+  workflow_run:
+    workflows: ["Crawl Registry"]
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
