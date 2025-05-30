@@ -468,12 +468,13 @@ if __name__ == "__main__":
         print(f"Fetching GitHub info for: {url}")
         async with aiohttp.ClientSession() as session:
             info = await fetch_github_info(session, url, ("METADATA", "TAGS"))
-            # for tag in info.get("tags", []):
-            #     print(tag["version"], tag["name"], tag["url"])
+            print("Metadata:", info["metadata"])
+            print("Tags:")
             async for tag in info["tags"]:
-                print(tag["name"], tag["url"])
+                print(tag)
+            print("Branches:")
             async for branch in info["branches"]:
-                print(branch["name"], branch["sha"], branch["date"])
+                print(branch)
 
         print("rate_limit_info", info["rate_limit_info"])
 
