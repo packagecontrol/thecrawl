@@ -86,7 +86,7 @@ jobs:
 
           # Format release notes
           HASH=${{ steps.generate.outputs.new_hash }}
-          DATE=$(TZ=Europe/Berlin date +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
+          DATE=$(date -u +"%B %d, %Y, %H:%M UTC")
           REPO_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           # Build new notes
