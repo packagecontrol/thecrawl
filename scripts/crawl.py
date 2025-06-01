@@ -238,14 +238,15 @@ async def crawl(
             .replace(tzinfo=timezone.utc)
         )
         age = now - failing_since_dt
-        if age > timedelta(days=14):
-            interval = timedelta(hours=24)
-        elif age > timedelta(hours=24):
-            interval = timedelta(hours=6)
-        elif age > timedelta(hours=3):
-            interval = timedelta(hours=3)
-        else:
+
+        if age <= timedelta(hours=3):
             interval = timedelta(hours=1)
+        elif age <= timedelta(hours=24):
+            interval = timedelta(hours=3)
+        elif age <= timedelta(days=14):
+            interval = timedelta(hours=6)
+        else:
+            interval = timedelta(hours=24)
 
         out["next_crawl"] = (now + interval).strftime("%Y-%m-%d %H:%M:%S")
         hours_str = str(interval.total_seconds() / 3600).removesuffix(".0")
@@ -273,14 +274,15 @@ async def crawl(
             .replace(tzinfo=timezone.utc)
         )
         age = now - last_modified_dt
-        if age > timedelta(days=365 * 4):
-            interval = timedelta(hours=24)
-        elif age > timedelta(days=90):
-            interval = timedelta(hours=3)
-        elif age > timedelta(days=14):
-            interval = timedelta(hours=2)
-        else:
+
+        if age <= timedelta(days=14):
             interval = timedelta(hours=1)
+        elif age <= timedelta(days=90):
+            interval = timedelta(hours=2)
+        elif age <= timedelta(days=365 * 4):
+            interval = timedelta(hours=3)
+        else:
+            interval = timedelta(hours=24)
 
         out["next_crawl"] = (now + interval).strftime("%Y-%m-%d %H:%M:%S")
 
