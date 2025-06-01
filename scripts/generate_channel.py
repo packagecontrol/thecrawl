@@ -12,12 +12,14 @@ type IsoTimestamp = str
 type Version = str
 type BuildDescriptor = str
 
+
 class Release(TypedDict, total=False):
     sublime_text: BuildDescriptor
     platforms: list[Platform]
     version: Version
     url: Url
     date: IsoTimestamp
+
 
 class Package(TypedDict, total=False):
     name: str
@@ -32,6 +34,7 @@ class Package(TypedDict, total=False):
     issues: Url | None
     donate: Url | None
     buy: Url | None
+
 
 class Channel(TypedDict, total=False):
     schema_version: str
@@ -102,7 +105,10 @@ def main(registry_path, workspace_path, channel_path):
     with open(channel_path, "w", encoding="utf-8") as f:
         json.dump(channel, f, indent=2, ensure_ascii=False)
     print(f"Wrote {channel_path}")
-    print(f"Collated {len(packages_by_source)} sources with {sum(len(pkgs) for pkgs in packages_by_source.values())} packages.")
+    print(
+        f"Collated {len(packages_by_source)} sources with "
+        f"{sum(len(pkgs) for pkgs in packages_by_source.values())} packages."
+    )
     print(f"Dropped {drop_count} invalid packages.")
 
 
@@ -115,7 +121,8 @@ def normalize_package(pkg) -> Package | None:
     # releases must be a non-empty list and each must be valid
     releases: list[Release] = []
     for rel in pkg.get("releases", []):
-        # platforms must be a non-empty list of Platform, and if '*' is present, it must be the only value
+        # platforms must be a non-empty list of Platform, and if '*' is present,
+        # it must be the only value
         platforms = rel.get("platforms")
         if not isinstance(platforms, list) or not platforms:
             continue
@@ -124,9 +131,6 @@ def normalize_package(pkg) -> Package | None:
         # required release fields
         if not all(k in rel and rel[k] for k in ("sublime_text", "version", "url", "date")):
             continue
-        # if is_outdated(rel):
-        #     # err(f"Drop release from {name} for outdated sublime_text version: {rel['sublime_text']}")
-        #     continue
         releases.append({
             "sublime_text": rel["sublime_text"],
             "platforms": platforms,
@@ -175,11 +179,6 @@ def normalize_package(pkg) -> Package | None:
         "buy": pkg.get("buy"),
     }
     return out
-
-
-def is_outdated(rel: Release) -> bool:
-    req = rel["sublime_text"].replace(" ", "")
-    return any(test in req for test in ("<3000", "-3", "<40", "-40", "<410", "-410"))
 
 
 def err(*args, **kwargs):
