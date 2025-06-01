@@ -377,8 +377,13 @@ async def crawl_(
                     release_definitions.remove(r)
 
     for r in release_definitions[:]:
-        if any(k not in r for k in {"sublime_text", "platforms", "version", "url", "date"}):
-            err(f"release definition {r} for {entry['name']} incomplete")
+        missing_keys = {"sublime_text", "platforms", "version", "url", "date"} - r.keys()
+        if missing_keys:
+            s = "s" if len(missing_keys) > 1 else ""
+            err(
+                f"Release definition {r} for {entry['name']} incomplete.  "
+                f"Missing key{s}: {missing_keys}"
+            )
             release_definitions.remove(r)
 
     return out
