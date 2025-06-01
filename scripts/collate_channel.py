@@ -19,7 +19,11 @@ v4_CHANNEL = "https://packagecontrol.github.io/channel/channel_v4.json"
 DEFAULT_OUTPUT_FILE = "./channel.json"
 
 
-async def main(output_file: str = DEFAULT_OUTPUT_FILE, pretty: bool = False) -> None:
+async def main(
+    output_file: str = DEFAULT_OUTPUT_FILE,
+    pretty: bool = False,
+    legacy: bool = False,
+) -> None:
     async with aiohttp.ClientSession() as session:
         new_channel, v3_channel, v4_channel = await asyncio.gather(
             http_get_json(NEW_CHANNEL, session),
@@ -63,12 +67,13 @@ async def main(output_file: str = DEFAULT_OUTPUT_FILE, pretty: bool = False) -> 
                     )
                 )
 
+    is_outdated = is_outdated_for_st3 if legacy else is_outdated_for_st4
     drop_count: defaultdict[str, int] = defaultdict(int)
     for key in ("packages_cache", "libraries_cache"):
         for repo_url, packages in channel[key].items():
             for p in packages[:]:
                 releases = p["releases"]
-                for r in releases:
+                for r in releases[:]:
                     if is_outdated(r):
                         # err(f"Drop outdated release {r['version']} for package {p['name']} from {repo_url}")
                         releases.remove(r)
@@ -76,6 +81,12 @@ async def main(output_file: str = DEFAULT_OUTPUT_FILE, pretty: bool = False) -> 
                     # err(f"Drop package {p['name']} which is not supported by modern Sublime Text")
                     drop_count[key] += 1
                     packages.remove(p)
+                    continue
+                # Must re-compute "last_modified"
+                try:
+                    p["last_modified"] = max((r["date"] for r in releases))
+                except KeyError:
+                    pass  # some libraries have no date, that's fine
 
     with open(output_file, "w") as f:
         if pretty:
@@ -105,9 +116,14 @@ async def main(output_file: str = DEFAULT_OUTPUT_FILE, pretty: bool = False) -> 
         print(f" - [{p['name']}]({p['homepage']}) - Last modified: {p['last_modified']}")
 
 
-def is_outdated(rel: Release) -> bool:
+def is_outdated_for_st4(rel: Release) -> bool:
     req = rel["sublime_text"].replace(" ", "")
     return any(test in req for test in ("<3000", "-3", "<40", "-40", "<410", "-410"))
+
+
+def is_outdated_for_st3(rel: Release) -> bool:
+    req = rel["sublime_text"].replace(" ", "")
+    return any(test in req for test in ("<3000", ">4", ">=4")) or req.startswith("4")
 
 
 def err(*args, **kwargs):
@@ -143,10 +159,15 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Pretty-print the output JSON with indent=2"
     )
+    parser.add_argument(
+        "--legacy",
+        action="store_true",
+        help="Make a legacy channel, suitable for Sublime Text 3"
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
     args.output = os.path.abspath(args.output)
-    asyncio.run(main(args.output, pretty=args.pretty))
+    asyncio.run(main(args.output, pretty=args.pretty, legacy=args.legacy))
