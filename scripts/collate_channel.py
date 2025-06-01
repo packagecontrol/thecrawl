@@ -19,7 +19,7 @@ v4_CHANNEL = "https://packagecontrol.github.io/channel/channel_v4.json"
 DEFAULT_OUTPUT_FILE = "./channel.json"
 
 
-async def main(output_file: str = DEFAULT_OUTPUT_FILE) -> None:
+async def main(output_file: str = DEFAULT_OUTPUT_FILE, pretty: bool = False) -> None:
     async with aiohttp.ClientSession() as session:
         new_channel, v3_channel, v4_channel = await asyncio.gather(
             http_get_json(NEW_CHANNEL, session),
@@ -78,7 +78,10 @@ async def main(output_file: str = DEFAULT_OUTPUT_FILE) -> None:
                     packages.remove(p)
 
     with open(output_file, "w") as f:
-        json.dump(channel, f)
+        if pretty:
+            json.dump(channel, f, indent=2)
+        else:
+            json.dump(channel, f, separators=(',', ':'))
 
     print(f"Wrote {output_file}")
     print(
@@ -135,10 +138,15 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_OUTPUT_FILE,
         help=f"Path to the output file (default: {DEFAULT_OUTPUT_FILE})"
     )
+    parser.add_argument(
+        "--pretty",
+        action="store_true",
+        help="Pretty-print the output JSON with indent=2"
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
     args.output = os.path.abspath(args.output)
-    asyncio.run(main(args.output))
+    asyncio.run(main(args.output, pretty=args.pretty))
