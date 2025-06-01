@@ -237,7 +237,9 @@ async def make_graphql_query(session: aiohttp.ClientSession, query: str, variabl
             "resource": resp.headers.get("x-ratelimit-resource", "core"),
             "reset_formatted": datetime.fromtimestamp(reset_time).strftime("%Y-%m-%d %H:%M:%S")
         }
-        rate_limit_info.update(rv["rate_limit_info"])
+        # Update global rate limit info only if newer to count for unordered responses
+        if rv["rate_limit_info"]["used"] > rate_limit_info["used"]:
+            rate_limit_info.update(rv["rate_limit_info"])
         return rv
 
 
