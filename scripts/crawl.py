@@ -94,6 +94,7 @@ async def main(registry: str, workspace: str, name: str | None, limit: int = 200
 
 
 async def main_(registry: Registry, workspace: Workspace, name: str | None, limit: int) -> None:
+    name_requested = bool(name)
     if name:
         for entry in registry["packages"]:
             if entry.get("name") == name:
@@ -119,7 +120,7 @@ async def main_(registry: Registry, workspace: Workspace, name: str | None, limi
         results = await asyncio.gather(*tasks)
         for new_entry in results:
             workspace["packages"][new_entry["name"]] = new_entry
-            if len(results) == 1:
+            if name_requested:
                 print(new_entry)
 
     print("---")
