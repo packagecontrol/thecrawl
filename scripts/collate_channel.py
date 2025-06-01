@@ -113,7 +113,10 @@ async def main(
         reverse=True
     )[:10]
     for p in recent_packages:
-        print(f" - [{p['name']}]({p['homepage']}) - Last modified: {p['last_modified']}")
+        homepage = p['homepage']
+        if ' ' in homepage:
+            homepage = f"<{homepage}>"
+        print(f" - [{p['name']}]({homepage}) - Last modified: {p['last_modified']}")
 
 
 def is_outdated_for_st4(rel: Release) -> bool:
