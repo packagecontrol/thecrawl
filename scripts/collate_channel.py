@@ -82,11 +82,9 @@ async def main(
                     drop_count[key] += 1
                     packages.remove(p)
                     continue
-                # Must re-compute "last_modified"
-                try:
+                # Must re-compute "last_modified", but libraries don't have that
+                if key == "packages_cache":
                     p["last_modified"] = max((r["date"] for r in releases))
-                except KeyError:
-                    pass  # some libraries have no date, that's fine
 
     with open(output_file, "w") as f:
         if pretty:
