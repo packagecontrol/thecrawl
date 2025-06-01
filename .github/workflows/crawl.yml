@@ -65,7 +65,8 @@ jobs:
           gh release view ${{ env.RELEASE_TAG }} > /dev/null || \
           gh release create ${{ env.RELEASE_TAG }} \
             --title "The Crawler Logs" \
-            --notes "..."
+            --notes "..." \
+            --latest=false
 
           echo "Uploading channel.json file..."
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/channel.json --clobber
