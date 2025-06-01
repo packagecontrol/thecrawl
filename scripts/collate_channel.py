@@ -3,6 +3,7 @@ from __future__ import annotations
 import aiohttp
 import argparse
 import asyncio
+from collections import defaultdict
 from itertools import chain
 import json
 import os
@@ -62,18 +63,19 @@ async def main(output_file: str = DEFAULT_OUTPUT_FILE) -> None:
                     )
                 )
 
-    drop_count = 0
-    for repo_url, packages in channel["packages_cache"].items():
-        for p in packages[:]:
-            releases = p["releases"]
-            for r in releases:
-                if is_outdated(r):
-                    # err(f"Drop outdated release {r['version']} for package {p['name']} from {repo_url}")
-                    releases.remove(r)
-            if not releases:
-                # err(f"Drop package {p['name']} which is not supported by modern Sublime Text")
-                drop_count += 1
-                packages.remove(p)
+    drop_count: defaultdict[str, int] = defaultdict(int)
+    for key in ("packages_cache", "libraries_cache"):
+        for repo_url, packages in channel[key].items():
+            for p in packages[:]:
+                releases = p["releases"]
+                for r in releases:
+                    if is_outdated(r):
+                        # err(f"Drop outdated release {r['version']} for package {p['name']} from {repo_url}")
+                        releases.remove(r)
+                if not releases:
+                    # err(f"Drop package {p['name']} which is not supported by modern Sublime Text")
+                    drop_count[key] += 1
+                    packages.remove(p)
 
     with open(output_file, "w") as f:
         json.dump(channel, f)
@@ -84,7 +86,10 @@ async def main(output_file: str = DEFAULT_OUTPUT_FILE) -> None:
         f"{sum(len(pkgs) for pkgs in channel['packages_cache'].values())} packages "
         f"and {sum(len(pkgs) for pkgs in channel['libraries_cache'].values())} libraries."
     )
-    print(f"Dropped {drop_count} outdated packages.")
+    print(
+        f"Dropped {drop_count['packages_cache']} outdated packages "
+        f"and {drop_count['libraries_cache']} outdated libraries."
+    )
 
     # print the ten most recent packages
     print("\nTen most recent packages:")
