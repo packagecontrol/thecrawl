@@ -203,12 +203,20 @@ def parse_args():
         type=str,
         default=DEFAULT_CHANNEL,
         help=f"Path to the output channel JSON file (default: {DEFAULT_CHANNEL})")
+    parser.add_argument(
+        "--wd",
+        type=str,
+        default=".",
+        help="Working directory to resolve file paths (default: .)"
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    args.registry = os.path.abspath(args.registry)
-    args.workspace = os.path.abspath(args.workspace)
-    args.output = os.path.abspath(args.output)
+    wd = os.path.abspath(args.wd)
+    os.makedirs(wd, exist_ok=True)
+    args.registry = os.path.normpath(os.path.join(wd, args.registry))
+    args.workspace = os.path.normpath(os.path.join(wd, args.workspace))
+    args.output = os.path.normpath(os.path.join(wd, args.output))
     main(args.registry, args.workspace, args.output)

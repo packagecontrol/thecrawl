@@ -525,11 +525,19 @@ def parse_args():
         type=int,
         default=200,
         help="Maximum number of packages to crawl (default: 200)")
+    parser.add_argument(
+        "--wd",
+        type=str,
+        default=".",
+        help="Working directory to resolve file paths (default: .)"
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    args.registry = os.path.abspath(args.registry)
-    args.workspace = os.path.abspath(args.workspace)
+    wd = os.path.abspath(args.wd)
+    os.makedirs(wd, exist_ok=True)
+    args.registry = os.path.normpath(os.path.join(wd, args.registry))
+    args.workspace = os.path.normpath(os.path.join(wd, args.workspace))
     asyncio.run(main(args.registry, args.workspace, args.name, args.limit))
