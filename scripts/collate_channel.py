@@ -26,17 +26,28 @@ async def main(output_file: str = DEFAULT_OUTPUT_FILE) -> None:
             http_get_json(v4_CHANNEL, session),
         )
 
+    libraries = v4_channel.pop('libraries_cache', {})
+    lib_names_in_v4 = {l["name"] for l in chain(*libraries.values())}
     dependencies = v3_channel.pop('dependencies_cache', {})
-    for library in chain(*dependencies.values()):
-        del library['load_order']
-        for release in library['releases']:
-            release['python_versions'] = ['3.3']
+    drop_count_l = 0
+    for source, libs in dependencies.items():
+        for library in libs[:]:
+            if library["name"] in lib_names_in_v4:
+                libs.remove(library)
+                drop_count_l += 1
+                continue
+
+            del library['load_order']
+            for release in library['releases']:
+                release['python_versions'] = ['3.3']
+
+    # print(f"Removed {drop_count_l} duplicate libraries.")
 
     channel = {
         "schema_version": "4.0.0",
         "repositories": v4_channel["repositories"] + new_channel["repositories"],
         "packages_cache": new_channel["packages_cache"],
-        "libraries_cache": dependencies | v4_channel["libraries_cache"],
+        "libraries_cache": dependencies | libraries,
     }
 
     for repo_url, packages in channel["libraries_cache"].items():
