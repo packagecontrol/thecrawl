@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  build-and-publish:
+  build-st4-channel:
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: the-channel
@@ -118,4 +118,114 @@ jobs:
 
           python -m json.tool existing-channel.json > old.json
           python -m json.tool channel.json > new.json
+          diff -u old.json new.json || true
+
+  build-st3-channel:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: the-st3-channel
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        run: |
+          pip install uv
+          uv sync
+
+      - name: Generate new channel_st3.json
+        id: generate
+        run: |
+          PYTHONUNBUFFERED=1 uv run -m scripts.collate_channel --legacy -o channel_st3.json \
+            2>&1 | tee channel.log
+
+          # Verify the file was created
+          if [ ! -f "channel_st3.json" ]; then
+            echo "Error: channel_st3.json was not generated"
+            exit 1
+          fi
+
+          # Calculate hash of new file
+          NEW_HASH=$(sha256sum channel_st3.json | cut -d ' ' -f 1)
+          echo "new_hash=$NEW_HASH" >> $GITHUB_OUTPUT
+          echo "New channel_st3.json hash: $NEW_HASH"
+
+      - name: Try to download existing channel_st3.json
+        id: download
+        continue-on-error: true
+        run: |
+          if gh release download ${{ env.RELEASE_TAG }} --pattern "channel_st3.json" --output existing-channel_st3.json; then
+            EXISTING_HASH=$(sha256sum existing-channel_st3.json | cut -d ' ' -f 1)
+            echo "existing_hash=$EXISTING_HASH" >> $GITHUB_OUTPUT
+            echo "Existing channel_st3.json hash: $EXISTING_HASH"
+          else
+            echo "No existing channel_st3.json found or download failed"
+            echo "existing_hash=none" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Determine if update is needed
+        id: check
+        run: |
+          # If first run or hashes differ, update is needed
+          if [ "${{ steps.download.outputs.existing_hash }}" != "${{ steps.generate.outputs.new_hash }}" ]; then
+            echo "update_needed=true" >> $GITHUB_OUTPUT
+            echo "Update needed: Content has changed or first run"
+          else
+            echo "update_needed=false" >> $GITHUB_OUTPUT
+            echo "No update needed: Content is unchanged"
+          fi
+
+      - name: Update release and upload asset if needed
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          # Create or update the release
+          gh release view ${{ env.RELEASE_TAG }} || \
+          gh release create ${{ env.RELEASE_TAG }} \
+            --title "The ST3 Channel" \
+            --notes "channel_st3.json" \
+            --latest=false
+
+          echo "Uploading channel_st3.json file..."
+          gh release upload ${{ env.RELEASE_TAG }} channel_st3.json --clobber
+
+          # Format release notes
+          HASH=${{ steps.generate.outputs.new_hash }}
+          DATE=$(date -u +"%B %d, %Y, %H:%M UTC")
+          REPO_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          # Build new notes
+          {
+            echo "channel_st3.json"
+            echo "sha256: $HASH"
+            echo "date: $DATE"
+            echo "([logs]($REPO_URL))"
+            echo ""
+            echo "---"
+            cat channel.log
+          } > notes.txt
+
+          echo "Updating release notes..."
+          gh release edit ${{ env.RELEASE_TAG }} --notes-file notes.txt
+
+      - name: Output result
+        run: |
+          if [ "${{ steps.check.outputs.update_needed }}" = "true" ]; then
+            echo "✅ Channel updated with new content"
+          else
+            echo "ℹ️ No changes detected in channel_st3.json, skipped update"
+          fi
+
+      - name: Show diff (if update and not first run)
+        if: steps.check.outputs.update_needed == 'true' && steps.download.outputs.existing_hash != 'none'
+        run: |
+          echo "📄 Showing diff between existing-channel_st3.json and channel_st3.json"
+
+          python -m json.tool existing-channel_st3.json > old.json
+          python -m json.tool channel_st3.json > new.json
           diff -u old.json new.json || true
