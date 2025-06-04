@@ -107,7 +107,7 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
                     if name else
                     "{kind} {entry} in {entry['source']} has no name, skipping"
                 )
-                print(msg, file=sys.stderr)
+                err(msg)
 
         return add
 
@@ -199,7 +199,7 @@ async def fetch_repository(
     try:
         result = await __fetch_repo(location, sem, session)
     except Exception as e:
-        print(f"Error fetching {location}: {e}", file=sys.stderr)
+        err(f"Error fetching {location}: {e}")
         return None
 
     repository: RepositorySchema = {
@@ -242,6 +242,10 @@ async def http_get(location: str, session: aiohttp.ClientSession) -> str:
     headers = {'User-Agent': 'Mozilla/5.0'}
     async with session.get(location, headers=headers, raise_for_status=True) as resp:
         return await resp.text()
+
+
+def err(*args, **kwargs) -> None:
+    print(*args, **kwargs, file=sys.stderr)
 
 
 def flatten[T](list_of_lists: list[list[T]]) -> list[T]:
