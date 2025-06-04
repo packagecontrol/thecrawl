@@ -68,8 +68,10 @@ jobs:
             --notes "..." \
             --latest=false
 
-          echo "Uploading channel.json file..."
+          echo "Uploading working dir files..."
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/channel.json --clobber
+          gh release upload ${{ env.RELEASE_TAG }} ./wrk/registry.json --clobber
+          gh release upload ${{ env.RELEASE_TAG }} ./wrk/workspace.json --clobber
 
           DATE=$(TZ=Europe/Berlin date +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
           REPO_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
