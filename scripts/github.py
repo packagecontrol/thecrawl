@@ -287,7 +287,7 @@ async def fetch_github_info(
             "issues": repo_data.get("issuesUrl"),
             "donate": (repo_data.get("fundingLinks") or [{}])[0].get("url"),
             "default_branch": default_branch,
-        }),
+        }) if "METADATA" in scopes else {},
         "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
         "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
         "rate_limit_info": data["rate_limit_info"],
