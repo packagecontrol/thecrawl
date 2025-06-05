@@ -1,4 +1,4 @@
-# pc-e02-thecrawl
+# thecrawl
 
 _“The Crawl”_ is a fully transparent crawler for the Sublime Text package ecosystem.
 It fetches and verifies package metadata from registered channels, builds a reproducible
@@ -11,8 +11,8 @@ The crawler is designed to run in the public, but every script can run on your
 local machine with little effort.  Every failing state should be reproducible
 locally, without staring at logs.
 
-The crawler runs a GitHub [action](https://github.com/kaste/pc-e02-thecrawl/blob/main/.github/workflows/crawl.yml) and produces release artifacts and notes.
-https://github.com/kaste/pc-e02-thecrawl/releases
+The crawler runs a GitHub [action](https://github.com/packagecontrol/thecrawl/blob/main/.github/workflows/crawl.yml) and produces release artifacts and notes.
+https://github.com/packagecontrol/thecrawl/releases
 Its logs are open by its very nature.
 
 ## Usage locally
@@ -81,9 +81,19 @@ Writes the valid packages into a final `channel.json` suitable for use in Sublim
 - Reads the registry and workspace, validates/collates package entries.
 - Drops packages with no valid releases or required fields.
 - Outputs a `channel.json` with all valid packages grouped by repository.
-- By default, skips old/outdated packages for smaller download size.
 
-**Example:**
 ```bash
 $ uv run -m scripts.generate_channel
 ```
+
+The output is a fat `channel.json`.
+
+---
+
+### 4. `collate_channel.py`
+
+Reads the channel from step 3, and collates libraries from https://github.com/packagecontrol/channel. 
+Finally produces compressed output for either 
+[st4](https://github.com/packagecontrol/thecrawl/releases/tag/the-channel) or 
+[st3](https://github.com/packagecontrol/thecrawl/releases/tag/the-st3-channel) only.   
+
