@@ -9,6 +9,12 @@ https://mozilla.github.io/nunjucks/templating.html
 ## database
 https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/workspace.json
 
+You can grab a copy using [gh](https://cli.github.com/):
+
+```
+gh release -R https://github.com/packagecontrol/thecrawl download crawler-status --pattern="workspace.json"
+```
+
 ## to run locally
 ```sh
 npm install
