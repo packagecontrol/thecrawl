@@ -14,10 +14,10 @@ header nav {
 a {
   color: #007acc;
   text-decoration: none;
-}
 
-a:hover {
-  text-decoration: underline;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 main {
@@ -28,31 +28,22 @@ main {
   margin: auto;
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
   gap: 1rem;
-  padding: 1rem;
+  margin: 0;
+  padding: 0;
+  li {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 .card {
   border: 1px solid #ccc;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   padding: 1rem;
-  background-color: #fff;
-  transition: box-shadow 0.2s;
-}
-
-.card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.card h2 {
-  font-size: 1.25rem;
-  margin: 0 0 0.5rem;
-}
-
-.card p {
-  font-size: 0.95rem;
-  color: #555;
 }

@@ -5,6 +5,8 @@ pagination:
   data: collections.packages
   size: 1
   alias: pkg
+eleventyComputed:
+  title: "{{ pkg.name }}"
 ---
 <h1>{{ pkg.name }}</h1>
 <p><strong>Description:</strong> {{ pkg.description }}</p>
