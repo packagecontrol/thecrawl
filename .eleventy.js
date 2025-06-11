@@ -1,6 +1,3 @@
-// https://www.11ty.dev/docs/
-// https://mozilla.github.io/nunjucks/templating.html
-
 const fs = require("fs");
 
 module.exports = function (eleventyConfig) {
@@ -22,8 +19,8 @@ module.exports = function (eleventyConfig) {
 
   // disambiguate package names that would result in the same slug
   eleventyConfig.addFilter("preslug", (str) => {
-    if (! typeof str === 'string' ) return str;
-    return str.replace('+', 'plus').replace('C#', 'C-Sharp');
+    if (! typeof str === "string" ) return str;
+    return str.replace("+", "plus").replace("C#", "C-Sharp");
   });
 
   return {
