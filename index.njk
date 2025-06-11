@@ -1,0 +1,18 @@
+---
+layout: layout.njk
+title: Package Index
+---
+
+<h1>Package Directory</h1>
+<div class="grid">
+  {% for pkg in collections.packages | slice(0, 25) %}
+    <div class="card">
+      <h2>
+        <a href="/package/{{ pkg.name | preslug | slugify | url }}/index.html">
+          {{ pkg.name }}
+        </a>
+      </h2>
+      <p>{{ pkg.description }}</p>
+    </div>
+  {% endfor %}
+</div>

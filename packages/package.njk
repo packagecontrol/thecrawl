@@ -1,0 +1,23 @@
+---
+layout: layout.njk
+permalink: "package/{{ pkg.name | preslug | slugify | url }}/index.html"
+pagination:
+  data: collections.packages
+  size: 1
+  alias: pkg
+---
+<h1>{{ pkg.name }}</h1>
+<p><strong>Description:</strong> {{ pkg.description }}</p>
+<p><strong>Author:</strong> {{ pkg.author }}</p>
+<p><strong>Version:</strong> {{ pkg.version }}</p>
+<p><a href="{{ pkg.homepage }}">Homepage</a></p>
+<h2>Releases</h2>
+<ul>
+  {% for release in pkg.releases %}
+    <li>
+      <a href="{{ release.url }}" title="Released on {{ release.date }}">
+        {{ release.version }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
