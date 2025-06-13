@@ -1,0 +1,60 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(28rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  li {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 1rem;
+  padding: 1rem;
+  position: relative;
+  color: #839496;
+
+  &:has(a:hover),
+  &:has(a:focus) {
+    border-color: var(--secondary-accent);
+  }
+
+  a {
+    color: #586e75;
+    &:hover {
+      text-decoration: none;
+      color: var(--secondary-accent);
+    }
+  }
+
+  h2 {
+    padding-top: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 26px;
+    line-height: 1;
+
+    + * {
+      margin-top: 0;
+    }
+  }
+
+  dl {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    dt {
+      display: none;
+    }
+  }
+
+  .labels {
+    display: block;
+    font-size: calc(1rem / 1.2);
+    text-align: right;
+  }
+}

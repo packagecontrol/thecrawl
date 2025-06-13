@@ -1,0 +1,36 @@
+header {
+  margin-bottom: 2rem;
+  padding: .5rem 1rem;
+  color: #839496;
+
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  .hot {
+    color: var(--primary-accent);
+    font-style: italic;
+  }
+
+  a {
+    color: #586e75;
+  }
+
+  nav {
+    float: right;
+    line-height: 52px;
+    * + * {
+      margin-left: 1ex;
+    }
+
+    a {
+      color: #839496;
+
+      &:hover {
+        color: var(--secondary-accent);
+        text-decoration: none;
+      }
+    }
+  }
+}

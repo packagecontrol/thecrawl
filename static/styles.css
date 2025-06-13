@@ -1,18 +1,17 @@
-body {
-  font-family: system-ui, sans-serif;
-  margin: 0;
-  padding: 2rem;
-  line-height: 1.6;
-  background: #f9f9f9;
-  color: #333;
-}
+@import url('typography.css');
+@import url('colors.css');
+@import url('header.css');
+@import url('grid.css');
 
-header nav {
-  margin-bottom: 2rem;
+body {
+  background: $fff;
+  color: #586e75;
+  margin: 0;
+  padding: 0;
 }
 
 a {
-  color: #007acc;
+  color: var(--secondary-accent);
   text-decoration: none;
 
   &:hover {
@@ -21,29 +20,6 @@ a {
 }
 
 main {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 0.5rem;
-  max-width: 800px;
-  margin: auto;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  li {
-    display: block;
-    margin: 0;
-    padding: 0;
-  }
-}
-
-.card {
-  border: 1px solid #ccc;
-  border-radius: 1rem;
-  padding: 1rem;
+  max-width: 72rem;
+  margin: 0 auto;
 }
