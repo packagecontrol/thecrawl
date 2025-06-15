@@ -27,12 +27,7 @@ date: Last Modified
 <ul class="grid">
   {% for pkg in collections.packages | slice(0, 10) %}
     <li>
-      {{ pack.card(
-          pkg.name,
-          pkg.author,
-          [["windows","linux","osx","*"] | random],
-          pkg.labels
-      ) }}
+      {{ pack.card(pkg) }}
     </li>
   {% endfor %}
 </ul>
@@ -41,12 +36,7 @@ date: Last Modified
 <ul class="grid">
   {% for pkg in collections.packages | slice(10, 20) %}
     <li>
-      {{ pack.card(
-          pkg.name,
-          pkg.author,
-          [["windows","linux","osx","*"] | random],
-          pkg.labels
-      ) }}
+      {{ pack.card(pkg) }}
     </li>
   {% endfor %}
 </ul>

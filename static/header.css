@@ -8,6 +8,10 @@ header {
     padding: 0;
   }
 
+  h2 + p {
+    margin-top: -2px;
+  }
+
   .hot {
     color: var(--primary-accent);
     font-style: italic;
@@ -19,7 +23,8 @@ header {
 
   nav {
     float: right;
-    line-height: 52px;
+    line-height: 26px;
+    padding-top: 23px;
     * + * {
       margin-left: 1ex;
     }

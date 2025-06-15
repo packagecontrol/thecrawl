@@ -8,18 +8,64 @@ pagination:
 eleventyComputed:
   title: "{{ pkg.name }}"
 ---
+
 <h1>{{ pkg.name }}</h1>
-<p><strong>Description:</strong> {{ pkg.description }}</p>
-<p><strong>Author:</strong> {{ pkg.author }}</p>
-<p><strong>Version:</strong> {{ pkg.version }}</p>
-<p><a href="{{ pkg.homepage }}">Homepage</a></p>
-<h2>Releases</h2>
-<ul>
+<p class="description">{{ pkg.description }}</p>
+
+<p>by {{ pkg.author }}</p>
+
+<ul class="labels">
   {% for release in pkg.releases %}
-    <li>
-      <a href="{{ release.url }}" title="Released on {{ release.date }}">
-        {{ release.version }}
-      </a>
-    </li>
+    {% for platform in release.platforms %}
+      {% if platform != '*' %}
+        <li class="platform platform-{{ platform }}">{{ platform | replace('osx', 'macos') }}</li>
+      {% endif %}
+    {% endfor %}
   {% endfor %}
+
+  {% for label in pkg.labels %}
+    <li class="label">{{ label }}</li>
+  {%- endfor %}
+</ul>
+
+{% if pkg.releases | length > 1 %}
+  <h2>Versions</h2>
+{% else %}
+  <h2>Version</h2>
+{% endif %}
+
+{% for release in pkg.releases %}
+  <p><a class="release" href="{{ release.url }}">{{ release.version }}</a>
+  {% if release.sublime_text != "*" %}
+    <span class="requirement">({{ release.sublime_text }})</span>
+  {% endif %}
+  <br>
+  {{ release.date }}
+  </p>
+{% endfor %}
+
+<h2>Links</h2>
+
+<ul class="links">
+  {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
+  <li>
+    <a href="{{ pkg.homepage }}">Website</a>
+  </li>
+  {% endif %}
+  <li>
+    <a href="{{ pkg.details }}">Repository</a>
+  </li>
+  <li>
+    <a href="{{ pkg.readme }}">README</a>
+  </li>
+  {% if pkg.issues %}
+    <li>
+    <a href="{{ pkg.issues }}">Issues</a>
+  </li>
+  {% endif %}
+  {% if pkg.donate %}
+    <li>
+    <a href="{{ pkg.donate }}">Donate</a>
+  </li>
+  {% endif %}
 </ul>

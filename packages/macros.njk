@@ -1,11 +1,11 @@
-{% macro card(name, author, platforms, labels) %}
+{% macro card(pkg) %}
   <div class="card">
     <h2>
-      <a href="/package/{{ name | preslug | slugify | url }}/index.html">
-        {{ name }}
+      <a href="/package/{{ pkg.name | preslug | slugify | url }}/index.html">
+        {{ pkg.name }}
       </a>
     </h2>
-    <p>by {{ author }}</p>
+    <p>by {{ pkg.author }}</p>
 
     <dl>
       <dt>downloads</dt>
@@ -15,14 +15,15 @@
     </dl>
 
     <ul class="labels">
-      {% set comma = joiner() %}
-      {% for platform in platforms -%}
-        {% if platform != '*' %}
-          <li class="platform platform-{{ platform }}">{{ platform | replace('osx', 'macos') }}</li>
-        {% endif %}
+      {% for release in pkg.releases -%}
+        {% for platform in release.platforms -%}
+          {% if platform != '*' %}
+            <li class="platform platform-{{ platform }}">{{ platform | replace('osx', 'macos') }}</li>
+          {% endif %}
+        {%- endfor %}
       {%- endfor %}
 
-      {% for label in labels | slice(0,5) -%}
+      {% for label in pkg.labels | slice(0,5) -%}
         <li class="label">{{ label }}</li>
       {%- endfor %}
     </ul>

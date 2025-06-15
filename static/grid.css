@@ -57,6 +57,7 @@
   }
 
   .labels {
+    font-size: calc(1rem / 1.6);
     justify-content: flex-end;
     padding-right: 1rem;
   }

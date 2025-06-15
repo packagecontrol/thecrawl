@@ -1,7 +1,9 @@
+/* inspired by monokai neue */
+
 :root {
-	--primary-accent: #fd971f;   /* monokai neue orange */
-	--secondary-accent: #66d9ef; /* monokai neue blue */
-	--tertiary-accent: #a6e22e;  /* monokai neue green */
+	--primary-accent: #fd971f;   /* orange */
+	--secondary-accent: #66d9ef; /* blue */
+	--tertiary-accent: #a6e22e;  /* green */
 
 	--background: #fff;
 	--background-darker: #f5f5f5;
