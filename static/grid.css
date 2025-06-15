@@ -12,11 +12,9 @@
 }
 
 .card {
-  border: 1px solid #ddd;
-  border-radius: 1rem;
-  padding: 1rem;
+  border-bottom: 2px solid var(--background-darker);
+  padding: 1rem 0;
   position: relative;
-  color: #839496;
 
   &:has(a:hover),
   &:has(a:focus) {
@@ -24,10 +22,10 @@
   }
 
   a {
-    color: #586e75;
+    color: var(--foreground);
     &:hover {
       text-decoration: none;
-      color: var(--secondary-accent);
+      color: var(--foreground-darker);
     }
   }
 
@@ -53,8 +51,26 @@
   }
 
   .labels {
-    display: block;
-    font-size: calc(1rem / 1.2);
-    text-align: right;
+    display: flex;
+    font-size: calc(1rem / 1.6);
+    justify-content: flex-end;
+    gap: 1ex;
+    padding-right: 1rem;
+    li {
+      display: block;
+      padding: .3em .6em;
+      border-radius: 3px;
+      background: var(--background-darker);
+      &.platform {
+        background: var(--primary-accent);
+        color: var(--background);
+      }
+      &.platform-windows {
+        background: var(--secondary-accent);
+      }
+      &.platform-linux {
+        background: var(--tertiary-accent);
+      }
+    }
   }
 }

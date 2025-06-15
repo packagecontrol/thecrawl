@@ -14,15 +14,17 @@
       <dd>{{ [3,12,23,75,113,201] | random }}</dd>
     </dl>
 
-    <span class="labels">
+    <ul class="labels">
       {% set comma = joiner() %}
       {% for platform in platforms -%}
-        {{ comma() }} {{ platform | replace('osx', 'macos') }}
+        {% if platform != '*' %}
+          <li class="platform platform-{{ platform }}">{{ platform | replace('osx', 'macos') }}</li>
+        {% endif %}
       {%- endfor %}
 
-      {% for label in labels -%}
-        {{ comma() }} {{ label }}
+      {% for label in labels | slice(0,5) -%}
+        <li class="label">{{ label }}</li>
       {%- endfor %}
-    </span>
+    </ul>
   </div>
 {% endmacro %}

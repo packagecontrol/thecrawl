@@ -1,4 +1,16 @@
 :root {
 	--primary-accent: #fd971f;   /* monokai neue orange */
 	--secondary-accent: #66d9ef; /* monokai neue blue */
+	--tertiary-accent: #a6e22e;  /* monokai neue green */
+
+	--background: #fff;
+	--background-darker: #f5f5f5;
+	--background-darkest: #cacaca;
+
+	--foreground: #586e75;
+	--foreground-darker: #38464b;
+	--foreground-lighter: #9ec7d3;
+	--foreground-bright: #b8e7f5;
+
+	--foreground-grey: #839496;
 }

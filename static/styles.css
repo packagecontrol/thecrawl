@@ -1,11 +1,12 @@
 @import url('typography.css');
 @import url('colors.css');
 @import url('header.css');
+@import url('footer.css');
 @import url('grid.css');
 
 body {
-  background: $fff;
-  color: #586e75;
+  background: var(--background);
+  color: var(--foreground);
   margin: 0;
   padding: 0;
 }

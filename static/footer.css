@@ -1,6 +1,6 @@
-header {
-  margin-bottom: 1.6rem;
-  padding: 1rem;
+footer {
+  margin: 2.4rem 1rem 1.6rem 1rem;
+  text-align: center;
   color: var(--foreground-grey);
 
   * {
@@ -8,17 +8,11 @@ header {
     padding: 0;
   }
 
-  .hot {
-    color: var(--primary-accent);
-    font-style: italic;
-  }
-
   a {
     color: var(--foreground);
   }
 
   nav {
-    float: right;
     line-height: 52px;
     * + * {
       margin-left: 1ex;
@@ -26,6 +20,7 @@ header {
 
     a {
       color: var(--foreground-lighter);
+
       &:hover {
         color: var(--secondary-accent);
         text-decoration: none;
