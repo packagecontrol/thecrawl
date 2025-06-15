@@ -7,8 +7,39 @@ date: Last Modified
 
 <h1>Packages</h1>
 
+<form name="search">
+  <input type="text" name="search-names" placeholder="Search for packages by name...">
+  <div class="labels">
+    <button type="button" class="platform platform-osx"value="platform:osx">macos</button>
+    <button type="button" class="platform platform-windows" value="platform:window">windows</button>
+    <button type="button" class="platform platform-linux" value="platform:linux">linux</button>
+
+    <button type="button" value="label:language_syntax">language syntax</button>
+    <button type="button" value="label:snippets">snippets</button>
+    <button type="button" value="label:linting">linting</button>
+    <button type="button" value="label:lsp">lsp</button>
+    <button type="button" value="label:color_scheme">color scheme</button>
+    <button type="button" value="label:theme">theme</button>
+  </div>
+</form>
+
+<h2>Newest</h1>
 <ul class="grid">
-  {% for pkg in collections.packages | slice(0, 20) %}
+  {% for pkg in collections.packages | slice(0, 10) %}
+    <li>
+      {{ pack.card(
+          pkg.name,
+          pkg.author,
+          [["windows","linux","osx","*"] | random],
+          pkg.labels
+      ) }}
+    </li>
+  {% endfor %}
+</ul>
+
+<h2>Recently updated</h1>
+<ul class="grid">
+  {% for pkg in collections.packages | slice(10, 20) %}
     <li>
       {{ pack.card(
           pkg.name,

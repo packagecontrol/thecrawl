@@ -1,5 +1,5 @@
 footer {
-  margin: 2.4rem 1rem 1.6rem 1rem;
+  margin: 3.2rem 1rem 1.6rem 1rem;
   text-align: center;
   color: var(--foreground-grey);
 
@@ -23,7 +23,6 @@ footer {
 
       &:hover {
         color: var(--secondary-accent);
-        text-decoration: none;
       }
     }
   }

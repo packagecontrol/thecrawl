@@ -14,13 +14,58 @@ body {
 a {
   color: var(--secondary-accent);
   text-decoration: none;
+  transition: color .3s ease-in-out;
 
   &:hover {
     text-decoration: underline;
+    transition: color .1s ease-in-out;
   }
 }
 
 main {
   max-width: 72rem;
   margin: 0 auto;
+}
+
+button {
+  appearance: none;
+  all: unset;
+  cursor: pointer;
+}
+
+input {
+  width: 100%;
+  border: 1px solid var(--background-darkest);
+  border-radius: 0;
+  padding: 8px;
+  margin-bottom: 18px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+form .labels {
+  font-size: calc(1rem);
+}
+
+.labels {
+  display: flex;
+  font-size: calc(1rem / 1.6);
+  gap: 1ex;
+
+  > * {
+    display: block;
+    padding: .3em .6em;
+    border-radius: 3px;
+    background: var(--background-darker);
+    &.platform {
+      background: var(--primary-accent);
+      color: var(--background);
+    }
+    &.platform-windows {
+      background: var(--secondary-accent);
+    }
+    &.platform-linux {
+      background: var(--tertiary-accent);
+    }
+  }
 }

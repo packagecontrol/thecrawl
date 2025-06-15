@@ -4,10 +4,13 @@
   gap: 1rem;
   margin: 0;
   padding: 0;
-  li {
-    display: block;
+  > * {
+    display: flex;
     margin: 0;
     padding: 0;
+    > * {
+      flex: 1;
+    }
   }
 }
 
@@ -15,10 +18,13 @@
   border-bottom: 2px solid var(--background-darker);
   padding: 1rem 0;
   position: relative;
+  transition: border-color .3s ease-in-out;
+
 
   &:has(a:hover),
   &:has(a:focus) {
     border-color: var(--secondary-accent);
+    transition: border-color .1s ease-in-out;
   }
 
   a {
@@ -51,26 +57,7 @@
   }
 
   .labels {
-    display: flex;
-    font-size: calc(1rem / 1.6);
     justify-content: flex-end;
-    gap: 1ex;
     padding-right: 1rem;
-    li {
-      display: block;
-      padding: .3em .6em;
-      border-radius: 3px;
-      background: var(--background-darker);
-      &.platform {
-        background: var(--primary-accent);
-        color: var(--background);
-      }
-      &.platform-windows {
-        background: var(--secondary-accent);
-      }
-      &.platform-linux {
-        background: var(--tertiary-accent);
-      }
-    }
   }
 }
