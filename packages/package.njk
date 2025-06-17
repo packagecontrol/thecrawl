@@ -9,6 +9,8 @@ eleventyComputed:
   title: "{{ pkg.name }}"
 ---
 
+{% import "packages/macros.njk" as pack %}
+
 <h1>{{ pkg.name }}</h1>
 <p class="description">{{ pkg.description }}</p>
 
@@ -49,23 +51,23 @@ eleventyComputed:
 <ul class="links">
   {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
   <li>
-    <a href="{{ pkg.homepage }}">Website</a>
+    <a href="{{ pkg.homepage }}">{{ pack.logo('home') }} Website</a>
   </li>
   {% endif %}
   <li>
-    <a href="{{ pkg.details }}">Repository</a>
+    <a href="{{ pkg.details }}">{{ pack.logo('repo') }} Repository</a>
   </li>
   <li>
-    <a href="{{ pkg.readme }}">README</a>
+    <a href="{{ pkg.readme }}">{{ pack.logo('file') }} README</a>
   </li>
   {% if pkg.issues %}
     <li>
-    <a href="{{ pkg.issues }}">Issues</a>
+    <a href="{{ pkg.issues }}">{{ pack.logo('bug') }} Issues</a>
   </li>
   {% endif %}
   {% if pkg.donate %}
     <li>
-    <a href="{{ pkg.donate }}">Donate</a>
+    <a href="{{ pkg.donate }}">{{ pack.logo('gift') }} Donate</a>
   </li>
   {% endif %}
 </ul>
