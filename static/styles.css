@@ -76,12 +76,14 @@ form .labels {
   gap: 1ex;
   padding-left: 0;
   line-height: 1.6;
+  flex-wrap: wrap;
 
   > * {
     display: block;
     padding: 6px 12px;
     border-radius: 3px;
     background: var(--background-darker);
+    white-space: nowrap;
     &.platform {
       background: var(--primary-accent);
       color: var(--background);

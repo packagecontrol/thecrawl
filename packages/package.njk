@@ -11,24 +11,12 @@ eleventyComputed:
 
 {% import "packages/macros.njk" as pack %}
 
-<h1>{{ pkg.name }}</h1>
+<h1 class="big">{{ pkg.name }}</h1>
 <p class="description">{{ pkg.description }}</p>
 
 <p>by {{ pkg.author }}</p>
 
-<ul class="labels">
-  {% for release in pkg.releases %}
-    {% for platform in release.platforms %}
-      {% if platform != '*' %}
-        <li class="platform platform-{{ platform }}">{{ platform | replace('osx', 'macos') }}</li>
-      {% endif %}
-    {% endfor %}
-  {% endfor %}
-
-  {% for label in pkg.labels %}
-    <li class="label">{{ label }}</li>
-  {%- endfor %}
-</ul>
+{{ pack.labels(pkg.releases, pkg.labels) }}
 
 {% if pkg.releases | length > 1 %}
   <h2>Versions</h2>
