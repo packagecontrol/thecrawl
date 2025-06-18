@@ -23,6 +23,11 @@ module.exports = function (eleventyConfig) {
     return str.replace("+", "plus").replace("C#", "C-Sharp");
   });
 
+  eleventyConfig.addFilter("date_format", (date) => {
+    if (! typeof date === "string" ) return str;
+    return (new Date(date)).toDateString();
+  });
+
   return {
     dir: {
       input: ".",

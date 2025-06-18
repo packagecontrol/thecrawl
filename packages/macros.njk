@@ -19,7 +19,7 @@
 {% macro card(pkg) %}
   <div class="card">
     <h3>
-      <a href="/package/{{ pkg.name | preslug | slugify | url }}/index.html">
+      <a href="/package/{{ pkg.name | preslug | slugify | url }}/">
         {{ pkg.name }}
       </a>
     </h3>
