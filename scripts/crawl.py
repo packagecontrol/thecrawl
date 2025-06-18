@@ -323,6 +323,11 @@ async def crawl_(
                 uow[base].add("TAGS")
             if "branch" in r:
                 uow[base].add("BRANCHES")
+                # `True` means to follow the default branch,
+                # fetch "METADATA" to read the default branch.
+                # Rarely used.
+                if r["branch"] is True:
+                    uow[base].add("METADATA")
 
     # print("uow", uow)
     for url, scopes in uow.items():
