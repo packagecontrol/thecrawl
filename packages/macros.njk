@@ -18,11 +18,11 @@
 
 {% macro card(pkg) %}
   <div class="card">
-    <h2>
+    <h3>
       <a href="/package/{{ pkg.name | preslug | slugify | url }}/index.html">
         {{ pkg.name }}
       </a>
-    </h2>
+    </h3>
     <p>by {{ pkg.author }}</p>
 
     <dl>

@@ -1,6 +1,6 @@
 header {
-  margin-bottom: 1.6rem;
-  padding: 1rem;
+  margin-bottom: 22px;
+  padding: 4px 1rem;
   color: var(--foreground-grey);
 
   * {
@@ -9,7 +9,7 @@ header {
   }
 
   h2 + p {
-    margin-top: -2px;
+    margin-top: -6px;
   }
 
   .hot {
@@ -23,8 +23,8 @@ header {
 
   nav {
     float: right;
-    line-height: 26px;
-    padding-top: 23px;
+    line-height: 22px;
+    padding-top: 16px;
     * + * {
       margin-left: 1ex;
     }

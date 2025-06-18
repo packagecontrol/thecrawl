@@ -1,7 +1,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
-  gap: 1rem;
+  gap: 22px;
   margin: 0;
   padding: 0;
   > * {
@@ -16,7 +16,7 @@
 
 .card {
   border-bottom: 2px solid var(--background-darker);
-  padding: 1rem 0;
+  padding: 6px 0 16px 0;
   position: relative;
   transition: border-color .3s ease-in-out;
 
@@ -35,12 +35,10 @@
     }
   }
 
-  h2 {
+  h3 {
     padding-top: 0;
     margin-top: 0;
-    margin-bottom: 0;
-    font-size: 19px;
-    line-height: 1;
+    margin-bottom: -4px;
 
     + * {
       margin-top: 0;

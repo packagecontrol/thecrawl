@@ -14,7 +14,8 @@ eleventyComputed:
 <h1 class="big">{{ pkg.name }}</h1>
 <p class="description">{{ pkg.description }}</p>
 
-<p>by {{ pkg.author }}</p>
+<p>by {{ pkg.author }}<br>
+since {{ pkg.first_seen | date_format }}</p>
 
 {{ pack.labels(pkg.releases, pkg.labels) }}
 
@@ -39,23 +40,23 @@ eleventyComputed:
 <ul class="links">
   {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
   <li>
-    <a href="{{ pkg.homepage }}">{{ pack.logo('home') }} Website</a>
+    <a href="{{ pkg.homepage }}">{{ pack.logo('home') }} <span>Website</span></a>
   </li>
   {% endif %}
   <li>
-    <a href="{{ pkg.details }}">{{ pack.logo('repo') }} Repository</a>
+    <a href="{{ pkg.details }}">{{ pack.logo('repo') }} <span>Repository</span></a>
   </li>
   <li>
-    <a href="{{ pkg.readme }}">{{ pack.logo('file') }} README</a>
+    <a href="{{ pkg.readme }}">{{ pack.logo('file') }} <span>README</span></a>
   </li>
   {% if pkg.issues %}
     <li>
-    <a href="{{ pkg.issues }}">{{ pack.logo('bug') }} Issues</a>
+    <a href="{{ pkg.issues }}">{{ pack.logo('bug') }} <span>Issues</span></a>
   </li>
   {% endif %}
   {% if pkg.donate %}
     <li>
-    <a href="{{ pkg.donate }}">{{ pack.logo('gift') }} Donate</a>
+    <a href="{{ pkg.donate }}">{{ pack.logo('gift') }} <span>Donate</span></a>
   </li>
   {% endif %}
 </ul>

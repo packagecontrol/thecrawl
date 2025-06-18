@@ -1,18 +1,18 @@
 /* inspired by monokai neue */
 
 :root {
-	--primary-accent: #fd971f;   /* orange */
-	--secondary-accent: #66d9ef; /* blue */
-	--tertiary-accent: #a6e22e;  /* green */
+  --primary-accent: #fd971f;   /* orange */
+  --secondary-accent: #66d9ef; /* blue */
+  --tertiary-accent: #a6e22e;  /* green */
 
-	--background: #fff;
-	--background-darker: #f5f5f5;
-	--background-darkest: #cacaca;
+  --background: #fff;
+  --background-darker: #f5f5f5;
+  --background-darkest: #cacaca;
 
-	--foreground: #586e75;
-	--foreground-darker: #38464b;
-	--foreground-lighter: #9ec7d3;
-	--foreground-bright: #b8e7f5;
+  --foreground: #586e75;
+  --foreground-darker: #38464b;
+  --foreground-lighter: #9ec7d3;
+  --foreground-bright: #b8e7f5;
 
-	--foreground-grey: #839496;
+  --foreground-grey: #839496;
 }

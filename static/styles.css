@@ -28,12 +28,15 @@ main {
   padding: 0 1rem;
 }
 
+section {
+  padding-top: 22px;
+}
+
 .description {
-  font-size: 26px;
-  line-height: 52px;
-  padding-top: 0px;
-  margin-top: -7px;
-  margin-bottom: 9px;
+  font-size: 25px;
+  line-height: 44px;
+  padding-top: 14px;
+  margin-bottom: 8px;
   font-style: italic;
 
   &::before {
@@ -61,8 +64,8 @@ input {
   width: 100%;
   border: 1px solid var(--background-darkest);
   border-radius: 0;
-  padding: 8px;
-  margin-bottom: 18px;
+  padding: 7px;
+  margin-bottom: 11px;
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -71,16 +74,17 @@ form .labels {
   font-size: calc(1rem);
 }
 
-.labels {
+.labels,
+.links {
   display: flex;
   gap: 1ex;
   padding-left: 0;
-  line-height: 1.6;
+  margin-bottom: 3px;
   flex-wrap: wrap;
 
   > * {
     display: block;
-    padding: 6px 12px;
+    padding: .5em 1em;
     border-radius: 3px;
     background: var(--background-darker);
     white-space: nowrap;
@@ -95,4 +99,20 @@ form .labels {
       background: var(--tertiary-accent);
     }
   }
+}
+
+.links {
+   a {
+    display: flex;
+    align-items: center;
+    gap: 1ex;
+    color: var(--foreground);
+    &:hover {
+      text-decoration: none;
+      color: var(--secondary-accent);
+    }
+   }
+   svg {
+    fill: currentColor;
+   }
 }
