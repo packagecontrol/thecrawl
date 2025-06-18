@@ -40,6 +40,7 @@ class RepoMetadata(TypedDict, total=False):
     issues: Url
     donate: Url
     default_branch: str
+    stars: int
 
 
 class TagInfo(TypedDict):
@@ -94,6 +95,7 @@ METADATA = (
       url
     }
     url
+    stargazerCount
 
     files: object(expression: $branch_ex) {
       ... on Tree {
@@ -287,6 +289,7 @@ async def fetch_github_info(
             "issues": repo_data.get("issuesUrl"),
             "donate": (repo_data.get("fundingLinks") or [{}])[0].get("url"),
             "default_branch": default_branch,
+            "stars": repo_data.get("stargazerCount"),
         }) if "METADATA" in scopes else {},
         "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
         "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
