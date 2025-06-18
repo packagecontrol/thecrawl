@@ -1,0 +1,15 @@
+---
+permalink: "/packages/searchindex.json"
+---
+{% import "packages/macros.njk" as pack %}
+[
+{% for pkg in collections.minimal_packages %}
+	{
+		"name": "{{ pkg.name }}",
+		"description": "{{ pkg.description }}",
+		"author": "{{ pkg.author }}",
+	    "platforms": "{{ pkg.releases }}",
+	    "labels": "{{ pkg.labels | join(",") }}"
+	}
+{% endfor %}
+]

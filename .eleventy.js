@@ -1,6 +1,9 @@
 const fs = require("fs");
 
 function minimalPackage(pkg) {
+  const platforms = pkg.releases.forEach(release => {
+    // todo: find all unique platforms in releases
+  })
   return {
     name: pkg.name,
     author: pkg.author,
@@ -17,6 +20,13 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addCollection("packages", () => {
     return Object.entries(data.packages).map(([id, pkg]) => ({
       ...pkg
+    }));
+  });
+
+  eleventyConfig.addCollection("minimal_packages", () => {
+    return Object.entries(data.packages).map(([id, pkg]) => ({
+      description: pkg.description,
+      ...minimalPackage(pkg)
     }));
   });
 
@@ -49,6 +59,7 @@ module.exports = function (eleventyConfig) {
     return str.replace("+", "plus").replace("C#", "C-Sharp");
   });
 
+  // simple to date string for some dates without times
   eleventyConfig.addFilter("date_format", (date) => {
     if (! typeof date === "string" ) return str;
     return (new Date(date)).toDateString();
