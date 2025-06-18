@@ -216,7 +216,7 @@ async def crawl(
     now_string = now.strftime("%Y-%m-%d %H:%M:%S")
 
     try:
-        out = await crawl_(session, package, existing)
+        out = await crawl_package(session, package, existing)
     except Exception as e:
         out = {**existing}
         out["failing_since"] = existing.get("failing_since", now_string)
@@ -289,7 +289,7 @@ async def crawl(
     return out
 
 
-async def crawl_(
+async def crawl_package(
     session: aiohttp.ClientSession,
     entry: PackageEntryV1,
     existing: PackageEntry
