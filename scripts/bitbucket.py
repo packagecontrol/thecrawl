@@ -29,7 +29,6 @@ class RepoMetadata(TypedDict, total=False):
 
 class TagInfo(TypedDict):
     name: str
-    version: str
     url: Url
     date: IsoTimestamp
     sha: Sha
@@ -131,7 +130,6 @@ class TagPager:
             new_tags = [
                 {
                     "name": tag["name"],
-                    # "version": re.sub(r'^(v|release-)', '', tag["name"]),
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{tag['name']}.zip",
                     "date": tag["target"]["date"][:19].replace('T', ' '),
                     "sha": tag.get("target", {}).get("hash", ""),

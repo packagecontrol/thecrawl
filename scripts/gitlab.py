@@ -28,7 +28,6 @@ class RepoMetadata(TypedDict, total=False):
 
 class TagInfo(TypedDict):
     name: str
-    version: str
     url: Url
     date: IsoTimestamp
     sha: Sha
@@ -148,7 +147,6 @@ class TagPager(_Pager):
             new_tags = [
                 {
                     "name": tag["name"],
-                    # "version": re.sub(r'^(v|release-)', '', tag["name"]),
                     "url": tag.get("web_url") or f"https://gitlab.com/{self.owner}/{self.repo}/-/archive/{tag['name']}/{self.repo}-{tag['name']}.zip",
                     "date": tag.get("commit", {}).get("committed_date", "")[:19].replace('T', ' '),
                     "sha": tag.get("commit", {}).get("id", ""),

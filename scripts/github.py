@@ -46,7 +46,6 @@ class RepoMetadata(TypedDict, total=False):
 
 class TagInfo(TypedDict):
     name: str     # the ref-/ or tagname, e.g. v1.2.5
-    version: str  # the name without prefixes, e.g. "1.2.3"
     url: Url
     date: IsoTimestamp
     sha: Sha
@@ -309,10 +308,8 @@ def grab_tags(repo: str, entries) -> list[TagInfo]:
         if "oid" not in commit:
             print("no tag oid", node, "for", repo)
             continue
-        version = strip_possible_prefix(tag_name)
         tags.append({
             "name": tag_name,
-            # "version": version,
             "sha": commit["oid"],
             "date": commit["committedDate"][:19].replace('T', ' '),
             "url": f"https://codeload.github.com/{repo}/zip/{tag_name}"
