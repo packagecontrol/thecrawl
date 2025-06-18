@@ -41,6 +41,7 @@ class RepoMetadata(TypedDict, total=False):
     donate: Url
     default_branch: str
     stars: int
+    created_at: IsoTimestamp
 
 
 class TagInfo(TypedDict):
@@ -96,6 +97,7 @@ METADATA = (
     }
     url
     stargazerCount
+    createdAt
 
     files: object(expression: $branch_ex) {
       ... on Tree {
@@ -290,6 +292,7 @@ async def fetch_github_info(
             "donate": (repo_data.get("fundingLinks") or [{}])[0].get("url"),
             "default_branch": default_branch,
             "stars": repo_data.get("stargazerCount"),
+            "created_at": repo_data.get("createdAt")[:19].replace('T', ' '),
         }) if "METADATA" in scopes else {},
         "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
         "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
