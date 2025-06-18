@@ -26,7 +26,7 @@ date: Last Modified
 <section>
   <h2>Newest</h2>
   <ul class="grid">
-    {% for pkg in collections.packages | slice(0, 6) %}
+    {% for pkg in collections.newest_packages %}
       <li>
         {{ pack.card(pkg) }}
       </li>
@@ -37,7 +37,7 @@ date: Last Modified
 <section>
   <h2>Recently updated</h2>
   <ul class="grid">
-    {% for pkg in collections.packages | slice(10, 16) %}
+    {% for pkg in collections.updated_packages %}
       <li>
         {{ pack.card(pkg) }}
       </li>

@@ -1,5 +1,14 @@
 const fs = require("fs");
 
+function minimalPackage(pkg) {
+  return {
+    name: pkg.name,
+    author: pkg.author,
+    releases: pkg.releases,
+    labels: pkg.labels
+  }
+}
+
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("static");
 
@@ -7,9 +16,26 @@ module.exports = function (eleventyConfig) {
 
   eleventyConfig.addCollection("packages", () => {
     return Object.entries(data.packages).map(([id, pkg]) => ({
-      ...pkg,
-      id,
+      ...pkg
     }));
+  });
+
+  eleventyConfig.addCollection("updated_packages", () => {
+    return Object.entries(data.packages).map(([id, pkg]) => ({
+      last_modified: pkg.last_modified,
+      ...minimalPackage(pkg)
+    })).sort((a, b) => {
+      return new Date(b.last_modified ?? '1970-01-01 00:00:00') - new Date(a.last_modified ?? '1970-01-01 00:00:00')
+    }).slice(0,9);
+  });
+
+  eleventyConfig.addCollection("newest_packages", () => {
+    return Object.entries(data.packages).map(([id, pkg]) => ({
+      first_seen: pkg.first_seen,
+      ...minimalPackage(pkg)
+    })).sort((a, b) => {
+      return new Date(b.first_seen ?? '1970-01-01 00:00:00') - new Date(a.first_seen ?? '1970-01-01 00:00:00')
+    }).slice(0,9);
   });
 
   eleventyConfig.addFilter("slice", (arr, start, end) => {
