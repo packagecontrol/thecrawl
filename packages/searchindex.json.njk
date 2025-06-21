@@ -10,8 +10,7 @@ permalink: "/packages/searchindex.json"
 		"author": "{{ pkg.author }}",
 	    "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
 	    "labels": "{{ pkg.labels | default([]) | join(",") }}",
-	    "permalink": "/package/{{ pkg.name | preslug | slugify | url }}/",
-	    "card": "{{ pack.card(pkg) | forceescape | replace("\n", "") }}"
+	    "permalink": "/package/{{ pkg.name | preslug | slugify | url }}/"
 	}{{ "," if not loop.last }}
 {%- endfor %}
 ]
