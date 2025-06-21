@@ -4,6 +4,8 @@ import { Data } from './data.js';
 const form = document.forms.search;
 const input = form.elements['search-field'];
 
+let debounceTimeout;
+
 function hideSections() {
   document.querySelectorAll('section').forEach(section => {
     if (section.getAttribute('name') !== 'result') {
@@ -24,8 +26,8 @@ function restoreSections() {
   });
 }
 
-input.addEventListener('change', (event) => {
-  const value = event.target.value.toLowerCase();
+function goSearch() {
+  const value = input.value.toLowerCase();
   const target_section = document.querySelector('section[name="result"] ul');
   target_section.querySelectorAll('li').forEach(li => {
     li.remove();
@@ -48,4 +50,19 @@ input.addEventListener('change', (event) => {
       target_section.appendChild(parent);
     })
   });
+}
+
+input.form.onsubmit = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  clearTimeout(debounceTimeout);
+  goSearch();
+}
+
+input.addEventListener('input', (event) => {
+  clearTimeout(debounceTimeout);
+
+  debounceTimeout = setTimeout(() => {
+    goSearch();
+  }, 2000); // 2000ms = 2 seconds
 });
