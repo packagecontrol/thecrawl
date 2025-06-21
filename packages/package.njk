@@ -17,7 +17,7 @@ eleventyComputed:
 <p>by {{ pkg.author }}<br>
 since {{ pkg.first_seen | date_format }}</p>
 
-{{ pack.labels(pkg.releases, pkg.labels) }}
+{{ pack.labels(pkg.platforms, pkg.labels) }}
 
 {% if pkg.releases | length > 1 %}
   <h2>Versions</h2>
@@ -31,7 +31,7 @@ since {{ pkg.first_seen | date_format }}</p>
     <span class="requirement">({{ release.sublime_text }})</span>
   {% endif %}
   <br>
-  {{ release.date }}
+  {{ release.date }} — {{ release.platforms | join(', ') }}
   </p>
 {% endfor %}
 
