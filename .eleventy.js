@@ -1,14 +1,27 @@
 const fs = require("fs");
 
+function cleanupPlatforms(platforms) {
+  return platforms
+    .filter(platform => platform !== "*")
+    .map(platform => platform === "osx" ? "macos" : platform);
+}
+
 function minimalPackage(pkg) {
-  const platforms = pkg.releases.forEach(release => {
-    // todo: find all unique platforms in releases
+  if (pkg.removed) {
+    return {};
+  }
+  let platforms = [];
+  pkg.releases.forEach(release => {
+    platforms = platforms.concat(release.platforms);
+    release.platforms = cleanupPlatforms(release.platforms)
   })
+
   return {
     name: pkg.name,
     author: pkg.author,
     releases: pkg.releases,
-    labels: pkg.labels
+    labels: pkg.labels,
+    platforms: cleanupPlatforms(platforms)
   }
 }
 
@@ -19,6 +32,7 @@ module.exports = function (eleventyConfig) {
 
   eleventyConfig.addCollection("packages", () => {
     return Object.entries(data.packages).map(([id, pkg]) => ({
+      ...minimalPackage(pkg),
       ...pkg
     }));
   });

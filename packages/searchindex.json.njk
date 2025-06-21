@@ -8,8 +8,8 @@ permalink: "/packages/searchindex.json"
 		"name": "{{ pkg.name }}",
 		"description": "{{ pkg.description }}",
 		"author": "{{ pkg.author }}",
-	    "platforms": "{{ pkg.releases }}",
-	    "labels": "{{ pkg.labels | join(",") }}"
+	    "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
+	    "labels": "{{ pkg.labels | default([]) | join(",") }}"
 	}
 {% endfor %}
 ]

@@ -1,13 +1,7 @@
-{% macro labels(releases, labels) %}
+{% macro labels(platforms, labels) %}
   <ul class="labels">
-    {% for release in releases %}
-      {% if loop.last %}
-        {% for platform in release.platforms %}
-          {% if platform != '*' %}
-            <li class="platform platform-{{ platform }}">{{ platform | replace('osx', 'macos') }}</li>
-          {% endif %}
-        {% endfor %}
-      {% endif %}
+    {% for platform in platforms %}
+      <li class="platform platform-{{ platform }}">{{ platform }}</li>
     {% endfor %}
 
     {% for label in labels %}
@@ -32,7 +26,7 @@
       <dd>{{ [3,12,23,75,113,201] | random }}</dd>
     </dl>
 
-    {{ labels(pkg.releases, pkg.labels | slice(0,5)) }}
+    {{ labels(pkg.platforms, pkg.labels | slice(0,5)) }}
   </div>
 {% endmacro %}
 
