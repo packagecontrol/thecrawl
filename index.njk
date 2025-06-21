@@ -23,7 +23,7 @@ date: Last Modified
   </div>
 </form>
 
-<section>
+<section name="newest">
   <h2>Newest</h2>
   <ul class="grid">
     {% for pkg in collections.newest_packages %}
@@ -34,7 +34,7 @@ date: Last Modified
   </ul>
 </section>
 
-<section>
+<section name="recent">
   <h2>Recently updated</h2>
   <ul class="grid">
     {% for pkg in collections.updated_packages %}
@@ -43,6 +43,11 @@ date: Last Modified
       </li>
     {% endfor %}
   </ul>
+</section>
+
+<section name="result" style="display:none;">
+  <h2>Results</h2>
+  <ul class="grid"></ul>
 </section>
 
 {% import "packages/macros.njk" as pack %}

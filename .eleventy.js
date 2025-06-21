@@ -11,7 +11,7 @@ function minimalPackage(pkg) {
 
   pkg.releases.forEach(release => {
     platforms = platforms.concat(release.platforms);
-    release.platforms = cleanupPlatforms(release.platforms)
+    release.platforms = cleanupPlatforms(release.platforms);
   })
 
   return {
