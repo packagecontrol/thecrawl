@@ -14,6 +14,35 @@ export class Card {
 		this.clone.querySelector('a').setAttribute('href', this.pkg.permalink);
 		this.clone.querySelector('p').innerText = 'by ' + this.pkg.author;
 
+		const labels = this.clone.querySelector('ul.labels');
+		this.platforms(labels);
+		this.labels(labels);
+
 		return this.clone;
+	}
+
+	platforms (parent) {
+		if (this.pkg.platforms.length < 1) {
+			return
+		}
+
+		this.pkg.platforms.split(',').forEach(item => {
+			const li = document.createElement('li');
+			li.classList.add('platform', 'platform-' + item);
+			li.innerText = item;
+			parent.appendChild(li);
+		})
+	}
+
+	labels (parent) {
+		if (this.pkg.labels.length < 1) {
+			return
+		}
+
+		this.pkg.labels.split(',').forEach(item => {
+			const li = document.createElement('li');
+			li.innerText = item;
+			parent.appendChild(li);
+		})
 	}
 }
