@@ -31,7 +31,10 @@ since {{ pkg.first_seen | date_format }}</p>
     <span class="requirement">({{ release.sublime_text }})</span>
   {% endif %}
   <br>
-  {{ release.date }} — {{ release.platforms | join(', ') }}
+  {{ release.date }}
+  {% if release.platforms | length > 0 %}
+    — {{ release.platforms | join(', ') }}
+  {% endif %}
   </p>
 {% endfor %}
 
