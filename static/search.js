@@ -33,6 +33,9 @@ function fillTemplate(pkg) {
 input.addEventListener('change', (event) => {
   const value = event.target.value.toLowerCase();
   const target_section = document.querySelector('section[name="result"] ul');
+  target_section.querySelectorAll('li').forEach(li => {
+    li.remove();
+  });
 
   if (value.length < 1) {
     document.querySelectorAll('section').forEach(section => {
