@@ -19,12 +19,13 @@
     </h3>
     <p>by {{ pkg.author }}</p>
 
+    {# we don't have this data now, cross that bridge later
     <dl>
       <dt>downloads</dt>
       <dd>{{ [3,12,23,75,113,201] | random }}</dd>
       <dt>stars</dt>
       <dd>{{ [3,12,23,75,113,201] | random }}</dd>
-    </dl>
+    </dl> #}
 
     {{ labels(pkg.platforms, pkg.labels | slice(0,5)) }}
   </div>
