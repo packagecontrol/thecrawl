@@ -7,10 +7,8 @@ function cleanupPlatforms(platforms) {
 }
 
 function minimalPackage(pkg) {
-  if (pkg.removed) {
-    return {};
-  }
   let platforms = [];
+
   pkg.releases.forEach(release => {
     platforms = platforms.concat(release.platforms);
     release.platforms = cleanupPlatforms(release.platforms)
@@ -29,23 +27,24 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("static");
 
   const data = JSON.parse(fs.readFileSync("workspace.json", "utf8"));
+  const live_packages = Object.entries(data.packages).map(([id, pkg]) => pkg).filter(pkg => pkg.removed !== true);
 
   eleventyConfig.addCollection("packages", () => {
-    return Object.entries(data.packages).map(([id, pkg]) => ({
+    return live_packages.map(pkg => ({
       ...minimalPackage(pkg),
       ...pkg
     }));
   });
 
   eleventyConfig.addCollection("minimal_packages", () => {
-    return Object.entries(data.packages).map(([id, pkg]) => ({
+    return live_packages.map(pkg => ({
       description: pkg.description,
       ...minimalPackage(pkg)
-    }));
+    })).sort((a, b) => a.name.localeCompare(b.name));
   });
 
   eleventyConfig.addCollection("updated_packages", () => {
-    return Object.entries(data.packages).map(([id, pkg]) => ({
+    return live_packages.map(pkg => ({
       last_modified: pkg.last_modified,
       ...minimalPackage(pkg)
     })).sort((a, b) => {
@@ -54,7 +53,7 @@ module.exports = function (eleventyConfig) {
   });
 
   eleventyConfig.addCollection("newest_packages", () => {
-    return Object.entries(data.packages).map(([id, pkg]) => ({
+    return live_packages.map(pkg => ({
       first_seen: pkg.first_seen,
       ...minimalPackage(pkg)
     })).sort((a, b) => {
