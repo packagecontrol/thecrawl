@@ -1,43 +1,15 @@
-import { Card } from './card.js';
-import { Data } from './data.js';
+export class Search {
+  value = '';
+  data = null;
 
-function hideSections() {
-  document.querySelectorAll('section').forEach(section => {
-    if (section.getAttribute('name') !== 'result') {
-      section.style.display = 'none';
-    } else {
-      section.style.display = null;
-    }
-  });
-}
-
-function restoreSections() {
-  document.querySelectorAll('section').forEach(section => {
-    if (section.getAttribute('name') === 'result') {
-      section.style.display = 'none';
-    } else {
-      section.style.display = null;
-    }
-  });
-}
-
-function goSearch(value) {
-  const target_section = document.querySelector('section[name="result"] ul');
-  target_section.querySelectorAll('li').forEach(li => {
-    li.remove();
-  });
-
-  if (value.length < 1) {
-    restoreSections();
-    const counter = document.querySelector('h1 .counter');
-    counter.innerText = counter.dataset.all;
-    return;
+  constructor(value, data) {
+    this.value = value;
+    this.data = data;
   }
 
-  hideSections();
-
-  (new Data()).get().then(data => {
-    let base = data;
+  get() {
+    let base = this.data;
+    let value = this.value;
 
     // handle author filter
     const author = value.match(/author:"([^"]+)"/i);
@@ -78,42 +50,36 @@ function goSearch(value) {
     }
 
     // naively search package names for the remaining string (in any)
-    const results = base.filter(
+    // and return the results
+    return base.filter(
       pkg => pkg.name.toLowerCase().includes(value.trim())
     );
+  }
 
-    document.querySelector('h1 .counter').innerText = results.length;
+	toggleSections() {
+    document.querySelectorAll('section').forEach(section => {
+      if (section.getAttribute('name') !== 'result') {
+        section.style.display = 'none';
+      } else {
+        section.style.display = null;
+      }
+    });
+  }
 
-    results.slice(0,36).forEach(result => {
-      const parent = document.createElement('li');
-      parent.appendChild((new Card(result)).render());
-      target_section.appendChild(parent);
-    })
-  });
+  reset() {
+    document.querySelectorAll('section').forEach(section => {
+      if (section.getAttribute('name') === 'result') {
+        section.style.display = 'none';
+      } else {
+        section.style.display = null;
+      }
+    });
+
+    document.querySelectorAll('section[name="result"] li').forEach(li => {
+      li.remove();
+    });
+
+    const counter = document.querySelector('h1 .counter');
+    counter.innerText = counter.dataset.all;
+  }
 }
-
-const form = document.forms.search;
-const input = form.elements['search-field'];
-const url_search = window.location.search;
-
-let debounceTimeout;
-
-if (url_search) {
-  input.value = decodeURI(url_search).replace('?', '').replace('=', ':');
-  goSearch(input.value.toLowerCase());
-}
-
-input.form.onsubmit = (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  clearTimeout(debounceTimeout);
-  goSearch(input.value.toLowerCase());
-}
-
-input.addEventListener('input', (event) => {
-  clearTimeout(debounceTimeout);
-
-  debounceTimeout = setTimeout(() => {
-    goSearch(input.value.toLowerCase());
-  }, 1000); // 1000ms = 1 seconds
-});
