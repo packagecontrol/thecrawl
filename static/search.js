@@ -64,5 +64,5 @@ input.addEventListener('input', (event) => {
 
   debounceTimeout = setTimeout(() => {
     goSearch();
-  }, 2000); // 2000ms = 2 seconds
+  }, 1000); // 1000ms = 1 seconds
 });
