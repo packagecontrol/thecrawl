@@ -14,7 +14,8 @@ eleventyComputed:
 <h1 class="big">{{ pkg.name }}</h1>
 <p class="description">{{ pkg.description }}</p>
 
-<p>by {{ pkg.author }}<br>
+{% set q = '"' ~ pkg.author ~ '"' %}
+<p>by <a href="/?author={{ q | urlencode }}">{{ pkg.author }}</a><br>
 since {{ pkg.first_seen | date_format }}</p>
 
 {{ pack.labels(pkg.platforms, pkg.labels) }}
