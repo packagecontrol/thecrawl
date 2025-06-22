@@ -196,6 +196,10 @@ _readme_filenames = {
 }
 
 
+class GraphQLClientError(aiohttp.ClientResponseError):
+    """Structured exception for GraphQL API errors with type/message."""
+
+
 async def make_graphql_query(session: aiohttp.ClientSession, query: str, variables: dict) -> dict:
     global rate_limit_info
 
@@ -218,17 +222,25 @@ async def make_graphql_query(session: aiohttp.ClientSession, query: str, variabl
         if "errors" in data:
             first_error = data["errors"][0]
             message = first_error.get("message", "Unknown GraphQL error")
-            error_type = first_error.get("type", None)
-            if error_type == "NOT_FOUND":
-                raise aiohttp.ClientResponseError(
-                    request_info=resp.request_info,
-                    history=resp.history,
-                    status=404,
-                    message=message,
-                    headers=resp.headers
-                )
-            else:
-                raise RuntimeError(f"GraphQL errors: {data['errors']}")
+            error_type = first_error.get("type", "").upper()
+
+            status_map = {
+                "NOT_FOUND": 404,
+                "FORBIDDEN": 403,
+                "UNAUTHORIZED": 401,
+                "RATE_LIMITED": 429,
+                "INTERNAL": 502,
+                "SERVICE_UNAVAILABLE": 503,
+            }
+            status = status_map.get(error_type, 400)
+
+            raise GraphQLClientError(
+                request_info=resp.request_info,
+                history=resp.history,
+                status=status,
+                message=message,
+                headers=resp.headers
+            )
 
         reset_time = int(resp.headers.get("x-ratelimit-reset", 0))
         rv = data["data"]
