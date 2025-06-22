@@ -229,7 +229,8 @@ async def crawl(
             out["fail_reason"] = f"{e.status} {e.message}"
         else:
             err(f"Exception while crawling {package['name']}")
-            traceback.print_exc()
+            tb = traceback.format_exc()
+            out["fail_reason"] = f"Unhandled exception: {type(e).__name__}: {e}\n{tb}"
 
         # Determine next_crawl interval
         failing_since_dt = (
