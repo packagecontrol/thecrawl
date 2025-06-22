@@ -5,10 +5,15 @@ date: Last Modified
 
 {% import "packages/macros.njk" as pack %}
 
-<h1>{{ collections.packages | length }} Packages</h1>
+<h1>
+  <span class="counter" data-all="{{ collections.packages | length }}">
+    {{ collections.packages | length }}
+  </span>
+  Packages
+</h1>
 
 <form name="search">
-  <input type="text" autocomplete="off" name="search-field" placeholder="Search for packages by name...">
+  <input type="text" autocomplete="off" name="search-field" placeholder="Search packages ...">
   <ul class="labels">
     {{ pack.labels(['linux','macos','windows'], ['language syntax','snippets','linting','lsp','color scheme','theme']) }}
   </ul>

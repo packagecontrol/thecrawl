@@ -29,6 +29,8 @@ function goSearch(value) {
 
   if (value.length < 1) {
     restoreSections();
+    const counter = document.querySelector('h1 .counter');
+    counter.innerText = counter.dataset.all;
     return;
   }
 
@@ -79,6 +81,8 @@ function goSearch(value) {
     const results = base.filter(
       pkg => pkg.name.toLowerCase().includes(value.trim())
     );
+
+    document.querySelector('h1 .counter').innerText = results.length;
 
     results.slice(0,36).forEach(result => {
       const parent = document.createElement('li');
