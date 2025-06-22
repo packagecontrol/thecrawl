@@ -23,7 +23,7 @@
 
   &:has(a:hover),
   &:has(a:focus) {
-    border-color: var(--secondary-accent);
+    border-color: var(--primary-accent);
     transition: border-color .1s ease-in-out;
   }
 

@@ -1,29 +1,21 @@
 footer {
   margin: 3.2rem 1rem 1.6rem 1rem;
   text-align: center;
-  color: var(--foreground-grey);
+
+  p,
+  nav {
+    color: var(--foreground-lighter);
+  }
 
   * {
     margin: 0;
     padding: 0;
   }
 
-  a {
-    color: var(--foreground);
-  }
-
   nav {
     line-height: 52px;
     * + * {
       margin-left: 1ex;
-    }
-
-    a {
-      color: var(--foreground-lighter);
-
-      &:hover {
-        color: var(--secondary-accent);
-      }
     }
   }
 }

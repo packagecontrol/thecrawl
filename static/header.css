@@ -1,7 +1,7 @@
 header {
   margin-bottom: 22px;
   padding: 4px 1rem;
-  color: var(--foreground-grey);
+  color: var(--foreground-lighter);
 
   * {
     margin: 0;
@@ -12,13 +12,13 @@ header {
     margin-top: -6px;
   }
 
+  h2 a {
+    color: var(--foreground);
+  }
+
   .hot {
     color: var(--primary-accent);
     font-style: italic;
-  }
-
-  a {
-    color: var(--foreground);
   }
 
   nav {
@@ -27,13 +27,6 @@ header {
     padding-top: 16px;
     * + * {
       margin-left: 1ex;
-    }
-
-    a {
-      color: var(--foreground-lighter);
-      &:hover {
-        color: var(--secondary-accent);
-      }
     }
   }
 }

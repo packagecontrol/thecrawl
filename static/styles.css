@@ -12,13 +12,11 @@ body {
 }
 
 a {
-  color: var(--secondary-accent);
+  color: var(--primary-accent-darker);
   text-decoration: none;
-  transition: color .3s ease-in-out;
 
   &:hover {
     text-decoration: underline;
-    transition: color .1s ease-in-out;
   }
 }
 
@@ -94,7 +92,7 @@ input {
     padding: .2em .66em;
     border-radius: 3px;
     background: var(--background-darker);
-    color: var(--foreground);
+    color: var(--foreground-lighter);
     white-space: nowrap;
     line-height: 1.6;
 
@@ -103,11 +101,11 @@ input {
     }
 
     &.platform {
-      background: var(--primary-accent);
+      background: var(--secondary-accent);
       color: var(--background);
     }
     &.platform-windows {
-      background: var(--secondary-accent);
+      background: var(--primary-accent);
     }
     &.platform-linux {
       background: var(--tertiary-accent);
