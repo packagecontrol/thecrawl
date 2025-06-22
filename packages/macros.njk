@@ -1,11 +1,21 @@
 {% macro labels(platforms, labels) %}
   <ul class="labels">
     {% for platform in platforms %}
-      <li class="platform platform-{{ platform }}">{{ platform }}</li>
+      {% set q = '"' ~ platform ~ '"' %}
+      <li>
+        <a class="platform platform-{{ platform }}" href="/?platform={{ q | urlencode }}">
+          {{ platform }}
+        </a>
+      </li>
     {% endfor %}
 
     {% for label in labels %}
-      <li class="label">{{ label }}</li>
+      {% set q = '"' ~ label ~ '"' %}
+      <li>
+        <a class="label" href="/?label={{ q | urlencode }}">
+          {{ label }}
+        </a>
+      </li>
     {%- endfor %}
   </ul>
 {% endmacro %}
@@ -27,7 +37,7 @@
       <dd>{{ [3,12,23,75,113,201] | random }}</dd>
     </dl> #}
 
-    {{ labels(pkg.platforms, pkg.labels | slice(0,5)) }}
+    {{ labels(pkg.platforms, pkg.labels) }}
   </div>
 {% endmacro %}
 

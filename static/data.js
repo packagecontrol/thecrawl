@@ -3,21 +3,21 @@ export class Data {
 
 	async get() {
 	  if (this.data) {
-	    return this.data;
+		return this.data;
 	  }
 
 	  try {
-	    const response = await fetch('/packages/searchindex.json');
-	    const contentType = response.headers.get("content-type") ?? '';
+			const response = await fetch('/packages/searchindex.json');
+			const contentType = response.headers.get("content-type") ?? '';
 
-	    if (!response.ok || !contentType.includes('application/json')) {
-	      throw new Error('bad response');
-	    }
+			if (!response.ok || !contentType.includes('application/json')) {
+			  throw new Error('bad response');
+			}
 
-	    this.data = response.json();
-	    return this.data;
+			this.data = response.json();
+			return this.data;
 	  } catch (error) {
-	    console.error(error.message);
+			console.error(error.message);
 	  }
 	}
 }

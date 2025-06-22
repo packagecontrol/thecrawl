@@ -9,18 +9,9 @@ date: Last Modified
 
 <form name="search">
   <input type="text" autocomplete="off" name="search-field" placeholder="Search for packages by name...">
-  <div class="labels">
-    <button type="button" class="platform platform-osx"value="platform:osx">macos</button>
-    <button type="button" class="platform platform-windows" value="platform:window">windows</button>
-    <button type="button" class="platform platform-linux" value="platform:linux">linux</button>
-
-    <button type="button" value="label:language_syntax">language syntax</button>
-    <button type="button" value="label:snippets">snippets</button>
-    <button type="button" value="label:linting">linting</button>
-    <button type="button" value="label:lsp">lsp</button>
-    <button type="button" value="label:color_scheme">color scheme</button>
-    <button type="button" value="label:theme">theme</button>
-  </div>
+  <ul class="labels">
+    {{ pack.labels(['linux','macos','windows'], ['language syntax','snippets','linting','lsp','color scheme','theme']) }}
+  </ul>
 </form>
 
 <section name="newest">

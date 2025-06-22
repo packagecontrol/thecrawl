@@ -1,48 +1,61 @@
 export class Card {
-	pkg = {};
-	clone;
+  pkg = {};
+  clone;
 
-	constructor (data) {
-		this.pkg = data;
+  constructor (data) {
+    this.pkg = data;
 
-		const template = document.querySelector("template#package-card");
-		this.clone = template.content.cloneNode(true);
-	}
+    const template = document.querySelector("template#package-card");
+    this.clone = template.content.cloneNode(true);
+  }
 
-	render () {
-		this.clone.querySelector('a').innerText = this.pkg.name;
-		this.clone.querySelector('a').setAttribute('href', this.pkg.permalink);
-		this.clone.querySelector('p').innerText = 'by ' + this.pkg.author;
+  render () {
+    this.clone.querySelector('a').innerHTML = this.pkg.name;
+    this.clone.querySelector('a').setAttribute('href', this.pkg.permalink);
+    this.clone.querySelector('p').innerHTML = 'by ' + this.pkg.author;
 
-		const labels = this.clone.querySelector('ul.labels');
-		this.platforms(labels);
-		this.labels(labels);
+    const labels = this.clone.querySelector('ul.labels');
+    this.platforms(labels);
+    this.labels(labels);
 
-		return this.clone;
-	}
+    return this.clone;
+  }
 
-	platforms (parent) {
-		if (this.pkg.platforms.length < 1) {
-			return
-		}
+  platforms (parent) {
+    if (this.pkg.platforms.length < 1) {
+      return
+    }
 
-		this.pkg.platforms.split(',').forEach(item => {
-			const li = document.createElement('li');
-			li.classList.add('platform', 'platform-' + item);
-			li.innerText = item;
-			parent.appendChild(li);
-		})
-	}
+    this.pkg.platforms.split(',').forEach(item => {
+      parent.appendChild(this.button(item));
+    })
+  }
 
-	labels (parent) {
-		if (this.pkg.labels.length < 1) {
-			return
-		}
+  labels (parent) {
+    if (this.pkg.labels.length < 1) {
+      return
+    }
 
-		this.pkg.labels.split(',').forEach(item => {
-			const li = document.createElement('li');
-			li.innerText = item;
-			parent.appendChild(li);
-		})
-	}
+    this.pkg.labels.split(',').forEach(item => {
+      parent.appendChild(this.button(item));
+    })
+  }
+
+  button (name) {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+
+    if (['linux','macos','windows'].indexOf(name) >= 0) {
+      a.classList.add('platform', 'platform-' + name);
+      a.setAttribute('href', '/?platform=' + encodeURI('"' + name + '"'));
+    } else {
+      a.classList.add('label');
+      a.setAttribute('href', '/?label=' + encodeURI('"' + name + '"'));
+    }
+
+    a.innerText = name;
+    li.appendChild(a);
+
+    return li;
+  }
 }

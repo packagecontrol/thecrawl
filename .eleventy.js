@@ -61,11 +61,6 @@ module.exports = function (eleventyConfig) {
     }).slice(0,9);
   });
 
-  eleventyConfig.addFilter("slice", (arr, start, end) => {
-    if (!Array.isArray(arr)) return [];
-    return arr.slice(start, end);
-  });
-
   // disambiguate package names that would result in the same slug
   eleventyConfig.addFilter("preslug", (str) => {
     if (! typeof str === "string" ) return str;
