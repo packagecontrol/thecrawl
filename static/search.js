@@ -27,7 +27,8 @@ function restoreSections() {
 }
 
 function goSearch() {
-  const value = input.value.toLowerCase();
+  let value = input.value.toLowerCase();
+
   const target_section = document.querySelector('section[name="result"] ul');
   target_section.querySelectorAll('li').forEach(li => {
     li.remove();
@@ -41,9 +42,41 @@ function goSearch() {
   hideSections();
 
   (new Data()).get().then(data => {
-    const results = data.filter(
-      pkg => pkg.name.toLowerCase().includes(value)
+    let base = data;
+
+    const author = value.match(/author:"([^"]+)"/i);
+    if (author) {
+      base = base.filter(
+        pkg => pkg.author.toLowerCase().includes(author[1].toLowerCase())
+      );
+      value = value.replace(author[0], '');
+    }
+
+    const label = value.match(/label:"([^"]+)"/i);
+    if (label) {
+      base = base.filter(
+        pkg => pkg.labels.toLowerCase().includes(label[1].toLowerCase())
+      );
+      value = value.replace(label[0], '');
+    }
+
+    const platform = value.match(/platform:"([^"]+)"/i);
+    if (platform) {
+      base = base.filter(
+        pkg => {
+          if (!pkg.platforms) {
+            return true;
+          }
+          return pkg.platforms.toLowerCase().includes(platform[1].toLowerCase())
+        }
+      );
+      value = value.replace(platform[0], '');
+    }
+
+    const results = base.filter(
+      pkg => pkg.name.toLowerCase().includes(value.trim())
     );
+
     results.slice(0,20).forEach(result => {
       const parent = document.createElement('li');
       parent.appendChild((new Card(result)).render());
