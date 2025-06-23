@@ -310,15 +310,11 @@ async def crawl_package(
 
     for r in release_definitions[:]:
         if base := r.get("base"):
+            uow[base].add("METADATA")
             if "tags" in r:
                 uow[base].add("TAGS")
             if "branch" in r:
                 uow[base].add("BRANCHES")
-                # `True` means to follow the default branch,
-                # fetch "METADATA" to read the default branch.
-                # Rarely used.
-                if r["branch"] is True:
-                    uow[base].add("METADATA")
 
     # print("uow", uow)
     for url, scopes in uow.items():
@@ -356,27 +352,35 @@ async def crawl_package(
                         r |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
                         r |= {"version": version}
                         break
+                if "version" in r:
+                    continue
+
+                if tag_prefix:
+                    err(f"No prefixed tag found for {url} matching ^{tag_prefix}")
                 else:
-                    if tag_prefix:
-                        err(f"No prefixed tag found for {url} matching ^{tag_prefix}")
-                    else:
-                        err(f"No tagged version found for {url}")
-                    release_definitions.remove(r)
-            elif branches_defintion := r.get("branch"):
-                default_branch = info["metadata"].get("default_branch", "master")
-                wanted_branch = (
-                    default_branch
-                    if branches_defintion is True
-                    else branches_defintion
-                )
-                async for branch in info["branches"]:
-                    if branch["name"] == wanted_branch:
-                        r.pop("branch")
-                        r |= pluck(branch, ("version", "url", "date"))  # type: ignore[arg-type]
-                        break
-                else:
-                    err(f"Branch {wanted_branch} not found on {url}")
-                    release_definitions.remove(r)
+                    err(f"No tagged version found for {url}")
+
+            # Fallback to the default branch
+            branches_defintion = r.get("branch", True)
+            default_branch = info["metadata"].get("default_branch", "master")
+            wanted_branch = (
+                default_branch
+                if branches_defintion is True
+                else branches_defintion
+            )
+            async for branch in info["branches"]:
+                if branch["name"] == wanted_branch:
+                    r.pop("branch", None)
+                    r |= pluck(branch, ("version", "url", "date"))  # type: ignore[arg-type]
+                    break
+            if "version" in r:
+                continue
+
+            err(
+                f"No branch named {wanted_branch} found on {url}.  "
+                f"Release definition cannot be fulfilled."
+            )
+            release_definitions.remove(r)
 
     for r in release_definitions[:]:
         missing_keys = {"sublime_text", "platforms", "version", "url", "date"} - r.keys()
@@ -406,6 +410,7 @@ async def crawl_dependency(
     uow: defaultdict[Url, set[QueryScope]] = defaultdict(set)
     for r in release_definitions[:]:
         if base := r.get("base"):
+            uow[base].add("METADATA")
             if "tags" in r:
                 uow[base].add("TAGS")
             if "branch" in r:
