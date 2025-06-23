@@ -143,7 +143,6 @@ def next_packages_to_crawl(
     packages_to_crawl = [
         entry
         for entry in packages
-        if not entry.get("removed", False)
         if not entry.get("tombstoned", False)
         if (
             workspace["packages"]
@@ -161,7 +160,6 @@ def next_packages_to_crawl(
             (
                 entry
                 for entry in packages
-                if not entry.get("removed", False)
                 if not entry.get("tombstoned", False)
             ),
             key=lambda pkg: (
