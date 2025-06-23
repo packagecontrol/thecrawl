@@ -88,33 +88,4 @@ export class Search {
       return scores[b.name] - scores[a.name];
     });
   }
-
-	toggleSections () {
-    document.querySelectorAll('section').forEach(section => {
-      if (section.getAttribute('name') !== 'result') {
-        section.style.display = 'none';
-      } else {
-        section.style.display = null;
-      }
-    });
-  }
-
-  reset() {
-    document.querySelectorAll('section').forEach(section => {
-      if (section.getAttribute('name') === 'result') {
-        section.style.display = 'none';
-      } else {
-        section.style.display = null;
-      }
-    });
-
-    const counter = document.querySelector('h1 .counter');
-    counter.innerText = counter.dataset.all;
-  }
-
-  clear () {
-    document.querySelectorAll('section[name="result"] li').forEach(li => {
-      li.remove();
-    });
-  }
 }

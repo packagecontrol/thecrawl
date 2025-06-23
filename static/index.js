@@ -1,37 +1,34 @@
 import { Card } from './card.js';
-import { Search } from './search.js';
 import { Data } from './data.js';
+import { List } from './list.js';
+import { Search } from './search.js';
 
 const data = await new Data().get();
 
 function goSearch(value) {
   const srch = new Search(value, data);
-  const target_section = document.querySelector('section[name="result"] ul');
+  const list = new List();
+  const target_section = list.getTarget();
 
   // clear previous results
-  srch.clear();
+  list.clear();
 
   if (value.length < 1) {
     // there is no search query so revert to normal homepage
-    srch.reset();
+    list.reset();
 
     return;
   }
 
   const results = srch.get();
 
-  document.querySelector('h1 .counter').innerText = results.length;
+  list.setCounter(results.length);
 
   // hide the normal homepage and show results
-  srch.toggleSections();
+  list.toggleSections();
 
-  // todo: paginate or infinite scroll when over 36 results
-  // just so we don't just dump a thousand nodes into the DOM
-  results.slice(0,36).forEach(result => {
-    const parent = document.createElement('li');
-    parent.appendChild((new Card(result)).render());
-    target_section.appendChild(parent);
-  });
+  // start rendering results as you scroll
+  list.startRendering(results);
 }
 
 const form = document.forms.search;
