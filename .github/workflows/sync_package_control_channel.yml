@@ -15,24 +15,43 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: package_control_channel
 
       - name: Configure Git
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Add upstream and fetch
+      - name: Check for upstream changes
+        id: check
         run: |
           git remote add wbond https://github.com/wbond/package_control_channel.git
           git fetch wbond
-          git branch -f package_control_channel wbond/master
 
-      - name: Remove upstream workflows
+          CLEANED_COMMIT=$(git rev-parse package_control_channel 2>/dev/null || echo "")
+          BASE_COMMIT=$(git rev-parse "$CLEANED_COMMIT^" 2>/dev/null || echo "")
+          UPSTREAM_COMMIT=$(git rev-parse wbond/master)
+
+          echo "CLEANED_COMMIT=$CLEANED_COMMIT"
+          echo "BASE_COMMIT=$BASE_COMMIT"
+          echo "UPSTREAM_COMMIT=$UPSTREAM_COMMIT"
+
+          if [ "$BASE_COMMIT" = "$UPSTREAM_COMMIT" ]; then
+            echo "No upstream updates detected."
+            echo "upstream_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Upstream has new commits."
+            echo "upstream_changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync and push
+        if: steps.check.outputs.upstream_changed == 'true'
         run: |
-          git checkout package_control_channel
+          git checkout -B package_control_channel wbond/master
+
           rm -rf .github/workflows
           git commit -am "Remove upstream workflows" || echo "No changes to commit"
 
-      - name: Push cleaned branch
-        run: |
           git push origin package_control_channel --force
