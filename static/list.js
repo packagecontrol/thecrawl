@@ -34,14 +34,22 @@ export class List {
     });
 
     this.setCounter();
-    this.observer.unobserve(this.observed);
-    this.observer.disconnect();
+
+    if (this.observed) {
+      this.observer.unobserve(this.observed);
+      this.observed = null;
+    }
   }
 
   clear () {
     document.querySelectorAll('section[name="result"] li').forEach(li => {
       li.remove();
     });
+
+    if (this.observed) {
+      this.observer.unobserve(this.observed);
+      this.observed = null;
+    }
   }
 
   startRendering(items, batchSize = 12) {
