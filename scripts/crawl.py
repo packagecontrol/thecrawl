@@ -295,14 +295,6 @@ async def crawl_package(
     entry: PackageEntryV1,
     existing: PackageEntry
 ) -> PackageEntry:
-    keys_we_can_fetch = {
-        "description",
-        "homepage",
-        "author",
-        "readme",
-        "issues",
-        "donate",
-    }
     out: PackageEntry = {**entry}
     if "readme" in out:
         out["readme"] = update_url(resolve_url(out["source"], out["readme"]))
@@ -314,8 +306,7 @@ async def crawl_package(
 
     uow: defaultdict[Url, set[QueryScope]] = defaultdict(set)
     if details:
-        if keys_we_can_fetch - out.keys():
-            uow[details].add("METADATA")
+        uow[details].add("METADATA")
 
     for r in release_definitions[:]:
         if base := r.get("base"):
