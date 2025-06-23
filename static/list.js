@@ -2,6 +2,7 @@ import { Card } from './card.js';
 
 export class List {
   observer = null;
+  observed = null;
 
   getTarget() {
     return document.querySelector('section[name="result"] ul');
@@ -33,7 +34,8 @@ export class List {
     });
 
     this.setCounter();
-    this.observer.unobserve(document.querySelector('footer'));
+    this.observer.unobserve(this.observed);
+    this.observer.disconnect();
   }
 
   clear () {
@@ -42,13 +44,12 @@ export class List {
     });
   }
 
-  startRendering(items, batchSize = 6) {
+  startRendering(items, batchSize = 12) {
     const total = items.length;
-    const footer = document.querySelector('footer');
+    this.observed = document.querySelector('footer');
     let rendered = 0;
 
     const renderBatch = () => {
-      console.log('batch')
       const next = items.slice(rendered, rendered + batchSize);
       next.forEach(pkg => {
         const li = document.createElement('li');
@@ -59,7 +60,7 @@ export class List {
 
       if (rendered >= total) {
         // stop observing
-        this.observer.unobserve(footer);
+        this.observer.unobserve(this.observed);
       }
     }
 
@@ -69,6 +70,6 @@ export class List {
       threshold: 0.2,
     });
 
-    this.observer.observe(footer);
+    this.observer.observe(this.observed);
   }
 }

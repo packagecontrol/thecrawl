@@ -4,10 +4,10 @@ import { List } from './list.js';
 import { Search } from './search.js';
 
 const data = await new Data().get();
+const list = new List();
 
 function goSearch(value) {
   const srch = new Search(value, data);
-  const list = new List();
   const target_section = list.getTarget();
 
   // clear previous results
