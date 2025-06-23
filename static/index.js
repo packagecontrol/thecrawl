@@ -8,6 +8,8 @@ function goSearch(value) {
   const srch = new Search(value, data);
   const target_section = document.querySelector('section[name="result"] ul');
 
+  srch.clear();
+
   if (value.length < 1) {
     srch.reset();
 

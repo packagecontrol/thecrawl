@@ -1,3 +1,5 @@
+import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
+
 export class Search {
   value = '';
   data = null;
@@ -49,14 +51,40 @@ export class Search {
       value = value.replace(platform[0], '');
     }
 
-    // naively search package names for the remaining string (in any)
-    // and return the results
+    // use minisearch to find matches with some level of fuzziness
+    // we sloppily seset the index each search
+    // which is wasteful of cpu cycles I guess, but it seems fast enough :shrug:
+    // https://github.com/lucaong/minisearch
+    const minisrch = new minisearch({
+      idField: 'name',
+      fields: ['name', 'description'],
+      searchOptions: {
+          boost: { name: 2 },
+          fuzzy: 0.2,
+          prefix: true
+        }
+    });
+
+    // start with all data post label/author filtering
+    minisrch.addAll(base);
+    // search and then map results so we can easily use them for output
+    const miniresult = minisrch.search(value)
+    const minikeys = miniresult.map(mini => mini.id);
+    const scores = miniresult.reduce((acc, mini) => {
+      acc[mini.id] = mini.score;
+      return acc;
+    }, {});
+
+    // return matches sorted by their score according to minisearch
+    // where a high score means a better match
     return base.filter(
-      pkg => pkg.name.toLowerCase().includes(value.trim())
-    );
+      pkg => minikeys.indexOf(pkg.name) > -1
+    ).sort((a,b) => {
+      return scores[b.name] - scores[a.name];
+    });
   }
 
-	toggleSections() {
+	toggleSections () {
     document.querySelectorAll('section').forEach(section => {
       if (section.getAttribute('name') !== 'result') {
         section.style.display = 'none';
@@ -75,11 +103,13 @@ export class Search {
       }
     });
 
+    const counter = document.querySelector('h1 .counter');
+    counter.innerText = counter.dataset.all;
+  }
+
+  clear () {
     document.querySelectorAll('section[name="result"] li').forEach(li => {
       li.remove();
     });
-
-    const counter = document.querySelector('h1 .counter');
-    counter.innerText = counter.dataset.all;
   }
 }
