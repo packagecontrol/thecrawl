@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
+  push:
+    branches:
+      - package_control_channel
 
 permissions:
   contents: write
