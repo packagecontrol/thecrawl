@@ -27,9 +27,9 @@ export class Search {
     // handle label filter
     const label = value.match(/label:"([^"]+)"/i);
     if (label) {
-      base = base.filter(
-        pkg => pkg.labels.toLowerCase().includes(label[1].toLowerCase())
-      );
+      base = base.filter(pkg => {
+        return pkg.labels.toLowerCase().split(',').indexOf(label[1].toLowerCase()) > -1;
+      });
 
       // remove this filter from the search string
       value = value.replace(label[0], '');
@@ -43,7 +43,7 @@ export class Search {
           if (!pkg.platforms) {
             return true;
           }
-          return pkg.platforms.toLowerCase().includes(platform[1].toLowerCase())
+          return pkg.platforms.toLowerCase().split(',').indexOf(platform[1].toLowerCase()) > -1
         }
       );
 
