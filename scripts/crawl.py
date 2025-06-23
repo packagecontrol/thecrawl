@@ -310,7 +310,7 @@ async def crawl_package(
     release_definitions: list[ReleaseDescription] = out.get("releases", [])  # type: ignore[assignment]
     migrate_release_definitions_from_v2(release_definitions)
     reject_asset_definitions_from_v4(release_definitions)
-    normalize_release_definition(release_definitions, out["source"])
+    normalize_release_definition(release_definitions, out["source"], details)
 
     uow: defaultdict[Url, set[QueryScope]] = defaultdict(set)
     if details:
@@ -318,8 +318,7 @@ async def crawl_package(
             uow[details].add("METADATA")
 
     for r in release_definitions[:]:
-        if base := r.get("base", details):
-            base = resolve_url(out["source"], base)
+        if base := r.get("base"):
             if "tags" in r:
                 uow[base].add("TAGS")
             if "branch" in r:
@@ -346,6 +345,9 @@ async def crawl_package(
         out = info["metadata"] | out
 
         for r in release_definitions[:]:
+            if r.get("base") != url:
+                continue
+
             if tag_defintion := r.get("tags"):
                 tag_prefix = "" if tag_defintion is True else tag_defintion
                 async for tag in info["tags"]:
@@ -412,7 +414,6 @@ async def crawl_dependency(
     uow: defaultdict[Url, set[QueryScope]] = defaultdict(set)
     for r in release_definitions[:]:
         if base := r.get("base"):
-            base = resolve_url(out["source"], base)
             if "tags" in r:
                 uow[base].add("TAGS")
             if "branch" in r:
@@ -432,6 +433,9 @@ async def crawl_dependency(
                 continue
 
         for r in release_definitions[:]:
+            if r.get("base") != url:
+                continue
+
             if tag_defintion := r.get("tags"):
                 tag_prefix = "" if tag_defintion is True else tag_defintion
                 async for tag in info["tags"]:
@@ -506,11 +510,18 @@ def reject_asset_definitions_from_v4(releases: list[ReleaseDescription]):
             releases.remove(r)
 
 
-def normalize_release_definition(releases: list[ReleaseDescription], repo_url):
+def normalize_release_definition(
+    releases: list[ReleaseDescription],
+    repo_url: str,
+    details: str | None = None
+):
     for r in releases[:]:
         r.setdefault("platforms", ["*"])
         if isinstance(r["platforms"], str):
             r["platforms"] = [r["platforms"]]
+
+        if base := r.get("base", details):
+            r["base"] = resolve_url(repo_url, base)
 
         if "url" in r:
             r["url"] = update_url(resolve_url(repo_url, r["url"]))
