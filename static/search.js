@@ -51,6 +51,11 @@ export class Search {
       value = value.replace(platform[0], '');
     }
 
+    if (!value.trim()) {
+      // if after that filtering no search terms remain, just return what's left
+      return base;
+    }
+
     // use minisearch to find matches with some level of fuzziness
     // we sloppily seset the index each search
     // which is wasteful of cpu cycles I guess, but it seems fast enough :shrug:
@@ -68,7 +73,7 @@ export class Search {
     // start with all data post label/author filtering
     minisrch.addAll(base);
     // search and then map results so we can easily use them for output
-    const miniresult = minisrch.search(value)
+    const miniresult = minisrch.search(value.trim())
     const minikeys = miniresult.map(mini => mini.id);
     const scores = miniresult.reduce((acc, mini) => {
       acc[mini.id] = mini.score;
