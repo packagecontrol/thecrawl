@@ -8,9 +8,11 @@ function goSearch(value) {
   const srch = new Search(value, data);
   const target_section = document.querySelector('section[name="result"] ul');
 
+  // clear previous results
   srch.clear();
 
   if (value.length < 1) {
+    // there is no search query so revert to normal homepage
     srch.reset();
 
     return;
@@ -20,8 +22,11 @@ function goSearch(value) {
 
   document.querySelector('h1 .counter').innerText = results.length;
 
+  // hide the normal homepage and show results
   srch.toggleSections();
 
+  // todo: paginate or infinite scroll when over 36 results
+  // just so we don't just dump a thousand nodes into the DOM
   results.slice(0,36).forEach(result => {
     const parent = document.createElement('li');
     parent.appendChild((new Card(result)).render());
@@ -36,6 +41,7 @@ const url_search = window.location.search;
 let debounceTimeout;
 
 if (url_search) {
+  // convert search urls (e.g. label or author links) to search input values
   input.value = decodeURI(url_search).replace('?', '').replace('=', ':');
   goSearch(input.value.toLowerCase());
 }
