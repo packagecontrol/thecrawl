@@ -47,8 +47,8 @@ class PackageEntry(TypedDict, total=False):
     source: Url
     schema_version: str
 
-    tombstoned: NotRequired[bool]   # fetching the repository failed
-    removed: NotRequired[bool]      # not listed in the registry anymore
+    tombstoned: NotRequired[bool]       # fetching the repository failed
+    removed: NotRequired[IsoTimestamp]  # not listed in the registry anymore
     invalid: NotRequired[bool]
     first_seen: IsoTimestamp
     last_seen: IsoTimestamp
@@ -198,12 +198,21 @@ def next_packages_to_crawl(
     )[:limit]
 
 def maintenance(registry: Registry, workspace: Workspace) -> None:
-    # lookup all packages in workspace and mark them as {"removed": True}
+    # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
+    now = datetime.now(timezone.utc)
+    now_string = now.strftime("%Y-%m-%d %H:%M:%S")
     current_package_names = {entry["name"] for entry in registry["packages"]}
     packages = workspace["packages"]
     for name in packages.keys() - current_package_names:
-        packages[name]["removed"] = True
+        packages[name]["removed"] = now_string
+
+    for entry in packages.values():
+        if (
+            entry.get("removed") is True
+            and (failing_since := entry.get("failing_since"))
+        ):
+            entry["removed"] = failing_since
 
 
 async def crawl(
