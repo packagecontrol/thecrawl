@@ -1,4 +1,3 @@
 registry.json
-channel.json
+channel*.json
 workspace.json
-c.json
