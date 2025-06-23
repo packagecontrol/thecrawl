@@ -342,7 +342,8 @@ async def crawl_package(
                 err(f"Backend for {url} not implemented yet")
                 continue
 
-        out = info["metadata"] | out
+        if url == details:
+            out = info["metadata"] | out
 
         for r in release_definitions[:]:
             if r.get("base") != url:
