@@ -14,7 +14,7 @@ export class List {
     counter.innerText = count ?? counter.dataset.all;
   }
 
-	toggleSections () {
+  toggleSections () {
     document.querySelectorAll('section').forEach(section => {
       if (section.getAttribute('name') !== 'result') {
         section.style.display = 'none';
