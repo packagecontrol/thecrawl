@@ -80,9 +80,10 @@ def main(registry_path, workspace_path, channel_path):
     # Group packages by source
     packages_by_source: defaultdict[RepositoryUrl, list[Package]] = defaultdict(list)
     drop_count = 0
+    removed_count = 0
     for pkg in workspace.get("packages", {}).values():
         if pkg.get("removed"):
-            drop_count += 1
+            removed_count += 1
             continue
         norm = normalize_package(pkg)
         if not norm:
@@ -111,7 +112,10 @@ def main(registry_path, workspace_path, channel_path):
         f"Collated {len(packages_by_source)} sources with "
         f"{sum(len(pkgs) for pkgs in packages_by_source.values())} packages."
     )
-    print(f"Dropped {drop_count} invalid packages.")
+    print(
+        f"Dropped {drop_count} incomplete packages.  "
+        f"{removed_count} are currently tombstoned."
+    )
 
 
 def normalize_package(pkg) -> Package | None:
