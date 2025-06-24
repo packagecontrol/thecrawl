@@ -200,14 +200,15 @@ def maintenance(registry: Registry, workspace: Workspace) -> None:
     current_package_names = {entry["name"] for entry in registry["packages"]}
     packages = workspace["packages"]
     for name in packages.keys() - current_package_names:
-        packages[name]["removed"] = now_string
+        packages[name].setdefault("removed", now_string)
 
     for entry in packages.values():
         if (
-            entry.get("removed") is True
+            entry.get("removed")
             and (failing_since := entry.get("failing_since"))
         ):
             entry["removed"] = failing_since
+
 
 
 async def crawl(
