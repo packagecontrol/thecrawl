@@ -55,10 +55,10 @@ module.exports = function (eleventyConfig) {
 
   eleventyConfig.addCollection("newest_packages", () => {
     return live_packages.map(pkg => ({
-      first_seen: pkg.first_seen,
+      created_at: pkg.created_at,
       ...minimalPackage(pkg)
     })).sort((a, b) => {
-      return new Date(b.first_seen ?? '1970-01-01 00:00:00') - new Date(a.first_seen ?? '1970-01-01 00:00:00')
+      return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
     }).slice(0,9);
   });
 
