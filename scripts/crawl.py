@@ -304,6 +304,8 @@ async def crawl_package(
         uow[details].add("METADATA")
 
     for r in release_definitions[:]:
+        if is_fulfilled_release_definition(r):
+            continue
         if base := r.get("base"):
             uow[base].add("METADATA")
             if "tags" in r:
@@ -327,6 +329,8 @@ async def crawl_package(
             out = info["metadata"] | out
 
         for r in release_definitions[:]:
+            if is_fulfilled_release_definition(r):
+                continue
             if r.get("base") != url:
                 continue
 
@@ -377,8 +381,7 @@ async def crawl_package(
             release_definitions.remove(r)
 
     for r in release_definitions[:]:
-        missing_keys = {"sublime_text", "platforms", "version", "url", "date"} - r.keys()
-        if missing_keys:
+        if missing_keys := missing_from_release_definition(r):
             s = "s" if len(missing_keys) > 1 else ""
             err(
                 f"Release definition {r} for {entry['name']} incomplete.  "
@@ -405,6 +408,18 @@ def reject_asset_definitions_from_v4(releases: list[ReleaseDescription]):
                 "(the official registry is still v3)"
             )
             releases.remove(r)
+
+
+def missing_from_release_definition(release: ReleaseDescription) -> set[str]:
+    return {"sublime_text", "platforms", "version", "url", "date"} - release.keys()
+
+
+def is_fulfilled_release_definition(release: ReleaseDescription) -> bool:
+    return not(
+        "tags" in release
+        or "branch" in release
+        or missing_from_release_definition(release)
+    )
 
 
 def normalize_release_definition(
