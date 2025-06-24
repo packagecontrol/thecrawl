@@ -56,7 +56,7 @@ _readme_filenames = {
 
 if not os.getenv("BITBUCKET_TOKEN"):
     err(
-        "Warning: BITBUCKET_TOKEN environment variable is not set. "
+        "Note: BITBUCKET_TOKEN environment variable is not set. "
         "Running anonymously."
     )
 

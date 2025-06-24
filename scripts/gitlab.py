@@ -55,7 +55,7 @@ _readme_filenames = {
 
 if not os.getenv("GITLAB_TOKEN"):
     err(
-        "Warning: GITLAB_TOKEN environment variable is not set. "
+        "Note: GITLAB_TOKEN environment variable is not set. "
         "Running anonymously."
     )
 
