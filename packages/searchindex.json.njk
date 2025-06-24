@@ -8,6 +8,7 @@ permalink: "/packages/searchindex.json"
 		"name": "{{ pkg.name }}",
 		"description": "{{ pkg.description | nl2br | replace('\n', '') }}",
 		"author": "{{ pkg.author }}",
+		"stars": "{{ pkg.stars }}",
 	    "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
 	    "labels": "{{ pkg.labels | default([]) | join(",") }}",
 	    "permalink": "/package/{{ pkg.name | preslug | slugify | url }}/"

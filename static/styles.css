@@ -44,8 +44,7 @@ section {
     content: "”";
   }
 }
-a.release {
-  color: var(--foreground);
+.release {
   font-weight: bold;
 }
 .requirement {
@@ -68,6 +67,10 @@ input {
   margin-bottom: 11px;
   font-size: 1rem;
   line-height: 1.6;
+}
+
+svg {
+  fill: currentColor;
 }
 
 .labels,
@@ -95,10 +98,6 @@ input {
     color: var(--foreground-lighter);
     white-space: nowrap;
     line-height: 1.6;
-
-    svg {
-      fill: currentColor;
-    }
 
     &.platform {
       background: var(--secondary-accent);

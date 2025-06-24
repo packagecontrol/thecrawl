@@ -49,8 +49,15 @@
     position: absolute;
     top: 1rem;
     right: 1rem;
-    dt {
-      display: none;
+    display: flex;
+    gap: 3px;
+    align-content: center;
+    align-items: center;
+    line-height: 1;
+    color: var(--foreground-lighter);
+    > * {
+      display: flex;
+      margin: 0;
     }
   }
 

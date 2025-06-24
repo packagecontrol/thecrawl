@@ -14,6 +14,12 @@ export class Card {
     this.clone.querySelector('a').setAttribute('href', this.pkg.permalink);
     this.clone.querySelector('p').innerHTML = 'by ' + this.pkg.author;
 
+    if (this.pkg.stars !== '0') {
+      this.clone.querySelector('.stars').innerText = this.pkg.stars;
+    } else {
+      this.clone.querySelector('.stars').closest('dl').remove();
+    }
+
     const labels = this.clone.querySelector('ul.labels');
     this.platforms(labels);
     this.labels(labels);
