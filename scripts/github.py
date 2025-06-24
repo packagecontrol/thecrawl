@@ -318,7 +318,7 @@ def grab_tags(repo: str, entries) -> list[TagInfo]:
         t = node["target"]
         commit = t.get("target", t)
         if "oid" not in commit:
-            print("no tag oid", node, "for", repo)
+            print("Skip tag with no oid:", node, "from", repo)
             continue
         tags.append({
             "name": tag_name,
