@@ -1,8 +1,9 @@
 import { Card } from './card.js';
 
 export class List {
-  observer = null;
-  observed = null;
+  getButton() {
+    return document.querySelector('section[name="result"] button');
+  }
 
   getTarget() {
     return document.querySelector('section[name="result"] ul');
@@ -34,27 +35,16 @@ export class List {
     });
 
     this.setCounter();
-
-    if (this.observed) {
-      this.observer.unobserve(this.observed);
-      this.observed = null;
-    }
   }
 
   clear () {
     document.querySelectorAll('section[name="result"] li').forEach(li => {
       li.remove();
     });
-
-    if (this.observed) {
-      this.observer.unobserve(this.observed);
-      this.observed = null;
-    }
   }
 
-  startRendering(items, batchSize = 12) {
+  startRendering(items, batchSize = 24) {
     const total = items.length;
-    this.observed = document.querySelector('footer');
     let rendered = 0;
 
     const renderBatch = () => {
@@ -67,17 +57,17 @@ export class List {
       rendered += next.length;
 
       if (rendered >= total) {
-        // stop observing
-        this.observer.unobserve(this.observed);
+        this.getButton().style.display = 'none';
+      } else {
+        this.getButton().style.display = null;
       }
     }
 
-    // start observing scroll: footer comes into viewport
-    this.observer = new IntersectionObserver(renderBatch, {
-      root: null,
-      threshold: 0.2,
-    });
-
-    this.observer.observe(this.observed);
+    renderBatch();
+    this.getButton().onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      renderBatch();
+    }
   }
 }
