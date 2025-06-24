@@ -202,14 +202,6 @@ def maintenance(registry: Registry, workspace: Workspace) -> None:
     for name in packages.keys() - current_package_names:
         packages[name].setdefault("removed", now_string)
 
-    for entry in packages.values():
-        if (
-            entry.get("removed")
-            and (failing_since := entry.get("failing_since"))
-        ):
-            entry["removed"] = failing_since
-
-
 
 async def crawl(
     session: aiohttp.ClientSession,
