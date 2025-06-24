@@ -62,6 +62,12 @@ module.exports = function (eleventyConfig) {
     }).slice(0,9);
   });
 
+  // disambiguate package names that would result in the same slug
+  eleventyConfig.addFilter("preslug", (str) => {
+    if (! typeof str === "string" ) return str;
+    return str.replace("+", "plus").replace("C#", "C-Sharp");
+  });
+
   // simple to date string for some dates without times
   eleventyConfig.addFilter("date_format", (date) => {
     if (! typeof date === "string" ) return str;
