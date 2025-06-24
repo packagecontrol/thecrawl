@@ -1,18 +1,18 @@
 {% macro labels(platforms, labels) %}
   <ul class="labels">
     {% for platform in platforms %}
-      {% set q = '"' ~ platform ~ '"' %}
+      {% set q = 'platform:"' ~ platform ~ '"' %}
       <li>
-        <a class="platform platform-{{ platform }}" href="/?platform={{ q | urlencode }}">
+        <a class="platform platform-{{ platform }}" href="/?q={{ q | urlencode }}">
           {{ platform }}
         </a>
       </li>
     {% endfor %}
 
     {% for label in labels %}
-      {% set q = '"' ~ label ~ '"' %}
+      {% set q = 'label:"' ~ label ~ '"' %}
       <li>
-        <a class="label" href="/?label={{ q | urlencode }}">
+        <a class="label" href="/?q={{ q | urlencode }}">
           {{ label }}
         </a>
       </li>

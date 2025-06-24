@@ -10,6 +10,8 @@ function goSearch(value) {
   const srch = new Search(value, data);
   const target_section = list.getTarget();
 
+  history.replaceState({}, '', '?q=' + encodeURIComponent(value));
+
   // clear previous results
   list.clear();
 
@@ -39,7 +41,7 @@ let debounceTimeout;
 
 if (url_search) {
   // convert search urls (e.g. label or author links) to search input values
-  input.value = decodeURI(url_search).replace('?', '').replace('=', ':');
+  input.value = decodeURIComponent(url_search.replace('?q=', ''));
   goSearch(input.value.toLowerCase());
 }
 
