@@ -57,5 +57,5 @@ input.addEventListener('input', (event) => {
 
   debounceTimeout = setTimeout(() => {
     goSearch(input.value.toLowerCase());
-  }, 1000); // 1000ms = 1 seconds
+  }, 300); // .3 seconds
 });
