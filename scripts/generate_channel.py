@@ -6,7 +6,6 @@ import sys
 import os
 from typing import TypedDict, Literal
 
-from .utils import drop_falsy
 
 type RepositoryUrl = str
 type Platform = Literal["*", "windows", "osx", "linux"]
@@ -180,72 +179,6 @@ def normalize_package(pkg) -> Package | None:
         "issues": pkg.get("issues"),
         "donate": pkg.get("donate"),
         "buy": pkg.get("buy"),
-    }
-    return out
-
-
-def normalize_dependency(pkg) -> Package | None:
-    name = pkg.get("name")
-    if not name:
-        err(f"Drop dependency with no name: {pkg}")
-        return None
-
-    # releases must be a non-empty list and each must be valid
-    releases: list[Release] = []
-    for rel in pkg.get("releases", []):
-        # platforms must be a non-empty list of Platform, and if '*' is present,
-        # it must be the only value
-        platforms = rel.get("platforms")
-        if not isinstance(platforms, list) or not platforms:
-            continue
-        if "*" in platforms and len(platforms) > 1:
-            continue
-        # required release fields
-        if not all(k in rel and rel[k] for k in ("sublime_text", "version", "url")):
-            continue
-        sha = rel.get("sha256")
-        if rel["url"].startswith("http://") and not sha:
-            err(f"The key 'sha256' is missing for the non-secure 'url' {rel['url']}")
-            continue
-        releases.append(drop_falsy({
-            "sublime_text": rel["sublime_text"],
-            "platforms": platforms,
-            "version": rel["version"],
-            "url": rel["url"],
-            "python_versions": ["3.3"],
-            "sha256": sha
-        }))
-    if not releases:
-        err(f"Drop package {name} with no valid releases{failing_since(pkg)}")
-        return None
-
-    # Only accept packages with all required fields
-    required_fields = [
-        "name", "author", "releases"
-    ]
-    # Check required fields
-    for field in required_fields:
-        if field not in pkg or not pkg[field]:
-            err(f"Drop package {name} with missing field '{field}'{failing_since(pkg)}")
-            return None
-
-    # Author must be a non-empty list[str]
-    author = pkg["author"]
-    if isinstance(author, str):
-        author = [author]
-    if not all(isinstance(a, str) for a in author):
-        err(f"Drop package {name} with invalid author field: {author}{failing_since(pkg)}")
-        return None
-
-    out: Package = {
-        "name": pkg["name"],
-        "author": author,
-        "last_modified": pkg.get("last_modified"),
-        "releases": releases,
-
-        # mandatory keys but with null or empty defaults
-        "description": pkg.get("description"),
-        "issues": pkg.get("issues"),
     }
     return out
 

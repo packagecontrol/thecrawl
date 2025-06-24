@@ -3,7 +3,6 @@ import argparse
 import asyncio
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from itertools import chain
 import json
 import os
 import sys
@@ -86,8 +85,6 @@ async def main(registry: str, workspace: str, name: str | None, limit: int = 200
 
     try:
         await main_(registry_data, workspace_data, name, limit)
-    # except Exception as e:
-    #     err(f"Error in main_: {e}")
     finally:
         with open(workspace, 'w') as ws_file:
             json.dump(workspace_data, ws_file, indent=2)
@@ -265,8 +262,6 @@ async def crawl(
     out["first_seen"] = existing.get("first_seen", now_string)
     out["last_seen"] = now_string
 
-    # out.setdefault("last_modified", "1970-01-01 00:00:00")
-
     releases = out["releases"]
     if not releases:
         err(f"No releases found for {out['name']}")
@@ -323,7 +318,6 @@ async def crawl_package(
             if "branch" in r:
                 uow[base].add("BRANCHES")
 
-    # print("uow", uow)
     for url, scopes in uow.items():
         match which_hub(url):
             case "github":
@@ -400,96 +394,6 @@ async def crawl_package(
             release_definitions.remove(r)
 
     return out
-    # print("out", out)
-    # print("uow", uow, set(chain(*uow.values())))
-
-
-async def crawl_dependency(
-    session: aiohttp.ClientSession,
-    entry: PackageEntryV1,
-    existing: PackageEntry
-) -> PackageEntry:
-    out: PackageEntry = {**entry}
-    release_definitions: list[ReleaseDescription] = out.get("releases", [])  # type: ignore[assignment]
-    reject_asset_definitions_from_v4(release_definitions)
-    normalize_release_definition(release_definitions, out["source"])
-
-    uow: defaultdict[Url, set[QueryScope]] = defaultdict(set)
-    for r in release_definitions[:]:
-        if base := r.get("base"):
-            uow[base].add("METADATA")
-            if "tags" in r:
-                uow[base].add("TAGS")
-            if "branch" in r:
-                uow[base].add("BRANCHES")
-
-    # print("uow", uow)
-    for url, scopes in uow.items():
-        match which_hub(url):
-            case "github":
-                info = await fetch_github_info(session, url, scopes)
-            case "bitbucket":
-                info = await fetch_bitbucket_info(session, url, scopes)
-            case "gitlab":
-                info = await fetch_gitlab_info(session, url, scopes)
-            case _:
-                err(f"Backend for {url} not implemented yet")
-                continue
-
-        for r in release_definitions[:]:
-            if r.get("base") != url:
-                continue
-
-            if tag_defintion := r.get("tags"):
-                tag_prefix = "" if tag_defintion is True else tag_defintion
-                async for tag in info["tags"]:
-                    if (
-                        tag["name"].startswith(tag_prefix)
-                        and (version := (
-                            tag["name"].removeprefix(tag_prefix)
-                            if tag_prefix
-                            else strip_possible_prefix(tag["name"])
-                        ))
-                        and is_semver(version)
-                    ):
-                        r.pop("tags")
-                        r |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
-                        r |= {"version": version}
-                        break
-                else:
-                    if tag_prefix:
-                        err(f"No prefixed tag found for {url} matching ^{tag_prefix}")
-                    else:
-                        err(f"No tagged version found for {url}")
-                    release_definitions.remove(r)
-            elif branches_defintion := r.get("branch"):
-                default_branch = info["metadata"].get("default_branch", "master")
-                wanted_branch = (
-                    default_branch
-                    if branches_defintion is True
-                    else branches_defintion
-                )
-                async for branch in info["branches"]:
-                    if branch["name"] == wanted_branch:
-                        r.pop("branch")
-                        r |= pluck(branch, ("version", "url", "date"))  # type: ignore[arg-type]
-                        break
-                else:
-                    err(f"Branch {wanted_branch} not found on {url}")
-                    release_definitions.remove(r)
-
-    for r in release_definitions[:]:
-        # "date" is not required unlike for packages
-        missing_keys = {"sublime_text", "platforms", "version", "url"} - r.keys()
-        if missing_keys:
-            s = "s" if len(missing_keys) > 1 else ""
-            err(
-                f"Release definition {r} for {entry['name']} incomplete.  "
-                f"Missing key{s}: {missing_keys}"
-            )
-            release_definitions.remove(r)
-
-    return out
 
 
 def pluck[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
@@ -498,10 +402,6 @@ def pluck[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
         for k, v in d.items()
         if k in keys
     }
-
-
-def fetch_info_from_github(releases: list[ReleaseDescription], tags: set[str]) -> None:
-    ...
 
 
 def reject_asset_definitions_from_v4(releases: list[ReleaseDescription]):
