@@ -1,7 +1,7 @@
-import { Card } from './card.js';
-import { Data } from './data.js';
-import { List } from './list.js';
-import { Search } from './search.js';
+import { Card } from './module/card.js';
+import { Data } from './module/data.js';
+import { List } from './module/list.js';
+import { Search } from './module/search.js';
 
 const data = await new Data().get();
 const list = new List();
