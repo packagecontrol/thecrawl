@@ -53,10 +53,10 @@ export class Card {
 
     if (['linux','macos','windows'].indexOf(name) >= 0) {
       a.classList.add('platform', 'platform-' + name);
-      a.setAttribute('href', '/?platform=' + encodeURI('"' + name + '"'));
+      a.setAttribute('href', '/?q=' + encodeURI('platform::"' + name + '"'));
     } else {
       a.classList.add('label');
-      a.setAttribute('href', '/?label=' + encodeURI('"' + name + '"'));
+      a.setAttribute('href', '/?q=' + encodeURI('label:"' + name + '"'));
     }
 
     a.innerText = name;
