@@ -27,7 +27,7 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("static");
 
   const data = JSON.parse(fs.readFileSync("workspace.json", "utf8"));
-  const live_packages = Object.entries(data.packages).map(([id, pkg]) => pkg).filter(pkg => pkg.removed !== true);
+  const live_packages = Object.entries(data.packages).map(([id, pkg]) => pkg).filter(pkg => !pkg.removed);
 
   eleventyConfig.addCollection("packages", () => {
     return live_packages.map(pkg => ({
