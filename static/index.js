@@ -33,7 +33,12 @@ function goSearch(value, sortBy = 'relevance', page = 1) {
   }
   
   const queryString = params.toString();
-  history.replaceState({}, '', queryString ? '?' + queryString : '/');
+  const newUrl = queryString ? '?' + queryString : '/';
+  
+  // Only push state if URL is actually changing
+  if (window.location.search !== (queryString ? '?' + queryString : '')) {
+    history.pushState({}, '', newUrl);
+  }
 
   // clear previous results
   list.clear('result');
@@ -100,7 +105,9 @@ input.form.onsubmit = (event) => {
     // Return to homepage when search is cleared
     list.reset();
     // Update URL to remove search parameters
-    history.replaceState({}, '', '/');
+    if (window.location.pathname !== '/' || window.location.search !== '') {
+      history.pushState({}, '', '/');
+    }
   } else {
     goSearch(query, sortBy);
   }
@@ -118,7 +125,9 @@ input.addEventListener('input', (event) => {
       // Return to homepage when search is cleared
       list.reset();
       // Update URL to remove search parameters
-      history.replaceState({}, '', '/');
+      if (window.location.pathname !== '/' || window.location.search !== '') {
+        history.pushState({}, '', '/');
+      }
     } else {
       goSearch(query, sortBy);
     }
@@ -131,4 +140,26 @@ sortSelect.addEventListener('change', (event) => {
   const sortBy = event.target.value;
   
   goSearch(query, sortBy);
+});
+
+// Handle browser back/forward navigation
+window.addEventListener('popstate', (event) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const query = urlParams.get('q') || '';
+  const sortBy = urlParams.get('sort');
+  const page = parseInt(urlParams.get('page')) || 1;
+
+  // Update form elements to reflect URL state
+  input.value = query;
+  
+  // Handle navigation
+  if (query || sortBy || urlParams.has('page')) {
+    const effectiveSortBy = sortBy || (query ? 'relevance' : 'name');
+    sortSelect.value = effectiveSortBy;
+    goSearch(query, effectiveSortBy, page);
+  } else {
+    // Return to homepage
+    sortSelect.value = 'name';
+    list.reset();
+  }
 });
