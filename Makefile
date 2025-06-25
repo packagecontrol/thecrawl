@@ -4,5 +4,5 @@ build:
 	npx @11ty/eleventy
 
 serve:
-	open http://localhost:8080/
+	open http://localhost:8080/the-packages-site/
 	npx @11ty/eleventy --serve --quiet
