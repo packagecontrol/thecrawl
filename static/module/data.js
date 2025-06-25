@@ -9,7 +9,7 @@ export class Data {
     try {
       let resource = '/packages/searchindex.json';
       const subdir = window.location.pathname;
-      if (subdir) {
+      if (subdir && subdir !== '/') {
         resource = subdir + resource;
       }
       const response = await fetch(resource);
