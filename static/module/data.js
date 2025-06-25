@@ -7,12 +7,7 @@ export class Data {
     }
 
     try {
-      let resource = '/packages/searchindex.json';
-      const subdir = window.location.pathname;
-      if (subdir && subdir !== '/') {
-        resource = subdir + resource;
-      }
-      const response = await fetch(resource);
+      const response = await fetch('/packages/searchindex.json');
       const contentType = response.headers.get("content-type") ?? '';
 
       if (!response.ok || !contentType.includes('application/json')) {
