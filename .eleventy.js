@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { EleventyHtmlBasePlugin } = require("@11ty/eleventy");
 
 function cleanupPlatforms(platforms) {
   return platforms
@@ -26,6 +27,7 @@ function minimalPackage(pkg) {
 
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("static");
+  eleventyConfig.addPlugin(EleventyHtmlBasePlugin);
 
   const data = JSON.parse(fs.readFileSync("workspace.json", "utf8"));
   const live_packages = Object.entries(data.packages).map(([id, pkg]) => pkg).filter(pkg => !pkg.removed);
@@ -79,6 +81,7 @@ module.exports = function (eleventyConfig) {
       input: ".",
       output: "_site",
     },
-    passthroughFileCopy: true
+    passthroughFileCopy: true,
+    pathPrefix: "/the-packages-site/"
   };
 };
