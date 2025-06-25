@@ -3,11 +3,14 @@
 name: Deploy GH Pages
 
 on:
-  # trigger when something is pushed to the branch main
+  # run on changes ...
   push:
     branches: ["main"]
-  # make it possible to trigger manually, useful for debugging
+  # ... when manually triggered
   workflow_dispatch:
+  # ... and nightly
+  schedule:
+    - cron: "0 0 * * *"
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
