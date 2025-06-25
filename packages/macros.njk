@@ -30,7 +30,7 @@
     <p>by {{ pkg.author }}</p>
 
     {% if pkg.stars > 0 %}
-      <dl>
+      <dl title="{{ pkg.stars }} {{ 'star' if pkg.stars < 2 else 'stars' }} on GitHub">
         <dt aria-label="stars">{{ logo('star') }}</dt>
         <dd class="stars">{{ pkg.stars }}</dd>
       </dl>

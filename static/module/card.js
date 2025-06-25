@@ -14,10 +14,12 @@ export class Card {
     this.clone.querySelector('a').setAttribute('href', this.pkg.permalink);
     this.clone.querySelector('p').innerHTML = 'by ' + this.pkg.author;
 
+    const dl = this.clone.querySelector('.stars').closest('dl')
     if (this.pkg.stars !== '0') {
+      dl.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub');
       this.clone.querySelector('.stars').innerText = this.pkg.stars;
     } else {
-      this.clone.querySelector('.stars').closest('dl').remove();
+      dl.remove();
     }
 
     const labels = this.clone.querySelector('ul.labels');
