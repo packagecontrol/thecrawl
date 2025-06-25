@@ -79,6 +79,19 @@ svg {
   fill: currentColor;
 }
 
+dl {
+  display: flex;
+  gap: 3px;
+  align-content: center;
+  align-items: center;
+  line-height: 1;
+  color: var(--foreground-lighter);
+  > * {
+    display: flex;
+    margin: 0;
+  }
+}
+
 .labels,
 .links {
   display: flex;

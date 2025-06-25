@@ -20,6 +20,15 @@
   </ul>
 {% endmacro %}
 
+{% macro stars(count) %}
+  {% if count > 0 %}
+    <dl title="{{ count }} {{ 'star' if count < 2 else 'stars' }} on GitHub">
+      <dt aria-label="stars">{{ logo('star') }}</dt>
+      <dd class="stars">{{ count }}</dd>
+    </dl>
+  {% endif %}
+{% endmacro %}
+
 {% macro card(pkg) %}
   <div class="card">
     <h3>
@@ -29,13 +38,7 @@
     </h3>
     <p>by {{ pkg.author }}</p>
 
-    {% if pkg.stars > 0 %}
-      <dl title="{{ pkg.stars }} {{ 'star' if pkg.stars < 2 else 'stars' }} on GitHub">
-        <dt aria-label="stars">{{ logo('star') }}</dt>
-        <dd class="stars">{{ pkg.stars }}</dd>
-      </dl>
-    {% endif %}
-
+    {{ stars(pkg.stars) }}
     {{ labels(pkg.platforms, pkg.labels) }}
   </div>
 {% endmacro %}
