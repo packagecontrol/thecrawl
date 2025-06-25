@@ -2,60 +2,133 @@ import { Card } from './module/card.js';
 import { Data } from './module/data.js';
 import { List } from './module/list.js';
 import { Search } from './module/search.js';
+import { Sort } from './module/sort.js';
 
 const data = await new Data().get();
 const list = new List();
 
-function goSearch(value) {
-  const srch = new Search(value, data);
-  const target_section = list.getTarget();
+function applySorting(packages, sortBy) {
+  // If it's a search with relevance sorting, don't apply additional sorting
+  // as the search results are already sorted by relevance
+  if (sortBy === 'relevance') {
+    return packages;
+  }
+  
+  return Sort.sort(packages, sortBy);
+}
 
-  history.replaceState({}, '', '?q=' + encodeURIComponent(value));
+function goSearch(value, sortBy = 'relevance', page = 1) {
+  const srch = new Search(value, data);
+
+  // Update URL with search query, sort parameter, and page
+  const params = new URLSearchParams();
+  if (value.length > 0) {
+    params.set('q', value);
+  }
+  if (sortBy !== 'relevance') {
+    params.set('sort', sortBy);
+  }
+  if (page > 1) {
+    params.set('page', page);
+  }
+  
+  const queryString = params.toString();
+  history.replaceState({}, '', queryString ? '?' + queryString : '/');
 
   // clear previous results
-  list.clear();
+  list.clear('result');
 
   if (value.length < 1) {
-    // there is no search query so revert to normal homepage
-    list.reset();
-
+    // No search query - show all packages sorted with pagination
+    const sortedPackages = Sort.sort(data, sortBy || 'name');
+    list.setCounter(sortedPackages.length);
+    list.toggleSections('result');
+    list.renderPage(sortedPackages, 'result', page);
     return;
   }
 
-  const results = srch.get();
+  const searchResults = srch.get();
+  const sortedResults = applySorting(searchResults, sortBy);
 
-  list.setCounter(results.length);
+  list.setCounter(sortedResults.length);
 
   // hide the normal homepage and show results
-  list.toggleSections();
+  list.toggleSections('result');
 
-  // start rendering results as you scroll
-  list.startRendering(results);
+  // render results with pagination
+  list.renderPage(sortedResults, 'result', page);
 }
+
+// Make goSearch globally accessible for pagination buttons
+window.goSearch = goSearch;
 
 const form = document.forms.search;
 const input = form.elements['search-field'];
+const sortSelect = form.elements['sort-field'];
 const url_search = window.location.search;
+const urlParams = new URLSearchParams(url_search);
 
 let debounceTimeout;
 
-if (url_search) {
-  // convert search urls (e.g. label or author links) to search input values
-  input.value = decodeURIComponent(url_search.replace('?q=', ''));
-  goSearch(input.value.toLowerCase());
+// Handle initial page load
+const query = urlParams.get('q') || '';
+const sortBy = urlParams.get('sort');
+const page = parseInt(urlParams.get('page')) || 1;
+
+input.value = query;
+
+// Only show search results if there's a query or explicit sort parameter
+if (query || sortBy || urlParams.has('page')) {
+  const effectiveSortBy = sortBy || (query ? 'relevance' : 'name');
+  sortSelect.value = effectiveSortBy;
+  goSearch(query.toLowerCase(), effectiveSortBy, page);
+} else {
+  // Show homepage with default sort option selected
+  sortSelect.value = 'name';
 }
 
+// Handle form submission
 input.form.onsubmit = (event) => {
   event.preventDefault();
   event.stopPropagation();
   clearTimeout(debounceTimeout);
-  goSearch(input.value.toLowerCase());
+  
+  const query = input.value.toLowerCase().trim();
+  const sortBy = sortSelect.value;
+  
+  if (query === '') {
+    // Return to homepage when search is cleared
+    list.reset();
+    // Update URL to remove search parameters
+    history.replaceState({}, '', '/');
+  } else {
+    goSearch(query, sortBy);
+  }
 }
 
+// Handle input changes (search as you type)
 input.addEventListener('input', (event) => {
   clearTimeout(debounceTimeout);
 
   debounceTimeout = setTimeout(() => {
-    goSearch(input.value.toLowerCase());
+    const query = input.value.toLowerCase().trim();
+    const sortBy = sortSelect.value;
+    
+    if (query === '') {
+      // Return to homepage when search is cleared
+      list.reset();
+      // Update URL to remove search parameters
+      history.replaceState({}, '', '/');
+    } else {
+      goSearch(query, sortBy);
+    }
   }, 300); // .3 seconds
+});
+
+// Handle sort dropdown changes
+sortSelect.addEventListener('change', (event) => {
+  const query = input.value.toLowerCase();
+  const sortBy = event.target.value;
+  
+  goSearch(query, sortBy);
 });
