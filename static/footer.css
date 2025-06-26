@@ -13,7 +13,7 @@ footer {
   }
 
   nav {
-    line-height: 52px;
+    margin: 1.6rem auto 3.2rem auto;
     * + * {
       margin-left: 1ex;
     }

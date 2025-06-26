@@ -28,5 +28,10 @@ header {
     * + * {
       margin-left: 1ex;
     }
+
+    @media (max-width: 600px) {
+      /* the links don't fit, but also appear in the footer so goodbye */
+      display: none;
+    }
   }
 }

@@ -3,14 +3,12 @@
   {% include "head.njk" %}
 
   <body>
-    <div class="page-container">
-      {% include "header.njk" %}
+    {% include "header.njk" %}
 
-      <main class="main-content">
-        {{ content | safe }}
-      </main>
+    <main class="main-content">
+      {{ content | safe }}
+    </main>
 
-      {% include "footer.njk" %}
-    </div>
+    {% include "footer.njk" %}
   </body>
 </html>
