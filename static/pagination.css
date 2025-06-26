@@ -1,21 +1,14 @@
 .pagination {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  text-align: center;
   margin: 2rem 0;
   padding: 1rem;
-}
-
-.pagination-info {
   color: var(--foreground-lighter);
-  font-size: 0.9rem;
 }
 
 .pagination-controls {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1ex;
   flex-wrap: wrap;
   justify-content: center;
 
@@ -33,7 +26,6 @@
   color: var(--foreground);
   cursor: pointer;
   border-radius: 4px;
-  font-size: 0.9rem;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
@@ -62,6 +54,5 @@
 }
 
 .pagination-ellipsis {
-  padding: 0.5rem 0.25rem;
-  color: var(--foreground-lighter);
+  padding: 0 1ex;
 }
