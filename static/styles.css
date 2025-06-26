@@ -1,5 +1,6 @@
 @import url('style/typography.css');
 @import url('style/colors.css');
+@import url('style/buttons.css');
 @import url('style/header.css');
 @import url('style/footer.css');
 @import url('style/grid.css');
@@ -79,46 +80,20 @@ dl {
   }
 }
 
-.labels,
-.links {
-  display: flex;
-  gap: 1ex;
-  padding-left: 0;
-  margin-bottom: 3px;
-  flex-wrap: wrap;
-  list-style: none;
-
-  li {
-    display: block;
-    margin: 0;
-    padding: 0;
-  }
-
+.labels {
   a {
-    display: flex;
-    align-items: center;
-    gap: 1ex;
-    padding: .2em .66em;
-    border-radius: 3px;
-    background: var(--background-darker);
-    color: var(--foreground-lighter);
-    white-space: nowrap;
-    line-height: 1.6;
-
     &.platform {
       background: var(--secondary-accent);
       color: var(--background);
+      &:hover {
+        color: var(--label-highlight);
+      }
     }
     &.platform-windows {
       background: var(--primary-accent);
     }
     &.platform-linux {
       background: var(--tertiary-accent);
-    }
-
-    &:hover {
-      color: var(--label-highlight);
-      text-decoration: none;
     }
   }
 }

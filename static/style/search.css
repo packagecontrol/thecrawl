@@ -1,15 +1,3 @@
-button {
-  display: flex;
-  appearance: none;
-  all: unset;
-  cursor: pointer;
-  margin: 22px 0;
-  padding: .2em .66em;
-  border-radius: 3px;
-  background: var(--secondary-accent);
-  color: var(--background);
-}
-
 input {
   background: var(--background);
   color: var(--foreground);

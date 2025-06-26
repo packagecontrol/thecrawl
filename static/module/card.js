@@ -54,10 +54,10 @@ export class Card {
     const a = document.createElement('a');
 
     if (['linux','macos','windows'].indexOf(name) >= 0) {
-      a.classList.add('platform', 'platform-' + name);
+      a.classList.add('button', 'platform', 'platform-' + name);
       a.setAttribute('href', '/?q=' + encodeURI('platform::"' + name + '"'));
     } else {
-      a.classList.add('label');
+      a.classList.add('button', 'label');
       a.setAttribute('href', '/?q=' + encodeURI('label:"' + name + '"'));
     }
 

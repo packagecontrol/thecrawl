@@ -61,10 +61,10 @@ export class List {
   renderPage(items, section = 'result', page = 1) {
     this.currentItems = items;
     this.currentPage = page;
-    
+
     const target = this.getTarget(section);
     const sectionElement = document.querySelector(`section[name="${section}"]`);
-    
+
     // Clear existing content
     this.clear(section);
 
@@ -102,7 +102,7 @@ export class List {
 
     // Controls
     const controls = document.createElement('div');
-    controls.className = 'pagination-controls';
+    controls.className = 'button-group pagination-controls';
 
     // Previous button
     if (currentPage > 1) {
@@ -136,22 +136,22 @@ export class List {
 
   createPageButton(text, pageNum, isActive = false) {
     const button = document.createElement('button');
-    button.className = `pagination-btn ${isActive ? 'active' : ''}`;
+    button.className = 'button';
     button.textContent = text;
     button.disabled = isActive;
-    
+
     if (!isActive) {
       button.addEventListener('click', () => {
         const input = document.forms.search.elements['search-field'];
         const sortSelect = document.forms.search.elements['sort-field'];
         const query = input.value.toLowerCase();
         const sortBy = sortSelect.value;
-        
+
         // Trigger search with new page
         window.goSearch(query, sortBy, pageNum);
       });
     }
-    
+
     return button;
   }
 
