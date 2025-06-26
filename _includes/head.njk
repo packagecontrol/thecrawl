@@ -1,6 +1,19 @@
+{% set descr = description or 'Package Control is the community-driven package management solution for Sublime Text.' %}
 <head>
   <meta charset="utf-8">
   <title>{{ title or 'Package Control R' }}</title>
+
+  <meta name="description" content="{{ descr }}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="/static/favicon.ico">
+
+  <meta property="og:title" content="{{ title or 'Package Control R' }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ 'http://packages.sublimetext.io' ~ page.url }}">
+  <meta property="og:image" content="http://packages.sublimetext.io/static/og.png">
+  <meta property="og:width" content="1200">
+  <meta property="og:height" content="630">
+  <meta property="og:description" content="{{ descr }}">
 </head>
