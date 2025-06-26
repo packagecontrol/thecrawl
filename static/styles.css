@@ -1,9 +1,10 @@
-@import url('typography.css');
-@import url('colors.css');
-@import url('header.css');
-@import url('footer.css');
-@import url('grid.css');
-@import url('pagination.css');
+@import url('style/typography.css');
+@import url('style/colors.css');
+@import url('style/header.css');
+@import url('style/footer.css');
+@import url('style/grid.css');
+@import url('style/pagination.css');
+@import url('style/search.css');
 
 html {
   height: 100%;
@@ -59,38 +60,6 @@ section {
 }
 .requirement {
   color: var(--foreground-lighter);
-}
-
-button {
-  display: flex;
-  appearance: none;
-  all: unset;
-  cursor: pointer;
-  margin: 22px 0;
-  padding: .2em .66em;
-  border-radius: 3px;
-  background: var(--secondary-accent);
-  color: var(--background);
-}
-
-input {
-  background: var(--background);
-  color: var(--foreground);
-  border: 1px solid var(--background-darkest);
-  border-radius: 0;
-  padding: 8px;
-  margin-bottom: 11px;
-  font-size: 1rem;
-  line-height: 1.6;
-  transition: border-color 0.2s ease;
-
-  &:hover {
-    border-color: var(--primary-accent);
-  }
-
-  &:focus {
-    outline: none;
-  }
 }
 
 svg {
@@ -150,49 +119,6 @@ dl {
     &:hover {
       color: var(--label-highlight);
       text-decoration: none;
-    }
-  }
-}
-
-/* Inline Search Controls */
-.search-controls {
-  display: flex;
-  gap: 0.5rem;
-  align-items: stretch;
-  margin-bottom: 11px;
-
-  input {
-    flex: 1;
-    margin-bottom: 0;
-  }
-
-  select {
-    background: var(--background);
-    color: var(--foreground);
-    border: 1px solid var(--background-darkest);
-    border-radius: 0;
-    padding: 8px;
-    font-size: 1rem;
-    line-height: 1.6;
-    cursor: pointer;
-    min-width: 150px;
-    transition: border-color 0.2s ease;
-
-    &:hover {
-      border-color: var(--primary-accent);
-    }
-
-    &:focus {
-      outline: none;
-    }
-  }
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.5rem;
-
-    select {
-      min-width: unset;
     }
   }
 }
