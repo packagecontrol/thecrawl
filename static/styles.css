@@ -33,7 +33,11 @@ a {
 }
 
 section {
-  padding-top: 22px;
+  padding-top: 14px;
+
+  h2 {
+    color: var(--foreground-lighter);
+  }
 }
 
 .description {
