@@ -142,7 +142,7 @@ export class List {
 
     if (!isActive) {
       button.addEventListener('click', () => {
-        const input = document.forms.search.elements['search-field'];
+        const input = document.forms.search.elements['q'];
         const sortSelect = document.forms.search.elements['sort-field'];
         const query = input.value.toLowerCase();
         const sortBy = sortSelect.value;

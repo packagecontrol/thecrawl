@@ -13,7 +13,7 @@ function applySorting(packages, sortBy) {
   if (sortBy === 'relevance') {
     return packages;
   }
-  
+
   return Sort.sort(packages, sortBy);
 }
 
@@ -31,10 +31,10 @@ function goSearch(value, sortBy = 'relevance', page = 1) {
   if (page > 1) {
     params.set('page', page);
   }
-  
+
   const queryString = params.toString();
   const newUrl = queryString ? '?' + queryString : '/';
-  
+
   // Only push state if URL is actually changing
   if (window.location.search !== (queryString ? '?' + queryString : '')) {
     history.pushState({}, '', newUrl);
@@ -68,7 +68,7 @@ function goSearch(value, sortBy = 'relevance', page = 1) {
 window.goSearch = goSearch;
 
 const form = document.forms.search;
-const input = form.elements['search-field'];
+const input = form.elements['q'];
 const sortSelect = form.elements['sort-field'];
 const url_search = window.location.search;
 const urlParams = new URLSearchParams(url_search);
@@ -97,10 +97,10 @@ input.form.onsubmit = (event) => {
   event.preventDefault();
   event.stopPropagation();
   clearTimeout(debounceTimeout);
-  
+
   const query = input.value.toLowerCase().trim();
   const sortBy = sortSelect.value;
-  
+
   if (query === '') {
     // Return to homepage when search is cleared
     list.reset();
@@ -120,7 +120,7 @@ input.addEventListener('input', (event) => {
   debounceTimeout = setTimeout(() => {
     const query = input.value.toLowerCase().trim();
     const sortBy = sortSelect.value;
-    
+
     if (query === '') {
       // Return to homepage when search is cleared
       list.reset();
@@ -138,7 +138,7 @@ input.addEventListener('input', (event) => {
 sortSelect.addEventListener('change', (event) => {
   const query = input.value.toLowerCase();
   const sortBy = event.target.value;
-  
+
   goSearch(query, sortBy);
 });
 
@@ -151,7 +151,7 @@ window.addEventListener('popstate', (event) => {
 
   // Update form elements to reflect URL state
   input.value = query;
-  
+
   // Handle navigation
   if (query || sortBy || urlParams.has('page')) {
     const effectiveSortBy = sortBy || (query ? 'relevance' : 'name');
