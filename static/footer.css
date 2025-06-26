@@ -1,9 +1,8 @@
 footer {
-  margin: 3.2rem 1rem 1.6rem 1rem;
+  padding: 3.2rem 1rem;
   text-align: center;
 
-  p,
-  nav {
+  p {
     color: var(--foreground-lighter);
   }
 
@@ -13,7 +12,7 @@ footer {
   }
 
   nav {
-    margin: 1.6rem auto 3.2rem auto;
+    margin: 1.6rem auto;
     * + * {
       margin-left: 1ex;
     }
