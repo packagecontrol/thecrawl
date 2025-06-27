@@ -46,7 +46,7 @@ function goSearch(value, sortBy = 'relevance', page = 1) {
     // No search query - show all packages sorted with pagination
     const sortedPackages = Sort.sort(data, sortBy || 'name');
     list.setCounter(sortedPackages.length);
-    list.toggleSections();
+    list.switchToResults();
     list.renderPage(sortedPackages, page);
     return;
   }
@@ -57,7 +57,7 @@ function goSearch(value, sortBy = 'relevance', page = 1) {
   list.setCounter(sortedResults.length);
 
   // hide the normal homepage and show results
-  list.toggleSections();
+  list.switchToResults();
 
   // render results with pagination
   list.renderPage(sortedResults, page);
@@ -101,8 +101,7 @@ input.form.onsubmit = (event) => {
   const sortBy = sortSelect.value;
 
   if (query === '') {
-    // Return to homepage when search is cleared
-    list.reset();
+    list.revertToNormal();
     // Update URL to remove search parameters
     if (window.location.pathname !== '/' || window.location.search !== '') {
       history.pushState({}, '', '/');
@@ -121,8 +120,7 @@ input.addEventListener('input', () => {
     const sortBy = sortSelect.value;
 
     if (query === '') {
-      // Return to homepage when search is cleared
-      list.reset();
+      list.revertToNormal();
       // Update URL to remove search parameters
       if (window.location.pathname !== '/' || window.location.search !== '') {
         history.pushState({}, '', '/');
@@ -157,8 +155,7 @@ window.addEventListener('popstate', () => {
     sortSelect.value = effectiveSortBy;
     goSearch(query, effectiveSortBy, page);
   } else {
-    // Return to homepage
     sortSelect.value = 'name';
-    list.reset();
+    list.revertToNormal();
   }
 });
