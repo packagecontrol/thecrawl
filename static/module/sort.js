@@ -9,12 +9,6 @@ export class Sort {
       case 'name-desc':
         return sortedPackages.sort((a, b) => b.name.toLowerCase().localeCompare(a.name.toLowerCase()));
 
-      case 'creation':
-        return sortedPackages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-      case 'creation-desc':
-        return sortedPackages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-
       case 'stars':
         return sortedPackages.sort((a, b) => {
           const starsA = parseInt(a.stars) || 0;

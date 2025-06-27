@@ -17,7 +17,6 @@ function minimalPackage(pkg) {
   return {
     name: pkg.name,
     author: pkg.author,
-    created_at: pkg.created_at,
     stars: pkg.stars ?? 0,
     releases: pkg.releases,
     labels: pkg.labels,
