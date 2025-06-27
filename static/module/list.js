@@ -127,11 +127,11 @@ export class List {
       controls.appendChild(nextBtn);
     }
 
-    console.log(controls.querySelectorAll('button').forEach(button => {
+    controls.querySelectorAll('button').forEach(button => {
       button.addEventListener('click', () => {
         this.getSection().querySelector('h2').scrollIntoView();
       });
-    }));
+    });
 
     pagination.appendChild(controls);
     this.getSection().appendChild(pagination);
