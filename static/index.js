@@ -40,14 +40,14 @@ function goSearch(value, sortBy = 'relevance', page = 1) {
   }
 
   // clear previous results
-  list.clear('result');
+  list.clear();
 
   if (value.length < 1) {
     // No search query - show all packages sorted with pagination
     const sortedPackages = Sort.sort(data, sortBy || 'name');
     list.setCounter(sortedPackages.length);
-    list.toggleSections('result');
-    list.renderPage(sortedPackages, 'result', page);
+    list.toggleSections();
+    list.renderPage(sortedPackages, page);
     return;
   }
 
@@ -57,10 +57,10 @@ function goSearch(value, sortBy = 'relevance', page = 1) {
   list.setCounter(sortedResults.length);
 
   // hide the normal homepage and show results
-  list.toggleSections('result');
+  list.toggleSections();
 
   // render results with pagination
-  list.renderPage(sortedResults, 'result', page);
+  list.renderPage(sortedResults, page);
 }
 
 // Make goSearch globally accessible for pagination buttons

@@ -7,8 +7,12 @@ export class List {
     this.currentItems = [];
   }
 
-  getTarget(section = 'result') {
-    return document.querySelector(`section[name="${section}"] ul`);
+  getSection() {
+    return document.querySelector('section[name="result"]');
+  }
+
+  getList() {
+    return this.getSection().querySelector('ul');
   }
 
   setCounter(count = null) {
@@ -16,13 +20,12 @@ export class List {
     counter.innerText = count ?? counter.dataset.all;
   }
 
-  toggleSections(activeSection = 'result') {
+  toggleSections() {
     document.querySelectorAll('section').forEach(section => {
       const sectionName = section.getAttribute('name');
-      if (sectionName === activeSection) {
+      if (sectionName === 'result') {
+        // Reveal results
         section.style.display = null;
-      } else if (sectionName === 'result') {
-        section.style.display = 'none';
       } else {
         // Hide homepage sections (newest, recent) when showing results
         section.style.display = 'none';
@@ -45,56 +48,50 @@ export class List {
     this.currentPage = 1;
   }
 
-  clear(section = 'result') {
-    // Remove all list items
-    document.querySelectorAll(`section[name="${section}"] li`).forEach(li => {
+  clear() {
+    this.getList().querySelectorAll('li').forEach(li => {
       li.remove();
     });
 
-    // Remove existing pagination
-    const existingPagination = document.querySelector(`section[name="${section}"] .pagination`);
+    const existingPagination = this.getSection().querySelector('.pagination');
     if (existingPagination) {
       existingPagination.remove();
     }
   }
 
-  renderPage(items, section = 'result', page = 1) {
+  renderPage(items, page = 1) {
     this.currentItems = items;
     this.currentPage = page;
 
-    const target = this.getTarget(section);
-    const sectionElement = document.querySelector(`section[name="${section}"]`);
-
     // Clear existing content
-    this.clear(section);
+    this.clear();
 
     // Calculate pagination
-    const totalItems = items.length;
-    const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+    const totalPages = Math.ceil(items.length / this.itemsPerPage);
     const startIndex = (page - 1) * this.itemsPerPage;
-    const endIndex = Math.min(startIndex + this.itemsPerPage, totalItems);
+    const endIndex = Math.min(startIndex + this.itemsPerPage, items.length);
     const pageItems = items.slice(startIndex, endIndex);
 
     // Render items for current page
     pageItems.forEach(pkg => {
       const li = document.createElement('li');
       li.appendChild((new Card(pkg)).render());
-      target.appendChild(li);
+      this.getList().appendChild(li);
     });
 
     // Create pagination controls if needed
     if (totalPages > 1) {
-      this.createPagination(sectionElement, page, totalPages, totalItems);
+      this.createPagination(totalPages, items.length);
     }
   }
 
-  createPagination(sectionElement, currentPage, totalPages, totalItems) {
+  createPagination(totalPages, totalItems) {
     const pagination = document.createElement('div');
     pagination.className = 'pagination';
 
     // Info text
-    const startItem = (currentPage - 1) * this.itemsPerPage + 1;
-    const endItem = Math.min(currentPage * this.itemsPerPage, totalItems);
+    const startItem = (this.currentPage - 1) * this.itemsPerPage + 1;
+    const endItem = Math.min(this.currentPage * this.itemsPerPage, totalItems);
     const info = document.createElement('div');
     info.className = 'pagination-info';
     info.textContent = `Showing ${startItem}-${endItem} of ${totalItems} packages`;
@@ -105,13 +102,13 @@ export class List {
     controls.className = 'button-group pagination-controls';
 
     // Previous button
-    if (currentPage > 1) {
-      const prevBtn = this.createPageButton('Previous', currentPage - 1);
+    if (this.currentPage > 1) {
+      const prevBtn = this.createPageButton('Previous', this.currentPage - 1);
       controls.appendChild(prevBtn);
     }
 
     // Page numbers
-    const pageNumbers = this.getPageNumbers(currentPage, totalPages);
+    const pageNumbers = this.getPageNumbers(this.currentPage, totalPages);
     pageNumbers.forEach(pageNum => {
       if (pageNum === '...') {
         const ellipsis = document.createElement('span');
@@ -119,19 +116,25 @@ export class List {
         ellipsis.textContent = '...';
         controls.appendChild(ellipsis);
       } else {
-        const pageBtn = this.createPageButton(pageNum, pageNum, pageNum === currentPage);
+        const pageBtn = this.createPageButton(pageNum, pageNum, pageNum === this.currentPage);
         controls.appendChild(pageBtn);
       }
     });
 
     // Next button
-    if (currentPage < totalPages) {
-      const nextBtn = this.createPageButton('Next', currentPage + 1);
+    if (this.currentPage < totalPages) {
+      const nextBtn = this.createPageButton('Next', this.currentPage + 1);
       controls.appendChild(nextBtn);
     }
 
+    console.log(controls.querySelectorAll('button').forEach(button => {
+      button.addEventListener('click', () => {
+        this.getSection().querySelector('h2').scrollIntoView();
+      });
+    }));
+
     pagination.appendChild(controls);
-    sectionElement.appendChild(pagination);
+    this.getSection().appendChild(pagination);
   }
 
   createPageButton(text, pageNum, isActive = false) {
