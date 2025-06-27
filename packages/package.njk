@@ -1,6 +1,6 @@
 ---
 layout: layout.njk
-permalink: "package/{{ pkg.name | preslug | slugify | url }}/"
+permalink: "package/{{ pkg.name | safe }}/"
 pagination:
   data: collections.packages
   size: 1
