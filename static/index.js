@@ -6,16 +6,6 @@ import { Sort } from './module/sort.js';
 const data = await new Data().get();
 const list = new List();
 
-function applySorting(packages, sortBy) {
-  // If it's a search with relevance sorting, don't apply additional sorting
-  // as the search results are already sorted by relevance
-  if (sortBy === 'relevance') {
-    return packages;
-  }
-
-  return Sort.sort(packages, sortBy);
-}
-
 function goSearch(value, sortBy = 'relevance', page = 1) {
   const srch = new Search(value, data);
 
@@ -43,16 +33,13 @@ function goSearch(value, sortBy = 'relevance', page = 1) {
   list.clear();
 
   if (value.length < 1) {
-    // No search query - show all packages sorted with pagination
-    const sortedPackages = Sort.sort(data, sortBy || 'name');
-    list.setCounter(sortedPackages.length);
-    list.switchToResults();
-    list.renderPage(sortedPackages, page);
-    return;
+    // no search query - revert to static homepage
+    list.revertToNormal();
+    return
   }
 
   const searchResults = srch.get();
-  const sortedResults = applySorting(searchResults, sortBy);
+  const sortedResults = Sort.sort(searchResults, sortBy);
 
   list.setCounter(sortedResults.length);
 
@@ -91,12 +78,7 @@ if (query || sortBy || urlParams.has('page')) {
   sortSelect.value = 'name';
 }
 
-// Handle form submission
-input.form.onsubmit = (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  clearTimeout(debounceTimeout);
-
+const handleInput = () => {
   const query = input.value.toLowerCase().trim();
   const sortBy = sortSelect.value;
 
@@ -111,23 +93,21 @@ input.form.onsubmit = (event) => {
   }
 }
 
+// Handle form submission
+input.form.onsubmit = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  clearTimeout(debounceTimeout);
+
+  handleInput();
+}
+
 // Handle input changes (search as you type)
 input.addEventListener('input', () => {
   clearTimeout(debounceTimeout);
 
   debounceTimeout = setTimeout(() => {
-    const query = input.value.toLowerCase().trim();
-    const sortBy = sortSelect.value;
-
-    if (query === '') {
-      list.revertToNormal();
-      // Update URL to remove search parameters
-      if (window.location.pathname !== '/' || window.location.search !== '') {
-        history.pushState({}, '', '/');
-      }
-    } else {
-      goSearch(query, sortBy);
-    }
+    handleInput();
   }, 300); // .3 seconds
 });
 
@@ -155,7 +135,6 @@ window.addEventListener('popstate', () => {
     sortSelect.value = effectiveSortBy;
     goSearch(query, effectiveSortBy, page);
   } else {
-    sortSelect.value = 'name';
     list.revertToNormal();
   }
 });
