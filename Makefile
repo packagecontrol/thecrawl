@@ -3,6 +3,9 @@ build:
 	curl -o workspace.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/workspace.json"
 	npx @11ty/eleventy
 
+lint:
+	npx eslint
+
 clean:
 	rm -rf _site/*
 

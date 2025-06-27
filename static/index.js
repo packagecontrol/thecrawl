@@ -1,4 +1,3 @@
-import { Card } from './module/card.js';
 import { Data } from './module/data.js';
 import { List } from './module/list.js';
 import { Search } from './module/search.js';
@@ -114,7 +113,7 @@ input.form.onsubmit = (event) => {
 }
 
 // Handle input changes (search as you type)
-input.addEventListener('input', (event) => {
+input.addEventListener('input', () => {
   clearTimeout(debounceTimeout);
 
   debounceTimeout = setTimeout(() => {
@@ -143,7 +142,7 @@ sortSelect.addEventListener('change', (event) => {
 });
 
 // Handle browser back/forward navigation
-window.addEventListener('popstate', (event) => {
+window.addEventListener('popstate', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const query = urlParams.get('q') || '';
   const sortBy = urlParams.get('sort');
