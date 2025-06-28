@@ -46,26 +46,26 @@ eleventyComputed:
 
 <h2>Links</h2>
 
-<ul class="links">
+<ul class="button-group links">
   {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
   <li>
-    <a href="{{ pkg.homepage }}">{{ pack.logo('home') }} <span>Website</span></a>
+    <a class="button" href="{{ pkg.homepage }}">{{ pack.logo('home') }} <span>Website</span></a>
   </li>
   {% endif %}
   <li>
-    <a href="{{ pkg.details }}">{{ pack.logo('repo') }} <span>Repository</span></a>
+    <a class="button" href="{{ pkg.details }}">{{ pack.logo('repo') }} <span>Repository</span></a>
   </li>
   <li>
-    <a href="{{ pkg.readme }}">{{ pack.logo('file') }} <span>README</span></a>
+    <a class="button" href="{{ pkg.readme }}">{{ pack.logo('file') }} <span>README</span></a>
   </li>
   {% if pkg.issues %}
     <li>
-    <a href="{{ pkg.issues }}">{{ pack.logo('bug') }} <span>Issues</span></a>
+    <a class="button" href="{{ pkg.issues }}">{{ pack.logo('bug') }} <span>Issues</span></a>
   </li>
   {% endif %}
   {% if pkg.donate %}
     <li>
-    <a href="{{ pkg.donate }}">{{ pack.logo('gift') }} <span>Donate</span></a>
+    <a class="button" href="{{ pkg.donate }}">{{ pack.logo('gift') }} <span>Donate</span></a>
   </li>
   {% endif %}
 </ul>

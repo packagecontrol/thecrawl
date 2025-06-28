@@ -1,5 +1,13 @@
 {
+  "scripts": {
+    "dev": "eleventy --serve"
+  },
   "dependencies": {
     "@11ty/eleventy": "^3.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "eslint": "^9.29.0",
+    "globals": "^16.2.0"
   }
 }

@@ -1,9 +1,9 @@
 {% macro labels(platforms, labels) %}
-  <ul class="labels">
+  <ul class="button-group labels">
     {% for platform in platforms %}
       {% set q = 'platform:"' ~ platform ~ '"' %}
       <li>
-        <a class="platform platform-{{ platform }}" href="/?q={{ q | urlencode }}">
+        <a class="button platform platform-{{ platform }}" href="/?q={{ q | urlencode }}">
           {{ platform }}
         </a>
       </li>
@@ -12,7 +12,7 @@
     {% for label in labels %}
       {% set q = 'label:"' ~ label ~ '"' %}
       <li>
-        <a class="label" href="/?q={{ q | urlencode }}">
+        <a class="button label" href="/?q={{ q | urlencode }}">
           {{ label }}
         </a>
       </li>

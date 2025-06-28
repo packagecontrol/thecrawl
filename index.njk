@@ -13,8 +13,25 @@ date: Last Modified
 </h1>
 
 <form name="search">
-  <input type="text" autocomplete="off" name="search-field" placeholder="Search packages ...">
-  <ul class="labels">
+  <div class="search-controls">
+    <label for="search-field" class="screenreader-only">Search</label>
+    <input type="text" autocomplete="off" name="q" id="search-field" placeholder="Search packages ...">
+
+    <div class="button">
+      <label for="sort-field">Sort by</label>
+      <select name="sort-field" id="sort-field">
+        <option value="relevance">Magic</option>
+        <option value="name">Name (A-Z)</option>
+        <option value="name-desc">Name (Z-A)</option>
+        <option value="stars">Stars (High-Low)</option>
+        <option value="stars-desc">Stars (Low-High)</option>
+        <option value="author">Author (A-Z)</option>
+        <option value="author-desc">Author (Z-A)</option>
+      </select>
+    </div>
+  </div>
+
+  <ul class="button-group labels">
     {{ pack.labels(['linux','macos','windows'], ['language syntax','snippets','linting','auto-complete','color scheme','theme']) }}
   </ul>
 </form>
@@ -44,7 +61,6 @@ date: Last Modified
 <section name="result" style="display:none;">
   <h2>Results</h2>
   <ul class="grid"></ul>
-  <button type="button" style="display:none;">More &hellip;</button>
 </section>
 
 {% import "packages/macros.njk" as pack %}

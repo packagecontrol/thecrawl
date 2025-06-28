@@ -57,7 +57,7 @@ export class Search {
     }
 
     // use minisearch to find matches with some level of fuzziness
-    // we sloppily seset the index each search
+    // we sloppily reset the index each search
     // which is wasteful of cpu cycles I guess, but it seems fast enough :shrug:
     // https://github.com/lucaong/minisearch
     const minisrch = new minisearch({

@@ -1,31 +1,35 @@
 import { Card } from './card.js';
+import { Pagination } from './pagination.js';
 
 export class List {
-  getButton() {
-    return document.querySelector('section[name="result"] button');
+  // the section where we'll render search results
+  getSection() {
+    return document.querySelector('section[name="result"]');
   }
 
-  getTarget() {
-    return document.querySelector('section[name="result"] ul');
+  // the list inside that section
+  getList() {
+    return this.getSection().querySelector('ul');
   }
 
   setCounter(count = null) {
     const counter = document.querySelector('h1 .counter');
-
     counter.innerText = count ?? counter.dataset.all;
   }
 
-  toggleSections () {
+  // reveal search results and hide the static homepage
+  switchToResults() {
     document.querySelectorAll('section').forEach(section => {
-      if (section.getAttribute('name') !== 'result') {
-        section.style.display = 'none';
-      } else {
+      if (section.getAttribute('name') === 'result') {
         section.style.display = null;
+      } else {
+        section.style.display = 'none';
       }
     });
   }
 
-  reset() {
+  // revert to the static homepage
+  revertToNormal() {
     document.querySelectorAll('section').forEach(section => {
       if (section.getAttribute('name') === 'result') {
         section.style.display = 'none';
@@ -37,37 +41,26 @@ export class List {
     this.setCounter();
   }
 
-  clear () {
-    document.querySelectorAll('section[name="result"] li').forEach(li => {
-      li.remove();
+  // clear previous results and pagination ui
+  clear() {
+    this.getSection().querySelectorAll('li, .pagination').forEach(ui => {
+      ui.remove();
     });
   }
 
-  startRendering(items, batchSize = 24) {
-    const total = items.length;
-    let rendered = 0;
+  // render the current page of results and pagination
+  renderPage(items, page) {
+    this.clear();
 
-    const renderBatch = () => {
-      const next = items.slice(rendered, rendered + batchSize);
-      next.forEach(pkg => {
-        const li = document.createElement('li');
-        li.appendChild((new Card(pkg)).render());
-        this.getTarget().appendChild(li);
-      })
-      rendered += next.length;
+    const pagination = new Pagination(items, page, this.getSection());
 
-      if (rendered >= total) {
-        this.getButton().style.display = 'none';
-      } else {
-        this.getButton().style.display = null;
-      }
-    }
+    // Render items for current page
+    pagination.calculate().forEach(pkg => {
+      const li = document.createElement('li');
+      li.appendChild((new Card(pkg)).render());
+      this.getList().appendChild(li);
+    });
 
-    renderBatch();
-    this.getButton().onclick = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      renderBatch();
-    }
+    pagination.render();
   }
 }

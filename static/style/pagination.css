@@ -1,0 +1,31 @@
+.pagination {
+  text-align: center;
+  margin: 3.2rem 0 1.6rem 0;
+  color: var(--foreground-lighter);
+}
+
+.pagination-controls {
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1.6rem;
+}
+
+.pagination-controls .button {
+  &:hover:not(:disabled) {
+    background: var(--primary-accent);
+    color: var(--background);
+    border-color: var(--primary-accent);
+  }
+
+  /* disabled because it's the current page */
+  &:disabled {
+    background: var(--primary-accent);
+    color: var(--background);
+    border-color: var(--primary-accent);
+    cursor: revert;
+  }
+}
+
+.pagination-ellipsis {
+  padding: 0 1ex;
+}

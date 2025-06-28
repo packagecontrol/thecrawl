@@ -28,6 +28,7 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("static");
 
   const data = JSON.parse(fs.readFileSync("workspace.json", "utf8"));
+  // eslint-disable-next-line no-unused-vars
   const live_packages = Object.entries(data.packages).map(([id, pkg]) => pkg).filter(pkg => !pkg.removed);
 
   eleventyConfig.addCollection("packages", () => {
@@ -41,7 +42,7 @@ module.exports = function (eleventyConfig) {
     return live_packages.map(pkg => ({
       description: pkg.description,
       ...minimalPackage(pkg)
-    })).sort((a, b) => a.name.localeCompare(b.name));
+    })).sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0));
   });
 
   eleventyConfig.addCollection("updated_packages", () => {
@@ -64,7 +65,7 @@ module.exports = function (eleventyConfig) {
 
   // simple to date string for some dates without times
   eleventyConfig.addFilter("date_format", (date) => {
-    if (! typeof date === "string" ) return str;
+    if (typeof date !== "string" ) return date;
     return (new Date(date)).toDateString();
   });
 
