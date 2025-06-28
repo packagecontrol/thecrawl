@@ -14,16 +14,21 @@ date: Last Modified
 
 <form name="search">
   <div class="search-controls">
-    <input type="text" autocomplete="off" name="q" placeholder="Search packages ...">
-    <select name="sort-field" id="sort-field">
-      <option value="relevance">Magic</option>
-      <option value="name">Name (A-Z)</option>
-      <option value="name-desc">Name (Z-A)</option>
-      <option value="stars">Stars (High-Low)</option>
-      <option value="stars-desc">Stars (Low-High)</option>
-      <option value="author">Author (A-Z)</option>
-      <option value="author-desc">Author (Z-A)</option>
-    </select>
+    <label for="search-field" class="screenreader-only">Search</label>
+    <input type="text" autocomplete="off" name="q" id="search-field" placeholder="Search packages ...">
+
+    <div class="button">
+      <label for="sort-field">Sort by</label>
+      <select name="sort-field" id="sort-field">
+        <option value="relevance">Magic</option>
+        <option value="name">Name (A-Z)</option>
+        <option value="name-desc">Name (Z-A)</option>
+        <option value="stars">Stars (High-Low)</option>
+        <option value="stars-desc">Stars (Low-High)</option>
+        <option value="author">Author (A-Z)</option>
+        <option value="author-desc">Author (Z-A)</option>
+      </select>
+    </div>
   </div>
 
   <ul class="button-group labels">

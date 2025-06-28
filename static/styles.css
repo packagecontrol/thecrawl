@@ -18,8 +18,7 @@ body {
   padding: 0;
 }
 
-.main-content {
-  flex: 1;
+main {
   max-width: 72rem;
   margin: 0 auto;
   padding: 0 1rem 3.2rem 1rem;
@@ -34,12 +33,25 @@ a {
   }
 }
 
+svg {
+  fill: currentColor;
+}
+
 section {
   padding-top: 14px;
 
   h2 {
     color: var(--foreground-lighter);
   }
+}
+
+.screenreader-only {
+    width: 1px;
+    height: 1px;
+    position: absolute;
+    top: -999px;
+    left: -999px;
+    overflow:hidden
 }
 
 .description {
@@ -61,10 +73,6 @@ section {
 }
 .requirement {
   color: var(--foreground-lighter);
-}
-
-svg {
-  fill: currentColor;
 }
 
 dl {

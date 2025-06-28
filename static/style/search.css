@@ -2,61 +2,68 @@ input {
   background: var(--background);
   color: var(--foreground);
   border: 1px solid var(--background-darkest);
-  border-radius: 0;
+  border-radius: 3px;
   padding: 8px;
   margin-bottom: 11px;
   font-size: 1rem;
   line-height: 1.6;
-  transition: border-color 0.2s ease;
-
-  &:hover {
-    border-color: var(--primary-accent);
-  }
-
-  &:focus {
-    outline: none;
-  }
 }
 
-/* Inline Search Controls */
+select {
+  appearance: none;
+  all: unset;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--background-darkest);
+  border-radius: 3px;
+  padding: 8px;
+  font-size: 1rem;
+  line-height: 1.6;
+  cursor: pointer;
+}
+
 .search-controls {
   display: flex;
-  gap: 0.5rem;
+  gap: 1ex;
   align-items: stretch;
   margin-bottom: 11px;
+  border-radius: 3px;
+  border: 1px solid var(--background-darkest);
+  transition: border .2s ease-in-out, outline .2s ease-in-out;
+
+  &:has(input:focus) {
+    border-color: var(--primary-accent);
+    outline: 1px solid var(--primary-accent);
+  }
 
   input {
     flex: 1;
     margin-bottom: 0;
-  }
-
-  select {
-    background: var(--background);
-    color: var(--foreground);
-    border: 1px solid var(--background-darkest);
-    border-radius: 0;
-    padding: 8px;
-    font-size: 1rem;
-    line-height: 1.6;
-    cursor: pointer;
-    min-width: 150px;
-    transition: border-color 0.2s ease;
-
-    &:hover {
-      border-color: var(--primary-accent);
-    }
-
+    border: none;
     &:focus {
       outline: none;
     }
   }
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.5rem;
+  select {
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
 
-    select {
-      min-width: unset;
+  .button {
+    align-self: center;
+    margin: 6px;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+
+      label {
+        font-size: 8px;
+        line-height: 1;
+      }
     }
   }
 }
