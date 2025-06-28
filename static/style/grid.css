@@ -1,7 +1,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
-  gap: 22px;
+  gap: 11px;
   margin: 0;
   padding: 0;
   > * {
@@ -15,11 +15,13 @@
 }
 
 .card {
-  border-bottom: 2px solid var(--background-darker);
-  padding: 6px 0 16px 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-slightly-darker);
+  border: 1px solid var(--background-darker);
+  padding: 1rem;
   position: relative;
   transition: border-color .3s ease-in-out;
-
 
   &:has(a:hover),
   &:has(a:focus) {
@@ -27,7 +29,7 @@
     transition: border-color .1s ease-in-out;
   }
 
-  a {
+  h3 a {
     color: var(--foreground);
     &:hover {
       text-decoration: none;
@@ -37,25 +39,32 @@
 
   h3 {
     padding-top: 0;
-    padding-right: 4em;
+    padding-right: 2em;
     margin-top: 0;
     margin-bottom: -4px;
 
     + * {
       margin-top: 0;
+      padding-bottom: 9px;
+      flex: 1; /* push other content to the end of the card */
     }
   }
 
   dl {
     position: absolute;
-    top: 1rem;
+    top: 22px;
     right: 1rem;
+    font-size: calc(1rem / 1.33);
+    svg {
+      width: 12px;
+      height: 12px;
+    }
   }
 
   .labels {
     font-size: calc(1rem / 1.33);
     justify-content: flex-end;
-    padding-right: 1rem;
+    padding: 0;
     margin: 0;
   }
 }
