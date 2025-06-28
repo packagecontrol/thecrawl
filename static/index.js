@@ -70,17 +70,13 @@ input.value = query;
 
 // Only show search results if there's a query or explicit sort parameter
 if (query || sortBy || urlParams.has('page')) {
-  const effectiveSortBy = sortBy || (query ? 'relevance' : 'name');
+  const effectiveSortBy = sortBy ?? 'relevance';
   sortSelect.value = effectiveSortBy;
   goSearch(query.toLowerCase(), effectiveSortBy, page);
-} else {
-  // Show homepage with default sort option selected
-  sortSelect.value = 'name';
 }
 
 const handleInput = () => {
   const query = input.value.toLowerCase().trim();
-  const sortBy = sortSelect.value;
 
   if (query === '') {
     list.revertToNormal();
@@ -89,7 +85,7 @@ const handleInput = () => {
       history.pushState({}, '', '/');
     }
   } else {
-    goSearch(query, sortBy);
+    goSearch(query, sortSelect.value);
   }
 }
 
