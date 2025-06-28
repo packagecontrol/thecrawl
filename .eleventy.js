@@ -1,9 +1,18 @@
 const fs = require("fs");
 
+// rename macos and remove */any
 function cleanupPlatforms(platforms) {
   return platforms
     .filter(platform => platform !== "*")
     .map(platform => platform === "osx" ? "macos" : platform);
+}
+
+// author can be string or array, convert to all arrays
+function cleanupAuthors(author) {
+  if (typeof author === 'string') {
+    return [author];
+  }
+  return author;
 }
 
 function minimalPackage(pkg) {
@@ -16,7 +25,7 @@ function minimalPackage(pkg) {
 
   return {
     name: pkg.name,
-    author: pkg.author,
+    author: cleanupAuthors(pkg.author),
     stars: pkg.stars ?? 0,
     releases: pkg.releases,
     labels: pkg.labels,
@@ -33,8 +42,8 @@ module.exports = function (eleventyConfig) {
 
   eleventyConfig.addCollection("packages", () => {
     return live_packages.map(pkg => ({
-      ...minimalPackage(pkg),
-      ...pkg
+      ...pkg,
+      ...minimalPackage(pkg)
     }));
   });
 

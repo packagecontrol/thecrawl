@@ -15,9 +15,12 @@ eleventyComputed:
 <h1 class="big">{{ pkg.name }}</h1>
 <p class="description">{{ pkg.description }}</p>
 
-{% set q = 'author:"' ~ pkg.author ~ '"' %}
 <p>
-  By <a href="/?q={{ q | urlencode }}">{{ pkg.author }}</a>
+  By
+  {% for author in pkg.author -%}
+    {% set q = 'author:"' ~ author ~ '"' %}
+    <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
+  {%- endfor %}
   {% if pkg.created_at %}
     <br>
     Since {{ pkg.created_at | date_format }}
