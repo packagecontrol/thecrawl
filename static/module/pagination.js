@@ -17,7 +17,7 @@ export class Pagination {
   }
 
   render() {
-    if (this.totalPages < 1) {
+    if (this.totalPages < 2) {
       return;
     }
 
