@@ -5,12 +5,10 @@ name: Deploy GH Pages
 on:
   # run on changes ...
   push:
-    branches: ["main"]
+    branches: ["gh-pages"]
   # ... when manually triggered
   workflow_dispatch:
-  # ... and nightly
-  schedule:
-    - cron: "0 0 * * *"
+  # todo: get triggered by new crawls
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -33,6 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          - ref: "gh-pages"
 
       - name: Setup Node
         uses: actions/setup-node@v4
