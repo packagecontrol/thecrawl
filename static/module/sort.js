@@ -29,6 +29,8 @@ export class Sort {
       case 'author-desc':
         return sortedPackages.sort((a, b) => b.author.toLowerCase().localeCompare(a.author.toLowerCase()));
 
+
+
       case 'relevance':
       default:
         return sortedPackages; // Return as-is for relevance or default
