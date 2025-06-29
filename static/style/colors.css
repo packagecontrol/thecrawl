@@ -20,18 +20,16 @@
   --label-highlight: #38464b;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #2b303b;
-    --background-slightly-darker: #383e4d;
-    --background-darker: #3f5157;
-    --background-darkest: #586e75;
+:root.dark {
+  --background: #2b303b;
+  --background-slightly-darker: #383e4d;
+  --background-darker: #3f5157;
+  --background-darkest: #586e75;
 
-    --foreground: #839496;
-    --foreground-darker: #f8f8f2;
-    --foreground-lighter: #9ec7d3;
-    --foreground-bright: #ffffff;
+  --foreground: #839496;
+  --foreground-darker: #f8f8f2;
+  --foreground-lighter: #9ec7d3;
+  --foreground-bright: #ffffff;
 
-    --label-highlight: #ffffff;
-  }
+  --label-highlight: #ffffff;
 }
