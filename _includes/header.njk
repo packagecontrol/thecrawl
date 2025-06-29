@@ -4,6 +4,30 @@
     <a href="https://packagecontrol.io/docs/usage">Using package control</a>
   </nav>
 
+ <button
+  id="theme-toggle"
+  aria-label="Toggle dark mode"
+  style="
+    float: right;
+    margin: 8px 16px 8px 16px;
+    padding: 6px 12px;
+    background-color: var(--background-darker);
+    color: var(--foreground);
+    border: 1px solid var(--foreground-lighter);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+  "
+  onmouseover="this.style.backgroundColor='var(--background-darkest)'"
+  onmouseout="this.style.backgroundColor='var(--background-darker)'"
+>
+  🌙
+</button>
+
+
+
   <h2><a href="/">Package Control <span class="hot">R</span></a></h2>
   <p>The Sublime Text package directory, {{ [
       "re-imagined",
