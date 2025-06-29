@@ -1,0 +1,8 @@
+/* inspired by monokai neue */
+
+:root {
+  --spacing: 0.25rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+}

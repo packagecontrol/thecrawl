@@ -6,13 +6,14 @@
 @import url('style/grid.css');
 @import url('style/pagination.css');
 @import url('style/search.css');
+@import url('style/utilities.css');
 
 html {
   height: 100%;
 }
 
 body {
-  background: var(--background);
+  background: var(--gray-lightest);
   color: var(--foreground);
   margin: 0;
   padding: 0;
