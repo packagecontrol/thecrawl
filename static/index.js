@@ -134,3 +134,22 @@ window.addEventListener('popstate', () => {
     list.revertToNormal();
   }
 });
+
+
+
+// Theme toggle logic
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+
+  if (localStorage.getItem('theme') === 'dark' ||
+      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+    themeToggle.textContent = '☀️';
+  }
+
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    themeToggle.textContent = isDark ? '☀️' : '🌙';
+  });
+}
