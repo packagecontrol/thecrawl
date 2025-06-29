@@ -1,0 +1,60 @@
+---
+layout: layout.njk
+permalink: "library/{{ lib.name | safe }}/"
+pagination:
+  data: collections.libraries
+  size: 1
+  alias: lib
+eleventyComputed:
+  title: "{{ lib.name }}"
+  description: "{{ lib.description }}"
+---
+
+{% import "libraries/macros.njk" as libs %}
+
+<h1 class="big">{{ lib.name }}</h1>
+<p class="description">{{ lib.description }}</p>
+
+<p>
+  By {{ lib.author }}
+  {% if lib.python_versions and lib.python_versions | length > 0 %}
+    <br>
+    Python versions: 
+    {% for version in lib.python_versions %}
+      <span class="py-version">{{ version }}</span>{{ ", " if not loop.last }}
+    {% endfor %}
+  {% endif %}
+</p>
+
+{% if lib.releases | length > 1 %}
+  <h2>Releases</h2>
+{% else %}
+  <h2>Release</h2>
+{% endif %}
+
+{% for release in lib.releases %}
+  <p>
+    {% if release.base %}
+      <a class="release" href="{{ release.base }}">{{ release.asset or 'Latest Release' }}</a>
+    {% endif %}
+    {% if release.python_versions and release.python_versions | length > 0 %}
+      <br>
+      Python: {{ release.python_versions | join(', ') }}
+    {% endif %}
+  </p>
+{% endfor %}
+
+<h2>Links</h2>
+
+<ul class="button-group links">
+  {% if lib.releases and lib.releases[0] and lib.releases[0].base %}
+    <li>
+      <a class="button" href="{{ lib.releases[0].base }}">{{ libs.logo('repo') }} <span>Repository</span></a>
+    </li>
+  {% endif %}
+  {% if lib.issues %}
+    <li>
+      <a class="button" href="{{ lib.issues }}">{{ libs.logo('bug') }} <span>Issues</span></a>
+    </li>
+  {% endif %}
+</ul> 

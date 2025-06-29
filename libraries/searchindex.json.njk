@@ -1,0 +1,15 @@
+---
+permalink: "/libraries/searchindex.json"
+---
+[
+{% for lib in collections.libraries -%}
+  {
+    "name": "{{ lib.name }}",
+    "description": "{{ lib.description | nl2br | replace('\n', '') }}",
+    "author": "{{ lib.author }}",
+    "issues": "{{ lib.issues }}",
+    "python_versions": {{ lib.python_versions | dump | safe }},
+    "permalink": "/library/{{ lib.name | urlencode }}/"
+  }{{ "," if not loop.last }}
+{%- endfor %}
+] 

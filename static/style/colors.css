@@ -9,22 +9,22 @@
 
   --background: #fff;
   --background-slightly-darker: #fcfcfc;
-  --background-darker: #f2f2f2;
+  --background-darker: #f5f5f5;
   --background-darkest: #cacaca;
 
   --foreground: #586e75;
   --foreground-darker: #38464b;
-  --foreground-lighter: #839496;
-  --foreground-bright: #c1cfd4;
+  --foreground-lighter: #9AAFB5;
+  --foreground-bright: #C1CFD4;
 
   --label-highlight: #38464b;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #2b303b;
-    --background-slightly-darker: #383e4d;
-    --background-darker: #3f5157;
+    --background: #2B303B;
+    --background-slightly-darker: #383E4D;
+    --background-darker: #3F5157;
     --background-darkest: #586e75;
 
     --foreground: #839496;

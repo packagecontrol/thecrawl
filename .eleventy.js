@@ -40,6 +40,10 @@ module.exports = function (eleventyConfig) {
   // eslint-disable-next-line no-unused-vars
   const live_packages = Object.entries(data.packages).map(([id, pkg]) => pkg).filter(pkg => !pkg.removed);
 
+  // Load libraries data
+  const librariesData = JSON.parse(fs.readFileSync("libraries.json", "utf8"));
+  const libraries = librariesData.libraries || [];
+
   eleventyConfig.addCollection("packages", () => {
     return live_packages.map(pkg => ({
       ...pkg,
@@ -70,6 +74,27 @@ module.exports = function (eleventyConfig) {
     })).sort((a, b) => {
       return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
     }).slice(0,9);
+  });
+
+  // Add libraries collection
+  eleventyConfig.addCollection("libraries", () => {
+    return libraries.map(lib => {
+      // Extract unique Python versions from all releases
+      const pythonVersions = [...new Set(
+        (lib.releases || [])
+          .flatMap(release => release.python_versions || [])
+      )].sort();
+
+      return {
+        name: lib.name,
+        description: lib.description || '',
+        author: lib.author || '',
+        issues: lib.issues || '',
+        releases: lib.releases || [],
+        python_versions: pythonVersions,
+        permalink: `/library/${lib.name}/`
+      };
+    }).sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
   });
 
   // simple to date string for some dates without times
