@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          - ref: "gh-pages"
+          ref: "gh-pages"
 
       - name: Setup Node
         uses: actions/setup-node@v4
