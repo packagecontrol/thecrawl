@@ -11,8 +11,6 @@ https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/work
 
 ## to run locally
 ```sh
-curl -o workspace.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/workspace.json"
-npm install
-npx @11ty/eleventy --serve
-open http://localhost:8080/
+make build
+make serve
 ```
