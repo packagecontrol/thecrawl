@@ -117,3 +117,8 @@ div#md img {
     max-width: 100% !important;
     height: auto;
 }
+
+div#md.raw {
+    white-space: break-spaces;
+    font-family: monospace;
+}

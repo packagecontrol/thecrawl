@@ -93,10 +93,18 @@ if (cached && (now - cached.time) < ttl) {
   fetch('{{ pkg.readme }}')
     .then(res => res.text())
     .then(md => {
-      const html = marked.parse(md);
-      const safe = DOMPurify.sanitize(html);
-      sessionStorage.setItem(cacheKey, JSON.stringify({ html: safe, time: now }));
-      target.innerHTML = safe;
+      if (DOMPurify.isSupported) {
+          const html = marked.parse(md);
+          const safe = DOMPurify.sanitize(html);
+          sessionStorage.setItem(cacheKey, JSON.stringify({ html: safe, time: now }));
+          target.innerHTML = safe;
+        } else {
+          const escaped = md
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+          target.innerHTML = escaped;
+          target.className = 'raw';        }
     });
 }
 </script>
