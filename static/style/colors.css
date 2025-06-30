@@ -4,6 +4,12 @@
   --primary-accent: #fd971f;   /* orange */
   --secondary-accent: #66d9ef; /* blue */
   --tertiary-accent: #a6e22e;  /* green */
+  --white: #fff;
+  --gray-lightest: #f9fafb;
+  --gray-light: #CDD7D9;
+  --gray: #586E75;
+  --gray-dark: #38464B;
+  --gray-darkest: #262F32;
 
   --primary-accent-darker: #4694A3;
 
@@ -11,6 +17,7 @@
   --background-slightly-darker: #fcfcfc;
   --background-darker: #f2f2f2;
   --background-darkest: #cacaca;
+
 
   --foreground: #586e75;
   --foreground-darker: #38464b;

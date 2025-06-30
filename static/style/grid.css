@@ -1,14 +1,17 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
-  gap: 11px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(var(--spacing) * 4);
   margin: 0;
   padding: 0;
-  > * {
+  align-items: stretch;
+
+  >* {
     display: flex;
     margin: 0;
     padding: 0;
-    > * {
+
+    >* {
       flex: 1;
     }
   }
@@ -17,9 +20,11 @@
 .card {
   display: flex;
   flex-direction: column;
-  background: var(--background-slightly-darker);
-  border: 1px solid var(--background-darker);
-  padding: 1rem;
+  background: var(--white);
+  border: 1px solid;
+  border-color: color-mix(in oklab, var(--gray-light) 50%, transparent);
+  padding: 1.25rem 1.5rem;
+  border-radius: 6px;
   position: relative;
   transition: border-color .3s ease-in-out;
 
@@ -30,11 +35,19 @@
   }
 
   h3 a {
-    color: var(--foreground);
+    color: var(--gray-darkest);
+    color: color-mix(in oklab, var(--gray-darkest) 80%, transparent);
+
     &:hover {
       text-decoration: none;
       color: var(--foreground-darker);
     }
+  }
+
+  h3+p {
+    color: color-mix(in oklab, var(--gray) 80%, transparent);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h3 {
@@ -42,11 +55,13 @@
     padding-right: 2em;
     margin-top: 0;
     margin-bottom: -4px;
+    font-weight: normal;
 
-    + * {
+    +* {
       margin-top: 0;
       padding-bottom: 9px;
-      flex: 1; /* push other content to the end of the card */
+      flex: 1;
+      /* push other content to the end of the card */
     }
   }
 
@@ -55,15 +70,25 @@
     top: 22px;
     right: 1rem;
     font-size: calc(1rem / 1.33);
+
     svg {
       width: 12px;
       height: 12px;
     }
   }
 
+  a.button.label {
+    background-color: color-mix(in oklab, var(--gray-light) 15%, transparent);
+    border: 1px solid;
+    border-color: color-mix(in oklab, var(--gray-light) 40%, transparent);
+    color: var(--gray);
+    padding: 0 8px;
+    border-radius: calc(infinity * 1px);
+  }
+
   .labels {
     font-size: calc(1rem / 1.33);
-    justify-content: flex-end;
+    justify-content: flex-start;
     padding: 0;
     margin: 0;
   }
