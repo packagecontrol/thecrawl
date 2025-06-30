@@ -106,7 +106,7 @@ dl {
   }
 }
 
-#md:not(:empty) {
+.readme:not(:empty) {
   margin-top: 3.2rem;
   padding: 1.6em;
   border-top: 4px solid var(--background-darker);
@@ -115,6 +115,16 @@ dl {
   img {
     max-width: 100% !important;
     height: auto;
+  }
+
+  pre {
+    border: 1px solid var(--background-darker);
+    padding: 1rem;
+  }
+
+  pre,
+  code {
+    background: var(--background);
   }
 }
 
