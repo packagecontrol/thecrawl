@@ -107,10 +107,10 @@ dl {
 }
 
 div#md {
-    border-top: 4px solid #eee;
+    border-top: 4px solid var(--background-darker);
     margin-top: 1em;
     padding: 1.5em;
-    background: #f9f9f9;
+    background: var(--background-slightly-darker);
 }
 
 div#md img {
