@@ -10,14 +10,15 @@ const data = await fetchSearchData();
 
 export function search(value) {
   let base = data;
+  let queries = [];
 
   // handle author filter
   const author = value.match(/author:"([^"]+)"/i);
   if (author) {
-    base = base.filter(
-      pkg => pkg.author.toLowerCase().includes(author[1].toLowerCase())
-    );
-
+    queries.push({
+      queries: [author[1]],
+      fields: ['author'] // restrict to author
+    });
     // remove this filter from the search string
     value = value.replace(author[0], '');
   }
@@ -25,8 +26,9 @@ export function search(value) {
   // handle label filter
   const label = value.match(/label:"([^"]+)"/i);
   if (label) {
-    base = base.filter(pkg => {
-      return pkg.labels.toLowerCase().split(',').indexOf(label[1].toLowerCase()) > -1;
+    queries.push({
+      queries: [label[1]],
+      fields: ['labels'] // restrict to author
     });
 
     // remove this filter from the search string
@@ -36,33 +38,29 @@ export function search(value) {
   // handle platform filter
   const platform = value.match(/platform:"([^"]+)"/i);
   if (platform) {
-    base = base.filter(
-      pkg => {
-        if (!pkg.platforms) {
-          return true;
-        }
-        return pkg.platforms.toLowerCase().split(',').indexOf(platform[1].toLowerCase()) > -1
-      }
-    );
-
+    queries.push({
+      queries: [platform[1]],
+      fields: ['platforms'] // restrict to author
+    });
     // remove this filter from the search string
     value = value.replace(platform[0], '');
   }
 
-  if (!value.trim()) {
-    // if after that filtering no search terms remain, just return what's left
-    return base;
+  if (value) {
+    queries.push({
+      queries: value.trim().split(' '),
+      fields: ['name', 'description', 'author']
+    })
   }
-
   // use minisearch to find matches with some level of fuzziness
   // we sloppily reset the index each search
   // which is wasteful of cpu cycles I guess, but it seems fast enough :shrug:
   // https://github.com/lucaong/minisearch
   const minisrch = new minisearch({
     idField: 'name',
-    fields: ['name', 'description'],
+    fields: ['name', 'description', 'author', 'platforms', 'labels'],
     searchOptions: {
-        boost: { name: 2 },
+        boost: { author: 2 },
         fuzzy: 0.2,
         prefix: true
       }
@@ -71,9 +69,13 @@ export function search(value) {
   // start with all data post label/author filtering
   minisrch.addAll(base);
   // search and then map results so we can easily use them for output
-  const miniresult = minisrch.search(value.trim())
-  const minikeys = miniresult.map(mini => mini.id);
-  const scores = miniresult.reduce((acc, mini) => {
+  let results = minisrch.search({
+    queries,
+    combineWith: 'AND'
+  });
+
+  const minikeys = results.map(mini => mini.id);
+  const scores = results.reduce((acc, mini) => {
     acc[mini.id] = mini.score;
     return acc;
   }, {});
