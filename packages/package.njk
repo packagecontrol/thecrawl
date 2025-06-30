@@ -91,20 +91,29 @@ if (cached && (now - cached.time) < ttl) {
   target.innerHTML = cached.html;
 } else {
   fetch('{{ pkg.readme }}')
-    .then(res => res.text())
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      return res.text();
+    })
     .then(md => {
       if (DOMPurify.isSupported) {
-          const html = marked.parse(md);
-          const safe = DOMPurify.sanitize(html);
-          sessionStorage.setItem(cacheKey, JSON.stringify({ html: safe, time: now }));
-          target.innerHTML = safe;
-        } else {
-          const escaped = md
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-          target.innerHTML = escaped;
-          target.className = 'raw';        }
+        const html = marked.parse(md);
+        const safe = DOMPurify.sanitize(html);
+        sessionStorage.setItem(cacheKey, JSON.stringify({ html: safe, time: now }));
+        target.innerHTML = safe;
+      } else {
+        const escaped = md
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        target.innerHTML = escaped;
+        target.className = 'raw';
+      }
+    })
+    .catch(err => {
+      console.error('Failed to load readme:', err);
+      target.innerHTML = '"😒, the readme failed to load."';
+      target.className = 'raw';
     });
 }
 </script>
