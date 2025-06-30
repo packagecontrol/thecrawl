@@ -10,6 +10,10 @@ const data = await fetchSearchData();
 const minisrch = new minisearch({
   idField: 'name',
   fields: ['name', 'description', 'author', 'platforms', 'labels'],
+  // keep in sync with searchindex.json.njk
+  storeFields: [
+    'name', 'description', 'author', 'stars', 'platforms', 'labels', 'permalink'
+  ],
   searchOptions: {
     boost: { author: 2 },
     fuzzy: 0.2,
@@ -19,7 +23,6 @@ const minisrch = new minisearch({
 minisrch.addAll(data);
 
 export function search(value) {
-  let base = data;
   let queries = [];
 
   // handle author filter
@@ -68,19 +71,11 @@ export function search(value) {
     queries,
     combineWith: 'AND'
   });
-
-  const minikeys = results.map(mini => mini.id);
-  const scores = results.reduce((acc, mini) => {
-    acc[mini.id] = mini.score;
-    return acc;
-  }, {});
-
-  // return matches sorted by their score according to minisearch
-  // where a high score means a better match
-  return base.filter(
-    pkg => minikeys.indexOf(pkg.name) > -1
-  ).sort((a,b) => {
-    return scores[b.name] - scores[a.name];
-  });
+  // omit Minisearch result internals
+  // eslint-disable-next-line no-unused-vars
+  return results.map(({score, /**/id, queryTerms, terms, match,/**/ ...rest}) => ({
+    ...rest,
+    score
+  }));
 }
 
