@@ -118,17 +118,10 @@ dl {
   }
 
   pre {
-    border: 1px solid var(--background-darker);
-    padding: 1rem;
-  }
-
-  pre,
-  code {
-    background: var(--background);
-  }
-}
-
-div#md.raw {
     white-space: break-spaces;
-    font-family: monospace;
+    &:not(.raw); {
+      border: 1px solid var(--background-darker);
+      padding: 1rem;
+    }
+  }
 }

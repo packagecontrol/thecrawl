@@ -20,21 +20,23 @@ if (cached && (now - cached.time) < ttl) {
     })
     .then(md => {
       if (DOMPurify.isSupported) {
-          const html = marked.parse(md);
-          const safe = DOMPurify.sanitize(html);
-          sessionStorage.setItem(cacheKey, JSON.stringify({ html: safe, time: now }));
-          target.innerHTML = safe;
-        } else {
-          const escaped = md
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-          target.innerHTML = escaped;
-          target.className = 'raw';        }
+        const html = marked.parse(md);
+        const safe = DOMPurify.sanitize(html);
+        sessionStorage.setItem(cacheKey, JSON.stringify({ html: safe, time: now }));
+        target.innerHTML = safe;
+      } else {
+        const escaped = md
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        const pre = document.createElement('pre');
+        pre.classList.add('raw');
+        pre.innerHTML = escaped;
+        target.appendChild(pre);
+      }
     })
     .catch(err => {
       console.error('Failed to load readme:', err);
-      target.innerHTML = '"😒, the readme failed to load."';
-      target.className = 'raw';
+      target.innerHTML = '😒 the readme failed to load.';
     });
 }
