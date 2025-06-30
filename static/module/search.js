@@ -7,6 +7,16 @@ async function fetchSearchData() {
   return await res.json();
 }
 const data = await fetchSearchData();
+const minisrch = new minisearch({
+  idField: 'name',
+  fields: ['name', 'description', 'author', 'platforms', 'labels'],
+  searchOptions: {
+    boost: { author: 2 },
+    fuzzy: 0.2,
+    prefix: true
+  }
+});
+minisrch.addAll(data);
 
 export function search(value) {
   let base = data;
@@ -52,22 +62,7 @@ export function search(value) {
       fields: ['name', 'description', 'author']
     })
   }
-  // use minisearch to find matches with some level of fuzziness
-  // we sloppily reset the index each search
-  // which is wasteful of cpu cycles I guess, but it seems fast enough :shrug:
-  // https://github.com/lucaong/minisearch
-  const minisrch = new minisearch({
-    idField: 'name',
-    fields: ['name', 'description', 'author', 'platforms', 'labels'],
-    searchOptions: {
-        boost: { author: 2 },
-        fuzzy: 0.2,
-        prefix: true
-      }
-  });
 
-  // start with all data post label/author filtering
-  minisrch.addAll(base);
   // search and then map results so we can easily use them for output
   let results = minisrch.search({
     queries,
