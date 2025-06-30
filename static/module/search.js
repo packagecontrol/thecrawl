@@ -1,10 +1,17 @@
 import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
 
+// Fetches and returns the search data from searchindex.json
+async function fetchSearchData() {
+  const res = await fetch('/static/searchindex.json');
+  if (!res.ok) throw new Error('Failed to fetch search data');
+  return await res.json();
+}
+const data = await fetchSearchData();
+
 export class Search {
   value = '';
-  data = null;
 
-  constructor(value, data) {
+  constructor(value) {
     this.value = value;
     this.data = data;
   }

@@ -1,13 +1,11 @@
-import { Data } from './module/data.js';
 import { List } from './module/list.js';
 import { Search } from './module/search.js';
 import { Sort } from './module/sort.js';
 
-const data = await new Data().get();
 const list = new List();
 
 function goSearch(value, sortBy = 'relevance', page = 1) {
-  const srch = new Search(value, data);
+  const srch = new Search(value);
 
   // Update URL with search query, sort parameter, and page
   const params = new URLSearchParams();
