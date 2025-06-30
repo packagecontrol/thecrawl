@@ -26,37 +26,37 @@ export function search(value) {
   let queries = [];
 
   // handle author filter
-  const author = value.match(/author:"([^"]+)"/i);
+  let author = value.match(/author:"([^"]+)"|author:([^\s]+)/i)
   if (author) {
+    const authorValue = author[1] || author[2]
     queries.push({
-      queries: [author[1]],
-      fields: ['author'] // restrict to author
-    });
+      queries: [authorValue],
+      fields: ['author']
+    })
     // remove this filter from the search string
-    value = value.replace(author[0], '');
+    value = value.replace(author[0], '')
   }
 
   // handle label filter
-  const label = value.match(/label:"([^"]+)"/i);
+  let label = value.match(/label:"([^"]+)"|label:([^\s]+)/i)
   if (label) {
+    const labelValue = label[1] || label[2]
     queries.push({
-      queries: [label[1]],
-      fields: ['labels'] // restrict to author
-    });
-
-    // remove this filter from the search string
-    value = value.replace(label[0], '');
+      queries: [labelValue],
+      fields: ['labels']
+    })
+    value = value.replace(label[0], '')
   }
 
   // handle platform filter
-  const platform = value.match(/platform:"([^"]+)"/i);
+  let platform = value.match(/platform:"([^"]+)"|platform:([^\s]+)/i)
   if (platform) {
+    const platformValue = platform[1] || platform[2]
     queries.push({
-      queries: [platform[1]],
-      fields: ['platforms'] // restrict to author
-    });
-    // remove this filter from the search string
-    value = value.replace(platform[0], '');
+      queries: [platformValue],
+      fields: ['platforms']
+    })
+    value = value.replace(platform[0], '')
   }
 
   if (value) {
