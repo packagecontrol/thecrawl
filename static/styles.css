@@ -106,16 +106,16 @@ dl {
   }
 }
 
-div#md {
-    border-top: 4px solid var(--background-darker);
-    margin-top: 1em;
-    padding: 1.5em;
-    background: var(--background-slightly-darker);
-}
+#md:not(:empty) {
+  margin-top: 3.2rem;
+  padding: 1.6em;
+  border-top: 4px solid var(--background-darker);
+  background: var(--background-slightly-darker);
 
-div#md img {
+  img {
     max-width: 100% !important;
     height: auto;
+  }
 }
 
 div#md.raw {
