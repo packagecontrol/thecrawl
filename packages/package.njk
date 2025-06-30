@@ -74,3 +74,29 @@ eleventyComputed:
   </li>
   {% endif %}
 </ul>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+
+<div id="md"></div>
+
+<script>
+const cacheKey = `md:{{ pkg.readme }}`;
+const ttl = 60 * 60; // 1 hour in seconds
+
+const target = document.getElementById('md');
+const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
+const now = Math.floor(Date.now() / 1000);
+if (cached && (now - cached.time) < ttl) {
+  target.innerHTML = cached.html;
+} else {
+  fetch('{{ pkg.readme }}')
+    .then(res => res.text())
+    .then(md => {
+      const html = marked.parse(md);
+      const safe = DOMPurify.sanitize(html);
+      sessionStorage.setItem(cacheKey, JSON.stringify({ html: safe, time: now }));
+      target.innerHTML = safe;
+    });
+}
+</script>

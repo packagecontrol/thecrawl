@@ -105,3 +105,15 @@ dl {
     }
   }
 }
+
+div#md {
+    border-top: 4px solid #eee;
+    margin-top: 1em;
+    padding: 1.5em;
+    background: #f9f9f9;
+}
+
+div#md img {
+    max-width: 100% !important;
+    height: auto;
+}
