@@ -131,6 +131,7 @@ window.addEventListener('popstate', () => {
   }
 });
 
+
 // Add event delegation for label links
 document.addEventListener('click', (event) => {
   const target = event.target.closest('a');

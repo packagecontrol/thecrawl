@@ -143,3 +143,52 @@ dl {
     }
   }
 }
+
+#theme-toggle {
+  appearance: none;
+  all: unset;
+  width: 52px;
+  height: 26px;
+  background: var(--background-darker);
+  border: 2px solid var(--background-darker);
+  border-radius: 1.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+  position: relative;
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 100%;
+    background: var(--background);
+    padding: 1px;
+    margin: 0 2px;
+    transition: transform .2s ease-in-out;
+    will-change: transform;
+  }
+
+  span {
+    display: flex;
+  }
+
+  .dark {
+    display: none;
+  }
+
+  :root[data-theme='dark'] & {
+    .icon {
+      transform: translateX(26px);
+    }
+    .dark {
+      display: revert;
+    }
+    .light {
+      display: none;
+    }
+  }
+}
