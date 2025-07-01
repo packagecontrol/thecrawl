@@ -6,8 +6,6 @@ on:
     types:
       - completed
   workflow_dispatch:
-  push:
-    branches: ["gh-pages"]
   schedule:
     - cron: '0 0 * * *'
 
@@ -19,7 +17,7 @@ permissions:
 jobs:
   build-st4-channel:
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' && github.event_name != 'schedule'
+    if: github.event_name != 'schedule'
     outputs:
       update_needed: ${{ steps.check.outputs.update_needed }}
     env:
@@ -131,7 +129,7 @@ jobs:
 
   build-st3-channel:
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' && github.event_name != 'schedule'
+    if: github.event_name != 'schedule'
     env:
       RELEASE_TAG: the-st3-channel
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -271,9 +269,9 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  gh-pages-on-push:
+  gh-pages-nightly:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'  || github.event_name == 'schedule'
+    if: github.event_name == 'schedule'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -290,10 +288,6 @@ jobs:
 
       - name: Build
         run: make build
-
-      - name: Lint
-        if: github.event_name == 'push'
-        run: make lint
 
       - name: Setup pages
         uses: actions/configure-pages@v4
