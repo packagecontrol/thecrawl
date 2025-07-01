@@ -11,7 +11,7 @@ permalink: "/static/searchindex.json"
     "stars": "{{ pkg.stars }}",
     "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
     "labels": "{{ pkg.labels | default([]) | join(",") }}",
-    "permalink": "/package/{{ pkg.name | urlencode }}/"
+    "permalink": "/packages/{{ pkg.name | urlencode }}/"
   }{{ "," if not loop.last }}
 {%- endfor %}
 ]
