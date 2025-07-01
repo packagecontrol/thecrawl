@@ -30,7 +30,7 @@ if (cached && (now - cached.time) < ttl) {
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;');
         const pre = document.createElement('pre');
-        pre.classList.add('raw');
+        pre.classList.add('fallback');
         pre.innerHTML = escaped;
         target.appendChild(pre);
       }
