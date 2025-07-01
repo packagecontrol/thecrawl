@@ -143,8 +143,20 @@ document.addEventListener('click', (event) => {
       event.stopPropagation();
       input.value = labelQuery;
       sortSelect.value = 'relevance';
-      document.querySelector('h1').scrollIntoView();
+      maybeScrollIntoView(document.querySelector('h1'))
       goSearch(labelQuery.toLowerCase(), 'relevance', 1);
     }
   }
 });
+
+function maybeScrollIntoView(el) {
+  if (el) {
+    const rect = el.getBoundingClientRect();
+    const completelyAbove = rect.bottom < 0;
+    const completelyBelow = rect.top > window.innerHeight;
+
+    if (completelyAbove || completelyBelow) {
+      el.scrollIntoView();
+    }
+  }
+}
