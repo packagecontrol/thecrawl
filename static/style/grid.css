@@ -1,7 +1,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
-  gap: 11px;
+  gap: 1rem;
   margin: 0;
   padding: 0;
   > * {
@@ -41,18 +41,17 @@
     padding-top: 0;
     padding-right: 2em;
     margin-top: 0;
-    margin-bottom: -4px;
+    margin-bottom: -6px;
 
     + * {
       margin-top: 0;
-      padding-bottom: 9px;
       flex: 1; /* push other content to the end of the card */
     }
   }
 
   dl {
     position: absolute;
-    top: 22px;
+    top: 26px;
     right: 1rem;
     font-size: calc(1rem / 1.33);
     svg {
