@@ -5,10 +5,8 @@ date: Last Modified
 
 {% import "packages/macros.njk" as pack %}
 
-<h1>
-  <span class="counter" data-all="{{ collections.packages | length }}">
-    {{ collections.packages | length }}
-  </span>
+<h1 data-all="{{ collections.packages | length }}">
+  {{ collections.packages | length }}
   Packages
 </h1>
 

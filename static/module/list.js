@@ -13,8 +13,13 @@ export class List {
   }
 
   setCounter(count = null) {
-    const counter = document.querySelector('h1 .counter');
-    counter.innerText = count ?? counter.dataset.all;
+    const counter = document.querySelector('h1');
+    if (count === 1) {
+      counter.innerText = '1 Package';
+      return;
+    }
+
+    counter.innerText = (count ?? counter.dataset.all) + ' Packages';
   }
 
   // reveal search results and hide the static homepage
