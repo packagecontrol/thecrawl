@@ -61,7 +61,7 @@ eleventyComputed:
     <a class="button" href="{{ pkg.details }}">{{ pack.logo('repo') }} <span>Repository</span></a>
   </li>
   <li>
-    <a class="button" href="{{ pkg.readme }}">{{ pack.logo('file') }} <span>README</span></a>
+    <a class="button" href="{{ pkg.readme_url | default(pkg.readme) }}">{{ pack.logo('file') }} <span>README</span></a>
   </li>
   {% if pkg.issues %}
     <li>
