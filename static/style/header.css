@@ -23,8 +23,8 @@ header {
 
   nav {
     float: right;
-    line-height: 22px;
-    padding-top: 16px;
+    line-height: 1.33;
+    padding-top: 1.33rem;
     * + * {
       margin-left: 1ex;
     }

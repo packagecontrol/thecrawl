@@ -5,12 +5,14 @@
  * Vertical rhythm by Syncope
  * http://nowodzinski.pl/syncope
  *
+ * Input: 16px base size, 1.6 line height, 1.33 scale.
+ *
  * For testing vertical rhythm enable the body style:
  */
 
 /*body {
   background-image: linear-gradient(to bottom, rgba( 32,160,255,.35 ) 1px, transparent 1px) !important;
-  background-size: 100% 22px !important;
+  background-size: 100% 26px !important;
   background-position-y: 26px !important;
 }*/
 
@@ -22,52 +24,52 @@ code {
 html,
 body {
   font-family: "Lato", sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.6;
 }
 
 .big {
-  font-size: 44px;
-  line-height: 66px;
-  padding-top: 18px;
-  margin-bottom: 4px;
+  font-size: 51px;
+  line-height: 52px;
+  padding-top: 9px;
+  margin-bottom: 17px;
   padding-bottom: 0;
   margin-top: 0;
 }
 
 h1 {
-  font-size: 33px;
-  line-height: 44px;
-  padding-top: 11px;
-  margin-bottom: 11px;
+  font-size: 38px;
+  line-height: 52px;
+  padding-top: 13px;
+  margin-bottom: 13px;
   padding-bottom: 0;
   margin-top: 0;
 }
 
 h2 {
-  font-size: 25px;
-  line-height: 44px;
-  padding-top: 14px;
-  margin-bottom: 8px;
+  font-size: 28px;
+  line-height: 52px;
+  padding-top: 16px;
+  margin-bottom: 10px;
   padding-bottom: 0;
   margin-top: 0;
 }
 
 h3 {
-  font-size: 19px;
-  line-height: 22px;
-  padding-top: 5px;
-  margin-bottom: 17px;
+  font-size: 21px;
+  line-height: 26px;
+  padding-top: 6px;
+  margin-bottom: 20px;
   padding-bottom: 0;
   margin-top: 0;
 }
 
 p,
 ul {
-  font-size: 14px;
-  line-height: 22px;
-  padding-top: 6px;
-  margin-bottom: 16px;
+  font-size: 1rem;
+  line-height: 26px;
+  padding-top: 8px;
+  margin-bottom: 18px;
   padding-bottom: 0;
   margin-top: 0;
 }
