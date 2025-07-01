@@ -1,0 +1,44 @@
+name: Rebuild on push to gh-pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["gh-pages"]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  gh-pages-on-push:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: "gh-pages"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build
+        run: make build
+
+      - name: Lint
+        run: make lint
+
+      - name: Setup pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
