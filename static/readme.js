@@ -21,7 +21,7 @@ if (cached && (now - cached.time) < ttl) {
     .then(md => {
       if (DOMPurify.isSupported && is_markdown(source)) {
         const html = marked.parse(md);
-        const html_ = resolve_relative_urls(html, source);
+        const html_ = post_process_html(html, source);
         const safe_content = DOMPurify.sanitize(html_);
         target.innerHTML = safe_content;
       } else {
@@ -46,7 +46,7 @@ function is_markdown(url) {
   return !url.match("(.creole|.rst|.textile)$")
 }
 
-function resolve_relative_urls(html, base_url) {
+function post_process_html(html, base_url) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const base = new URL(base_url);
@@ -58,6 +58,10 @@ function resolve_relative_urls(html, base_url) {
       // relative URL, resolve it
       el.setAttribute(attr, new URL(val, base).href);
     }
+  });
+
+  doc.querySelectorAll('video[src]').forEach(el => {
+    el.setAttribute('controls', 'controls');
   });
 
   return doc.body.innerHTML;
