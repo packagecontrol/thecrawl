@@ -9,7 +9,7 @@ on:
   push:
     branches: ["gh-pages"]
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 0 * * *'
 
 permissions:
   contents: write
