@@ -51,8 +51,8 @@ function resolve_relative_urls(html, base_url) {
   const doc = parser.parseFromString(html, 'text/html');
   const base = new URL(base_url);
 
-  doc.querySelectorAll('a[href], img[src]').forEach(el => {
-    const attr = el.tagName === 'IMG' ? 'src' : 'href';
+  doc.querySelectorAll('a[href], img[src], video[src]').forEach(el => {
+    const attr = el.hasAttribute('href') ? 'href' : 'src';
     const val = el.getAttribute(attr);
     if (val && !val.match(/^([a-z]+:|#|\/)/i)) {
       // relative URL, resolve it
