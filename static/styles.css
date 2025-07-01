@@ -150,7 +150,7 @@ dl {
   width: 52px;
   height: 26px;
   background: var(--background-darker);
-  border: 1px solid var(--background-darkest);
+  border: 2px solid var(--background-darker);
   border-radius: 1.6rem;
   cursor: pointer;
   display: flex;
@@ -166,7 +166,8 @@ dl {
     justify-content: center;
     border-radius: 100%;
     background: var(--background);
-    padding: 2px;
+    padding: 1px;
+    margin: 0 2px;
     transition: transform .2s ease-in-out;
     will-change: transform;
   }
