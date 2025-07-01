@@ -20,7 +20,7 @@
   --label-highlight: #38464b;
 }
 
-:root.dark {
+:root[data-theme='dark'] {
   --background: #2b303b;
   --background-slightly-darker: #383e4d;
   --background-darker: #3f5157;

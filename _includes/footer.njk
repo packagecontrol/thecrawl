@@ -1,3 +1,5 @@
+{% import "packages/macros.njk" as pack %}
+
 <footer>
   <img src="/static/favicon.png" width="80" height="80">
   <h2>Package Control</h2>
@@ -16,4 +18,11 @@
     <a href="https://github.com/packagecontrol/thecrawl/tree/gh-pages">This website on GitHub</a>
     <a href="https://sublimetext.com/">Sublime Text</a>
   </nav>
+
+  <button id="theme-toggle" aria-label="Toggle color scheme">
+    <div class="icon">
+      <span class="light" aria-label="light">{{ pack.logo('sun') }}</span>
+      <span class="dark" aria-label="dark">{{ pack.logo('moon') }}</span>
+    </div>
+  </button>
 </footer>
