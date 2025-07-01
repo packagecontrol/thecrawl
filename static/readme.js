@@ -21,7 +21,8 @@ if (cached && (now - cached.time) < ttl) {
     .then(md => {
       if (DOMPurify.isSupported && is_markdown(source)) {
         const html = marked.parse(md);
-        const safe_content = DOMPurify.sanitize(html);
+        const html_ = resolve_relative_urls(html, source);
+        const safe_content = DOMPurify.sanitize(html_);
         target.innerHTML = safe_content;
       } else {
         const escaped = md
@@ -45,3 +46,19 @@ function is_markdown(url) {
   return !url.match("(.creole|.rst|.textile)$")
 }
 
+function resolve_relative_urls(html, base_url) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const base = new URL(base_url);
+
+  doc.querySelectorAll('a[href], img[src]').forEach(el => {
+    const attr = el.tagName === 'IMG' ? 'src' : 'href';
+    const val = el.getAttribute(attr);
+    if (val && !val.match(/^([a-z]+:|#|\/)/i)) {
+      // relative URL, resolve it
+      el.setAttribute(attr, new URL(val, base).href);
+    }
+  });
+
+  return doc.body.innerHTML;
+}
