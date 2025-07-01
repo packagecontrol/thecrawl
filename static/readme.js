@@ -19,7 +19,7 @@ if (cached && (now - cached.time) < ttl) {
       return res.text();
     })
     .then(md => {
-      if (DOMPurify.isSupported) {
+      if (DOMPurify.isSupported && is_markdown(source)) {
         const html = marked.parse(md);
         const safe = DOMPurify.sanitize(html);
         sessionStorage.setItem(cacheKey, JSON.stringify({ html: safe, time: now }));
@@ -40,3 +40,8 @@ if (cached && (now - cached.time) < ttl) {
       target.innerHTML = '😒 the readme failed to load.';
     });
 }
+
+function is_markdown(url) {
+  return !url.match("(.creole|.rst|.textile)$")
+}
+
