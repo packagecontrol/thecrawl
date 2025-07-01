@@ -21,9 +21,8 @@ if (cached && (now - cached.time) < ttl) {
     .then(md => {
       if (DOMPurify.isSupported && is_markdown(source)) {
         const html = marked.parse(md);
-        const safe = DOMPurify.sanitize(html);
-        sessionStorage.setItem(cacheKey, JSON.stringify({ html: safe, time: now }));
-        target.innerHTML = safe;
+        const safe_content = DOMPurify.sanitize(html);
+        target.innerHTML = safe_content;
       } else {
         const escaped = md
           .replace(/&/g, '&amp;')
@@ -34,6 +33,7 @@ if (cached && (now - cached.time) < ttl) {
         pre.innerHTML = escaped;
         target.appendChild(pre);
       }
+      sessionStorage.setItem(cacheKey, JSON.stringify({ html: target.innerHTML, time: now }));
     })
     .catch(err => {
       console.error('Failed to load readme:', err);
