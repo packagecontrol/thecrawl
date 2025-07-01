@@ -1,0 +1,58 @@
+---
+layout: layout.njk
+permalink: "/libraries/"
+date: Last Modified
+---
+
+{% import "libraries/macros.njk" as libs %}
+
+<h1>
+  <span class="counter" data-all="{{ collections.libraries | length }}">
+    {{ collections.libraries | length }}
+  </span>
+  Libraries
+</h1>
+
+<form name="search">
+  <div class="search-controls">
+    <label for="search-field" class="screenreader-only">Search</label>
+    <input type="text" autocomplete="off" name="q" id="search-field" placeholder="Search libraries ...">
+
+    <div class="button">
+      <label for="sort-field">Sort by</label>
+      <select name="sort-field" id="sort-field">
+        <option value="relevance">Magic</option>
+        <option value="name" selected>Name (A-Z)</option>
+        <option value="name-desc">Name (Z-A)</option>
+        <option value="author">Author (A-Z)</option>
+        <option value="author-desc">Author (Z-A)</option>
+      </select>
+    </div>
+  </div>
+</form>
+
+<section name="result" style="display:none;">
+  <h2>Results</h2>
+  <ul class="libraries-list"></ul>
+</section>
+
+<section name="all" id="all-libraries">
+  <h2>All Libraries</h2>
+  <ul class="libraries-list" id="libraries-list">
+    <!-- Libraries will be loaded dynamically -->
+  </ul>
+</section>
+
+{% import "libraries/macros.njk" as libs %}
+<template id="library-card">
+  {{ libs.card({
+    "name": "placeholder-name",
+    "description": "placeholder-description",
+    "author": "placeholder-author",
+    "issues": "placeholder-issues",
+    "python_versions": ["3.8"],
+    "permalink": "placeholder-permalink"
+  }) }}
+</template>
+
+<script src="/static/index.js" type="module" async></script> 

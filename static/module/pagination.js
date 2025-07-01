@@ -1,10 +1,33 @@
 export class Pagination {
-  constructor(items, page, parent) {
+  constructor(items, page, parent, itemName = 'items') {
     this.items = items;
     this.currentPage = page;
     this.totalPages = 0;
     this.itemsPerPage = 24;
     this.parent = parent;
+    this.itemName = itemName;
+  }
+
+  // Static method for creating pagination HTML without needing instance
+  static createPaginationHtml(currentPage, totalPages, totalItems, itemName = 'items') {
+    if (totalPages < 2) return '';
+    
+    const pagination = document.createElement('div');
+    pagination.className = 'pagination';
+    
+    const startItem = (currentPage - 1) * 24 + 1;
+    const endItem = Math.min(currentPage * 24, totalItems);
+    
+    const info = document.createElement('div');
+    info.className = 'pagination-info';
+    info.textContent = `Showing ${startItem}-${endItem} of ${totalItems} ${itemName}`;
+    pagination.appendChild(info);
+    
+    return pagination.outerHTML;
+  }
+
+  get(page, totalPages, itemName = 'items') {
+    return Pagination.createPaginationHtml(page, totalPages, this.items?.length || 0, itemName);
   }
 
   // calculate pagination and result the items of the current page
@@ -29,7 +52,8 @@ export class Pagination {
     const endItem = Math.min(this.currentPage * this.itemsPerPage, this.items.length);
     const info = document.createElement('div');
     info.className = 'pagination-info';
-    info.textContent = `Showing ${startItem}-${endItem} of ${this.items.length} packages`;
+    const itemName = this.itemName || 'items';
+    info.textContent = `Showing ${startItem}-${endItem} of ${this.items.length} ${itemName}`;
     pagination.appendChild(info);
 
     // controls
