@@ -38,6 +38,21 @@ function minimalPackage(pkg) {
     allPlatforms = allPlatforms.concat(platforms);
     release.platforms = platforms;
   })
+  // Split releases with same sublime build and same platform set.
+  // As we're sorted, just keep the first one we see.
+  const seen = new Set();
+  const dedupedReleases = [];
+  const otherReleases = [];
+  for (const release of pkg.releases) {
+    const key = `${release.sublime_text}|${[...release.platforms].sort().join('|')}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      dedupedReleases.push(release);
+    } else {
+      otherReleases.push(release);
+    }
+  }
+
   // Remove duplicate platforms
   const uniquePlatforms = Array.from(new Set(allPlatforms));
 
@@ -45,7 +60,8 @@ function minimalPackage(pkg) {
     name: pkg.name,
     author: cleanupAuthors(pkg.author),
     stars: pkg.stars ?? 0,
-    releases: pkg.releases,
+    releases: dedupedReleases,
+    otherReleases,
     labels: pkg.labels,
     platforms: uniquePlatforms
   }
