@@ -273,7 +273,7 @@ jobs:
 
   gh-pages-on-push:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'  || github.event_name != 'schedule'
+    if: github.event_name == 'push'  || github.event_name == 'schedule'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
