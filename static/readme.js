@@ -64,5 +64,13 @@ function post_process_html(html, base_url) {
     el.setAttribute('controls', 'controls');
   });
 
+  // Replace packagecontrol.io references with packages.sublimetext.io
+  doc.querySelectorAll('a[href]').forEach(el => {
+    const href = el.getAttribute('href');
+    if (href && href.includes('packagecontrol.io')) {
+      el.setAttribute('href', href.replace(/packagecontrol\.io/g, 'packages.sublimetext.io'));
+    }
+  });
+
   return doc.body.innerHTML;
 }
