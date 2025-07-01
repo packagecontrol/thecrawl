@@ -134,3 +134,20 @@ window.addEventListener('popstate', () => {
     list.revertToNormal();
   }
 });
+
+// Add event delegation for label links
+document.addEventListener('click', (event) => {
+  const target = event.target.closest('a');
+  if (target && target.href) {
+    const url = new URL(target.href, window.location.origin);
+    const labelQuery = url.searchParams.get('q');
+    if (labelQuery !== null) {
+      event.preventDefault();
+      event.stopPropagation();
+      input.value = labelQuery;
+      sortSelect.value = 'relevance';
+      document.querySelector('h1').scrollIntoView();
+      goSearch(labelQuery.toLowerCase(), 'relevance', 1);
+    }
+  }
+});
