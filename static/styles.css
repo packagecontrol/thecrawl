@@ -116,7 +116,7 @@ dl {
     display: none;
   }
 
-  img {
+  img, video {
     max-width: 100% !important;
     height: auto;
   }
