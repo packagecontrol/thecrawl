@@ -33,6 +33,10 @@ a {
   }
 }
 
+summary {
+  cursor: pointer;
+}
+
 svg {
   fill: currentColor;
 }
