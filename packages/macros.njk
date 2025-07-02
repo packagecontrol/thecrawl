@@ -36,7 +36,9 @@
         {{ pkg.name }}
       </a>
     </h3>
-    <p>by {{ pkg.author }}</p>
+    <p>by {% for author in pkg.author -%}
+      {{ author }}{{ ", " if not loop.last }}
+    {%- endfor %}</p>
 
     {{ stars(pkg.stars) }}
     {{ labels(pkg.platforms, pkg.labels) }}
