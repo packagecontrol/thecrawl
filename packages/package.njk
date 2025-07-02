@@ -7,13 +7,15 @@ pagination:
   alias: pkg
 eleventyComputed:
   title: "{{ pkg.name }}"
-  description: "{{ pkg.description }}"
+  description: "{{ pkg.description | default('') }}"
 ---
 
 {% import "packages/macros.njk" as pack %}
 
 <h1>{{ pkg.name }}</h1>
+{% if pkg.description %}
 <p class="description">{{ pkg.description }}</p>
+{% endif %}
 
 <p>
   By
@@ -57,12 +59,16 @@ eleventyComputed:
     <a class="button" href="{{ pkg.homepage }}">{{ pack.logo('home') }} <span>Website</span></a>
   </li>
   {% endif %}
+  {% if pkg.details %}
   <li>
     <a class="button" href="{{ pkg.details }}">{{ pack.logo('repo') }} <span>Repository</span></a>
   </li>
+  {% endif %}
+  {% if pkg.readme %}
   <li>
     <a class="button" href="{{ pkg.readme }}">{{ pack.logo('file') }} <span>README</span></a>
   </li>
+  {% endif %}
   {% if pkg.issues %}
     <li>
     <a class="button" href="{{ pkg.issues }}">{{ pack.logo('bug') }} <span>Issues</span></a>
@@ -75,6 +81,7 @@ eleventyComputed:
   {% endif %}
 </ul>
 
+{% if pkg.readme %}
 <section id="md" class="readme" data-readme-url="{{ pkg.readme }}"></section>
-
 <script src="/static/readme.js" type="module" async></script>
+{% endif %}

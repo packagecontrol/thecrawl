@@ -6,7 +6,7 @@ permalink: "/static/searchindex.json"
 {% for pkg in collections.minimal_packages -%}
   {
     "name": "{{ pkg.name }}",
-    "description": "{{ pkg.description | nl2br | replace('\n', '') }}",
+    "description": "{{ pkg.description | default('') | nl2br | replace('\n', '') }}",
     "author": "{{ pkg.author | join(', ') }}",
     "stars": "{{ pkg.stars }}",
     "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
