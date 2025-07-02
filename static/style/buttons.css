@@ -28,10 +28,14 @@
 	white-space: nowrap;
 	line-height: 1.6;
 	cursor: pointer;
-	transition: color 0.2s ease-in-out;
+	transition: color 0.2s ease-in-out, outline .2s ease-in-out;
 
 	&:hover {
 	  color: var(--label-highlight);
 	  text-decoration: none;
+	}
+
+	&:focus {
+		outline: 2px solid var(--primary-accent);
 	}
 }
