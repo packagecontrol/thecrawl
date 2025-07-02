@@ -63,6 +63,11 @@ class Workspace(TypedDict):
     dependencies: list[PackageEntry]
 
 
+class HeartAttack(Exception):
+    """Raised when a repository ID mismatch is detected."""
+    pass
+
+
 def err(*args, **kwargs) -> None:
     print(*args, **kwargs, file=sys.stderr)
 
@@ -225,6 +230,9 @@ async def crawl(
                 f"{e.status} {e.message.removesuffix(".")}", end=". "
             )
             out["fail_reason"] = f"{e.status} {e.message}"
+        elif isinstance(e, HeartAttack):
+            err(f"Heart attack during crawl for {package['name']}: {e}")
+            out["fail_reason"] = str(e)
         else:
             err(f"Exception while crawling {package['name']}")
             tb = traceback.format_exc()
@@ -328,6 +336,15 @@ async def crawl_package(
 
         if url == details:
             out = info["metadata"] | out
+            if (
+                existing.get("id")
+                and existing.get("id") != out.get("id")
+                and existing.get("details") == details
+            ):
+                raise HeartAttack(
+                    f"Repository ID mismatch for {details}: "
+                    f"{existing.get('id')} != {out.get('id')}"
+                )
 
         for r in release_definitions[:]:
             if is_fulfilled_release_definition(r):
