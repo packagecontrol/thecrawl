@@ -51,6 +51,27 @@ eleventyComputed:
   </p>
 {% endfor %}
 
+{% if pkg.otherReleases and pkg.otherReleases | length > 0 %}
+<details class="other-releases">
+  <summary>Other releases</summary>
+  <ul>
+    {% for release in pkg.otherReleases %}
+      <li>
+        <a class="release" href="{{ release.url }}">{{ release.version }}</a>
+        {% if release.sublime_text != "*" %}
+          <span class="requirement">({{ release.sublime_text }})</span>
+        {% endif %}
+        <br>
+        {{ release.date }}
+        {% if release.platforms | length > 0 %}
+          — {{ release.platforms | join(', ') }}
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</details>
+{% endif %}
+
 <h2>Links</h2>
 
 <ul class="button-group links">

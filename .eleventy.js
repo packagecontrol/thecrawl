@@ -16,21 +16,53 @@ function cleanupAuthors(author) {
 }
 
 function minimalPackage(pkg) {
-  let allPlatforms = [];
+  // Create a new array of releases with cleaned platforms
+  const releases = (pkg.releases || []).map(release => ({
+    ...release,
+    platforms: cleanupPlatforms(release.platforms)
+  }));
 
-  pkg.releases.forEach(release => {
-    const platforms = cleanupPlatforms(release.platforms);
-    allPlatforms = allPlatforms.concat(platforms);
-    release.platforms = platforms;
-  })
+  // sort releases by date, newest first
+  // secondary by .sublime_text. strip the leading non-digit from that string first, reverse alphabetical
+  releases.sort((a, b) => {
+    const dateA = new Date(a.date ?? '1970-01-01 00:00:00');
+    const dateB = new Date(b.date ?? '1970-01-01 00:00:00');
+    if (dateA.getTime() !== dateB.getTime()) {
+      return dateB - dateA; // Newest first
+    }
+    // Secondary: compare .sublime_text, strip leading non-digit, reverse alphabetical
+    const verA = (a.sublime_text || '').replace(/^[^\d]*/, '');
+    const verB = (b.sublime_text || '').replace(/^[^\d]*/, '');
+    if (verA > verB) return -1;
+    if (verA < verB) return 1;
+    return 0;
+  });
+
+  // Split releases with same sublime build and same platform set.
+  // As we're sorted, just keep the first one we see.
+  const seen = new Set();
+  const dedupedReleases = [];
+  const otherReleases = [];
+  for (const release of releases) {
+    const key = `${release.sublime_text}|${[...release.platforms].sort().join('|')}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      dedupedReleases.push(release);
+    } else {
+      otherReleases.push(release);
+    }
+  }
+
   // Remove duplicate platforms
+  const allPlatforms = releases.flatMap(release => release.platforms);
   const uniquePlatforms = Array.from(new Set(allPlatforms));
 
   return {
     name: pkg.name,
     author: cleanupAuthors(pkg.author),
     stars: pkg.stars ?? 0,
-    releases: pkg.releases,
+    releases: dedupedReleases,
+    otherReleases,
     labels: pkg.labels,
     platforms: uniquePlatforms
   }
