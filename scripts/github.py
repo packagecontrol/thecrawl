@@ -17,7 +17,7 @@ from .utils import is_semver, drop_falsy
 # "tags" and "branches" are lazy fetched, unless you provide TAGS or BRANCHES as
 # initial QueryScope, until exhausted. (Ref: TagPager and BranchesPager)
 
-type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
+type QueryScope = Literal["METADATA", "TAGS", "BRANCHES", "SUPPORTED_SYNTAX"]
 type Query = str | tuple[str, str]
 type Url = str
 type Sha = str
@@ -28,6 +28,7 @@ class RepoInfo(TypedDict):
     metadata: RepoMetadata
     tags: AsyncIterable[TagInfo]
     branches: AsyncIterable[BranchInfo]
+    syntax_files: list[SyntaxInfo]
     rate_limit_info: RateLimitInfo
 
 
@@ -57,6 +58,13 @@ class BranchInfo(TypedDict):
     url: Url
     date: IsoTimestamp
     sha: Sha
+
+
+class SyntaxInfo(TypedDict):
+    name: str     # filename without extension
+    path: str     # full path in repo
+    extension: str  # .sublime-syntax or .tmLanguage
+    url: Url      # raw file URL
 
 
 class RateLimitInfo(TypedDict):
@@ -165,10 +173,52 @@ TAGS = (
     }
     """
 )
+SUPPORTED_SYNTAX = (
+    '',
+    """
+    files: object(expression: $branch_ex) {
+      ... on Tree {
+        entries {
+          name
+          type
+          path
+          object {
+            ... on Tree {
+              entries {
+                name
+                type
+                path
+                object {
+                  ... on Tree {
+                    entries {
+                      name
+                      type
+                      path
+                      object {
+                        ... on Tree {
+                          entries {
+                            name
+                            type
+                            path
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+)
 scope_to_query: dict[str, Query] = {
     "METADATA": METADATA,
     "TAGS": TAGS,
     "BRANCHES": BRANCHES,
+    "SUPPORTED_SYNTAX": SUPPORTED_SYNTAX,
 }
 
 
@@ -304,9 +354,10 @@ async def fetch_github_info(
             "default_branch": default_branch,
             "stars": repo_data.get("stargazerCount"),
             "created_at": repo_data.get("createdAt")[:19].replace('T', ' '),
-        }) if "METADATA" in scopes else {},
+        }) if "METADATA" in scopes else {},  # type: ignore[misc]
         "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
         "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
+        "syntax_files": extract_syntax_files(repo_data.get("files", {}).get("entries", []), owner, repo, default_branch) if "SUPPORTED_SYNTAX" in scopes else [],
         "rate_limit_info": data["rate_limit_info"],
     }
 
@@ -355,6 +406,36 @@ def find_readme_url(entries, owner, repo, branch) -> str | None:
         if entry["type"] == "blob" and entry["name"].lower() in _readme_filenames:
             return f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{entry['name']}"
     return None
+
+
+def extract_syntax_files(entries, owner: str, repo: str, branch: str = "HEAD") -> list[SyntaxInfo]:
+    """Recursively extract .sublime-syntax and .tmLanguage files from the repository tree."""
+    syntax_files: list[SyntaxInfo] = []
+    
+    def traverse_entries(entries_list, current_path=""):
+        for entry in entries_list or []:
+            entry_path = entry.get("path", entry["name"])
+            
+            if entry["type"] == "blob":
+                # Check if it's a syntax file
+                if entry["name"].endswith(('.sublime-syntax', '.tmLanguage')):
+                    name_without_ext = entry["name"].rsplit('.', 1)[0]
+                    extension = '.' + entry["name"].rsplit('.', 1)[1]
+                    
+                    syntax_files.append({
+                        "name": name_without_ext,
+                        "path": entry_path,
+                        "extension": extension,
+                        "url": f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{entry_path}"
+                    })
+            
+            elif entry["type"] == "tree":
+                # Recursively traverse subdirectories
+                nested_entries = entry.get("object", {}).get("entries", [])
+                traverse_entries(nested_entries, entry_path)
+    
+    traverse_entries(entries)
+    return syntax_files
 
 
 class TagPager:
@@ -468,6 +549,158 @@ class BranchesPager:
             pass
 
 
+def create_safe_alias(owner: str, repo: str) -> str:
+    """
+    Create a safe GraphQL alias from owner/repo names.
+    GraphQL aliases must match [_A-Za-z][_0-9A-Za-z]*
+    """
+    import re
+    # Combine owner and repo with underscore
+    combined = f"{owner}_{repo}"
+    # Replace invalid characters with underscores
+    safe = re.sub(r'[^_0-9A-Za-z]', '_', combined)
+    # Ensure it starts with a letter or underscore
+    if safe and safe[0].isdigit():
+        safe = f"repo_{safe}"
+    return safe or "repo_unknown"
+
+
+def build_batched_query(repo_queries: dict[str, tuple[str, str, set[QueryScope]]]) -> str:
+    """
+    Build a batched GraphQL query for multiple repositories.
+    
+    Args:
+        repo_queries: Dict mapping alias -> (owner, repo, scopes)
+        
+    Returns:
+        GraphQL query string that fetches all repositories in one request
+    """
+    queries = []
+    all_variables = set()
+    
+    for alias, (owner, repo, scopes) in repo_queries.items():
+        # Build the sub-queries for this repository
+        sub_queries = [scope_to_query[scope] for scope in scopes]
+        repo_query_parts = []
+        
+        for q in sub_queries:
+            if isinstance(q, tuple):
+                # Collect variables from this scope
+                var_string = q[0]
+                if var_string:
+                    all_variables.add(var_string)
+                repo_query_parts.append(q[1])
+            else:
+                repo_query_parts.append(q)
+        
+        # Build the repository query with alias - hardcode owner/repo to avoid variable complexity
+        repo_query = f"""
+        {alias}: repository(owner: "{owner}", name: "{repo}") {{
+            {chr(10).join(repo_query_parts)}
+        }}
+        """
+        queries.append(repo_query)
+    
+    # Only include variables that are actually used (don't include STD_VARS since owner/repo are hardcoded)
+    var_list = list(all_variables)
+    
+    if var_list:
+        return f"""
+        query GetBatchedRepoMetadata({", ".join(drop_falsy(var_list))}) {{
+            {chr(10).join(queries)}
+        }}
+        """
+    else:
+        return f"""
+        query GetBatchedRepoMetadata {{
+            {chr(10).join(queries)}
+        }}
+        """
+
+
+async def fetch_batched_github_info(
+    session: aiohttp.ClientSession,
+    repo_requests: dict[str, tuple[str, str, set[QueryScope]]]
+) -> dict[str, RepoInfo]:
+    """
+    Fetch GitHub info for multiple repositories in a single batched request.
+    
+    Args:
+        session: aiohttp session
+        repo_requests: Dict mapping alias -> (owner, repo, scopes)
+        
+    Returns:
+        Dict mapping alias -> RepoInfo
+    """
+    if not repo_requests:
+        return {}
+    
+    # Build the batched query
+    query = build_batched_query(repo_requests)
+    
+    # Build variables with only the ones actually used in the query
+    variables = {}
+    
+    # Check what scopes are being used to determine which variables to include
+    all_scopes = set()
+    for _, (_, _, scopes) in repo_requests.items():
+        all_scopes.update(scopes)
+    
+    # Only include variables that are actually needed
+    if "METADATA" in all_scopes:
+        variables["branch_ex"] = "HEAD:"
+    if "TAGS" in all_scopes:
+        variables["tags_after"] = None
+    if "BRANCHES" in all_scopes:
+        variables["branches_after"] = None
+    
+    # Make the API call
+    data = await make_graphql_query(session, query, variables)
+    
+    # Parse results for each repository
+    results = {}
+    for alias, (owner, repo, scopes) in repo_requests.items():
+        repo_data = data.get(alias, {})
+        if not repo_data:
+            # Handle case where repository wasn't found or returned empty
+            results[alias] = {
+                "metadata": {},
+                "tags": TagPager(session, owner, repo),
+                "branches": BranchesPager(session, owner, repo),
+                "syntax_files": [],
+                "rate_limit_info": data.get("rate_limit_info", {}),
+            }
+            continue
+            
+        default_branch = repo_data.get("defaultBranchRef", {}).get("name", "master")
+        
+        results[alias] = {
+            "metadata": drop_falsy({
+                "name": repo_data.get("name"),
+                "description": repo_data.get("description"),
+                "homepage": repo_data.get("homepageUrl") or repo_data.get("url"),
+                "author": repo_data.get("owner", {}).get("login"),
+                "readme": find_readme_url(
+                    repo_data.get("files", {}).get("entries", []),
+                    owner,
+                    repo,
+                    default_branch,
+                ),
+                "issues": repo_data.get("issuesUrl"),
+                "donate": (repo_data.get("fundingLinks") or [{}])[0].get("url"),
+                "default_branch": default_branch,
+                "stars": repo_data.get("stargazerCount"),
+                "created_at": repo_data.get("createdAt", "")[:19].replace('T', ' ') if repo_data.get("createdAt") else "",
+            }) if "METADATA" in scopes else {},  # type: ignore[misc]
+            "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
+            "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
+            "syntax_files": extract_syntax_files(repo_data.get("files", {}).get("entries", []), owner, repo, default_branch) if "SUPPORTED_SYNTAX" in scopes else [],
+            "rate_limit_info": data.get("rate_limit_info", {}),
+        }
+    
+    return results
+
+
 if __name__ == "__main__":
     import sys
 
@@ -484,7 +717,7 @@ if __name__ == "__main__":
 
         print(f"Fetching GitHub info for: {url}")
         async with aiohttp.ClientSession() as session:
-            info = await fetch_github_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
+            info = await fetch_github_info(session, url, ("METADATA", "TAGS", "BRANCHES", "SUPPORTED_SYNTAX"))
             print("Metadata:", info["metadata"])
             print("Tags:")
             async for tag in info["tags"]:
@@ -492,6 +725,9 @@ if __name__ == "__main__":
             print("Branches:")
             async for branch in info["branches"]:
                 print(branch)
+            print("Syntax files:")
+            for syntax_file in info["syntax_files"]:
+                print(syntax_file)
 
         print("rate_limit_info", info["rate_limit_info"])
 
