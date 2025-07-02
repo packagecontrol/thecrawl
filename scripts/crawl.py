@@ -39,6 +39,7 @@ class Release(TypedDict, total=False):
 
 
 class PackageEntry(TypedDict, total=False):
+    id: Required[str]
     name: Required[str]
     details: NotRequired[Url]
     releases: list[Release]

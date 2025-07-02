@@ -18,6 +18,7 @@ type IsoTimestamp = str
 
 
 class RepoMetadata(TypedDict, total=False):
+    id: str
     name: str
     description: str
     homepage: Url
@@ -84,6 +85,7 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
     default_branch = data.get("mainbranch", {}).get("name", "master")
     readme_url = await find_readme_url(session, owner, repo, default_branch)
     return drop_falsy({
+        "id": data.get("uuid"),
         "name": data.get("name"),
         "description": data.get("description"),
         "homepage": data.get("website"),

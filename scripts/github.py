@@ -33,6 +33,7 @@ class RepoInfo(TypedDict):
 
 
 class RepoMetadata(TypedDict, total=False):
+    id: str
     name: str
     description: str
     homepage: Url
@@ -83,6 +84,7 @@ STD_VARS = "$owner: String!, $name: String!"
 METADATA = (
     '$branch_ex: String="HEAD:"',
     """
+    id
     name
     description
     homepageUrl
@@ -290,6 +292,7 @@ async def fetch_github_info(
 
     return {
         "metadata": drop_falsy({
+            "id": repo_data.get("id"),
             "name": repo_data.get("name"),
             "description": repo_data.get("description"),
             "homepage": repo_data.get("homepageUrl") or repo_data.get("url"),
