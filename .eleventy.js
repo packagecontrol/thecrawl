@@ -16,12 +16,15 @@ function cleanupAuthors(author) {
 }
 
 function minimalPackage(pkg) {
-  let platforms = [];
+  let allPlatforms = [];
 
   pkg.releases.forEach(release => {
-    platforms = platforms.concat(release.platforms);
-    release.platforms = cleanupPlatforms(release.platforms);
+    const platforms = cleanupPlatforms(release.platforms);
+    allPlatforms = allPlatforms.concat(platforms);
+    release.platforms = platforms;
   })
+  // Remove duplicate platforms
+  const uniquePlatforms = Array.from(new Set(allPlatforms));
 
   return {
     name: pkg.name,
@@ -29,7 +32,7 @@ function minimalPackage(pkg) {
     stars: pkg.stars ?? 0,
     releases: pkg.releases,
     labels: pkg.labels,
-    platforms: cleanupPlatforms(platforms)
+    platforms: uniquePlatforms
   }
 }
 
