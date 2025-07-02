@@ -85,6 +85,9 @@ def main(registry_path, workspace_path, channel_path):
         if pkg.get("removed"):
             removed_count += 1
             continue
+        if pkg.get("fail_reason", "").startswith("fatal: "):
+            removed_count += 1
+            continue
         norm = normalize_package(pkg)
         if not norm:
             drop_count += 1

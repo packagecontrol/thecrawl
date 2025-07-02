@@ -224,15 +224,19 @@ async def crawl(
         out = {**existing}
         out["failing_since"] = existing.get("failing_since", now_string)
 
+        # We mark errors as fatal if we MUST de-list the package immediately.
+        # - 404s because all release assets we might have collected will also 404.
+        # - HeartAttacks because of a vulnerability
         if isinstance(e, aiohttp.ClientResponseError):
             err(
                 f"HTTP error during crawl for {package['name']}: "
                 f"{e.status} {e.message.removesuffix(".")}", end=". "
             )
-            out["fail_reason"] = f"{e.status} {e.message}"
+            fatal = "fatal: " if e.status == 404 else ""
+            out["fail_reason"] = f"{fatal}{e.status} {e.message}"
         elif isinstance(e, HeartAttack):
             err(f"Heart attack during crawl for {package['name']}: {e}")
-            out["fail_reason"] = str(e)
+            out["fail_reason"] = f"fatal: {e}"
         else:
             err(f"Exception while crawling {package['name']}")
             tb = traceback.format_exc()
