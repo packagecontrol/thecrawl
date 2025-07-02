@@ -87,7 +87,7 @@ eleventyComputed:
   {% endif %}
   {% if pkg.readme %}
   <li>
-    <a class="button" href="{{ pkg.readme }}">{{ pack.logo('file') }} <span>README</span></a>
+    <a class="button" href="{{ pkg.readme_url | default(pkg.readme) }}">{{ pack.logo('file') }} <span>README</span></a>
   </li>
   {% endif %}
   {% if pkg.issues %}
