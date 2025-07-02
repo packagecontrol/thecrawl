@@ -1,5 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
+import json
 import os
 import aiohttp
 import asyncio
@@ -485,7 +486,7 @@ if __name__ == "__main__":
         print(f"Fetching GitHub info for: {url}")
         async with aiohttp.ClientSession() as session:
             info = await fetch_github_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
-            print("Metadata:", info["metadata"])
+            print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
             print("Tags:")
             async for tag in info["tags"]:
                 print(tag)

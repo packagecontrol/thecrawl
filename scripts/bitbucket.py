@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 import aiohttp
 import asyncio
 import os
@@ -234,7 +235,7 @@ if __name__ == "__main__":
         print(f"Fetching Bitbucket info for: {url}")
         async with aiohttp.ClientSession() as session:
             info = await fetch_bitbucket_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
-            print("Metadata:", info["metadata"])
+            print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
             print("Tags:")
             async for tag in info["tags"]:
                 print(tag)

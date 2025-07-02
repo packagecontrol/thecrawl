@@ -118,7 +118,7 @@ async def main_(registry: Registry, workspace: Workspace, name: str | None, limi
         for new_entry in results:
             workspace["packages"][new_entry["name"]] = new_entry
             if name_requested:
-                print(new_entry)
+                print(json.dumps(new_entry, indent=2, ensure_ascii=False))
 
     print("---")
     print(f"{len(workspace['packages'].keys())} packages in db.")
