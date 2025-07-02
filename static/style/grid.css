@@ -41,9 +41,10 @@
     padding-top: 0;
     padding-right: 2em;
     margin-top: 0;
-    margin-bottom: -6px;
+    margin-bottom: 2px;
 
     + * {
+      padding-top: 0;
       margin-top: 0;
       flex: 1; /* push other content to the end of the card */
     }
