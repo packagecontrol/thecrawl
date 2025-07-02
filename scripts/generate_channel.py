@@ -1,6 +1,6 @@
 import argparse
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 import sys
 import os
@@ -119,6 +119,16 @@ def main(registry_path, workspace_path, channel_path):
         f"Dropped {drop_count} incomplete packages.  "
         f"{removed_count} are currently tombstoned."
     )
+    # Extract failing packages for reporting
+    if failing_packages := [
+        pkg for pkg in workspace.get("packages", {}).values()
+        if pkg.get("failing_since")
+    ]:
+        failing_info = "\n".join(
+            f"*{pkg['name']}:* {pkg['fail_reason']} [{failing_since(pkg)}]"
+            for pkg in sorted(failing_packages, key=lambda p: p['name'].lower())
+        )
+        print(f"\n**Currently failing**:\n{failing_info}")
 
 
 def normalize_package(pkg) -> Package | None:
@@ -148,7 +158,7 @@ def normalize_package(pkg) -> Package | None:
             "date": rel["date"],
         })
     if not releases:
-        err(f"Drop package {name} with no valid releases{failing_since(pkg)}")
+        err(f"Drop package {name} with no valid releases")
         return None
 
     # Only accept packages with all required fields
@@ -158,7 +168,7 @@ def normalize_package(pkg) -> Package | None:
     # Check required fields
     for field in required_fields:
         if field not in pkg or not pkg[field]:
-            err(f"Drop package {name} with missing field '{field}'{failing_since(pkg)}")
+            err(f"Drop package {name} with missing field '{field}'")
             return None
 
     # Author must be a non-empty list[str]
@@ -166,7 +176,7 @@ def normalize_package(pkg) -> Package | None:
     if isinstance(author, str):
         author = [author]
     if not all(isinstance(a, str) for a in author):
-        err(f"Drop package {name} with invalid author field: {author}{failing_since(pkg)}")
+        err(f"Drop package {name} with invalid author field: {author}")
         return None
 
     out: Package = {
@@ -196,7 +206,7 @@ def failing_since(pkg):
         try:
             dt = datetime.strptime(failing_since, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
             rel = relative_time(dt)
-            extra = f"  *(failing since {rel})*"
+            extra = f"since {rel}"
         except Exception:
             pass
     return extra
@@ -206,10 +216,15 @@ def relative_time(dt: datetime) -> str:
     now = datetime.now(timezone.utc)
     delta = now - dt
     days = delta.days
-    if days < 1:
-        return "today"
-    elif days < 30:
+    if dt.date() == now.date():
+        return dt.strftime('%H:%M today')
+    elif dt.date() == (now.date() - timedelta(days=1)):
+        return dt.strftime('%H:%M yesterday')
+    elif days < 14:
         return f"{days} day{'s' if days != 1 else ''}"
+    elif days < 60:
+        weeks = days // 7
+        return f"{weeks} week{'s' if weeks != 1 else ''}"
     elif days < 365:
         months = days // 30
         return f"{months} month{'s' if months != 1 else ''}"
