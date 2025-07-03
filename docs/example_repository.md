@@ -1,0 +1,874 @@
+<!-- https://github.com/wbond/package_control/blob/master/example-repository.json -->
+
+{
+	// BE SURE TO REMOVE THESE COMMENTS BEFORE USING THIS TEMPLATE SINCE
+	// COMMENTS ARE NOT ALLOWED IN JSON
+
+	// Used by LSP and LSP-json to provide linting and completions.
+	"$schema": "sublime://packagecontrol.io/schemas/repository",
+
+	"schema_version": "4.0.0",
+
+	// Packages can be specified with a simple URL to a GitHub or BitBucket
+	// repository, but details can be overridden for every field. It is also
+	// possible not utilize GitHub or BitBucket at all, but just to host your
+	// packages on any server with an SSL certificate.
+	"packages": [
+
+		// This is what most packages should aim to model.
+		//
+		// The majority of the information about a package ("name",
+		// "description", "author") are all pulled from the GitHub (or
+		// BitBucket) repository info.
+		//
+		// If the word "sublime" exists in the repository name, the name can
+		// be overridden by the "name" key.
+		//
+		// All packages must have one or more "releases". Releases are generated
+		// from the the tags that are semantic versioning version numbers.
+		//
+		// A release MUST contain a "sublime_text" version selector. Use "*"
+		// for all versions.
+		{
+			"name": "Alignment",
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// Here is an equivalent package being pulled from BitBucket
+		{
+			"name": "Alignment",
+			"details": "https://bitbucket.org/wbond/sublime_alignment",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// Pull most details from GitHub, releases from tags. No custom field
+		// overrides.
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// Pull most details from a BitBucket repository and releases from tags.
+		// No custom field overrides.
+		{
+			"details": "https://bitbucket.org/wbond/sublime_alignment",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// Use a custom name instead of just the URL slug
+		{
+			"name": "Alignment",
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// You can also override the homepage and author
+		{
+			"name": "Alignment",
+			"details": "https://github.com/wbond/sublime_alignment",
+			"homepage": "http://wbond.net/sublime_packages/alignment",
+			"author": "wbond",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// The author may be a list of values
+		{
+			"name": "Alignment",
+			"details": "https://github.com/wbond/sublime_alignment",
+			"author": ["wbond", "jsmith"],
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// It is possible to provide the URL to a readme file. This URL should
+		// be to the raw source of the file, not rendered HTML. GitHub and
+		// BitBucket repositories will automatically provide these.
+		//
+		// The following extensions will be rendered:
+		//
+		// .markdown, .mdown, .mkd, .md
+		// .texttile
+		// .creole
+		// .rst
+		//
+		// All others are treated as plaintext.
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"readme": "https://raw.githubusercontent.com/wbond/sublime_alignment/master/readme.creole",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// If a package has a public bug tracker, the URL should be included
+		// via the "issues" key. Both GitHub and BitBucket repositories will
+		// automatically provide this if they have issues enabled.
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"issues": "https://github.com/wbond/sublime_alignment/issues",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// The URL to donate to support the development of a package. Used to
+		// default to Gittip/Gratipay, however they switched to a curated model
+		// so the default was removed.
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"donate": "https://gratipay.com/wbond/",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// The URL to purchase a license to the package
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"buy": "https://wbond.net/sublime_packages/alignment/buy",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// If you rename a package, you can provide the previous name(s) so
+		// that users with the old package name can be automatically upgraded
+		// to the new one.
+		{
+			"name": "Alignment",
+			"details": "https://github.com/wbond/sublime_alignment",
+			"previous_names": ["sublime_alignment"],
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// Packages can be labelled for the purpose of creating a folksonomy
+		// so users may more easily find relevant packages. Labels should be
+		// all lower case and should use spaces instead of _ or - to separate
+		// words.
+		//
+		// Some suggested labels are listed below, however, anything can be
+		// used as a label:
+		//
+		// auto-complete
+		// browser integration
+		// build system
+		// code navigation
+		// code sharing
+		// color scheme
+		// deprecated
+		// diff/merge
+		// editor emulation
+		// file creation
+		// file navigation
+		// formatting
+		// ftp
+		// language syntax
+		// linting
+		// minification
+		// search
+		// snippets
+		// terminal/shell/repl
+		// testing
+		// text manipulation
+		// text navigation
+		// theme
+		// todo
+		// vcs
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"labels": ["text manipulation", "formatting"],
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true
+				}
+			]
+		},
+
+		// Opt-in to certain plugin_hosts by adding an optional `python_versions`
+		// key with a list of supported python versions. Valid values are "3.3" and "3.8"
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"python_versions": ["3.3", "3.8"],
+					"tags": true
+				}
+			]
+		},
+
+		// Mark a release as requiring one or more libraries
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"tags": true,
+					"libraries": ["bz2"]
+				}
+			]
+		},
+
+		// DEPRECATED. In addition to the recommendation above of pulling
+		// releases from tags that are semantic version numbers, releases can
+		// also come from a branch.
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					"sublime_text": "*",
+					"branch": "master"
+				}
+			]
+		},
+
+		// If your package is only compatible with specific builds of
+		// Sublime Text, "sublime_text" key can be used to hide the package
+		// from users with incompatible versions.
+		//
+		// Valid selecotrs are
+		//
+		// "<{build}"
+		// "<={build}"
+		// ">{build}"
+		// ">={build}"
+		// "{min_build} - {max_build}"
+		//
+		// The "tags" key can be true for all valid semantic version tags, or
+		// can be a prefix string. Only tags in the form
+		// {prefix}{semantic_version} will be selected. In the example below,
+		// the entry with "sublime_text": "<3000" will match tags like:
+		//
+		// "st2-1.0.0"
+		// "st2-1.1.0"
+		//
+		// The release with "sublime_text": "3000 - 3999" will match tags like:
+		//
+		// "st3-1.0.0"
+		// "st3-1.1.0"
+		//
+		// The release with "sublime_text": ">=4000" will match tags like:
+		//
+		// "st4-1.0.0"
+		// "st4-1.1.0"
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					"sublime_text": "<3000",
+					"tags": "st2-"
+				},
+				{
+					"sublime_text": "3000 - 3999",
+					"tags": "st3-"
+				},
+				{
+					"sublime_text": ">=4000",
+					"tags": "st4-"
+				}
+			]
+		},
+
+		// The "platforms" key allows specifying what platform(s) the release
+		// is valid for. As shown, there can be multiple releases of a package
+		// at any given time. However, only the latest version for any given
+		// platform/arch will be shown to the user.
+		//
+		// The "platforms" key allows specifying a single platform, or a list
+		// of platforms. Valid platform indentifiers include:
+		//
+		// "*"
+		// "windows", "windows-x64", "windows-x32"
+		// "osx", "osx-x64"
+		// "linux", "linux-x32", "linux-x64"
+		//
+		// Only include the architecture suffix (-x32, -x64) if you are
+		// providing different packages for the different architectures.
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					// Defaults to "*", or all platforms.
+					"platforms": ["osx", "linux"],
+					"sublime_text": "*",
+					"tags": "posix-"
+				},
+				{
+					"platforms": "windows",
+					"sublime_text": "*",
+					"tags": "win32-"
+				}
+			]
+		},
+
+		// If for some reason one of the releases is from a different repository
+		// than the top-level "details" key, a "base" key may be specified in
+		// the release with the GitHub or BitBucket repository to use for tags.
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					"base": "https://github.com/wbond/sublime_alignment",
+					"sublime_text": "<3000",
+					"tags": true
+				},
+				{
+					"sublime_text": ">=3000",
+					"tags": true
+				}
+			]
+		},
+
+		// If you don't use a "tags" key for a "releases" entry, you need
+		// to specify the "version", "url" and "date" manually. Because this
+		// requires an update of the repository file for each release it is
+		// not allowed in the default repository
+		// (wbond/package_control_channel).
+		{
+			"details": "https://github.com/wbond/sublime_alignment",
+			"releases": [
+				{
+					// The version number needs to be a semantic version
+					// number per http://semver.org 2.x.x
+					"version": "2.0.0",
+
+					// The URL needs to be a zip file containing the package.
+					// It is permissible for the zip file to contain a single
+					// root folder with any name. All file will be extracted
+					// out of this single root folder. This allows zip files
+					// from GitHub and BitBucket to be used a sources.
+					"url": "https://codeload.github.com/wbond/sublime_alignment/zip/v2.0.0",
+
+					// The date MUST be in the form "YYYY-MM-DD HH:MM:SS" and
+					// SHOULD be UTC
+					"date": "2011-09-18 20:12:41",
+
+					// The obligatory version selector
+					"sublime_text": "*"
+				}
+			]
+		},
+
+		// URLs may be provided relative to the location of this repository.json
+		{
+			"details": "../alignment",
+			"releases": [
+				{
+					// The version number needs to be a semantic version
+					// number per http://semver.org 2.x.x
+					"version": "2.0.0",
+
+					// The URL needs to be a zip file containing the package.
+					// It is permissible for the zip file to contain a single
+					// root folder with any name. All file will be extracted
+					// out of this single root folder. This allows zip files
+					// from GitHub and BitBucket to be used a sources.
+					"url": "./downloads/alignment-2.0.0.zip",
+
+					// The date MUST be in the form "YYYY-MM-DD HH:MM:SS" and
+					// SHOULD be UTC
+					"date": "2011-09-18 20:12:41",
+
+					// The obligatory version selector
+					"sublime_text": "*"
+				}
+			]
+		},
+
+		// Packages can be deployed as pre-compiled zip archives or sublime-package
+		// files via BitBucket/GitHub/GitLab releases, by specifying "asset" key,
+		// to describe a pattern of display name of download assets.
+
+		// Minimal GitHub Release With Asset
+		//   A package compatible with all Sublime Text versions and platforms.
+		{
+			"name": "A File Icon",
+			"details": "https://github.com/SublimeText/AFileIcon",
+			"releases": [
+				{
+					"asset": "A File Icon.sublime-package"
+				}
+			]
+		},
+
+		// Minimal GitHub Release With Asset
+		//   A package compatible with all Sublime Text versions and platforms.
+		//   If only a single asset is shipped per release, globs can be used
+		//   to fetch files of any name.
+		{
+			"name": "A File Icon",
+			"details": "https://github.com/SublimeText/AFileIcon",
+			"releases": [
+				{
+					"asset": "*.sublime-package"
+				}
+			]
+		},
+
+		// Minimal GitHub Release With Sublime Text Specific Assets
+		//   A package with individual assets for various Sublime Text versions
+		//   Note: A release specification for each asset is required.
+		{
+			"details": "https://github.com/SublimeText/Less",
+			"releases": [
+				{
+					"asset": "Less-${version}-st${st_build}.sublime-package",
+					"sublime_text": "4107 - 4148"
+				},
+				{
+					"asset": "Less-${version}-st${st_build}.sublime-package",
+					"sublime_text": ">=4149"
+				}
+			]
+		},
+
+		// The following package specification is identical to the one above,
+		// but uses globs and explicit ST build numbers instead of variables.
+		{
+			"details": "https://github.com/SublimeText/Less",
+			"releases": [
+				{
+					"asset": "Less-*.*.*-st4107.sublime-package",
+					"sublime_text": "4107 - 4148"
+				},
+				{
+					"asset": "Less-*.*.*-st4149.sublime-package",
+					"sublime_text": ">=4149"
+				}
+			]
+		},
+
+		// Minimal GitHub Release With Platform Specific Assets
+		//   A package compatible with all Sublime Text versions and arm64/x64 platforms.
+		//   Each release provides assets named by platform.
+		//   Note: "platforms" must explicitly list each supported platform.
+		{
+			"details": "https://github.com/SublimeText/PackageWithAsset",
+			"releases": [
+				{
+					"asset": "FileName-${platform}.sublime-package",
+					"platforms": ["linux-arm64", "linux-x64", "osx-arm64", "osx-x64", "windows-x64"]
+				}
+			]
+		},
+
+		// Minimal GitHub Release With Platform Specific Assets
+		//   If names of download assets are not covered by provided variable expansion,
+		//   an explicit release specification can be declared for each platform.
+		{
+			"details": "https://github.com/SublimeText/PackageWithAsset",
+			"releases": [
+				{
+					"asset": "FileName-linux-aarch64.sublime-package",
+					"platforms": ["linux-arm64"]
+				},
+				{
+					"asset": "FileName-linux-amd64.sublime-package",
+					"platforms": ["linux-x64"]
+				},
+				{
+					"asset": "FileName-macosx-amd64.sublime-package",
+					"platforms": ["osx-arm64"]
+				},
+				{
+					"asset": "FileName-macosx-arm64.sublime-package",
+					"platforms": ["osx-arm64"]
+				},
+				{
+					"asset": "FileName-win-amd64.sublime-package",
+					"platforms": ["windows-x64"]
+				}
+			]
+		},
+
+		// Advanced GitHub Release With Platform Specific Assets
+		//
+		// Package meta data are resolved using "details", which are overridden by
+		// explicit information. If "details" is absent, each release must specify
+		// a "base" url. In this and other aspects, release based packages behave
+		// the same as tag based packages.
+
+		{
+			"name": "Package With Asset",
+			"description": "A library with custom download assets",
+			"author": "Jon Doe",
+			"releases": [
+				{
+					// An asset associated with the release is specified by asset key.
+					//
+					// Supported globs:
+					//  * : any number of characters
+					//  ? : single character placeholder
+					//
+					// Variable expansion is applied to support platform specific assets:
+					//   ${platform}
+					//     A platform-arch string as given in "platforms" list.
+					//     A separate explicit release is evaluated for each platform.
+					//     If "platforms": ['*'] is specified, variable is set to "any".
+					//   ${st_build}
+					//     Value of "sublime_text" stripped by leading operator
+					//       "*"            => "any"
+					//       ">=4107"       => "4107"
+					//       "<4107"        => "4107"
+					//       "4107 - 4126"  => "4107"
+					//   ${version}
+					//     Resolved semver without tag prefix
+					//     (e.g.: tag st4107-1.0.5 => version 1.0.5)
+					"base": "https://github.com/SublimeText/PackageWithAsset",
+					"asset": "Package.With.Asset-${version}-st${st_build}-${platform}.sublime-package",
+					"platforms": ["windows-x64", "linux-x64", "osx-x64"],
+					"sublime_text": ">=4107",
+					"tags": "st4107-"
+				}
+			]
+		},
+
+		// Locally hosted package using `file://` protocol.
+		{
+			"name": "My Package",
+			"description": "A locally hosted Sublime Text package",
+			"author": "John Doe",
+			"issues": "https://company.com/software/issues",
+			"releases": [
+				{
+					"platforms": ["windows-x64"],
+					"version": "1.0.0",
+					"url": "file:///c:/absolute/path/to/My Package.sublime-package"
+				},
+				{
+					"platforms": ["linux-x64"],
+					"version": "1.0.0",
+					"url": "./path/relative/to/repository_json/My Package.sublime-package"
+				}
+			]
+		}
+	],
+
+	// Packages that can be listed under "libraries" in under "releases" of
+	// a normal package. These will typically be compiled Python extensions
+	// that are supplementary, or missing from Sublime Text.
+	"libraries": [
+		{
+			// Each library must have a name, description, author, issues URL
+			// and a list of releases.
+			// Each release needs a version and url or base and tags keys.
+			// The sublime_text, platforms and python_versions keys are optional
+			// and default to '*', ['*'] and ['3.3'].
+			// If the URL is not over SSL, there needs to be a sha256 key
+			// containing the sha256 hash of the package file.
+			"name": "bz2",
+			"description": "Python bz2 module",
+			"author": "wbond",
+			"issues": "https://github.com/codexns/sublime-bz2/issues",
+			"releases": [
+				{
+					// A minimal release for a legecy dependency
+					// provided as ordinary repository.
+					"base": "https://github.com/codexns/sublime-bz2",
+					"tags": true
+				},
+				{
+					// A verbose release for the same legacy dependency.
+					// provided as ordinary repository.
+					"base": "https://github.com/codexns/sublime-bz2",
+					"tags": true,
+					"platforms": ["*"],
+					"python_versions": ["3.3"],
+					"sublime_text": "*"
+				}
+			]
+		},
+		{
+			"name": "ssl-linux",
+			"description": "Python _ssl module for Linux",
+			"author": "wbond",
+			"issues": "https://github.com/codexns/sublime-ssl-linux/issues",
+			"releases": [
+				{
+					// A legacy python 3.3 dependency for linux,
+					// provided as explicit download asset
+					// secured by sha256 hash as being shipped via HTTP.
+					"version": "1.0.0",
+					"url": "http://packagecontrol.io/ssl-linux.sublime-package",
+					"platforms": ["linux"],
+					"sha256": "d12a2ca2843b3c06a834652e9827a29f88872bb31bd64230775f3dbe12e0ebd4"
+				}
+			]
+		},
+		{
+			"name": "ssl-windows",
+			"description": "Python _ssl module for Sublime Text 2 on Windows",
+			"author": "wbond",
+			"issues": "https://github.com/codexns/sublime-ssl-windows/issues",
+			"releases": [
+				{
+					// A legacy python 3.3 dependency for ST2 on Windows,
+					// provided as explicit download asset
+					// secured by sha256 hash as being shipped via HTTP.
+					// Note: ST2 is no longer supported by PC4.0
+					"version": "1.0.0",
+					"url": "http://packagecontrol.io/ssl-windows.sublime-package",
+					"sublime_text": "<3000",
+					"platforms": ["windows"],
+					"sha256": "efe25e3bdf2e8f791d86327978aabe093c9597a6ceb8c2fb5438c1d810e02bea"
+				}
+			]
+		},
+
+		// Libraries can point to standard WHEEL files.
+		// An explicit platform-specific release key is needed for each download asset.
+		{
+			"name": "coverage",
+			"author": "nedbatchelder",
+			"description": "coverage.py - http://coverage.readthedocs.org/en/latest/",
+			"homepage": "https://pypi.org/project/coverage/",
+			"issues": "https://github.com/nedbat/coveragepy/issues",
+			"releases": [
+				{
+					"platforms": ["windows-x64"],
+					"python_versions": ["3.8"],
+					"version": "7.3.2",
+					"url": "https://files.pythonhosted.org/packages/9f/95/436887935a32fcead76c9f60b61f3fcd8940d4129bdbc50e2988e037a664/coverage-7.3.2-cp38-cp38-win_amd64.whl"
+				},
+				{
+					"platforms": ["linux-x64"],
+					"python_versions": ["3.8"],
+					"version": "7.3.2",
+					"url": "https://files.pythonhosted.org/packages/8d/1a/e4d0775502fae6ce2c2dd3692a66aff3b18e89757567e35680b9c63d89c5/coverage-7.3.2-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+				},
+				{
+					"platforms": ["osx-x64"],
+					"python_versions": ["3.8"],
+					"version": "7.3.2",
+					"url": "https://files.pythonhosted.org/packages/a0/a6/9deeff0c49d865cd1c5ae5efc9442ff234f9b0e9d15cb4a9cda58ec255cc/coverage-7.3.2-cp38-cp38-macosx_10_9_x86_64.whl"
+				},
+				{
+					"platforms": ["linux-x32"],
+					"python_versions": ["3.3"],
+					"version": "4.3.4",
+					"url": "https://files.pythonhosted.org/packages/c1/cd/a35e25680822d400e2a32d1eddd017087a9cef78e3fd5dc29541d8051a58/coverage-4.3.4-cp33-cp33m-manylinux1_i686.whl"
+				},
+				{
+					"platforms": ["linux-x64"],
+					"python_versions": ["3.3"],
+					"version": "4.3.4",
+					"url": "https://files.pythonhosted.org/packages/8a/0f/5221822805edf3fc13e85c278de6451a5c08d0fd67e2c86e67e48b683a20/coverage-4.3.4-cp33-cp33m-manylinux1_x86_64.whl"
+				},
+				{
+					"platforms": ["osx-x64"],
+					"python_versions": ["3.3"],
+					"version": "4.3.4",
+					"url": "https://files.pythonhosted.org/packages/ac/dc/3e2d996c440a1a589f3323e806cf96d3c64650579483c3798ef2ea34b51a/coverage-4.3.4-cp33-cp33m-macosx_10_10_x86_64.whl"
+				},
+				{
+					"platforms": ["windows-x32"],
+					"python_versions": ["3.3"],
+					"version": "4.2.0",
+					"url": "https://files.pythonhosted.org/packages/a0/34/1185348cc5c541bbdf107438f0f0ea9df5d9a4233a974e9228b6ee815489/coverage-4.2-cp33-cp33m-win32.whl"
+				},
+				{
+					"platforms": ["windows-x64"],
+					"python_versions": ["3.3"],
+					"version": "4.2.0",
+					"url": "https://files.pythonhosted.org/packages/b1/55/02815cb8abb091033abb979ebde5122bb33b85c5987dede9ccd019033d19/coverage-4.2-cp33-cp33m-win_amd64.whl"
+				}
+			]
+		},
+
+		// Latest wheel files can be fetched directly from PyPI,
+		// using their official package URL,
+		// even in a mix with releases in legacy dependency format.
+		{
+			"name": "coverage",
+			"description": "coverage.py - http://coverage.readthedocs.org/en/latest/",
+			"author": "wbond",
+			"issues": "https://github.com/codexns/sublime-coverage/issues",
+			"releases": [
+				{
+					"base": "https://github.com/codexns/sublime-coverage",
+					"platforms": ["*"],
+					"python_versions": ["3.3"],
+					"tags": true
+				},
+				{
+					"base": "https://pypi.org/project/coverage",
+					"asset": "coverage-*-cp38-cp38-win_amd64.whl",
+					"platforms": ["windows-x64"],
+					"python_versions": ["3.8"]
+				},
+				{
+					"base": "https://pypi.org/project/coverage",
+					"asset": "coverage-*-cp38-cp38-manylinux_2_17_aarch64*.whl",
+					"platforms": ["linux-arm64"],
+					"python_versions": ["3.8"]
+				},
+				{
+					"base": "https://pypi.org/project/coverage",
+					"asset": "coverage-*-cp38-cp38-manylinux_2_5_x86_64*.whl",
+					"platforms": ["linux-x64"],
+					"python_versions": ["3.8"]
+				},
+				{
+					"base": "https://pypi.org/project/coverage",
+					"asset": "coverage-*-cp38-cp38-macosx_11_0_arm64.whl",
+					"platforms": ["osx-arm64"],
+					"python_versions": ["3.8"]
+				},
+				{	// fixed versions is specified by URL.
+					"base": "https://pypi.org/project/coverage/7.0.3",
+					"asset": "coverage-*-cp38-cp38-macosx_10_9_x86_64.whl",
+					"platforms": ["osx-x64"],
+					"python_versions": ["3.8"]
+				}
+			]
+		},
+
+		// Legacy dependencies can use download assets to ship platform specific archives.
+		// Download size for dependencies can be reduced this way, as only compatible
+		// binaries need to be downloaded, instead of all.
+		// Note: Legacy dependency format is fully supported also for st4_py38,
+		//       but it is recommended to ship dependencies as wheels.
+		{
+			"name": "typing",
+			"description": "\"typing\" module as a Package Control dependency",
+			"author": "FichteFoll",
+			"issues": "https://github.com/packagecontrol/typing/issues",
+			"releases": [
+				{
+					// Note: ST2 is no longer supported
+					"base": "https://github.com/packagecontrol/typing",
+					"asset": "typing-${version}-st2.zip",
+					"sublime_text": "<3000"
+				},
+				{
+					// An asset associated with the release is specified by asset key.
+					//
+					// Supported globs:
+					//  * : any number of characters
+					//  ? : single character placeholder
+					//
+					// Variable expansion is applied to support platform specific assets:
+					//   ${platform}
+					//     A platform-arch string as given in "platforms" list.
+					//     A separate explicit release is evaluated for each platform.
+					//     If "platforms": ['*'] is specified, variable is set to "any".
+					//   ${py_version}
+					//     Major and minor part of required python version without period.
+					//     One of "33", "38" or any other valid python version supported by ST.
+					//   ${st_build}
+					//     Value of "sublime_text" stripped by leading operator
+					//       "*"            => "any"
+					//       ">=4107"       => "4107"
+					//       "<4107"        => "4107"
+					//       "4107 - 4126"  => "4107"
+					//   ${version}
+					//     Resolved semver without tag prefix
+					//     (e.g.: tag st4107-1.0.5 => version 1.0.5)
+					//
+					// Note: Assets are valid only for tag-based releases.
+					"base": "https://github.com/packagecontrol/typing",
+					"asset": "typing-${version}-st3.zip",
+					"sublime_text": ">=3000",
+					"python_versions": ["3.3"]
+				}
+			]
+		},
+
+		// Locally hosted libraries using `file://` protocol.
+		{
+			"name": "My Library",
+			"description": "A locally hosted python package",
+			"author": "John Doe",
+			"issues": "https://company.com/software/issues",
+			"releases": [
+				{
+					"platforms": ["linux-x64"],
+					"python_versions": ["3.8"],
+					"version": "1.0.0",
+					"url": "file:///absolute/path/to/my_librariy.whl"
+				},
+				{
+					"platforms": ["windows-x64"],
+					"python_versions": ["3.8"],
+					"version": "1.0.0",
+					"url": "./path/relative/to/repository_json/my_librariy.whl"
+				}
+			]
+		}
+	],
+
+	// If you need/want to split your repository up into multiple smaller
+	// files for the sake of organization, the "includes" key allows you to
+	// enter URL paths that will be combined together and dynamically inserted
+	// into the "packages" key. These URLs these can be relative or absolute.
+	"includes": [
+
+		// Here is an example of how relative paths work for URLs. If this
+		// file was loaded from:
+		//   "https://packagecontrol.io/example-repository.json"
+		// then the following files would be loaded from:
+		//   "https://packagecontrol.io/repository/0-9.json"
+		//   "https://packagecontrol.io/repository/a.json"
+		"./repository/0-9.json",
+		"./repository/a.json",
+
+		// An example of a local absolute URL
+		"file:///absolute/path/to/repository.json",
+
+		// An example of a remote absolute URL
+		"https://packagecontrol.io/repository/b.json"
+	]
+}

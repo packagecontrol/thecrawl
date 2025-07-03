@@ -1,0 +1,86 @@
+<!-- https://github.com/wbond/package_control/blob/master/example-channel.json -->
+
+{
+	// BE SURE TO REMOVE THESE COMMENTS BEFORE USING THIS TEMPLATE SINCE
+	// COMMENTS ARE NOT ALLOWED IN JSON
+
+	// Used by LSP and LSP-json to provide linting and completions.
+	"$schema": "sublime://packagecontrol.io/schemas/channel",
+
+	"schema_version": "4.0.0",
+
+	// All repositories must be an HTTPS URL. SSL certificates help prevent
+	// unauthorized code being loaded onto users' machines.
+	"repositories": [
+		// include another external repository.json
+		"https://packagecontrol.io/packages.json",
+
+		// include repository located relative to this one
+		"./local/repository.json",
+
+		// include a locally hosted repository.json
+		"file:///absolute/path/to/repository.json",
+
+		// include single GitHub repository (possible, but not recommended)
+		"https://github.com/buymeasoda/soda-theme",
+
+		// include Github user or organization (possible, but not recommended)
+		"https://github.com/SublimeText"
+	],
+
+	// The "packages_cache" is completely optional, but allows the
+	// channel to cache and deliver package data from multiple
+	// repositories in a single HTTP request, allowing for significantly
+	// improved performance.
+	"packages_cache": {
+
+		// The first level keys are the repository URLs
+		"https://packagecontrol.io/packages.json": [
+
+			// Each repository has an array of packages with their fully
+			// expanded info. This means that the "details" key must be expanded
+			// into the various keys it provides.
+			{
+				"name": "Alignment",
+				"description": "Multi-line and multiple selection alignment plugin",
+				"author": "wbond",
+				"homepage": "http://wbond.net/sublime_packages/alignment",
+				"releases": [
+					{
+						"version": "2.0.0",
+						"date": "2011-09-18 20:12:41",
+						"url": "https://packagecontrol.io/Alignment.sublime-package",
+						"sublime_text": "*"
+					}
+				]
+			}
+		]
+	},
+
+	// The "libraries_cache" is just like "packages_cache", but for libraries.
+	"libraries_cache": {
+		"https://packagecontrol.io/packages.json": [
+
+			// Like with packages, library info must be fully resolved,
+			// which for packages means releases must have "url", "version",
+			// "sublime_text" and "platforms" keys instead of "base" and "tags".
+			{
+				"name": "bz2",
+				"description": "Python bz2 module",
+				"author": "wbond",
+				"homepage": "https://github.com/wbond/package_control",
+				"issues": "https://github.com/wbond/package_control/issues",
+				"releases": [
+					{
+						"version": "1.0.0",
+						"date": "2011-09-18 20:12:41",
+						"url": "https://codeload.github.com/codexns/sublime-bz2/zip/1.0.0",
+						"sublime_text": "*",
+						"platforms": ["*"],
+						"python_versions": ["3.3", "3.8"]
+					}
+				]
+			}
+		]
+	}
+}
