@@ -3,20 +3,35 @@
 
 # Channels and Repositories
 
-Channels are JSON files hosted on a URL that contains a list of repository URLs. See [example-channel.json][2] for the format. When a user requests to install a package, their channels are queried for a list of repositories. By default, a single channel is included with Package Control, [https://packagecontrol.io/channel\_v3.json][3]. The only reason to create another channel is if you want to create a private distribution for a closed group of people.
+Channels contain a list of one or more repositories. Repositories contain a list of one or more packages.
 
-Repositories are JSON files hosted on a URL that contain a list of one or more packages. See [example-repository.json][4] for the format. The JSON structure allows for specifying platforms (windows, osx, linux), compatible versions of Sublime Text, labels, URLs and more. The default channel includes a number of third-party repositories, but also a [single, centralized repository][5] for developers who are using GitHub or BitBucket tag-based releases. This way a package only ever needs to be added to the repository once and almost all further updates to the package can be performed via the GitHub or BitBucket user interfaces.
+Channels -> Repositories -> Packages.
 
-## Upgrading Repositories to the Newest Schema Version
+The [package_control_channel][1] git repo collects lists of packages, and various repositories (like those for SublimeLinter or LSP plugins). This creates the primary public repository for Sublime Text packages, that is then crawled and compiled into the public channel.json: https://github.com/packagecontrol/thecrawl/releases/tag/the-channel. 
 
-The package [ChannelRepositoryTools][6] includes a command _Upgrade Repository Schema (Current File)_ that will upgrade the currently open repository JSON to the newest schema\_version.
+The Package Control client comes pre-installed with this channel.
+(Well, currently it still comes with the old one: https://packagecontrol.io/channel_v3.json).
 
-Once the file has been upgraded, most packages can then be migrated into the [default repository][7]. Most uses of custom repository JSON files were due to deficiencies with schema\_version 1.2 and 2.0.
+## More about channels
 
-[1]: /docs
+Channels are JSON files hosted on a URL that contains a list of repository URLs. When a user requests to install a package, their channels are queried for a list of repositories.  
+
+See [example-channel.json][2] for the format. 
+
+## More about repositories
+
+Repositories are JSON files hosted on a URL that contain a list of packages.
+
+See [example-repository.json][3] for the format. 
+
+The JSON structure allows for specifying platforms (Windows, macOS, Linux), compatible versions of Sublime Text, labels, URLs and more. Each package is typically a GitHub, GitLab or Bitbucket repo.
+
+## Managing your own package distribution
+
+If you have packages that don't fit in the public channel, you can still use the Package Control client to distribute, discover and manage packages.
+
+It is possible, but not very common, to create a private channel to distribute packages. It is more usually easier to create a private _repository_ instead, which the Package Control client can also use to find and update packages. Even individual packages can be managed via the client, which can be especially convenient for small teams needing to manage a set of shared, proprietary, tools.
+
+[1]: https://github.com/wbond/package_control_channel
 [2]: https://raw.githubusercontent.com/wbond/package_control/master/example-channel.json
-[3]: https://packagecontrol.io/channel_v3.json
-[4]: https://raw.githubusercontent.com/wbond/package_control/master/example-repository.json
-[5]: https://github.com/wbond/package_control_channel/tree/master/repository
-[6]: /packages/ChannelRepositoryTools
-[7]: https://github.com/wbond/package_control_channel/tree/master/repository
+[3]: https://raw.githubusercontent.com/wbond/package_control/master/example-repository.json
