@@ -100,3 +100,5 @@ document.addEventListener('click', (event) => {
     }
   }
 });
+
+document.documentElement.removeAttribute('bootstrapping');
