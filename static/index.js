@@ -1,61 +1,26 @@
 import { List } from './module/list.js';
-import { search } from './module/search.js';
-import { Sort } from './module/sort.js';
 
 const list = new List();
 
-function goSearch(value, sortBy = 'relevance', page = 1) {
-  // Update URL with search query, sort parameter, and page
-  const params = new URLSearchParams();
-  if (value.length > 0) {
-    params.set('q', value);
-  }
-  if (sortBy !== 'relevance') {
-    params.set('sort', sortBy);
-  }
-  if (page > 1) {
-    params.set('page', page);
-  }
+const handleInput = () => {
+  const query = input.value.toLowerCase().trim();
 
-  const queryString = params.toString();
-  const newUrl = queryString ? '?' + queryString : '/';
-
-  // Only push state if URL is actually changing
-  if (window.location.search !== (queryString ? '?' + queryString : '')) {
-    history.pushState({}, '', newUrl);
-  }
-
-  // clear previous results
-  list.clear();
-
-  if (value.length < 1) {
-    // no search query - revert to static homepage
+  if (query === '') {
     list.revertToNormal();
-    return
+    // Update URL to remove search parameters
+    if (window.location.pathname !== '/' || window.location.search !== '') {
+      history.pushState({}, '', '/');
+    }
+  } else {
+    list.goSearch(query, sortSelect.value);
   }
-
-  const searchResults = search(value);
-  const sortedResults = Sort.sort(searchResults, sortBy);
-
-  list.setCounter(sortedResults.length);
-
-  // hide the normal homepage and show results
-  list.switchToResults();
-
-  // render results with pagination
-  list.renderPage(sortedResults, page);
 }
-
-// Make goSearch globally accessible for pagination buttons
-window.goSearch = goSearch;
 
 const form = document.forms.search;
 const input = form.elements['q'];
 const sortSelect = form.elements['sort-field'];
 const url_search = window.location.search;
 const urlParams = new URLSearchParams(url_search);
-
-let debounceTimeout;
 
 // Handle initial page load
 const query = urlParams.get('q') || '';
@@ -68,22 +33,10 @@ input.value = query;
 if (query || sortBy || urlParams.has('page')) {
   const effectiveSortBy = sortBy ?? 'relevance';
   sortSelect.value = effectiveSortBy;
-  goSearch(query.toLowerCase(), effectiveSortBy, page);
+  list.goSearch(query.toLowerCase(), effectiveSortBy, page);
 }
 
-const handleInput = () => {
-  const query = input.value.toLowerCase().trim();
-
-  if (query === '') {
-    list.revertToNormal();
-    // Update URL to remove search parameters
-    if (window.location.pathname !== '/' || window.location.search !== '') {
-      history.pushState({}, '', '/');
-    }
-  } else {
-    goSearch(query, sortSelect.value);
-  }
-}
+let debounceTimeout;
 
 // Handle form submission
 input.form.onsubmit = (event) => {
@@ -108,7 +61,7 @@ sortSelect.addEventListener('change', (event) => {
   const query = input.value.toLowerCase();
   const sortBy = event.target.value;
 
-  goSearch(query, sortBy);
+  list.goSearch(query, sortBy);
 });
 
 // Handle browser back/forward navigation
@@ -125,12 +78,11 @@ window.addEventListener('popstate', () => {
   if (query || sortBy || urlParams.has('page')) {
     const effectiveSortBy = sortBy || (query ? 'relevance' : 'name');
     sortSelect.value = effectiveSortBy;
-    goSearch(query, effectiveSortBy, page);
+    list.goSearch(query, effectiveSortBy, page);
   } else {
     list.revertToNormal();
   }
 });
-
 
 // Add event delegation for label links
 document.addEventListener('click', (event) => {
@@ -143,20 +95,8 @@ document.addEventListener('click', (event) => {
       event.stopPropagation();
       input.value = labelQuery;
       sortSelect.value = 'relevance';
-      maybeScrollIntoView(document.querySelector('h1'))
-      goSearch(labelQuery.toLowerCase(), 'relevance', 1);
+      list.scrollUp();
+      list.goSearch(labelQuery.toLowerCase(), 'relevance', 1);
     }
   }
 });
-
-function maybeScrollIntoView(el) {
-  if (el) {
-    const rect = el.getBoundingClientRect();
-    const completelyAbove = rect.bottom < 0;
-    const completelyBelow = rect.top > window.innerHeight;
-
-    if (completelyAbove || completelyBelow) {
-      el.scrollIntoView();
-    }
-  }
-}

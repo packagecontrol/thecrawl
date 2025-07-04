@@ -1,3 +1,5 @@
+import { List } from './list.js';
+
 export class Pagination {
   constructor(items, page, parent) {
     this.items = items;
@@ -5,6 +7,7 @@ export class Pagination {
     this.totalPages = 0;
     this.itemsPerPage = 24;
     this.parent = parent;
+    this.list = new List();
   }
 
   // calculate pagination and result the items of the current page
@@ -80,8 +83,8 @@ export class Pagination {
         const sortBy = sortSelect.value;
 
         // trigger search with new page and scroll to the top of results
-        this.parent.querySelector('h2').scrollIntoView();
-        window.goSearch(query, sortBy, pageNum);
+        this.list.scrollUp(false);
+        this.list.goSearch(query, sortBy, pageNum);
       });
     }
 
