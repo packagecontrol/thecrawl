@@ -9,6 +9,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+  <script>
+    (function(){
+      const system_theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const user_pref = localStorage.getItem('theme');
+      document.documentElement.setAttribute('data-theme', user_pref ?? system_theme);
+    })();
+  </script>
   <link rel="stylesheet" href="/static/styles.css">
   <link rel="icon" href="/static/favicon.ico">
 
@@ -20,10 +27,4 @@
   <meta property="og:height" content="630">
   <meta property="og:description" content="{{ descr }}">
 
-  <script type="module">
-    const system_theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const user_pref = localStorage.getItem('theme');
-
-    document.documentElement.setAttribute('data-theme', user_pref ?? system_theme);
-  </script>
 </head>
