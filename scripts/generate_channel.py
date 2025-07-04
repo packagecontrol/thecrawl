@@ -122,7 +122,7 @@ def main(registry_path, workspace_path, channel_path):
     # Extract failing packages for reporting
     if failing_packages := [
         pkg for pkg in workspace.get("packages", {}).values()
-        if pkg.get("failing_since")
+        if pkg.get("failing_since") and not pkg.get("removed")
     ]:
         failing_info = "\n".join(
             f"*{pkg['name']}:* {pkg['fail_reason']} [{failing_since(pkg)}]"
