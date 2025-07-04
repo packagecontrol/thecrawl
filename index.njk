@@ -5,6 +5,19 @@ date: Last Modified
 
 {% import "packages/macros.njk" as pack %}
 
+<script>
+  (function(){
+    const q = new URLSearchParams(location.search).get('q');
+    if (q) {
+      document.documentElement.setAttribute('bootstrapping', '');
+      document.write('<style>section[name="newest"], section[name="recent"] { display: none; } h1 { visibility: hidden; }</style>');
+    }
+    setTimeout(() => {
+      document.documentElement.removeAttribute('bootstrapping');
+    }, 1000);
+  })();
+</script>
+
 <h1 data-all="{{ collections.packages | length }}">
   {{ collections.packages | length }}
   Packages
@@ -31,6 +44,15 @@ date: Last Modified
 
   {{ pack.labels(['linux','macos','windows'], ['language syntax','snippets','linting','auto-complete','color scheme','theme']) }}
 </form>
+
+<script>
+  (function(){
+    const q = new URLSearchParams(location.search).get('q');
+    if (q) {
+      document.forms.search.elements['q'].value = q
+    }
+  })();
+</script>
 
 <section name="newest">
   <h2>Newest</h2>

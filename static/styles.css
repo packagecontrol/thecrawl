@@ -11,6 +11,13 @@ html {
   height: 100%;
 }
 
+html[bootstrapping] header,
+html[bootstrapping] main,
+html[bootstrapping] footer {
+  display: none;
+}
+
+
 body {
   background: var(--background);
   color: var(--foreground);

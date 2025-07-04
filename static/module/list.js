@@ -19,10 +19,10 @@ export class List {
     const counter = document.querySelector('h1');
     if (count === 1) {
       counter.innerText = '1 Package';
-      return;
+    } else {
+      counter.innerText = (count ?? counter.dataset.all) + ' Packages';
     }
-
-    counter.innerText = (count ?? counter.dataset.all) + ' Packages';
+    counter.style.visibility = 'visible';
   }
 
   // reveal search results and hide the static homepage
