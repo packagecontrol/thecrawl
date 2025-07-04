@@ -4,8 +4,6 @@ const user_pref = localStorage.getItem('theme');
 
 let current_theme = user_pref ?? system_theme;
 
-document.documentElement.setAttribute('data-theme', current_theme);
-
 function toggle(user_initiated) {
   if (current_theme === 'light') {
     current_theme = 'dark';
