@@ -44,7 +44,7 @@ You are very much invited to make the switch and come along for the ride!
 ## Other F.A.Q.
 
 - Q: Where can I ask questions?
-  - A: On [discord](https://discord.sublimetext.io/): look for the "#package-control" channel.
+  - A: On [Discord](https://discord.sublimetext.io/): look for the "#package-control" channel.
 - Q: Where can I contribute or report issues?
   - A: On [GitHub](https://github.com/packagecontrol/thecrawl/issues).
 - Q: Will the libraries website be merged into this one?
