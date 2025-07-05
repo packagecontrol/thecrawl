@@ -19,13 +19,13 @@ body {
 }
 
 main {
-  max-width: 80rem;
+  max-width: 78rem;
   margin: 0 auto;
   padding: 0 1rem 3.2rem 1rem;
 
-  &.about-faq p {
+  html.about-faq & {
     /* limit paragraph length for readability */
-    max-width: 52rem;
+    max-width: 48rem;
   }
 }
 
