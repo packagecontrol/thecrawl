@@ -59,7 +59,6 @@ code {
   border: 1px solid var(--background-darkest);
   padding: 0 4px;
   border-radius: 3px;
-  font-size: .9em;
 }
 
 pre {
@@ -74,6 +73,27 @@ pre {
     border: revert;
     padding: revert;
     border-radius: revert;
+  }
+}
+
+.clipboard-wrapper {
+  position: relative;
+  &.copied pre {
+    background: var(--background-darkest);
+  }
+  pre {
+    transition: background .1s ease-out;
+    padding-right: 6em;
+    word-break: break-word;
+  }
+  button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--primary-accent-darker);
   }
 }
 
