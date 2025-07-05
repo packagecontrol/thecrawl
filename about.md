@@ -51,6 +51,8 @@ You are very much invited to make the switch and come along for the ride!
   - A: [Plausible](https://github.com/packagecontrol/thecrawl/pull/9)
 - Q: What does the "R" stand for?
   - A: Rewrite, refactor, revisited... something along those lines 😉
+- Q: How do I even use this?
+  - A: Find a package you like using the search feature on the [homepage](/), then paste the name into the "Install Package" command in Sublime Text. The [existing documentation](https://packagecontrol.io/docs/usage) for this is still valid.
 
 <script type="module">
   document.querySelectorAll('pre').forEach(codeblock => {
