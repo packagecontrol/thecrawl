@@ -24,7 +24,7 @@
   {% if count > 0 %}
     <dl title="{{ count }} {{ 'star' if count < 2 else 'stars' }} on GitHub">
       <dt aria-label="stars">{{ logo('star') }}</dt>
-      <dd class="stars">{{ count }}</dd>
+      <dd class="stars">{{ count | stars_format }}</dd>
     </dl>
   {% endif %}
 {% endmacro %}
