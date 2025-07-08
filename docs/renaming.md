@@ -1,54 +1,51 @@
 <!-- https://packagecontrol.io/docs/renaming_a_package -->
 <!-- https://github.com/wbond/packagecontrol.io/blob/master/app/html/docs/renaming_a_package.html -->
 
-# Renaming a Package
+# Renaming a package
 
 The following guide will step you through the process of renaming a package you have submitted to Package Control.
 
-## 1\. Review the New Name
+In short, the goal is to update the main channel so that:
 
-*   Read the [naming guidelines][2] to make sure your new name will work.
+- your entry gets its new name
+- is sorted alphabetically
+- has its previous name in the array of `previous_names`
 
-## 2\. Fork the Channel
+The `previous_names` will ensure Package Control is able to move existing installations over to the new name smoothly. Don't forget to update your documentation, menu, and command palette entries, to have the same new name.
 
-1.  Fork the [Package Control Channel][3].
+## 1 Review the new name
+
+Read the naming guidelines (TODO:link) to make sure your new name will work.
+
+## 2 Fork the channel
+
+1.  Fork the [Package Control Channel][1].
 2.  Clone your fork to your machine
-3.  Open the package\_control\_channel/ folder with Sublime Text
+3.  Open the package_control_channel/ folder with Sublime Text
 
-## 3\. Update the Repository
+## 3 Update the repository
 
-1.  Remove your package entry from its old location. It will be in one of the JSON files in the repository/ sub-folder of package\_control\_channel/.
+1.  Remove your package entry from its old location. It will be in one of the JSON files in the repository sub-folder of package_control_channel.
 2.  Paste the package entry into the correct JSON file based on the new name. We keep package entries alphabetized to reduce conflicts when merging pull requests.
 3.  Update the name key with the new name.
-4.  Add a previous\_names key to the top-level JSON structure for your package. previous\_names needs to be an array of strings. For example:
-    
+4.  Add a previous_names key to the top-level JSON structure for your package. previous_names needs to be an array of strings. For example:
+
+```json
     {
-    	"name": "AlignmentPlus",
-    	"previous\_names": \["Alignment"\],
-    	"details": "https://bitbucket.org/wbond/sublime\_alignment",
-    	"releases": \[
-    		{
-    			"sublime\_text": "\*",
-    			"tags": true
-    		}
-    	\]
+        "name": "AlignmentPlus",
+        "previous_names": ["Alignment"],
+        "details": "https://bitbucket.org/wbond/sublime_alignment",
+        "releases": [
+            {
+                "sublime_text": "*",
+                "tags": true
+            }
+        ]
     }
-    
+```
 
-## 4\. Run the Tests
+## 4 Submit a Pull Request
 
-1.  Install the [ChannelRepositoryTools][4] package via Package Control.
-2.  Run the **ChannelRepositoryTools: Test Default Channel** command from the command palette and ensure the tests pass.
+Now you're ready to push your changes and make a PR on the [Package Control Channel][1] repository. Follow any guidelines there and make sure the tests pass!
 
-## 5\. Submit a Pull Request
-
-1.  Browse to your fork on [github.com][5]
-2.  Click on **Pull Requests** in the right-hand nav and click **New Pull Request**
-3.  Enter a description in the **Title** field
-4.  Click the **Create pull request** button
-
-[1]: /docs
-[2]: /docs/submitting_a_package#Step_2
 [3]: https://github.com/wbond/package_control_channel
-[4]: /packages/ChannelRepositoryTools
-[5]: https://github.com
