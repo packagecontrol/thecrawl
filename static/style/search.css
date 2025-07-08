@@ -54,6 +54,10 @@ select {
     align-self: center;
     margin: 6px;
 
+    &:has(select:focus) {
+      outline: 2px solid var(--primary-accent);
+    }
+
     @media (max-width: 600px) {
       flex-direction: column;
       align-items: flex-start;
