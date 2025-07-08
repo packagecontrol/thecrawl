@@ -1,141 +1,64 @@
 <!-- https://packagecontrol.io/docs/submitting_a_package -->
 <!-- https://github.com/wbond/packagecontrol.io/blob/master/app/html/docs/submitting_a_package.html -->
 
-# Submitting a Package
+# Submitting a package
 
-One of the biggest reasons developers love Sublime Text is because of the package ecosystem that has developed. Package Control not only helps to make installing packages easier, but also has the goal of indexing all of the available packages.
+One of the reasons developers love Sublime Text is because of the unmatched breadth and quality of the package ecosystem and community. Package Control is the community project that helps users find, install, and update packages.
 
-If you’ve taken the time to develop a package, please consider adding it to the default Package Control channel so users can easily install and keep your package up-to-date.
+If you've taken the time to develop a package, please consider adding it to the default Package Control channel so users can easily install and keep your package up-to-date.
 
-## 1\. Reviewing Existing Packages
+## 1 Review existing packages
 
-1.  **Visit the [Search page][2] and look for similar packages.**
-2.  **Try to improve an existing package before adding another.** When possible we strongly encourage working with an existing package maintainer to add functionality or tweak a package rather than proliferating lots of very similar options. This is especially true if your package is very simple.
+Start by looking for similar packages you might be able to contribute to. We strongly encourage improving or adding to existing packages. This means that packages are of higher quality, and users don't have to choose from several similar options. We sometimes even replace packages that have become outdated with never implementations. 
 
-## 2\. Pick a Name
+## 2 Pick a name
 
-*   **Try not to use the word Sublime in your package name.** Every package available via Package Control is for Sublime Text. Using the word Sublime just adds noise to the list when trying to find packages. You can use the word Sublime in your marketing material, but omit it the package list, e.g. Sublime SFTP.
-*   **Don’t use a name too similar to another.** We don’t want Todo and T0d0.
-*   **Use CamelCase or underscore\_notation.** Other Python packages in ST3 will be able to more easily interact with it. Additionally, the search indexer will properly split words, making search results more accurate. Obviously this does not matter if your package name is a single word or contains no Python.
-*   **Do not use a . in the package name.** If you package includes any Python code, it will not load in ST3. This is because Python uses . as a folder separator when importing code.
-*   **Do not use a / or other restricted characters in the package name.** Package names are used as part of a file or folder name, depending on what version of Sublime Text the user is using. Invalid characters include: <, \>, :, ", /, \\, |, ? and \*.
-*   **Use ASCII only if possible.** The quick panel that Package Control uses in Sublime Text for selecting packages does not do match characters with diacritics unless they are entered by the user. Thus a user searching for resume will not find résumé.
-*   **Check hard-coded references.** The package name is (effectively) used as the package folder name. Any file path references in a theme or Python code must use this package folder name. Be sure your local package folder name matches. _See the .no-sublime-package file discussed in step 5 if you need to ensure files are always unpacked into a folder._
+Beyond taste there are some technical aspects to keep in mind when naming your package. A package is a directory, so the name must be safe for use there. And a package is (often) a python module, meaning python needs to be able to load it properly. Also think about how users will be able to search for your package: you don't want users to have to type in special characters or diacritics, to be able to find it.
 
-## 3\. Decide how to Host
+- Try not to use the word "Sublime" in your package name. Every package available via Package Control is for Sublime Text. Using the word Sublime just adds noise to the list when trying to find packages. You can use the word Sublime in your marketing material (README etc.) though of course.
+- Don't use a name too similar to another: we don't want Todo and T0d0.
+- Don't use snake_case. There are minor technical reasons to avoid that, but mostly it's just very uncommon (i.e. it looks weird).
+- Do not use a `.` in the package name. If you package includes any Python code, it will not load in ST3. This is because Python uses . as a folder separator when importing code.
+- Do not use a `/` or other restricted characters in the package name. Invalid characters include: `<`, `\>`, `:`, `"`, `/`, `\`, `|`, `?` and `*`.
+- Use ASCII only.
+- Language support (aka "syntax" or "grammar") packages are named after the language it supports, without suffixes like "syntax" or "highlighting".
 
-You‘ll need to pick **one** of the following two hosting options:
+Note that the package name goes into any references to for instance settings files. If your package name is different from its repository name, make sure you rename the local clone to match.
 
-*   **Use a public GitHub or BitBucket repository.** Only include one package per repository and be sure the root of the package is the root of the repository.
-*   **Host .sublime-package files and a packages.json on a web server with SSL.** For each release you’ll need to create and upload a new package file and update the packages.json information. Hosting of the files must be done on a secure server to help ensure the security of users’ machines. Unsecure URLs could lead to malicious code being loaded and run. _This is rarely used – see [example-repository.json][3] for documentation._
+## 3. Decide how to Host
 
-_No matter how your package is hosted, Package Control will check it for updates approximately once per hour. The Last Seen date on the package detail page of this site will show the last time (UTC) when the package information was refreshed._
+Pick one of the following two hosting options:
 
-## 4\. Pick a Versioning Strategy
+- A public GitHub, BitBucket or GitLab repository. Only include one package per repository and be sure the root of the package is the root of the repository. Do not include a packages.json file in your repository.
+- Host .sublime-package files and a packages.json on a web server with SSL. For each release you'll need to create and upload a new package file and update the packages.json information. See [example-repository.json][1] for documentation.
 
-If you are using GitHub or BitBucket for your hosting, you will need to create a tag each time you want to make a new version available to users. The tag names must be a [semantic version number][4].
+When using a public git repository, you will need to create a tag each time you want to make a new version available to users. The tag names must be a [semantic version number][2].
 
-_Please note that branch-based releases have been deprecated and no new packages will be accepted that utilize that feature. Existing packages are encouraged to update to using tags._
+If you chose self-hosting, you will need to use semantic versioning in your packages.json file.
 
-If you chose manual package hosting, you will need to use semantic versioning in your packages.json file.
+Please note that branch-based releases have been deprecated.
 
-## 5\. Prepare Your Repository
+## 4. Prepare your repository
 
-1.  **Remove any .pyc files from your repository.** Sublime Text will generate the appropriate .pyc files the first time the package is loaded. Also, different versions of Python use different formats.
-2.  **Remove package-metadata.json.** This is automatically generated by Package Control when a package is installed and should not be in your repository.
-3.  **Check file names.** Windows has the most restrictive rules on valid characters in a file name. Be sure file names do not contain characters including: <, \>, :, ", /, \\, |, ? and \*. Non-ASCII characters may present trouble when developing cross-platform packages.
-4.  **If including executables or shared libraries, add a .no-sublime-package file.** Adding this file to the root of your repository will prevent Package Control from keeping your package packed as a .sublime-package file in ST3.
+- Ensure there are no .pyc files in your repository.
+- Remove package-metadata.json. This is automatically generated by Package Control when a package is installed and should not be in your repository.
+- Check file names for cross-platform compatibility, the same restricted characters apply as in your package name.
+- Under very specific circumstances, like including executables or shared libraries, add a .no-sublime-package file to the root of your repository. This file will prevent Package Control from shipping your package as a zipped .sublime-package file.
 
-## 6\. Add Your Repository to the Default Channel
+## 5. Add your repository to the default channel
 
-1.  **Fork the [Package Control Channel][5]**
-2.  **Clone your fork to your machine**
-3.  **Open the package\_control\_channel/ folder with Sublime Text**
-4.  **Add package info based on the type of hosting:**
-    
-    *   **GITHUB/BITBUCKET HOSTING:** Add your package info to the proper JSON file in repository/ folder.
-        
-        _Example of GitHub hosting:_
-        
-        {
-        	"name": "Alignment",
-        	"details": "https://github.com/wbond/sublime\_alignment",
-        	"releases": \[
-        		{
-        			"sublime\_text": "\*",
-        			"tags": true
-        		}
-        	\]
-        }
-        
-        _Example of BitBucket hosting:_
-        
-        {
-        	"name": "Alignment",
-        	"details": "https://bitbucket.org/wbond/sublime\_alignment",
-        	"releases": \[
-        		{
-        			"sublime\_text": "\*",
-        			"tags": true
-        		}
-        	\]
-        }
-        
-        For other options, please read the documentation in the [example-repository.json][6] file. _Please note that the version, url and date sub-fields are not allowed in the centralized channel. If you wish to use these, you must host your own packages.json._
-        
-    *   **MANUAL HOSTING:** Add the URL for your packages.json file to channel.json. See [example-repository.json][7] for documentation about the structure of the packages.json file.
-        
-5.  **Add the platforms key to your releases if necessary.**
-    
-    *   _Package that only works on Mac and Linux_
-        
-        {
-        	"name": "Alignment",
-        	"details": "https://github.com/wbond/sublime\_alignment",
-        	"releases": \[
-        		{
-        			"sublime\_text": "\*",
-        			"platforms": \["osx", "linux"\],
-        			"tags": true
-        		}
-        	\]
-        }
-        
-    *   _Package that only works on Windows_
-        
-        {
-        	"name": "Alignment",
-        	"details": "https://github.com/wbond/sublime\_alignment",
-        	"releases": \[
-        		{
-        			"sublime\_text": "\*",
-        			"platforms": \["windows"\],
-        			"tags": true
-        		}
-        	\]
-        }
-        
+Fork the [Package Control Channel][3]. Then:
 
-## 7\. Run the Tests
+- For packages hosted on a public GitHub, BitBucket or GitLab URL, add your package information to the correct file in the repository directory. For full details of the possibilities, please refer to the [example-repository.json][1].
+- For self-hosted packages add the URL of your repository.json file to the channel.json in the root directory.
 
-1.  **Install the [ChannelRepositoryTools][8] package** via Package Control.
-2.  **Run the _ChannelRepositoryTools: Test Default Channel_ command** from the command palette and ensure the tests pass.
+## 7 Submit a Pull Request
 
-## 8\. Submit a Pull Request
+Now you're ready to push your changes and make a PR on the [Package Control Channel][1] repository. Follow any guidelines there and make sure the tests pass!
 
-1.  **Browse to your fork on [github.com][9]**
-2.  **Click on _Pull Requests_ in the right-hand nav and click _New Pull Request_**
-3.  **Enter a description in the _Title_ field**
-4.  **Click the _Create pull request_ button**
+Note that this is a community project and people review PR's in their spare time: it might take a while.
 
-Please be patient as your pull request is reviewed. We review changes to try and help prevent duplicate packages, spot common errors and help improve the package experience for users.
 
-[1]: /docs
-[2]: /search
-[3]: https://raw.githubusercontent.com/wbond/package_control/master/example-repository.json
-[4]: http://semver.org
-[5]: https://github.com/wbond/package_control_channel
-[6]: https://raw.githubusercontent.com/wbond/package_control/master/example-repository.json
-[7]: https://raw.githubusercontent.com/wbond/package_control/master/example-repository.json
-[8]: /packages/ChannelRepositoryTools
-[9]: https://github.com
+[1]: https://raw.githubusercontent.com/wbond/package_control/master/example-repository.json
+[2]: http://semver.org
+[3]: https://github.com/wbond/package_control_channel

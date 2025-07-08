@@ -15,7 +15,7 @@ The `previous_names` will ensure Package Control is able to move existing instal
 
 ## 1 Review the new name
 
-Read the naming guidelines (TODO:link) to make sure your new name will work.
+Read the [naming guidelines](../submitting/#2-pick-a-name) to make sure your new name will work.
 
 ## 2 Fork the channel
 
@@ -47,5 +47,7 @@ Read the naming guidelines (TODO:link) to make sure your new name will work.
 ## 4 Submit a Pull Request
 
 Now you're ready to push your changes and make a PR on the [Package Control Channel][1] repository. Follow any guidelines there and make sure the tests pass!
+
+Note that this is a community project and people review PR's in their spare time: it might take a while.
 
 [3]: https://github.com/wbond/package_control_channel
