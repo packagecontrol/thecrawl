@@ -146,6 +146,11 @@ module.exports = function (eleventyConfig) {
     return (new Date(date)).toDateString();
   });
 
+  eleventyConfig.addFilter("stars_format", (count) => {
+    const starsFormatter = new Intl.NumberFormat("en", { notation: "compact" });
+    return starsFormatter.format(count);
+  })
+
   return {
     dir: {
       input: ".",
