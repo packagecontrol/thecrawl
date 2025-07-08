@@ -74,7 +74,6 @@ module.exports = function (eleventyConfig) {
   const data = JSON.parse(fs.readFileSync("workspace.json", "utf8"));
   // eslint-disable-next-line no-unused-vars
   const live_packages = Object.entries(data.packages).map(([id, pkg]) => pkg).filter(pkg => !pkg.removed);
-  const starsFormatter = new Intl.NumberFormat("en", { notation: "compact" })
 
   // if readme is in pkg
   // transform some links
@@ -148,6 +147,7 @@ module.exports = function (eleventyConfig) {
   });
 
   eleventyConfig.addFilter("stars_format", (count) => {
+    const starsFormatter = new Intl.NumberFormat("en", { notation: "compact" })
     return starsFormatter.format(count)
   })
 
