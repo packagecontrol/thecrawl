@@ -7,6 +7,7 @@ export class Card {
 
     const template = document.querySelector("template#package-card");
     this.clone = template.content.cloneNode(true);
+    this.formatter = new Intl.NumberFormat("en", { notation: "compact" });
   }
 
   render () {
@@ -15,9 +16,10 @@ export class Card {
     this.clone.querySelector('p').innerHTML = 'by ' + this.pkg.author;
 
     const dl = this.clone.querySelector('.stars').closest('dl')
+
     if (this.pkg.stars !== '0') {
       dl.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub');
-      this.clone.querySelector('.stars').innerText = this.pkg.stars;
+      this.clone.querySelector('.stars').innerText = this.formatter.format(Number(this.pkg.stars));
     } else {
       dl.remove();
     }
