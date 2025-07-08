@@ -1,7 +1,0 @@
-// https://github.com/wbond/package_control/blob/master/example-messages.json
-
-{
-	"install": "messages/install.txt",
-	"1.1.1": "messages/1.1.1.txt",
-	"1.2.0": "messages/1.2.0.txt"
-}
