@@ -147,8 +147,8 @@ module.exports = function (eleventyConfig) {
   });
 
   eleventyConfig.addFilter("stars_format", (count) => {
-    const starsFormatter = new Intl.NumberFormat("en", { notation: "compact" })
-    return starsFormatter.format(count)
+    const starsFormatter = new Intl.NumberFormat("en", { notation: "compact" });
+    return starsFormatter.format(count);
   })
 
   return {
