@@ -64,7 +64,7 @@ select {
       gap: 0;
 
       label {
-        font-size: 8px;
+        font-size: 0.8em;
         line-height: 1;
       }
     }
