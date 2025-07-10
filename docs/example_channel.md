@@ -1,45 +1,66 @@
 <!-- https://github.com/wbond/package_control/blob/master/example-channel.json -->
 
+# Examples for the channel.json
+
+## Properties
+
+- $schema
+- schema_version
+- repositories
+- packages_cache
+- libraries_cache
+
+`$schema` is used by LSP and LSP-json to provide linting and completions.
+`schema_version` is currently at 4.0.0.
+
+```json
 {
-	// BE SURE TO REMOVE THESE COMMENTS BEFORE USING THIS TEMPLATE SINCE
-	// COMMENTS ARE NOT ALLOWED IN JSON
+    "$schema": "sublime://packagecontrol.io/schemas/channel",
+    "schema_version": "4.0.0",
+    "repositories": [],
+    "packages_cache": {},
+    "libraries_cache": {},
+}
+```
 
-	// Used by LSP and LSP-json to provide linting and completions.
+## repositories
+
+The "repositories" array lists the repositories to be includes in the channel. All repositories must be an HTTPS URL, or a local file path.
+
+The following values are supported:
+
+- an external repository.json URL
+- a repository located relative to this one via a relative path
+- a `file:///`` protocol URL
+- a single GitHub repository URL (this is mostly useful for users adding a single package repository in their Sublime installation)
+- a GitHub user or organization (possible, but not recommended)
+
+```json
+{
 	"$schema": "sublime://packagecontrol.io/schemas/channel",
-
 	"schema_version": "4.0.0",
-
-	// All repositories must be an HTTPS URL. SSL certificates help prevent
-	// unauthorized code being loaded onto users' machines.
 	"repositories": [
-		// include another external repository.json
 		"https://packagecontrol.io/packages.json",
-
-		// include repository located relative to this one
 		"./local/repository.json",
-
-		// include a locally hosted repository.json
 		"file:///absolute/path/to/repository.json",
-
-		// include single GitHub repository (possible, but not recommended)
 		"https://github.com/buymeasoda/soda-theme",
-
-		// include Github user or organization (possible, but not recommended)
 		"https://github.com/SublimeText"
 	],
+}
+```
 
-	// The "packages_cache" is completely optional, but allows the
-	// channel to cache and deliver package data from multiple
-	// repositories in a single HTTP request, allowing for significantly
-	// improved performance.
+## packages_cache
+
+The "packages_cache" is completely optional, but allows the channel to cache and deliver package data from multiple repositories in a single HTTP request, allowing for significantly improved performance.
+
+The first level keys are the repository URLs (in this example "https://packagecontrol.io/packages.json").
+
+Each repository has an array of packages with their fully expanded info. This means that the "details" key must be expanded into the various keys it provides.
+
+```json
+{
 	"packages_cache": {
-
-		// The first level keys are the repository URLs
 		"https://packagecontrol.io/packages.json": [
-
-			// Each repository has an array of packages with their fully
-			// expanded info. This means that the "details" key must be expanded
-			// into the various keys it provides.
 			{
 				"name": "Alignment",
 				"description": "Multi-line and multiple selection alignment plugin",
@@ -55,15 +76,24 @@
 				]
 			}
 		]
-	},
+	}
+}
+```
 
-	// The "libraries_cache" is just like "packages_cache", but for libraries.
+## libraries_cache
+
+The "libraries_cache" is just like "packages_cache", but for libraries.
+Like with packages, library info must be fully resolved, which for packages means releases must have the following properties (instead of "base" and "tags"):
+
+- url
+- version
+- sublime_text
+- platforms
+
+```json
+{
 	"libraries_cache": {
 		"https://packagecontrol.io/packages.json": [
-
-			// Like with packages, library info must be fully resolved,
-			// which for packages means releases must have "url", "version",
-			// "sublime_text" and "platforms" keys instead of "base" and "tags".
 			{
 				"name": "bz2",
 				"description": "Python bz2 module",
@@ -84,3 +114,4 @@
 		]
 	}
 }
+```

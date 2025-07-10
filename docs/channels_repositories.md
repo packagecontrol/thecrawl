@@ -7,7 +7,7 @@ Channels contain a list of one or more repositories. Repositories contain a list
 
 Channels -> Repositories -> Packages.
 
-The [package_control_channel][1] git repo collects lists of packages, and various repositories (like those for SublimeLinter or LSP plugins). This creates the primary public repository for Sublime Text packages, that is then crawled and compiled into the public channel.json: https://github.com/packagecontrol/thecrawl/releases/tag/the-channel. 
+The [package_control_channel][1] git repo collects lists of packages, and various repositories (like those for SublimeLinter or LSP plugins). This creates the primary public repository for Sublime Text packages. Each git repository is then crawled for additional metadata, and this is all compiled into the public `channel.json`: https://github.com/packagecontrol/thecrawl/releases/tag/the-channel. 
 
 The Package Control client comes pre-installed with this channel.
 (Well, currently it still comes with the old one: https://packagecontrol.io/channel_v3.json).
