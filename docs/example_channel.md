@@ -2,6 +2,9 @@
 
 # Examples for the channel.json
 
+The latest version of the default channel.json can be found in the crawler release assets:  
+https://github.com/packagecontrol/thecrawl/releases/tag/the-channel
+
 ## Properties
 
 - $schema
@@ -30,7 +33,7 @@ The "repositories" array lists the repositories to be includes in the channel. A
 The following values are supported:
 
 - an external repository.json URL
-- a repository located relative to this one via a relative path
+- a repository located relative to this one, via a relative path
 - a `file:///`` protocol URL
 - a single GitHub repository URL (this is mostly useful for users adding a single package repository in their Sublime installation)
 - a GitHub user or organization (possible, but not recommended)
