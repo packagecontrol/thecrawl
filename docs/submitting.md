@@ -76,6 +76,8 @@ Plugins for the LSP or SublimeLinter frameworks should be submitted to the repos
 - Language support packages should not ship with color schemes to specifically support the language. Please review common [scope names][4] that will allow any color scheme to support your language.
 - Note that the [git-archive][5] feature is used to create the package file, meaning you can use [.gitattributes][6] to exclude images and other files that have no functionality in the package (typically drastically reducing file size of your package).
 
+### Labels style guide
+
 For labels, please follow these recommendations:
 
 - Labels are always in lowercase.

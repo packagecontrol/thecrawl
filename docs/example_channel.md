@@ -22,19 +22,19 @@ https://github.com/packagecontrol/thecrawl/releases/tag/the-channel
     "schema_version": "4.0.0",
     "repositories": [],
     "packages_cache": {},
-    "libraries_cache": {},
+    "libraries_cache": {}
 }
 ```
 
 ## repositories
 
-The "repositories" array lists the repositories to be includes in the channel. All repositories must be an HTTPS URL, or a local file path.
+The "repositories" array lists the repositories to be includes in the channel. All repositories must be an HTTPS URL, or a local or relative file path.
 
 The following values are supported:
 
 - an external repository.json URL
 - a repository located relative to this one, via a relative path
-- a `file:///`` protocol URL
+- a `file:///` protocol URL
 - a single GitHub repository URL (this is mostly useful for users adding a single package repository in their Sublime installation)
 - a GitHub user or organization (possible, but not recommended)
 
