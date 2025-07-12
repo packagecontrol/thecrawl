@@ -5,7 +5,7 @@ import aiohttp
 import asyncio
 import re
 from time import time
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 from typing import AsyncIterable, Literal, Iterable, TypedDict
 
@@ -426,7 +426,7 @@ def extract_syntax_files(entries, owner: str, repo: str, branch: str = "HEAD") -
                         "name": name_without_ext,
                         "path": entry_path,
                         "extension": extension,
-                        "url": f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{entry_path}"
+                        "url": f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{quote(entry_path)}",
                     })
             
             elif entry["type"] == "tree":
