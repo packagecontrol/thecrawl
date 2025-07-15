@@ -3,6 +3,12 @@ header {
   padding: 4px 1rem;
   color: var(--foreground-lighter);
 
+  .inner {
+    max-width: 92rem;
+    margin: 0 auto;
+    position: relative;
+  }
+
   * {
     margin: 0;
     padding: 0;
@@ -16,22 +22,13 @@ header {
     color: var(--foreground);
   }
 
-  .hot {
-    color: var(--primary-accent);
-    font-style: italic;
-  }
-
   nav {
     float: right;
     line-height: 1.33;
     padding-top: 1.33rem;
+
     * + * {
       margin-left: 1ex;
-    }
-
-    @media (max-width: 600px) {
-      /* the links don't fit, but also appear in the footer so goodbye */
-      display: none;
     }
   }
 }

@@ -19,9 +19,14 @@ body {
 }
 
 main {
-  max-width: 80rem;
+  max-width: 78rem;
   margin: 0 auto;
   padding: 0 1rem 3.2rem 1rem;
+
+  html.about-faq & {
+    /* limit paragraph length for readability */
+    max-width: 48rem;
+  }
 }
 
 a {
@@ -49,6 +54,49 @@ section {
   }
 }
 
+code {
+  background: var(--background-darker);
+  border: 1px solid var(--background-darkest);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+pre {
+  white-space: break-spaces;
+  background: var(--background-darker);
+  &:not(.fallback) {
+    border: 1px solid var(--background-darkest);
+    padding: 1rem;
+  }
+  code {
+    background: revert;
+    border: revert;
+    padding: revert;
+    border-radius: revert;
+  }
+}
+
+.clipboard-wrapper {
+  position: relative;
+  &.copied pre {
+    background: var(--background-darkest);
+  }
+  pre {
+    transition: background .1s ease-out;
+    padding-right: 6em;
+    word-break: break-word;
+  }
+  button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--primary-accent-darker);
+  }
+}
+
 .screenreader-only {
     width: 1px;
     height: 1px;
@@ -56,6 +104,11 @@ section {
     top: -999px;
     left: -999px;
     overflow:hidden
+}
+
+.hot {
+  color: var(--primary-accent);
+  font-style: italic;
 }
 
 .description {
@@ -127,24 +180,11 @@ dl {
 
   code {
     background: var(--background);
-    border: 1px solid var(--background-darker);
-    padding: 0 4px;
-    border-radius: 3px;
+    border-color: var(--background-darker);
   }
 
   pre {
-    white-space: break-spaces;
     background: var(--background);
-    &:not(.fallback) {
-      border: 1px solid var(--background-darker);
-      padding: 1rem;
-    }
-    code {
-      background: revert;
-      border: revert;
-      padding: revert;
-      border-radius: revert;
-    }
   }
 }
 
