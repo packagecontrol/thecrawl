@@ -11,6 +11,7 @@ https://github.com/wbond/package_control_channel/blob/master/repository.json
 - $schema
 - schema_version
 - packages
+- libraries
 - includes
 
 `$schema` is used by LSP and LSP-json to provide linting and completions.
@@ -206,7 +207,7 @@ If for some reason one of the releases is from a different repository than the t
 }
 ```
 
-#### version and url
+#### version, url, date
 
 For "manually" created release zips files, each individual `version` needs to be specified with a `url` to the zip, and a `date`. Because this requires an update of the repository file for each release it is not allowed in the default repository.
 
@@ -241,43 +242,58 @@ The date must be in the form "YYYY-MM-DD HH:MM:SS" and should be UTC.
 				}
 			]
 		}
+	]
 }
 ```
 
+#### asset
 
-		// Packages can be deployed as pre-compiled zip archives or sublime-package
-		// files via BitBucket/GitHub/GitLab releases, by specifying "asset" key,
-		// to describe a pattern of display name of download assets.
+If your package requires a build or compile step, you might want to provide your release via pre-compiles zip archives or sublime-package files. To do so, specify an `asset` key describing a pattern of the name of the downloadable asset.
 
-		// Minimal GitHub Release With Asset
-		//   A package compatible with all Sublime Text versions and platforms.
+```json
+{
+	"name": "A File Icon",
+	"details": "https://github.com/SublimeText/AFileIcon",
+	"releases": [
 		{
-			"name": "A File Icon",
-			"details": "https://github.com/SublimeText/AFileIcon",
-			"releases": [
-				{
-					"asset": "A File Icon.sublime-package"
-				}
-			]
-		},
+			"asset": "A File Icon.sublime-package"
+		}
+	]
+}
+```
 
-		// Minimal GitHub Release With Asset
-		//   A package compatible with all Sublime Text versions and platforms.
-		//   If only a single asset is shipped per release, globs can be used
-		//   to fetch files of any name.
+If only a single asset is shipped per release, globs can be used to fetch files of any name. Supported globs:
+ 
+- `*`: any number of characters
+- `?`: single character placeholder
+
+```json
+{
+	"name": "A File Icon",
+	"details": "https://github.com/SublimeText/AFileIcon",
+	"releases": [
 		{
-			"name": "A File Icon",
-			"details": "https://github.com/SublimeText/AFileIcon",
-			"releases": [
-				{
-					"asset": "*.sublime-package"
-				}
-			]
-		},
+			"asset": "*.sublime-package"
+		}
+	]
+}
+```
 
-		// Minimal GitHub Release With Sublime Text Specific Assets
-		//   A package with individual assets for various Sublime Text versions
-		//   Note: A release specification for each asset is required.
+Or `${version}`, `${st_build}` and `${platform}` can be used to match assets. Note that "platforms" must explicitly list each supported platform, for the platform variable to work.
+
+- `${platform}`: a platform-arch string as given in "platforms" list.
+  A separate explicit release is evaluated for each platform.
+  If `"platforms": ['*']` is specified, the variable is set to "any".
+- `${st_build}`: value of "sublime_text" stripped by leading operator:
+  - `"*"`: "any"
+  - `">=4107"`: "4107"
+  - `"<4107"`: "4107"
+  - `"4107 - 4126"`: "4107"
+- `${version}`: resolved semver without tag prefix, (e.g.: `st4107-1.0.5` becomes `1.0.5`).
+
+```json
+{
+	"packages": [
 		{
 			"details": "https://github.com/SublimeText/Less",
 			"releases": [
@@ -291,9 +307,6 @@ The date must be in the form "YYYY-MM-DD HH:MM:SS" and should be UTC.
 				}
 			]
 		},
-
-		// The following package specification is identical to the one above,
-		// but uses globs and explicit ST build numbers instead of variables.
 		{
 			"details": "https://github.com/SublimeText/Less",
 			"releases": [
@@ -307,11 +320,6 @@ The date must be in the form "YYYY-MM-DD HH:MM:SS" and should be UTC.
 				}
 			]
 		},
-
-		// Minimal GitHub Release With Platform Specific Assets
-		//   A package compatible with all Sublime Text versions and arm64/x64 platforms.
-		//   Each release provides assets named by platform.
-		//   Note: "platforms" must explicitly list each supported platform.
 		{
 			"details": "https://github.com/SublimeText/PackageWithAsset",
 			"releases": [
@@ -321,69 +329,52 @@ The date must be in the form "YYYY-MM-DD HH:MM:SS" and should be UTC.
 				}
 			]
 		},
+	]
+}
+```
 
-		// Minimal GitHub Release With Platform Specific Assets
-		//   If names of download assets are not covered by provided variable expansion,
-		//   an explicit release specification can be declared for each platform.
+If names of download assets are not covered by the provided variable expansion, an explicit release specification can be declared for each platform.
+
+```json
+{
+	"details": "https://github.com/SublimeText/PackageWithAsset",
+	"releases": [
 		{
-			"details": "https://github.com/SublimeText/PackageWithAsset",
-			"releases": [
-				{
-					"asset": "FileName-linux-aarch64.sublime-package",
-					"platforms": ["linux-arm64"]
-				},
-				{
-					"asset": "FileName-linux-amd64.sublime-package",
-					"platforms": ["linux-x64"]
-				},
-				{
-					"asset": "FileName-macosx-amd64.sublime-package",
-					"platforms": ["osx-arm64"]
-				},
-				{
-					"asset": "FileName-macosx-arm64.sublime-package",
-					"platforms": ["osx-arm64"]
-				},
-				{
-					"asset": "FileName-win-amd64.sublime-package",
-					"platforms": ["windows-x64"]
-				}
-			]
+			"asset": "FileName-linux-aarch64.sublime-package",
+			"platforms": ["linux-arm64"]
 		},
+		{
+			"asset": "FileName-linux-amd64.sublime-package",
+			"platforms": ["linux-x64"]
+		},
+		{
+			"asset": "FileName-macosx-amd64.sublime-package",
+			"platforms": ["osx-arm64"]
+		},
+		{
+			"asset": "FileName-macosx-arm64.sublime-package",
+			"platforms": ["osx-arm64"]
+		},
+		{
+			"asset": "FileName-win-amd64.sublime-package",
+			"platforms": ["windows-x64"]
+		}
+	]
+}
+```
 
-		// Advanced GitHub Release With Platform Specific Assets
-		//
-		// Package meta data are resolved using "details", which are overridden by
-		// explicit information. If "details" is absent, each release must specify
-		// a "base" url. In this and other aspects, release based packages behave
-		// the same as tag based packages.
+### Package metadata without "details"
 
+Package metadata are resolved using "details", where each field can be overridden by explicitly set values. If "details" is absent, each release must specify a "base" url. In this and other aspects, release based packages behave the same as tag based packages.
+
+
+```json
 		{
 			"name": "Package With Asset",
 			"description": "A library with custom download assets",
 			"author": "Jon Doe",
 			"releases": [
 				{
-					// An asset associated with the release is specified by asset key.
-					//
-					// Supported globs:
-					//  * : any number of characters
-					//  ? : single character placeholder
-					//
-					// Variable expansion is applied to support platform specific assets:
-					//   ${platform}
-					//     A platform-arch string as given in "platforms" list.
-					//     A separate explicit release is evaluated for each platform.
-					//     If "platforms": ['*'] is specified, variable is set to "any".
-					//   ${st_build}
-					//     Value of "sublime_text" stripped by leading operator
-					//       "*"            => "any"
-					//       ">=4107"       => "4107"
-					//       "<4107"        => "4107"
-					//       "4107 - 4126"  => "4107"
-					//   ${version}
-					//     Resolved semver without tag prefix
-					//     (e.g.: tag st4107-1.0.5 => version 1.0.5)
 					"base": "https://github.com/SublimeText/PackageWithAsset",
 					"asset": "Package.With.Asset-${version}-st${st_build}-${platform}.sublime-package",
 					"platforms": ["windows-x64", "linux-x64", "osx-x64"],
@@ -392,8 +383,6 @@ The date must be in the form "YYYY-MM-DD HH:MM:SS" and should be UTC.
 				}
 			]
 		},
-
-		// Locally hosted package using `file://` protocol.
 		{
 			"name": "My Package",
 			"description": "A locally hosted Sublime Text package",
