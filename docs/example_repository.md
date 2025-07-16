@@ -407,34 +407,31 @@ Package metadata are resolved using "details", where each field can be overridde
 
 ## libraries
 
+Note that the following documentation is not up to date with latest developments in Sublime Text (ST) (e.g. the Python 3.8 plugin host) or the Package Control 4.0 client package (PC4.0), and is mostly included to document legacy use cases.
+
+---
+
+These are typically compiled Python extensions that are supplementary to, or missing from Sublime Text.
+
+Each library must have a name, description, author, issues URL, and a list of releases. Each release needs a version and url or base and tags keys.
+The sublime_text, platforms and python_versions keys are optional and default to `'*'`, `['*']` and `['3.3']` respectively.
+If the URL is not over SSL, there needs to be a sha256 key containing the sha256 hash of the package file.
+
 ```json
 {
-	// Packages that can be listed under "libraries" in under "releases" of
-	// a normal package. These will typically be compiled Python extensions
-	// that are supplementary, or missing from Sublime Text.
 	"libraries": [
 		{
-			// Each library must have a name, description, author, issues URL
-			// and a list of releases.
-			// Each release needs a version and url or base and tags keys.
-			// The sublime_text, platforms and python_versions keys are optional
-			// and default to '*', ['*'] and ['3.3'].
-			// If the URL is not over SSL, there needs to be a sha256 key
-			// containing the sha256 hash of the package file.
 			"name": "bz2",
 			"description": "Python bz2 module",
 			"author": "wbond",
 			"issues": "https://github.com/codexns/sublime-bz2/issues",
 			"releases": [
 				{
-					// A minimal release for a legecy dependency
-					// provided as ordinary repository.
+
 					"base": "https://github.com/codexns/sublime-bz2",
 					"tags": true
 				},
 				{
-					// A verbose release for the same legacy dependency.
-					// provided as ordinary repository.
 					"base": "https://github.com/codexns/sublime-bz2",
 					"tags": true,
 					"platforms": ["*"],
@@ -450,216 +447,196 @@ Package metadata are resolved using "details", where each field can be overridde
 			"issues": "https://github.com/codexns/sublime-ssl-linux/issues",
 			"releases": [
 				{
-					// A legacy python 3.3 dependency for linux,
-					// provided as explicit download asset
-					// secured by sha256 hash as being shipped via HTTP.
 					"version": "1.0.0",
 					"url": "http://packagecontrol.io/ssl-linux.sublime-package",
 					"platforms": ["linux"],
 					"sha256": "d12a2ca2843b3c06a834652e9827a29f88872bb31bd64230775f3dbe12e0ebd4"
 				}
 			]
-		},
-		{
-			"name": "ssl-windows",
-			"description": "Python _ssl module for Sublime Text 2 on Windows",
-			"author": "wbond",
-			"issues": "https://github.com/codexns/sublime-ssl-windows/issues",
-			"releases": [
-				{
-					// A legacy python 3.3 dependency for ST2 on Windows,
-					// provided as explicit download asset
-					// secured by sha256 hash as being shipped via HTTP.
-					// Note: ST2 is no longer supported by PC4.0
-					"version": "1.0.0",
-					"url": "http://packagecontrol.io/ssl-windows.sublime-package",
-					"sublime_text": "<3000",
-					"platforms": ["windows"],
-					"sha256": "efe25e3bdf2e8f791d86327978aabe093c9597a6ceb8c2fb5438c1d810e02bea"
-				}
-			]
-		},
-
-		// Libraries can point to standard WHEEL files.
-		// An explicit platform-specific release key is needed for each download asset.
-		{
-			"name": "coverage",
-			"author": "nedbatchelder",
-			"description": "coverage.py - http://coverage.readthedocs.org/en/latest/",
-			"homepage": "https://pypi.org/project/coverage/",
-			"issues": "https://github.com/nedbat/coveragepy/issues",
-			"releases": [
-				{
-					"platforms": ["windows-x64"],
-					"python_versions": ["3.8"],
-					"version": "7.3.2",
-					"url": "https://files.pythonhosted.org/packages/9f/95/436887935a32fcead76c9f60b61f3fcd8940d4129bdbc50e2988e037a664/coverage-7.3.2-cp38-cp38-win_amd64.whl"
-				},
-				{
-					"platforms": ["linux-x64"],
-					"python_versions": ["3.8"],
-					"version": "7.3.2",
-					"url": "https://files.pythonhosted.org/packages/8d/1a/e4d0775502fae6ce2c2dd3692a66aff3b18e89757567e35680b9c63d89c5/coverage-7.3.2-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
-				},
-				{
-					"platforms": ["osx-x64"],
-					"python_versions": ["3.8"],
-					"version": "7.3.2",
-					"url": "https://files.pythonhosted.org/packages/a0/a6/9deeff0c49d865cd1c5ae5efc9442ff234f9b0e9d15cb4a9cda58ec255cc/coverage-7.3.2-cp38-cp38-macosx_10_9_x86_64.whl"
-				},
-				{
-					"platforms": ["linux-x32"],
-					"python_versions": ["3.3"],
-					"version": "4.3.4",
-					"url": "https://files.pythonhosted.org/packages/c1/cd/a35e25680822d400e2a32d1eddd017087a9cef78e3fd5dc29541d8051a58/coverage-4.3.4-cp33-cp33m-manylinux1_i686.whl"
-				},
-				{
-					"platforms": ["linux-x64"],
-					"python_versions": ["3.3"],
-					"version": "4.3.4",
-					"url": "https://files.pythonhosted.org/packages/8a/0f/5221822805edf3fc13e85c278de6451a5c08d0fd67e2c86e67e48b683a20/coverage-4.3.4-cp33-cp33m-manylinux1_x86_64.whl"
-				},
-				{
-					"platforms": ["osx-x64"],
-					"python_versions": ["3.3"],
-					"version": "4.3.4",
-					"url": "https://files.pythonhosted.org/packages/ac/dc/3e2d996c440a1a589f3323e806cf96d3c64650579483c3798ef2ea34b51a/coverage-4.3.4-cp33-cp33m-macosx_10_10_x86_64.whl"
-				},
-				{
-					"platforms": ["windows-x32"],
-					"python_versions": ["3.3"],
-					"version": "4.2.0",
-					"url": "https://files.pythonhosted.org/packages/a0/34/1185348cc5c541bbdf107438f0f0ea9df5d9a4233a974e9228b6ee815489/coverage-4.2-cp33-cp33m-win32.whl"
-				},
-				{
-					"platforms": ["windows-x64"],
-					"python_versions": ["3.3"],
-					"version": "4.2.0",
-					"url": "https://files.pythonhosted.org/packages/b1/55/02815cb8abb091033abb979ebde5122bb33b85c5987dede9ccd019033d19/coverage-4.2-cp33-cp33m-win_amd64.whl"
-				}
-			]
-		},
-
-		// Latest wheel files can be fetched directly from PyPI,
-		// using their official package URL,
-		// even in a mix with releases in legacy dependency format.
-		{
-			"name": "coverage",
-			"description": "coverage.py - http://coverage.readthedocs.org/en/latest/",
-			"author": "wbond",
-			"issues": "https://github.com/codexns/sublime-coverage/issues",
-			"releases": [
-				{
-					"base": "https://github.com/codexns/sublime-coverage",
-					"platforms": ["*"],
-					"python_versions": ["3.3"],
-					"tags": true
-				},
-				{
-					"base": "https://pypi.org/project/coverage",
-					"asset": "coverage-*-cp38-cp38-win_amd64.whl",
-					"platforms": ["windows-x64"],
-					"python_versions": ["3.8"]
-				},
-				{
-					"base": "https://pypi.org/project/coverage",
-					"asset": "coverage-*-cp38-cp38-manylinux_2_17_aarch64*.whl",
-					"platforms": ["linux-arm64"],
-					"python_versions": ["3.8"]
-				},
-				{
-					"base": "https://pypi.org/project/coverage",
-					"asset": "coverage-*-cp38-cp38-manylinux_2_5_x86_64*.whl",
-					"platforms": ["linux-x64"],
-					"python_versions": ["3.8"]
-				},
-				{
-					"base": "https://pypi.org/project/coverage",
-					"asset": "coverage-*-cp38-cp38-macosx_11_0_arm64.whl",
-					"platforms": ["osx-arm64"],
-					"python_versions": ["3.8"]
-				},
-				{	// fixed versions is specified by URL.
-					"base": "https://pypi.org/project/coverage/7.0.3",
-					"asset": "coverage-*-cp38-cp38-macosx_10_9_x86_64.whl",
-					"platforms": ["osx-x64"],
-					"python_versions": ["3.8"]
-				}
-			]
-		},
-
-		// Legacy dependencies can use download assets to ship platform specific archives.
-		// Download size for dependencies can be reduced this way, as only compatible
-		// binaries need to be downloaded, instead of all.
-		// Note: Legacy dependency format is fully supported also for st4_py38,
-		//       but it is recommended to ship dependencies as wheels.
-		{
-			"name": "typing",
-			"description": "\"typing\" module as a Package Control dependency",
-			"author": "FichteFoll",
-			"issues": "https://github.com/packagecontrol/typing/issues",
-			"releases": [
-				{
-					// Note: ST2 is no longer supported
-					"base": "https://github.com/packagecontrol/typing",
-					"asset": "typing-${version}-st2.zip",
-					"sublime_text": "<3000"
-				},
-				{
-					// An asset associated with the release is specified by asset key.
-					//
-					// Supported globs:
-					//  * : any number of characters
-					//  ? : single character placeholder
-					//
-					// Variable expansion is applied to support platform specific assets:
-					//   ${platform}
-					//     A platform-arch string as given in "platforms" list.
-					//     A separate explicit release is evaluated for each platform.
-					//     If "platforms": ['*'] is specified, variable is set to "any".
-					//   ${py_version}
-					//     Major and minor part of required python version without period.
-					//     One of "33", "38" or any other valid python version supported by ST.
-					//   ${st_build}
-					//     Value of "sublime_text" stripped by leading operator
-					//       "*"            => "any"
-					//       ">=4107"       => "4107"
-					//       "<4107"        => "4107"
-					//       "4107 - 4126"  => "4107"
-					//   ${version}
-					//     Resolved semver without tag prefix
-					//     (e.g.: tag st4107-1.0.5 => version 1.0.5)
-					//
-					// Note: Assets are valid only for tag-based releases.
-					"base": "https://github.com/packagecontrol/typing",
-					"asset": "typing-${version}-st3.zip",
-					"sublime_text": ">=3000",
-					"python_versions": ["3.3"]
-				}
-			]
-		},
-
-		// Locally hosted libraries using `file://` protocol.
-		{
-			"name": "My Library",
-			"description": "A locally hosted python package",
-			"author": "John Doe",
-			"issues": "https://company.com/software/issues",
-			"releases": [
-				{
-					"platforms": ["linux-x64"],
-					"python_versions": ["3.8"],
-					"version": "1.0.0",
-					"url": "file:///absolute/path/to/my_librariy.whl"
-				},
-				{
-					"platforms": ["windows-x64"],
-					"python_versions": ["3.8"],
-					"version": "1.0.0",
-					"url": "./path/relative/to/repository_json/my_librariy.whl"
-				}
-			]
 		}
-	],
+	]
+}
+```
+
+A legacy python 3.3 dependency for ST2 on Windows, provided as explicit download asset secured by sha256 hash as being shipped via HTTP. Note that ST2 is no longer supported by PC4.0.
+
+```json
+{
+	"name": "ssl-windows",
+	"description": "Python _ssl module for Sublime Text 2 on Windows",
+	"author": "wbond",
+	"issues": "https://github.com/codexns/sublime-ssl-windows/issues",
+	"releases": [
+		{
+
+			"version": "1.0.0",
+			"url": "http://packagecontrol.io/ssl-windows.sublime-package",
+			"sublime_text": "<3000",
+			"platforms": ["windows"],
+			"sha256": "efe25e3bdf2e8f791d86327978aabe093c9597a6ceb8c2fb5438c1d810e02bea"
+		}
+	]
+}
+```
+
+Libraries can point to standard WHEEL files. An explicit platform-specific release key is needed for each download asset.
+
+```json
+{
+	"name": "coverage",
+	"author": "nedbatchelder",
+	"description": "coverage.py - http://coverage.readthedocs.org/en/latest/",
+	"homepage": "https://pypi.org/project/coverage/",
+	"issues": "https://github.com/nedbat/coveragepy/issues",
+	"releases": [
+		{
+			"platforms": ["windows-x64"],
+			"python_versions": ["3.8"],
+			"version": "7.3.2",
+			"url": "https://files.pythonhosted.org/packages/9f/95/436887935a32fcead76c9f60b61f3fcd8940d4129bdbc50e2988e037a664/coverage-7.3.2-cp38-cp38-win_amd64.whl"
+		},
+		{
+			"platforms": ["linux-x64"],
+			"python_versions": ["3.8"],
+			"version": "7.3.2",
+			"url": "https://files.pythonhosted.org/packages/8d/1a/e4d0775502fae6ce2c2dd3692a66aff3b18e89757567e35680b9c63d89c5/coverage-7.3.2-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+		},
+		{
+			"platforms": ["osx-x64"],
+			"python_versions": ["3.8"],
+			"version": "7.3.2",
+			"url": "https://files.pythonhosted.org/packages/a0/a6/9deeff0c49d865cd1c5ae5efc9442ff234f9b0e9d15cb4a9cda58ec255cc/coverage-7.3.2-cp38-cp38-macosx_10_9_x86_64.whl"
+		},
+		{
+			"platforms": ["linux-x32"],
+			"python_versions": ["3.3"],
+			"version": "4.3.4",
+			"url": "https://files.pythonhosted.org/packages/c1/cd/a35e25680822d400e2a32d1eddd017087a9cef78e3fd5dc29541d8051a58/coverage-4.3.4-cp33-cp33m-manylinux1_i686.whl"
+		},
+		{
+			"platforms": ["linux-x64"],
+			"python_versions": ["3.3"],
+			"version": "4.3.4",
+			"url": "https://files.pythonhosted.org/packages/8a/0f/5221822805edf3fc13e85c278de6451a5c08d0fd67e2c86e67e48b683a20/coverage-4.3.4-cp33-cp33m-manylinux1_x86_64.whl"
+		},
+		{
+			"platforms": ["osx-x64"],
+			"python_versions": ["3.3"],
+			"version": "4.3.4",
+			"url": "https://files.pythonhosted.org/packages/ac/dc/3e2d996c440a1a589f3323e806cf96d3c64650579483c3798ef2ea34b51a/coverage-4.3.4-cp33-cp33m-macosx_10_10_x86_64.whl"
+		},
+		{
+			"platforms": ["windows-x32"],
+			"python_versions": ["3.3"],
+			"version": "4.2.0",
+			"url": "https://files.pythonhosted.org/packages/a0/34/1185348cc5c541bbdf107438f0f0ea9df5d9a4233a974e9228b6ee815489/coverage-4.2-cp33-cp33m-win32.whl"
+		},
+		{
+			"platforms": ["windows-x64"],
+			"python_versions": ["3.3"],
+			"version": "4.2.0",
+			"url": "https://files.pythonhosted.org/packages/b1/55/02815cb8abb091033abb979ebde5122bb33b85c5987dede9ccd019033d19/coverage-4.2-cp33-cp33m-win_amd64.whl"
+		}
+	]
+}
+```
+
+Latest wheel files can be fetched directly from PyPI, using their official package URL, even in a mix with releases in legacy dependency format.
+
+```json
+{
+	"name": "coverage",
+	"description": "coverage.py - http://coverage.readthedocs.org/en/latest/",
+	"author": "wbond",
+	"issues": "https://github.com/codexns/sublime-coverage/issues",
+	"releases": [
+		{
+			"base": "https://github.com/codexns/sublime-coverage",
+			"platforms": ["*"],
+			"python_versions": ["3.3"],
+			"tags": true
+		},
+		{
+			"base": "https://pypi.org/project/coverage",
+			"asset": "coverage-*-cp38-cp38-win_amd64.whl",
+			"platforms": ["windows-x64"],
+			"python_versions": ["3.8"]
+		},
+		{
+			"base": "https://pypi.org/project/coverage",
+			"asset": "coverage-*-cp38-cp38-manylinux_2_17_aarch64*.whl",
+			"platforms": ["linux-arm64"],
+			"python_versions": ["3.8"]
+		},
+		{
+			"base": "https://pypi.org/project/coverage",
+			"asset": "coverage-*-cp38-cp38-manylinux_2_5_x86_64*.whl",
+			"platforms": ["linux-x64"],
+			"python_versions": ["3.8"]
+		},
+		{
+			"base": "https://pypi.org/project/coverage",
+			"asset": "coverage-*-cp38-cp38-macosx_11_0_arm64.whl",
+			"platforms": ["osx-arm64"],
+			"python_versions": ["3.8"]
+		},
+		{	// fixed versions is specified by URL.
+			"base": "https://pypi.org/project/coverage/7.0.3",
+			"asset": "coverage-*-cp38-cp38-macosx_10_9_x86_64.whl",
+			"platforms": ["osx-x64"],
+			"python_versions": ["3.8"]
+		}
+	]
+}
+```
+
+Legacy dependencies can use download assets (see the previous topic around assets) to ship platform specific archives. Download size for dependencies can be reduced this way, as only compatible binaries need to be downloaded.  
+Note: Legacy dependency format is fully supported also for ST4 and Python 3.8, but it is recommended to ship dependencies as wheels.
+
+```json
+{
+	"name": "typing",
+	"description": "\"typing\" module as a Package Control dependency",
+	"author": "FichteFoll",
+	"issues": "https://github.com/packagecontrol/typing/issues",
+	"releases": [
+		{
+			// Note: ST2 is no longer supported
+			"base": "https://github.com/packagecontrol/typing",
+			"asset": "typing-${version}-st2.zip",
+			"sublime_text": "<3000"
+		},
+		{
+			"base": "https://github.com/packagecontrol/typing",
+			"asset": "typing-${version}-st3.zip",
+			"sublime_text": ">=3000",
+			"python_versions": ["3.3"]
+		}
+	]
+}
+```
+
+Local and relative file paths are also supported.
+
+```json
+{
+	"name": "My Library",
+	"description": "A locally hosted python package",
+	"author": "John Doe",
+	"issues": "https://company.com/software/issues",
+	"releases": [
+		{
+			"platforms": ["linux-x64"],
+			"python_versions": ["3.8"],
+			"version": "1.0.0",
+			"url": "file:///absolute/path/to/my_librariy.whl"
+		},
+		{
+			"platforms": ["windows-x64"],
+			"python_versions": ["3.8"],
+			"version": "1.0.0",
+			"url": "./path/relative/to/repository_json/my_librariy.whl"
+		}
+	]
 }
 ```
