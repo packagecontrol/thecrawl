@@ -10,7 +10,7 @@ title: About / FAQ
 The system consists of several components:
 
 - [This website](https://packages.sublimetext.io), listing publicly available packages for Sublime Text.
-- A [website listing libraries](http://packagecontrol.github.io) (a.k.a. dependencies) available for package authors.
+- A registry of libraries (a.k.a. dependencies) available for package authors.
 - A [registry of packages](https://github.com/wbond/package_control_channel), where you can submit your package to be published here.
 - A [crawler](https://github.com/packagecontrol/thecrawl) that compiles the data that drives the system: it finds new versions of all packages and makes them available to the site and to the Package Control package.
 - The [Package Control package](https://packages.sublimetext.io/packages/Package%20Control/) that provides the user interface inside Sublime Text to find, install, and update packages.
@@ -47,8 +47,6 @@ You are very much invited to make the switch and come along for the ride!
   - A: On [Discord](https://discord.sublimetext.io/): look for the "#package-control" channel.
 - Q: Where can I contribute or report issues?
   - A: On [GitHub](https://github.com/packagecontrol/thecrawl/issues).
-- Q: Will the libraries website be merged into this one?
-  - A: [Plausible](https://github.com/packagecontrol/thecrawl/pull/9)
 - Q: What does the "R" stand for?
   - A: Rewrite, refactor, revisited... something along those lines 😉
 - Q: How do I even use this?
