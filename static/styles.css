@@ -9,6 +9,11 @@
 
 html {
   height: 100%;
+
+  --side-padding: 1rem;
+  @media (min-width: 78rem) {
+    --side-padding: 1.6rem;
+  }
 }
 
 body {
@@ -21,12 +26,13 @@ body {
 main {
   max-width: 78rem;
   margin: 0 auto;
-  padding: 0 1rem 3.2rem 1rem;
+  padding: 0 var(--side-padding) 3.2rem var(--side-padding);
 
   html.about-faq & {
     /* limit paragraph length for readability */
     max-width: 48rem;
   }
+
 }
 
 a {

@@ -1,6 +1,9 @@
 <header>
   <div class="inner">
     <nav>
+      {% if page.url != "/" %}
+        <a href="/">Home</a>
+      {% endif %}
       <a href="/about">About / FAQ</a>
     </nav>
 

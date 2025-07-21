@@ -1,6 +1,6 @@
 header {
   margin-bottom: 22px;
-  padding: 4px 1rem;
+  padding: 4px var(--side-padding);
   color: var(--foreground-lighter);
 
   .inner {
@@ -28,7 +28,13 @@ header {
     padding-top: 1.33rem;
 
     * + * {
-      margin-left: 1ex;
+      margin-left: 1.6em;
+    }
+
+    @media (max-width: 480px) {
+      [href="/"] {
+        display: none;
+      }
     }
   }
 }
