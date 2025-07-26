@@ -51,7 +51,7 @@ export class Pagination {
       if (pageNum === '...') {
         const ellipsis = document.createElement('span');
         ellipsis.className = 'pagination-ellipsis';
-        ellipsis.textContent = '...';
+        ellipsis.textContent = '…';
         controls.appendChild(ellipsis);
       } else {
         const pageBtn = this.createPageButton(pageNum, pageNum, pageNum === this.currentPage);
