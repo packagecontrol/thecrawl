@@ -124,5 +124,9 @@ export class List {
 
     // render results with pagination
     this.renderPage(sortedResults, page);
+
+    this.getSection().dispatchEvent(
+      new Event('search-is-done', {bubbles: true})
+    );
   }
 }

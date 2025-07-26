@@ -14,6 +14,13 @@ html {
   @media (min-width: 78rem) {
     --side-padding: 1.6rem;
   }
+
+  /* while initializing search, hide package listings */
+  &.initializing {
+    section {
+      visibility: hidden;
+    }
+  }
 }
 
 body {
