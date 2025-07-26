@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+  {# handle color scheme without delay #}
   <script>
     (function(){
       const system_theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -16,6 +17,33 @@
       document.documentElement.setAttribute('data-theme', user_pref ?? system_theme);
     })();
   </script>
+
+  {# while initializing search, hide package listings,
+     and change the h1 to indicate this state #}
+  <script>
+    (function(){
+      const q = new URLSearchParams(location.search).get('q');
+      if (!q) {
+        return;
+      };
+
+      const setContent = () => {
+        document.querySelector('[name=q]').value = q;
+        document.querySelector('h1').innerText = 'Searching…';
+      }
+
+      window.addEventListener('DOMContentLoaded', setContent);
+
+      const root = document.documentElement;
+      root.classList.add('initializing');
+      root.addEventListener('search-is-done', () => {
+        root.classList.remove('initializing');
+        window.removeEventListener('DOMContentLoaded', setContent);
+      });
+
+    })();
+  </script>
+
   <link rel="stylesheet" href="/static/styles.css">
   <link rel="icon" href="/static/favicon.ico">
 
