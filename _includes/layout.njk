@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="{{ title | slugify }}">
+<html lang="en" class="{{ (title or 'home') | slugify }}">
   {% include "head.njk" %}
 
   <body>
