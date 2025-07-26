@@ -27,15 +27,20 @@
         return;
       };
 
+      const setContent = () => {
+        document.querySelector('[name=q]').value = q;
+        document.querySelector('h1').innerText = 'Searching…';
+      }
+
+      window.addEventListener('DOMContentLoaded', setContent);
+
       const root = document.documentElement;
       root.classList.add('initializing');
       root.addEventListener('search-is-done', () => {
         root.classList.remove('initializing');
+        window.removeEventListener('DOMContentLoaded', setContent);
       });
 
-      window.addEventListener('DOMContentLoaded', () => {
-        document.querySelector('h1').innerText = 'Searching…';
-      });
     })();
   </script>
 
