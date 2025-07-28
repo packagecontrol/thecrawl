@@ -10,7 +10,7 @@ import sys
 
 
 NEW_CHANNEL = (
-    "https://github.com/kaste/pc-e02-thecrawl/releases/download"
+    "https://github.com/packagecontrol/thecrawl/releases/download"
     "/crawler-status/channel.json"
 )
 v4_CHANNEL = "https://packagecontrol.github.io/channel/channel_v4.json"
