@@ -36,8 +36,10 @@
         {{ pkg.name }}
       </a>
     </h3>
-    <p>by {% for author in pkg.author -%}
-      {{ author }}{{ ", " if not loop.last }}
+    <p>by
+    {% for author in pkg.author -%}
+      {% set q = 'author:"' ~ author ~ '"' %}
+      <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
     {%- endfor %}</p>
 
     {{ stars(pkg.stars) }}

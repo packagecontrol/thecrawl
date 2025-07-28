@@ -23,8 +23,8 @@
   position: relative;
   transition: border-color .3s ease-in-out;
 
-  &:has(a:hover),
-  &:has(a:focus) {
+  &:has(h3 a:hover),
+  &:has(h3 a:focus) {
     border-color: var(--primary-accent);
     transition: border-color .1s ease-in-out;
   }
@@ -41,13 +41,14 @@
       margin-top: 0;
       flex: 1; /* push other content to the end of the card */
     }
+  }
 
-    a {
-      color: var(--foreground);
-      &:hover {
-        text-decoration: none;
-        color: var(--foreground-darker);
-      }
+  h3 a,
+  a[href*="q=author"] {
+    color: var(--foreground);
+    &:hover {
+      text-decoration: none;
+      color: var(--foreground-darker);
     }
   }
 

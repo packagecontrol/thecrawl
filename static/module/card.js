@@ -13,7 +13,7 @@ export class Card {
   render () {
     this.clone.querySelector('a').innerHTML = this.pkg.name;
     this.clone.querySelector('a').setAttribute('href', this.pkg.permalink);
-    this.clone.querySelector('p').innerHTML = 'by ' + this.pkg.author;
+    this.authors(this.clone.querySelector('p'));
 
     const dl = this.clone.querySelector('.stars').closest('dl')
 
@@ -31,6 +31,20 @@ export class Card {
     return this.clone;
   }
 
+  authors(parent) {
+    parent.innerHTML = 'by ';
+    const list = this.pkg.author.split(',');
+    list.forEach((name, iter) => {
+      const a = document.createElement('a');
+      a.setAttribute('href', '/?q=' + encodeURI('author:"' + name.trim() + '"'));
+      a.innerHTML = name;
+      parent.appendChild(a);
+      if (iter + 1 < list.length) {
+        parent.appendChild(document.createTextNode(', '));
+      }
+    });
+  }
+
   platforms (parent) {
     if (this.pkg.platforms.length < 1) {
       return
@@ -38,7 +52,7 @@ export class Card {
 
     this.pkg.platforms.split(',').forEach(item => {
       parent.appendChild(this.button(item));
-    })
+    });
   }
 
   labels (parent) {
@@ -48,7 +62,7 @@ export class Card {
 
     this.pkg.labels.split(',').forEach(item => {
       parent.appendChild(this.button(item));
-    })
+    });
   }
 
   button (name) {
@@ -57,7 +71,7 @@ export class Card {
 
     if (['linux','macos','windows'].indexOf(name) >= 0) {
       a.classList.add('button', 'platform', 'platform-' + name);
-      a.setAttribute('href', '/?q=' + encodeURI('platform::"' + name + '"'));
+      a.setAttribute('href', '/?q=' + encodeURI('platform:"' + name + '"'));
     } else {
       a.classList.add('button', 'label');
       a.setAttribute('href', '/?q=' + encodeURI('label:"' + name + '"'));
