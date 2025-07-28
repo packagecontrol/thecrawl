@@ -71,14 +71,34 @@ function minimalPackage(pkg) {
   }
 }
 
+function minimalLib(lib) {
+  const allPlatforms = lib.releases.flatMap(release => {
+    if (typeof release.platforms !== 'undefined') {
+      return release.platforms;
+    }
+    return [];
+  });
+  const uniquePlatforms = Array.from(new Set(allPlatforms));
+
+  return {
+    name: lib.name,
+    author: cleanupAuthors(lib.author),
+    description: lib.description,
+    releases: lib.releases,
+    labels: [],
+    platforms: uniquePlatforms
+  }
+}
+
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("assets");
   eleventyConfig.addPassthroughCopy("search");
   eleventyConfig.addPassthroughCopy({"static": "static_" + gitHash });
 
-  const data = JSON.parse(fs.readFileSync("workspace.json", "utf8"));
+  const libraries = JSON.parse(fs.readFileSync("libraries.json", "utf8"));
+  const workspace = JSON.parse(fs.readFileSync("workspace.json", "utf8"));
   // eslint-disable-next-line no-unused-vars
-  const live_packages = Object.entries(data.packages).map(([id, pkg]) => pkg).filter(pkg => !pkg.removed);
+  const live_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg).filter(pkg => !pkg.removed);
 
   // if readme is in pkg
   // transform some links
@@ -143,6 +163,12 @@ module.exports = function (eleventyConfig) {
     })).sort((a, b) => {
       return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
     }).slice(0,9);
+  });
+
+  eleventyConfig.addCollection("libraries", () => {
+    return libraries.libraries.map(lib => ({
+      ...minimalLib(lib)
+    }));
   });
 
   // simple to date string for some dates without times
