@@ -11,7 +11,7 @@
 
   {% include "scripts.njk" %}
 
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="{{ '/static/styles.css' | bust}}">
   <link rel="icon" href="/assets/favicon.ico">
 
   <meta property="og:title" content="{{ title or 'Package Control R' }}">

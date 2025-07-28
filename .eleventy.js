@@ -1,4 +1,7 @@
 const fs = require("fs");
+const execSync = require('child_process').execSync;
+
+const gitHash = execSync('git rev-parse --short HEAD').toString().trim();
 
 // rename macos and remove */any
 function cleanupPlatforms(platforms) {
@@ -69,9 +72,9 @@ function minimalPackage(pkg) {
 }
 
 module.exports = function (eleventyConfig) {
-  eleventyConfig.addPassthroughCopy("static");
   eleventyConfig.addPassthroughCopy("assets");
   eleventyConfig.addPassthroughCopy("search");
+  eleventyConfig.addPassthroughCopy({"static": "static_" + gitHash });
 
   const data = JSON.parse(fs.readFileSync("workspace.json", "utf8"));
   // eslint-disable-next-line no-unused-vars
@@ -151,7 +154,11 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addFilter("stars_format", (count) => {
     const starsFormatter = new Intl.NumberFormat("en", { notation: "compact" });
     return starsFormatter.format(count);
-  })
+  });
+
+  eleventyConfig.addFilter("bust", (path) => {
+    return path.replace('static/', 'static_' + gitHash + '/');
+  });
 
   return {
     dir: {
