@@ -126,7 +126,7 @@ export class List {
     this.renderPage(sortedResults, page);
 
     this.getSection().dispatchEvent(
-      new Event('search-is-done', {bubbles: true})
+      new Event('search-is-ready', {bubbles: true})
     );
   }
 }

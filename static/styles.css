@@ -17,6 +17,7 @@ html {
 
   /* while initializing search, hide package listings */
   &.initializing {
+    h1,
     section {
       visibility: hidden;
     }
