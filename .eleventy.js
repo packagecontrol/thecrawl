@@ -70,6 +70,7 @@ function minimalPackage(pkg) {
 
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("static");
+  eleventyConfig.addPassthroughCopy("assets");
 
   const data = JSON.parse(fs.readFileSync("workspace.json", "utf8"));
   // eslint-disable-next-line no-unused-vars
