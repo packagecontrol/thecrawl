@@ -11,10 +11,19 @@ date: Last Modified
         {{ pkg.name }}
       </a>
     </h3>
+
     <p>by {% for author in pkg.author -%}
       {{ author }}{{ ", " if not loop.last }}
     {%- endfor %}</p>
-    <p>{{ pkg.description }}</p>
+
+    <p>
+      {{ pkg.description }}
+      <br>
+      <img src="{{ 'https://img.shields.io/pypi/v/' ~ pkg.name | replace('python-', '') ~ '.svg' }}">
+
+      {# todo: condition, processing - if url (see h3) is a github repo, add this shield with repo name from the url #}
+      <img src="{{ 'https://img.shields.io/github/tag/' ~ pkg.name ~ '.svg' }}">
+    </p>
 
     {% if pkg.platforms | length %}
       <ul class="button-group labels">
