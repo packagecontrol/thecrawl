@@ -24,7 +24,7 @@
 
     const timer = window.setTimeout(() => {
       // if loading takes long reveal h1 to explain the state to the user
-      document.querySelector('h1').style.visibility = 'visible';
+      document.querySelector('h1').style.visibility = 'revert';
     }, 600);
 
     window.addEventListener('DOMContentLoaded', setContent);
