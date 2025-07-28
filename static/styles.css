@@ -72,10 +72,12 @@ code {
   border: 1px solid var(--background-darkest);
   padding: 0 4px;
   border-radius: 3px;
+  overflow-wrap: anywhere;
 }
 
 pre {
   white-space: break-spaces;
+  overflow-x: auto;
   background: var(--background-darker);
   &:not(.fallback) {
     border: 1px solid var(--background-darkest);
@@ -86,6 +88,7 @@ pre {
     border: revert;
     padding: revert;
     border-radius: revert;
+    overflow-wrap: revert;
   }
 }
 
