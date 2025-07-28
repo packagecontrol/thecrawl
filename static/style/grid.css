@@ -29,24 +29,25 @@
     transition: border-color .1s ease-in-out;
   }
 
-  h3 a {
-    color: var(--foreground);
-    &:hover {
-      text-decoration: none;
-      color: var(--foreground-darker);
-    }
-  }
-
   h3 {
     padding-top: 0;
     padding-right: 2em;
     margin-top: 0;
     margin-bottom: 2px;
+    overflow-wrap: anywhere;
 
     + * {
       padding-top: 0;
       margin-top: 0;
       flex: 1; /* push other content to the end of the card */
+    }
+
+    a {
+      color: var(--foreground);
+      &:hover {
+        text-decoration: none;
+        color: var(--foreground-darker);
+      }
     }
   }
 
