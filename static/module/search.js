@@ -1,16 +1,16 @@
 import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
 
-// Fetches and returns the search data from searchindex.json
+// Fetches and returns the search data from the index
 async function fetchSearchData() {
-  const res = await fetch('/static/searchindex.json');
+  const res = await fetch('/search/index.json');
   if (!res.ok) throw new Error('Failed to fetch search data');
   return await res.json();
 }
 const data = await fetchSearchData();
 const minisrch = new minisearch({
   idField: 'name',
+  // keep the list of fields in sync with search/index.json.njk!
   fields: ['name', 'description', 'author', 'platforms', 'labels'],
-  // keep in sync with searchindex.json.njk
   storeFields: [
     'name', 'description', 'author', 'stars', 'platforms', 'labels', 'permalink'
   ],
