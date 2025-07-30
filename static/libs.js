@@ -25,15 +25,17 @@ minisrch.addAll(data)
 const search = new Search(minisrch)
 const form = document.forms.search
 const input = form.elements['lib']
-const counter = document.querySelector('h1')
 const handleInput = () => {
   const query = input.value.toLowerCase().trim()
+  const counter = document.querySelector('h1')
+  const heading = document.querySelector('section h2')
 
   if (query === '') {
     cards.forEach((card) => {
       card.closest('li').style.display = null
     })
     counter.innerText = counter.dataset.all + ' Libraries'
+    heading.innerText = 'List'
     return
   }
 
@@ -51,6 +53,7 @@ const handleInput = () => {
     else {
       counter.innerText = names.length + ' Libraries'
     }
+    heading.innerText = 'Results'
   })
 }
 
