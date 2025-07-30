@@ -163,20 +163,26 @@ dl {
 }
 
 .labels {
-  a {
+  a,
+  span {
     &.platform {
       background: var(--secondary-accent);
       color: var(--background);
-      &:hover {
-        color: var(--label-highlight);
-      }
     }
-    &.platform-windows {
+    &.platform-windows,
+    &.platform-windows-x32,
+    &.platform-windows-x64 {
       background: var(--primary-accent);
     }
-    &.platform-linux {
+    &.platform-linux,
+    &.platform-linux-x32,
+    &.platform-linux-x64,
+    &.platform-linux-arm64 {
       background: var(--tertiary-accent);
     }
+  }
+  a.platform:hover {
+    color: var(--label-highlight);
   }
 }
 

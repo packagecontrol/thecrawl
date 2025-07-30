@@ -1,9 +1,9 @@
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+.grid,
+.list {
   gap: 1rem;
   margin: 0;
   padding: 0;
+
   > * {
     display: flex;
     margin: 0;
@@ -14,14 +14,28 @@
   }
 }
 
-.card {
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+}
+
+.list {
   display: flex;
   flex-direction: column;
+}
+
+.card {
   background: var(--background-slightly-darker);
   border: 1px solid var(--background-darker);
   padding: 1rem;
   position: relative;
   transition: border-color .3s ease-in-out;
+
+  .grid & {
+    /* stretch cards vertically across the grid cells */
+    display: flex;
+    flex-direction: column;
+  }
 
   &:has(h3 a:hover),
   &:has(h3 a:focus) {
@@ -52,6 +66,10 @@
     }
   }
 
+  p:last-child {
+    margin-bottom: 0;
+  }
+
   dl {
     position: absolute;
     top: 26px;
@@ -68,5 +86,9 @@
     justify-content: flex-end;
     padding: 0;
     margin: 0;
+  }
+
+  .list & .labels {
+    justify-content: flex-start;
   }
 }

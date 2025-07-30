@@ -1,10 +1,12 @@
 import { Card } from './card.js';
 import { Pagination } from './pagination.js';
 import { Sort } from './sort.js';
-import { search } from './search.js';
+import { Search } from './search.js';
 
 // utilities to manage the search result list
 export class List {
+  search = null;
+
   // the section where we'll render search results
   getSection() {
     return document.querySelector('section[name="result"]');
@@ -60,7 +62,7 @@ export class List {
   renderPage(items, page) {
     this.clear();
 
-    const pagination = new Pagination(items, page, this.getSection());
+    const pagination = new Pagination(this, items, page, this.getSection());
 
     // Render items for current page
     pagination.calculate().forEach(pkg => {
@@ -84,7 +86,15 @@ export class List {
     }
   }
 
+  setMinisearch(minisearch) {
+    this.search = new Search(minisearch);
+  }
+
   goSearch(value, sortBy = 'relevance', page = 1) {
+    if (!this.search) {
+      throw new Error("minisearch is not initialized");
+    }
+
     // Update URL with search query, sort parameter, and page
     const params = new URLSearchParams();
     if (value.length > 0) {
@@ -114,7 +124,7 @@ export class List {
       return
     }
 
-    const searchResults = search(value);
+    const searchResults = this.search.search(value);
     const sortedResults = Sort.sort(searchResults, sortBy);
 
     this.setCounter(sortedResults.length);
