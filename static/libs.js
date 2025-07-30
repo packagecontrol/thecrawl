@@ -1,84 +1,72 @@
-function getXmlHttp(){
-  var xmlhttp;
-  try {
-    xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-  } catch (e) {
-    try {
-      xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    } catch (E) {
-      xmlhttp = false;
+import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
+
+const data = [];
+const cards = document.querySelectorAll('[data-lib-name]');
+cards.forEach(card => {
+  data.push({
+    name: card.dataset.libName,
+    author: card.dataset.libAuthor,
+  });
+});
+
+const minisrch = new minisearch({
+  idField: 'name',
+  fields: ['name', 'author'],
+  storeFields: ['name'],
+  searchOptions: {
+    boost: { author: 2 },
+    fuzzy: 0.2,
+    prefix: true
+  }
+});
+minisrch.addAll(data);
+
+const form = document.forms.search;
+const input = form.elements['lib'];
+const counter = document.querySelector('h1');
+const handleInput = () => {
+  const query = input.value.toLowerCase().trim();
+
+  if (query === '') {
+    cards.forEach(card => {
+      card.closest('li').style.display = null;
+    });
+    counter.innerText = counter.dataset.all + ' Libraries';
+    return;
+  }
+
+  const names = minisrch.search(query).map(result => result.name);
+  cards.forEach(card => {
+    if (names.indexOf(card.dataset.libName) < 0) {
+      card.closest('li').style.display = 'none';
+    } else {
+      card.closest('li').style.display = null;
     }
-  }
-  if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
-    xmlhttp = new XMLHttpRequest();
-  }
-  return xmlhttp;
+    if (names.length === 1) {
+      counter.innerText = '1 Library';
+    } else {
+      counter.innerText = names.length + ' Libraries';
+    }
+  });
 }
 
-function appendDep(dep, target) {
-  var child = document.createElement('p');
-  var link = document.createElement('a');
-  var url = '';
-  if (dep.issues){
-    url = dep.issues.replace('/issues', '');
-  } else {
-    if (dep.releases){
-      url = dep.releases[0].base;
-    } else {
-      alert(dep);
-    }
-  }
-  link.href = url;
-  link.appendChild(document.createTextNode(dep.name + '\t'));
-  child.appendChild(link);
+let debounceTimeout;
 
-  if (url.lastIndexOf('https://github.com/', 0) === 0) {
-    var gh_shield = document.createElement('img');
-    gh_shield.src = 'https://img.shields.io/github/tag/' + url.substr(19) + '.svg';
-    child.appendChild(gh_shield);
-  }
-  var pp_shield = document.createElement('img');
-  pp_shield.src = 'https://img.shields.io/pypi/v/' + dep.name.replace('python-', '') + '.svg';
-  child.appendChild(pp_shield);
+// Handle form submission
+input.form.onsubmit = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  clearTimeout(debounceTimeout);
 
-  child.appendChild(document.createElement('br'));
-  child.appendChild(document.createTextNode(dep.description));
-  child.appendChild(document.createElement('br'));
-
-  if (dep.releases[0].sublime_text) {
-    if ('*' != dep.releases[0].sublime_text) {
-      child.appendChild(document.createElement('br'));
-      child.appendChild(document.createTextNode('ST version is restricted to ' + dep.releases[0].sublime_text));
-    }
-  }
-  if (dep.releases[0].platforms) {
-    if ('*' != dep.releases[0].platforms[0]) {
-      child.appendChild(document.createElement('br'));
-      child.appendChild(document.createTextNode('Platform restriction(s): ' + dep.releases[0].platforms));
-    }
-  }
-
-  target.appendChild(child);
-  target.appendChild(document.createElement('hr'));
+  handleInput();
 }
 
-var xmlhttp = getXmlHttp()
-xmlhttp.open('GET', 'https://raw.githubusercontent.com/wbond/package_control_channel/master/repository/dependencies.json', true);
-xmlhttp.onreadystatechange = function() {
-  if (xmlhttp.readyState == 4) {
-    if (xmlhttp.status == 200) {
-      var json = JSON.parse(xmlhttp.responseText);
-      var target = document.getElementById("deps")
-      target.appendChild(document.createElement('hr'));
-      var deps = json.dependencies;
-      for (i = 0; i < deps.length; i++) {
-        appendDep(deps[i], target);
-      }
-    } else {
-      alert('GitHub did not respond! :(');
-      return null
-    }
-  }
-};
+// Handle input changes (search as you type)
+input.addEventListener('input', () => {
+  clearTimeout(debounceTimeout);
 
-xmlhttp.send(null);
+  debounceTimeout = setTimeout(() => {
+    handleInput();
+  }, 300); // .3 seconds
+});
+

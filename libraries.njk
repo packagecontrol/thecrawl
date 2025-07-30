@@ -5,7 +5,7 @@ date: Last Modified
 ---
 
 {% macro lib(pkg) %}
-  <div class="card">
+  <div class="card" data-lib-name="{{ pkg.name }}" data-lib-author="{{ pkg.author }}">
     <h3>
       <a href="{{ pkg.homepage }}">
         {{ pkg.name }}
@@ -45,6 +45,13 @@ date: Last Modified
   Libaries
 </h1>
 
+<form name="search">
+  <div class="search-controls">
+    <label for="search-field" class="screenreader-only">Search</label>
+    <input type="search" autocomplete="off" name="lib" id="search-field" placeholder="Search libraries …">
+  </div>
+</form>
+
 <section name="newest">
   <h2>List</h2>
   <ul class="list">
@@ -56,3 +63,4 @@ date: Last Modified
   </ul>
 </section>
 
+<script src="{{ '/static/libs.js' | bust }}" type="module" async></script>
