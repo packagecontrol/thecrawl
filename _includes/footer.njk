@@ -15,7 +15,9 @@
   <nav>
     <a href="https://github.com/wbond/package_control_channel?tab=readme-ov-file#package-control-default-channel">Submitting packages</a>
     <a href="https://packagecontrol.io/docs/usage">Using package control</a>
-    {% if page.url != "/libraries/" %}
+    {% if page.url == "/libraries/" %}
+      <a href="/">Packages</a>
+    {% else %}
       <a href="/libraries">Libraries</a>
     {% endif %}
     <a href="https://github.com/packagecontrol/thecrawl/tree/gh-pages">This website on GitHub</a>
