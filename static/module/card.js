@@ -69,7 +69,7 @@ export class Card {
     const li = document.createElement('li');
     const a = document.createElement('a');
 
-    if (['linux','macos','windows'].indexOf(name) >= 0) {
+    if (name.startsWith('linux') || name.startsWith('macos') || name.startsWith('windows')) {
       a.classList.add('button', 'platform', 'platform-' + name);
       a.setAttribute('href', '/?q=' + encodeURI('platform:"' + name + '"'));
     } else {
