@@ -100,7 +100,6 @@ function minimalLib(pkg) {
 
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("assets");
-  eleventyConfig.addPassthroughCopy("search");
   eleventyConfig.addPassthroughCopy({"static": "static_" + gitHash });
 
   const libraries = JSON.parse(fs.readFileSync("libraries.json", "utf8"));
