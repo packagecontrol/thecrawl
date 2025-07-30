@@ -1,85 +1,87 @@
 export class Card {
-  pkg = {};
-  clone;
+  pkg = {}
+  clone
 
-  constructor (data) {
-    this.pkg = data;
+  constructor(data) {
+    this.pkg = data
 
-    const template = document.querySelector("template#package-card");
-    this.clone = template.content.cloneNode(true);
-    this.formatter = new Intl.NumberFormat("en", { notation: "compact" });
+    const template = document.querySelector('template#package-card')
+    this.clone = template.content.cloneNode(true)
+    this.formatter = new Intl.NumberFormat('en', { notation: 'compact' })
   }
 
-  render () {
-    this.clone.querySelector('a').innerHTML = this.pkg.name;
-    this.clone.querySelector('a').setAttribute('href', this.pkg.permalink);
-    this.authors(this.clone.querySelector('p'));
+  render() {
+    this.clone.querySelector('a').innerHTML = this.pkg.name
+    this.clone.querySelector('a').setAttribute('href', this.pkg.permalink)
+    this.authors(this.clone.querySelector('p'))
 
     const dl = this.clone.querySelector('.stars').closest('dl')
 
     if (this.pkg.stars !== '0') {
-      dl.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub');
-      this.clone.querySelector('.stars').innerText = this.formatter.format(Number(this.pkg.stars));
-    } else {
-      dl.remove();
+      dl.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub')
+      this.clone.querySelector('.stars').innerText = this.formatter.format(Number(this.pkg.stars))
+    }
+    else {
+      dl.remove()
     }
 
-    const labels = this.clone.querySelector('ul.labels');
-    this.platforms(labels);
-    this.labels(labels);
+    const labels = this.clone.querySelector('ul.labels')
+    this.platforms(labels)
+    this.labels(labels)
 
-    return this.clone;
+    return this.clone
   }
 
   authors(parent) {
-    parent.innerHTML = 'by ';
-    const list = this.pkg.author.split(',');
+    parent.innerHTML = 'by '
+    const list = this.pkg.author.split(',')
     list.forEach((name, iter) => {
-      const a = document.createElement('a');
-      a.setAttribute('href', '/?q=' + encodeURI('author:"' + name.trim() + '"'));
-      a.innerHTML = name;
-      parent.appendChild(a);
+      const a = document.createElement('a')
+      a.setAttribute('href', '/?q=' + encodeURI('author:"' + name.trim() + '"'))
+      a.innerHTML = name
+      parent.appendChild(a)
       if (iter + 1 < list.length) {
-        parent.appendChild(document.createTextNode(', '));
+        parent.appendChild(document.createTextNode(', '))
       }
-    });
+    })
   }
 
-  platforms (parent) {
+  platforms(parent) {
     if (this.pkg.platforms.length < 1) {
       return
     }
 
-    this.pkg.platforms.split(',').forEach(item => {
-      parent.appendChild(this.button(item));
-    });
+    this.pkg.platforms.split(',').forEach((item) => {
+      parent.appendChild(this.button(item))
+    })
   }
 
-  labels (parent) {
+  labels(parent) {
     if (this.pkg.labels.length < 1) {
       return
     }
 
-    this.pkg.labels.split(',').forEach(item => {
-      parent.appendChild(this.button(item));
-    });
+    this.pkg.labels.split(',').forEach((item) => {
+      parent.appendChild(this.button(item))
+    })
   }
 
-  button (name) {
-    const li = document.createElement('li');
-    const a = document.createElement('a');
+  button(name) {
+    const li = document.createElement('li')
+    const a = document.createElement('a')
 
     if (name.startsWith('linux') || name.startsWith('macos') || name.startsWith('windows')) {
-      a.classList.add('button', 'platform', 'platform-' + name);
-      a.setAttribute('href', '/?q=' + encodeURI('platform:"' + name + '"'));
-    } else {
-      a.classList.add('button', 'label');
-      a.setAttribute('href', '/?q=' + encodeURI('label:"' + name + '"'));
+      a.classList.add('button', 'platform', 'platform-' + name)
+      a.setAttribute('href', '/?q=' + encodeURI('platform:"' + name + '"'))
+    }
+    else {
+      a.classList.add('button', 'label')
+      a.setAttribute('href', '/?q=' + encodeURI('label:"' + name + '"'))
     }
 
-    a.innerText = name;
-    li.appendChild(a);
+    a.innerText = name
+    li.appendChild(a)
 
-    return li;
+    return li
   }
 }

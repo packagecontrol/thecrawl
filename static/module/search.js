@@ -1,14 +1,14 @@
 export class Search {
-  minisearch = null;
+  minisearch = null
 
   // pass this a prepared minisearch instance: https://github.com/lucaong/minisearch
-  constructor (minisearch = []) {
-    this.minisearch = minisearch;
+  constructor(minisearch = []) {
+    this.minisearch = minisearch
   }
 
   // process the search query string and return results
   search(value) {
-    const queries = [];
+    const queries = []
 
     // first handle the author, label, and platform filters
     // these have the form of type:value, or type:"value"
@@ -19,7 +19,7 @@ export class Search {
       const authorValue = author[1] || author[2]
       queries.push({
         queries: [authorValue],
-        fields: ['author']
+        fields: ['author'],
       })
       // author has been handled, remove this filter from the search string
       value = value.replace(author[0], '')
@@ -31,7 +31,7 @@ export class Search {
       const labelValue = label[1] || label[2]
       queries.push({
         queries: [labelValue],
-        fields: ['labels']
+        fields: ['labels'],
       })
       // label has been handled, remove this filter from the search string
       value = value.replace(label[0], '')
@@ -43,7 +43,7 @@ export class Search {
       const platformValue = platform[1] || platform[2]
       queries.push({
         queries: [platformValue],
-        fields: ['platforms']
+        fields: ['platforms'],
       })
       // platform has been handled, remove this filter from the search string
       value = value.replace(platform[0], '')
@@ -53,22 +53,21 @@ export class Search {
     if (value.trim()) {
       queries.push({
         queries: value.trim().split(' '),
-        fields: ['name', 'description', 'author']
+        fields: ['name', 'description', 'author'],
       })
     }
 
     // search and then map results so we can easily use them for output
     const results = this.minisearch.search({
       queries,
-      combineWith: 'AND'
-    });
+      combineWith: 'AND',
+    })
 
     // omit minisearch result internals
     // eslint-disable-next-line no-unused-vars
-    return results.map(({score, /**/id, queryTerms, terms, match,/**/ ...rest}) => ({
+    return results.map(({ score, /**/id, queryTerms, terms, match, /**/ ...rest }) => ({
       ...rest,
-      score
-    }));
+      score,
+    }))
   }
 }
-
