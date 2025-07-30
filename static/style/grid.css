@@ -1,9 +1,9 @@
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+.grid,
+.list {
   gap: 1rem;
   margin: 0;
   padding: 0;
+
   > * {
     display: flex;
     margin: 0;
@@ -14,27 +14,33 @@
   }
 }
 
-.card {
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+}
+
+.list {
   display: flex;
   flex-direction: column;
+}
+
+.card {
   background: var(--background-slightly-darker);
   border: 1px solid var(--background-darker);
   padding: 1rem;
   position: relative;
   transition: border-color .3s ease-in-out;
 
-  &:has(a:hover),
-  &:has(a:focus) {
-    border-color: var(--primary-accent);
-    transition: border-color .1s ease-in-out;
+  .grid & {
+    /* stretch cards vertically across the grid cells */
+    display: flex;
+    flex-direction: column;
   }
 
-  h3 a {
-    color: var(--foreground);
-    &:hover {
-      text-decoration: none;
-      color: var(--foreground-darker);
-    }
+  &:has(h3 a:hover),
+  &:has(h3 a:focus) {
+    border-color: var(--primary-accent);
+    transition: border-color .1s ease-in-out;
   }
 
   h3 {
@@ -42,12 +48,26 @@
     padding-right: 2em;
     margin-top: 0;
     margin-bottom: 2px;
+    overflow-wrap: anywhere;
 
     + * {
       padding-top: 0;
       margin-top: 0;
       flex: 1; /* push other content to the end of the card */
     }
+  }
+
+  h3 a,
+  a[href*="q=author"] {
+    color: var(--foreground);
+    &:hover {
+      text-decoration: none;
+      color: var(--foreground-darker);
+    }
+  }
+
+  p:last-child {
+    margin-bottom: 0;
   }
 
   dl {
@@ -66,5 +86,9 @@
     justify-content: flex-end;
     padding: 0;
     margin: 0;
+  }
+
+  .list & .labels {
+    justify-content: flex-start;
   }
 }

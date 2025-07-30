@@ -9,48 +9,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  {# handle color scheme without delay #}
-  <script>
-    (function(){
-      const system_theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      const user_pref = localStorage.getItem('theme');
-      document.documentElement.setAttribute('data-theme', user_pref ?? system_theme);
-    })();
-  </script>
+  {% include "scripts.njk" %}
 
-  {# while initializing search, hide package listings,
-     and change the h1 to indicate this state #}
-  <script>
-    (function(){
-      const q = new URLSearchParams(location.search).get('q');
-      if (!q) {
-        return;
-      };
-
-      const setContent = () => {
-        document.querySelector('[name=q]').value = q;
-        document.querySelector('h1').innerText = 'Searching…';
-      }
-
-      window.addEventListener('DOMContentLoaded', setContent);
-
-      const root = document.documentElement;
-      root.classList.add('initializing');
-      root.addEventListener('search-is-done', () => {
-        root.classList.remove('initializing');
-        window.removeEventListener('DOMContentLoaded', setContent);
-      });
-
-    })();
-  </script>
-
-  <link rel="stylesheet" href="/static/styles.css">
-  <link rel="icon" href="/static/favicon.ico">
+  <link rel="stylesheet" href="{{ '/static/styles.css' | bust}}">
+  <link rel="icon" href="/assets/favicon.ico">
 
   <meta property="og:title" content="{{ title or 'Package Control R' }}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{ 'http://packages.sublimetext.io' ~ page.url }}">
-  <meta property="og:image" content="http://packages.sublimetext.io/static/og.png">
+  <meta property="og:image" content="http://packages.sublimetext.io/assets/og.png">
   <meta property="og:width" content="1200">
   <meta property="og:height" content="630">
   <meta property="og:description" content="{{ descr }}">

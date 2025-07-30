@@ -17,6 +17,7 @@ html {
 
   /* while initializing search, hide package listings */
   &.initializing {
+    h1,
     section {
       visibility: hidden;
     }
@@ -72,10 +73,12 @@ code {
   border: 1px solid var(--background-darkest);
   padding: 0 4px;
   border-radius: 3px;
+  overflow-wrap: anywhere;
 }
 
 pre {
   white-space: break-spaces;
+  overflow-x: auto;
   background: var(--background-darker);
   &:not(.fallback) {
     border: 1px solid var(--background-darkest);
@@ -86,6 +89,7 @@ pre {
     border: revert;
     padding: revert;
     border-radius: revert;
+    overflow-wrap: revert;
   }
 }
 
@@ -159,20 +163,26 @@ dl {
 }
 
 .labels {
-  a {
+  a,
+  span {
     &.platform {
       background: var(--secondary-accent);
       color: var(--background);
-      &:hover {
-        color: var(--label-highlight);
-      }
     }
-    &.platform-windows {
+    &.platform-windows,
+    &.platform-windows-x32,
+    &.platform-windows-x64 {
       background: var(--primary-accent);
     }
-    &.platform-linux {
+    &.platform-linux,
+    &.platform-linux-x32,
+    &.platform-linux-x64,
+    &.platform-linux-arm64 {
       background: var(--tertiary-accent);
     }
+  }
+  a.platform:hover {
+    color: var(--label-highlight);
   }
 }
 

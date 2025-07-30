@@ -1,7 +1,7 @@
 {% import "packages/macros.njk" as pack %}
 
 <footer>
-  <img src="/static/logo.webp" width="80" height="80" alt="Package Control R logo">
+  <img src="/assets/logo.webp" width="80" height="80" alt="Package Control R logo">
   <h2>Package Control</h2>
 
   <p>
@@ -15,6 +15,11 @@
   <nav>
     <a href="https://github.com/wbond/package_control_channel?tab=readme-ov-file#package-control-default-channel">Submitting packages</a>
     <a href="https://packagecontrol.io/docs/usage">Using package control</a>
+    {% if page.url == "/libraries/" %}
+      <a href="/">Packages</a>
+    {% else %}
+      <a href="/libraries">Libraries</a>
+    {% endif %}
     <a href="https://github.com/packagecontrol/thecrawl/tree/gh-pages">This website on GitHub</a>
   </nav>
 

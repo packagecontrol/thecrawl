@@ -1,0 +1,66 @@
+---
+title: Libraries in Package Control R
+layout: layout.njk
+date: Last Modified
+---
+
+{% macro lib(pkg) %}
+  <div class="card" data-lib-name="{{ pkg.name }}" data-lib-author="{{ pkg.author }}">
+    <h3>
+      <a href="{{ pkg.homepage }}">
+        {{ pkg.name }}
+      </a>
+    </h3>
+
+    <p>by {% for author in pkg.author -%}
+      {{ author }}{{ ", " if not loop.last }}
+    {%- endfor %}</p>
+
+    <p>
+      {{ pkg.description }}
+    </p>
+
+    <ul class="button-group labels">
+      <li class="shield">
+        <img height="24" alt="Latest Python Package Index tag" src="{{ 'https://img.shields.io/pypi/v/' ~ pkg.name | replace('python-', '') ~ '.svg' }}">
+      </li>
+      {% if pkg.path %}
+        <li class="shield">
+          <img height="24" alt="Latest GitHub tag" src="{{ 'https://img.shields.io/github/tag/' ~ pkg.path ~ '.svg' }}">
+        </li>
+      {% endif %}
+      {% for platform in pkg.platforms %}
+        <li>
+          <span class="button platform platform-{{ platform }}">
+            {{ platform }}
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endmacro %}
+
+<h1 data-all="{{ collections.libraries | length }}">
+  {{ collections.libraries | length }}
+  Libaries
+</h1>
+
+<form name="search">
+  <div class="search-controls">
+    <label for="search-field" class="screenreader-only">Search</label>
+    <input type="search" autocomplete="off" name="lib" id="search-field" placeholder="Search libraries …">
+  </div>
+</form>
+
+<section name="newest">
+  <h2>List</h2>
+  <ul class="list">
+    {% for item in collections.libraries %}
+      <li>
+        {{ lib(item) }}
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<script src="{{ '/static/libs.js' | bust }}" type="module" async></script>
