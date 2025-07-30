@@ -62,7 +62,7 @@ export class List {
   renderPage(items, page) {
     this.clear();
 
-    const pagination = new Pagination(items, page, this.getSection());
+    const pagination = new Pagination(this, items, page, this.getSection());
 
     // Render items for current page
     pagination.calculate().forEach(pkg => {

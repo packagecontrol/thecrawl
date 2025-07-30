@@ -1,13 +1,11 @@
-import { List } from './list.js';
-
 export class Pagination {
-  constructor(items, page, parent) {
+  constructor(list, items, page, parent) {
     this.items = items;
     this.currentPage = page;
     this.totalPages = 0;
     this.itemsPerPage = 24;
     this.parent = parent;
-    this.list = new List();
+    this.list = list;
   }
 
   // calculate pagination and result the items of the current page
