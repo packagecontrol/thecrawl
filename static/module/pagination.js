@@ -1,11 +1,12 @@
 export class Pagination {
   constructor(list, items, page, parent) {
-    this.items = items;
-    this.currentPage = page;
+    this.list = list; // the active List instance
+    this.items = items; // results for this page
+    this.currentPage = page; // current page number
+    this.parent = parent; // parent node to render into
+
     this.totalPages = 0;
     this.itemsPerPage = 24;
-    this.parent = parent;
-    this.list = list;
   }
 
   // calculate pagination and result the items of the current page
