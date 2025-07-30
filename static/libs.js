@@ -1,4 +1,5 @@
 import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
+import { Search } from './module/search.js';
 
 const data = [];
 const cards = document.querySelectorAll('[data-lib-name]');
@@ -21,6 +22,7 @@ const minisrch = new minisearch({
 });
 minisrch.addAll(data);
 
+const search = new Search(minisrch);
 const form = document.forms.search;
 const input = form.elements['lib'];
 const counter = document.querySelector('h1');
@@ -35,7 +37,7 @@ const handleInput = () => {
     return;
   }
 
-  const names = minisrch.search(query).map(result => result.name);
+  const names = search.search(query).map(result => result.name);
   cards.forEach(card => {
     if (names.indexOf(card.dataset.libName) < 0) {
       card.closest('li').style.display = 'none';
