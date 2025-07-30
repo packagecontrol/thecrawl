@@ -7,12 +7,13 @@ cards.forEach((card) => {
   data.push({
     name: card.dataset.libName,
     author: card.dataset.libAuthor,
+    description: card.dataset.libDescription,
   })
 })
 
 const minisrch = new minisearch({
   idField: 'name',
-  fields: ['name', 'author'],
+  fields: ['name', 'author', 'description'],
   storeFields: ['name'],
   searchOptions: {
     boost: { author: 2 },
