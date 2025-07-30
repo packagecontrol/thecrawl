@@ -12,6 +12,10 @@
     margin: 0;
     padding: 0;
   }
+
+  li.shield {
+    display: flex;
+  }
 }
 
 .button {

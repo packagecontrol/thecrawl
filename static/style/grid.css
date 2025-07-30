@@ -87,4 +87,8 @@
     padding: 0;
     margin: 0;
   }
+
+  .list & .labels {
+    justify-content: flex-start;
+  }
 }

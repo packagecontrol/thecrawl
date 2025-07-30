@@ -71,8 +71,8 @@ function minimalPackage(pkg) {
   }
 }
 
-function minimalLib(lib) {
-  const allPlatforms = lib.releases.flatMap(release => {
+function minimalLib(pkg) {
+  const allPlatforms = pkg.releases.flatMap(release => {
     if (typeof release.platforms !== 'undefined') {
       return release.platforms;
     }
@@ -80,11 +80,19 @@ function minimalLib(lib) {
   });
   const uniquePlatforms = Array.from(new Set(allPlatforms));
 
+  const homepage = pkg.issues.replace('/issues', '');
+  let gh_path = '';
+  if (homepage.startsWith('https://github.com/')) {
+    gh_path = homepage.replace('https://github.com/', '');
+  }
+
   return {
-    name: lib.name,
-    author: cleanupAuthors(lib.author),
-    description: lib.description,
-    releases: lib.releases,
+    name: pkg.name,
+    homepage: homepage,
+    path: gh_path,
+    author: cleanupAuthors(pkg.author),
+    description: pkg.description,
+    releases: pkg.releases,
     labels: [],
     platforms: uniquePlatforms
   }
