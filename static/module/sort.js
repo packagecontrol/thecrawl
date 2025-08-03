@@ -30,6 +30,22 @@ export class Sort {
           return A - B // Low to high
         })
 
+      case 'newest':
+        return sortedPackages.sort((a, b) => {
+          return new Date(b.created_at) - new Date(a.created_at) // new to old
+        })
+
+      case 'oldest':
+        return sortedPackages.sort((a, b) => {
+          return new Date(a.created_at) - new Date(b.created_at) // old to new
+        })
+
+      case 'update':
+        return sortedPackages.sort((a, b) => {
+          console.log(b.last_modified, a.last_modified)
+          return new Date(b.last_modified) - new Date(a.last_modified) // new to old
+        })
+
       case 'author':
         return sortedPackages.sort((a, b) => a.author.toLowerCase().localeCompare(b.author.toLowerCase()))
 

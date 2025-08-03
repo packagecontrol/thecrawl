@@ -67,6 +67,8 @@ function minimalPackage(pkg, stats) {
     author: cleanupAuthors(pkg.author),
     stars: pkg.stars ?? 0,
     installed: stat,
+    created_at: pkg.created_at,
+    last_modified: pkg.last_modified,
     releases: dedupedReleases,
     otherReleases,
     labels: pkg.labels,
@@ -160,7 +162,6 @@ module.exports = function (eleventyConfig) {
 
   eleventyConfig.addCollection('updated_packages', () => {
     return live_packages.map(pkg => ({
-      last_modified: pkg.last_modified,
       ...minimalPackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.last_modified ?? '1970-01-01 00:00:00') - new Date(a.last_modified ?? '1970-01-01 00:00:00')
@@ -169,7 +170,6 @@ module.exports = function (eleventyConfig) {
 
   eleventyConfig.addCollection('newest_packages', () => {
     return live_packages.map(pkg => ({
-      created_at: pkg.created_at,
       ...minimalPackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
