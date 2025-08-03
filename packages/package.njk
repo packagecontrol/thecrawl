@@ -32,6 +32,36 @@ eleventyComputed:
 {{ pack.stars(pkg.stars) }}
 {{ pack.labels(pkg.platforms, pkg.labels) }}
 
+<h2>Links</h2>
+
+<ul class="button-group links">
+  {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
+  <li>
+    <a class="button" href="{{ pkg.homepage }}">{{ pack.logo('home') }} <span>Website</span></a>
+  </li>
+  {% endif %}
+  {% if pkg.details %}
+  <li>
+    <a class="button" href="{{ pkg.details }}">{{ pack.logo('repo') }} <span>Repository</span></a>
+  </li>
+  {% endif %}
+  {% if pkg.readme %}
+  <li>
+    <a class="button" href="{{ pkg.readme_url | default(pkg.readme) }}">{{ pack.logo('file') }} <span>README</span></a>
+  </li>
+  {% endif %}
+  {% if pkg.issues %}
+    <li>
+    <a class="button" href="{{ pkg.issues }}">{{ pack.logo('bug') }} <span>Issues</span></a>
+  </li>
+  {% endif %}
+  {% if pkg.donate %}
+    <li>
+    <a class="button" href="{{ pkg.donate }}">{{ pack.logo('gift') }} <span>Donate</span></a>
+  </li>
+  {% endif %}
+</ul>
+
 {% if pkg.releases | length > 1 %}
   <h2>Versions</h2>
 {% else %}
@@ -71,36 +101,6 @@ eleventyComputed:
   </ul>
 </details>
 {% endif %}
-
-<h2>Links</h2>
-
-<ul class="button-group links">
-  {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
-  <li>
-    <a class="button" href="{{ pkg.homepage }}">{{ pack.logo('home') }} <span>Website</span></a>
-  </li>
-  {% endif %}
-  {% if pkg.details %}
-  <li>
-    <a class="button" href="{{ pkg.details }}">{{ pack.logo('repo') }} <span>Repository</span></a>
-  </li>
-  {% endif %}
-  {% if pkg.readme %}
-  <li>
-    <a class="button" href="{{ pkg.readme_url | default(pkg.readme) }}">{{ pack.logo('file') }} <span>README</span></a>
-  </li>
-  {% endif %}
-  {% if pkg.issues %}
-    <li>
-    <a class="button" href="{{ pkg.issues }}">{{ pack.logo('bug') }} <span>Issues</span></a>
-  </li>
-  {% endif %}
-  {% if pkg.donate %}
-    <li>
-    <a class="button" href="{{ pkg.donate }}">{{ pack.logo('gift') }} <span>Donate</span></a>
-  </li>
-  {% endif %}
-</ul>
 
 {% if pkg.readme %}
 <section id="md" class="readme" data-readme-url="{{ pkg.readme }}"></section>

@@ -1,0 +1,53 @@
+#theme-toggle {
+  appearance: none;
+  all: unset;
+  width: 52px;
+  height: 26px;
+  background: var(--background-1);
+  border: 2px solid var(--background-1);
+  border-radius: 1.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+  position: relative;
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 100%;
+    background: var(--foreground-3);
+    color: var(--background-1);
+    padding: 1px;
+    margin: 0 2px;
+    transition: transform .2s ease-in-out;
+    will-change: transform;
+  }
+
+  span {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .dark {
+    display: none;
+  }
+
+  :root[data-theme='dark'] & {
+    .icon {
+      transform: translateX(26px);
+    }
+    .dark {
+      display: flex;
+    }
+    .light {
+      display: none;
+    }
+  }
+}

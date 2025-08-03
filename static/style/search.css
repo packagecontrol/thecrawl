@@ -1,7 +1,7 @@
 input {
-  background: var(--background);
-  color: var(--foreground);
-  border: 1px solid var(--background-darkest);
+  background: var(--background-1);
+  color: var(--foreground-1);
+  border: 1px solid var(--background-3);
   border-radius: 3px;
   padding: 8px;
   margin-bottom: 11px;
@@ -12,9 +12,9 @@ input {
 select {
   appearance: none;
   all: unset;
-  background: var(--background);
-  color: var(--foreground);
-  border: 1px solid var(--background-darkest);
+  background: var(--background-1);
+  color: var(--foreground-1);
+  border: 1px solid var(--background-3);
   border-radius: 3px;
   padding: 8px;
   font-size: 1rem;
@@ -26,13 +26,18 @@ select {
   display: flex;
   align-items: stretch;
   margin-bottom: 11px;
+  background: var(--background-1);
   border-radius: 3px;
-  border: 1px solid var(--background-darkest);
+  border: 1px solid var(--background-3);
   transition: border .2s ease-in-out, outline .2s ease-in-out;
 
   &:has(input:focus) {
-    border-color: var(--primary-accent);
-    outline: 1px solid var(--primary-accent);
+    border-color: var(--orange-1);
+    outline: 1px solid var(--orange-1);
+  }
+
+  label {
+    color: var(--foreground-3);
   }
 
   input {
@@ -55,7 +60,7 @@ select {
     margin: 6px;
 
     &:has(select:focus) {
-      outline: 2px solid var(--primary-accent);
+      outline: 2px solid var(--orange-1);
     }
 
     @media (max-width: 600px) {
