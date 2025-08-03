@@ -188,6 +188,12 @@ module.exports = function (eleventyConfig) {
     return (new Date(date)).toDateString()
   })
 
+  // number of seconds since epoch, to facilitate comparisons in search
+  eleventyConfig.addFilter('timestamp', (date) => {
+    if (typeof date !== 'string') return date
+    return (new Date(date)).getTime() / 1000
+  })
+
   eleventyConfig.addFilter('compact', (count) => {
     const fmt = new Intl.NumberFormat('en', { notation: 'compact' })
     return fmt.format(count)
