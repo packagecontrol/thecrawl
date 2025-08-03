@@ -25,7 +25,9 @@ eleventyComputed:
   {%- endfor %}
   {% if pkg.created_at %}
     <br>
-    Since {{ pkg.created_at | date_format }}, updated {{ pkg.last_modified | date_format }}
+    Since {{ pkg.created_at | date_format }}{% if (pkg.created_at | date_format) != (pkg.last_modified | date_format) -%}
+      , last updated {{ pkg.last_modified | date_format }}
+    {%- endif %}
   {% endif %}
 </p>
 
