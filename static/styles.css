@@ -6,6 +6,7 @@
 @import url('style/grid.css');
 @import url('style/pagination.css');
 @import url('style/search.css');
+@import url('style/theme-toggle.css');
 
 html {
   height: 100%;
@@ -25,8 +26,8 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--background-2);
+  color: var(--foreground-1);
   margin: 0;
   padding: 0;
 }
@@ -44,7 +45,7 @@ main {
 }
 
 a {
-  color: var(--primary-accent-darker);
+  color: var(--orange-2);
   text-decoration: none;
 
   &:hover {
@@ -60,18 +61,17 @@ svg {
   fill: currentColor;
 }
 
-section {
+.home section {
   padding-top: 14px;
 
   h2 {
-    color: var(--foreground-lighter);
+    color: var(--foreground-2);
   }
 }
 
 code {
-  background: var(--background-darker);
-  border: 1px solid var(--background-darkest);
-  padding: 0 4px;
+  background: var(--highlight);
+  padding: 1px 6px;
   border-radius: 3px;
   overflow-wrap: anywhere;
 }
@@ -79,9 +79,8 @@ code {
 pre {
   white-space: break-spaces;
   overflow-x: auto;
-  background: var(--background-darker);
+  background: var(--background-3);
   &:not(.fallback) {
-    border: 1px solid var(--background-darkest);
     padding: 1rem;
   }
   code {
@@ -96,7 +95,7 @@ pre {
 .clipboard-wrapper {
   position: relative;
   &.copied pre {
-    background: var(--background-darkest);
+    background: var(--background-4);
   }
   pre {
     transition: background .1s ease-out;
@@ -110,7 +109,10 @@ pre {
     margin: 0;
     padding: 0;
     background: transparent;
-    color: var(--primary-accent-darker);
+    &:hover {
+      background: transparent;
+      color: var(--orange-1);
+    }
   }
 }
 
@@ -124,7 +126,7 @@ pre {
 }
 
 .hot {
-  color: var(--primary-accent);
+  color: var(--orange-1);
   font-style: italic;
 }
 
@@ -146,7 +148,7 @@ pre {
   font-weight: bold;
 }
 .requirement {
-  color: var(--foreground-lighter);
+  color: var(--foreground-3);
 }
 
 dl {
@@ -155,7 +157,7 @@ dl {
   align-content: center;
   align-items: center;
   line-height: 1;
-  color: var(--foreground-lighter);
+  color: var(--foreground-2);
   > * {
     display: flex;
     margin: 0;
@@ -166,31 +168,37 @@ dl {
   a,
   span {
     &.platform {
-      background: var(--secondary-accent);
-      color: var(--background);
+      background: var(--blue-1);
+      color: var(--white);
+      &:hover {
+        background: var(--blue-2);
+      }
     }
     &.platform-windows,
     &.platform-windows-x32,
     &.platform-windows-x64 {
-      background: var(--primary-accent);
+      background: var(--orange-1);
+      &:hover {
+        background: var(--orange-2);
+      }
     }
     &.platform-linux,
     &.platform-linux-x32,
     &.platform-linux-x64,
     &.platform-linux-arm64 {
-      background: var(--tertiary-accent);
+      background: var(--green-1);
+      &:hover {
+        background: var(--green-2);
+      }
     }
-  }
-  a.platform:hover {
-    color: var(--label-highlight);
   }
 }
 
 .readme {
   margin-top: 3.2rem;
   padding: 1.6em;
-  border-top: 4px solid var(--background-darker);
-  background: var(--background-slightly-darker);
+  border-radius: 6px;
+  background: var(--background-1);
 
   &:empty {
     display: none;
@@ -202,64 +210,15 @@ dl {
   }
 
   code {
-    background: var(--background);
-    border-color: var(--background-darker);
+    background: var(--highlight);
   }
 
   pre {
-    background: var(--background);
+    border-radius: 6px;
+    background: var(--background-2);
+  }
+  pre code {
+    background: var(--background-2);
   }
 }
 
-#theme-toggle {
-  appearance: none;
-  all: unset;
-  width: 52px;
-  height: 26px;
-  background: var(--background-darker);
-  border: 2px solid var(--background-darker);
-  border-radius: 1.6rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  margin: 0 auto;
-  position: relative;
-
-  .icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 100%;
-    background: var(--background);
-    padding: 1px;
-    margin: 0 2px;
-    transition: transform .2s ease-in-out;
-    will-change: transform;
-  }
-
-  span {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .dark {
-    display: none;
-  }
-
-  :root[data-theme='dark'] & {
-    .icon {
-      transform: translateX(26px);
-    }
-    .dark {
-      display: flex;
-    }
-    .light {
-      display: none;
-    }
-  }
-}

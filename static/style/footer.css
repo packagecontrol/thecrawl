@@ -1,9 +1,10 @@
 footer {
   padding: 3.2rem 1rem;
   text-align: center;
+  color: var(--foreground-2);
 
   p {
-    color: var(--foreground-lighter);
+    color: var(--foreground-3);
   }
 
   nav {

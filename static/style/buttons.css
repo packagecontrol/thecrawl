@@ -27,26 +27,26 @@
   margin: 0;
   padding: .2em .66em;
   border-radius: 3px;
-  background: var(--background-darker);
-  color: var(--foreground-lighter);
+  background: var(--background-3);
+  color: var(--foreground-2);
   white-space: nowrap;
   line-height: 1.6;
   cursor: pointer;
   transition: color 0.2s ease-in-out, outline .2s ease-in-out;
 
   &:hover {
-    color: var(--label-highlight);
+    background: var(--background-4);
     text-decoration: none;
   }
 
   &:focus {
-    outline: 2px solid var(--primary-accent);
+    outline: 2px solid var(--orange-1);
   }
 }
 
 span.button {
   cursor: revert;
   &:hover {
-    color: var(--foreground-lighter);
+    background: var(--background-3);
   }
 }

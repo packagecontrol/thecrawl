@@ -1,35 +1,49 @@
-/* inspired by monokai neue */
+/*
+  Based on color scheme in https://docs.sublimetext.io
+  but with slightly tweaked contrast progression,
+  and a more contrasty shade of orrange.
+*/
 
 :root {
-  --primary-accent: #fd971f;   /* orange */
-  --secondary-accent: #66d9ef; /* blue */
-  --tertiary-accent: #a6e22e;  /* green */
+  /* light */
+  --background-1: rgb(255, 255, 255);
+  --background-2: rgb(242, 242, 242);
+  --background-3: rgb(230, 230, 230);
+  --background-4: rgb(222, 222, 222);
 
-  --primary-accent-darker: #4694A3;
+  --highlight: rgba(222, 222, 222, 0.3); /* inline code */
 
-  --background: #fff;
-  --background-slightly-darker: #fcfcfc;
-  --background-darker: #f2f2f2;
-  --background-darkest: #cacaca;
+  --foreground-1: rgb(60, 60, 67);
+  --foreground-2: rgb(103, 103, 108);
+  --foreground-3: #8d8d94;
 
-  --foreground: #586e75;
-  --foreground-darker: #38464b;
-  --foreground-lighter: #839496;
-  --foreground-bright: #c1cfd4;
+  --white: #fff;
 
-  --label-highlight: #38464b;
+  --orange-1: #fd971f;
+  --orange-2: #f5901d;
+  --blue-1: #1ebbfc;
+  --blue-2: #1db2f2;
+  --green-1: #a0da2c;
+  --green-2: #97cf29;
 }
 
 :root[data-theme='dark'] {
-  --background: #2b303b;
-  --background-slightly-darker: #383e4d;
-  --background-darker: #3f5157;
-  --background-darkest: #586e75;
+  /* dark */
+  --background-1: rgb(34, 40, 48);
+  --background-2: #272e37;
+  --background-3: #424c57;
+  --background-4: #4f5964;
 
-  --foreground: #839496;
-  --foreground-darker: #f8f8f2;
-  --foreground-lighter: #9ec7d3;
-  --foreground-bright: #ffffff;
+  --highlight: rgba(101, 117, 133, 0.16); /* inline code */
 
-  --label-highlight: #ffffff;
+  --foreground-1: rgb(223, 223, 214);
+  --foreground-2: rgb(218, 218, 210); /* TODO: move towards 3 */
+  --foreground-3: rgb(152, 152, 159);
+
+  --orange-1: #f5901d;
+  --orange-2: #fd971f;
+  --blue-1: #1db2f2;
+  --blue-2: #1ebbfc;
+  --green-1: #97cf29;
+  --green-2: #a0da2c;
 }

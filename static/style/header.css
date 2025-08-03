@@ -1,7 +1,7 @@
 header {
   margin-bottom: 22px;
   padding: 4px var(--side-padding);
-  color: var(--foreground-lighter);
+  color: var(--foreground-3);
 
   .inner {
     max-width: 92rem;
@@ -19,7 +19,7 @@ header {
   }
 
   h2 a {
-    color: var(--foreground);
+    color: var(--foreground-2);
   }
 
   nav {
