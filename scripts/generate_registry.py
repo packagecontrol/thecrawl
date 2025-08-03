@@ -105,7 +105,7 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
                 msg = (
                     f"{kind} {name} from {entry['source']} already seen, skipping"
                     if name else
-                    "{kind} {entry} in {entry['source']} has no name, skipping"
+                    f"{kind} {entry} in {entry['source']} has no name, skipping"
                 )
                 err(msg)
 
