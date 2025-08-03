@@ -6,16 +6,16 @@
 
 :root {
   /* light */
-  --background-1: rgb(255, 255, 255);
-  --background-2: rgb(242, 242, 242);
-  --background-3: rgb(230, 230, 230);
-  --background-4: rgb(222, 222, 222);
+  --background-1: rgb(255, 255, 255); /* white */
+  --background-2: rgb(242, 242, 242); /* ..    */
+  --background-3: rgb(230, 230, 230); /* ..    */
+  --background-4: rgb(222, 222, 222); /* grey  */
 
   --highlight: rgba(222, 222, 222, 0.3); /* inline code */
 
-  --foreground-1: rgb(60, 60, 67);
-  --foreground-2: rgb(103, 103, 108);
-  --foreground-3: #8d8d94;
+  --foreground-1: rgb(60, 60, 67);    /* black */
+  --foreground-2: rgb(103, 103, 108); /* ..    */
+  --foreground-3: #8d8d94;            /* grey  */
 
   --white: #fff;
 
@@ -37,7 +37,7 @@
   --highlight: rgba(101, 117, 133, 0.16); /* inline code */
 
   --foreground-1: rgb(223, 223, 214);
-  --foreground-2: rgb(218, 218, 210); /* TODO: move towards 3 */
+  --foreground-2: rgb(218, 218, 210);
   --foreground-3: rgb(152, 152, 159);
 
   --orange-1: #f5901d;
