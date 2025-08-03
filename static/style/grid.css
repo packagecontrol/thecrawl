@@ -72,10 +72,15 @@
     margin-bottom: 0;
   }
 
-  dl {
+  .stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 0;
     position: absolute;
     top: 26px;
     right: 1rem;
+    gap: .33em;
     font-size: calc(1rem / 1.33);
     color: var(--foreground-3);
     svg {

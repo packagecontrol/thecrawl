@@ -29,7 +29,10 @@ eleventyComputed:
   {% endif %}
 </p>
 
-{{ pack.stars(pkg.stars) }}
+<ul class="stats">
+  {{ pack.installs(pkg.installed) }}
+  {{ pack.stars(pkg.stars) }}
+</ul>
 {{ pack.labels(pkg.platforms, pkg.labels) }}
 
 <h2>Links</h2>

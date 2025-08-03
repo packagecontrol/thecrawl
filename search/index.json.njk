@@ -9,6 +9,7 @@ permalink: "/search/index.json"
     "description": "{{ pkg.description | default('') | nl2br | replace('\n', '') }}",
     "author": "{{ pkg.author | join(', ') }}",
     "stars": "{{ pkg.stars }}",
+    "installed": "{{ pkg.installed }}",
     "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
     "labels": "{{ pkg.labels | default([]) | join(",") }}",
     "permalink": "/packages/{{ pkg.name | urlencode }}/"

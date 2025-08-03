@@ -18,7 +18,7 @@ function cleanupAuthors(author) {
   return author
 }
 
-function minimalPackage(pkg) {
+function minimalPackage(pkg, stats) {
   // Create a new array of releases with cleaned platforms
   const releases = (pkg.releases || []).map(release => ({
     ...release,
@@ -60,11 +60,13 @@ function minimalPackage(pkg) {
   // Remove duplicate platforms
   const allPlatforms = releases.flatMap(release => release.platforms)
   const uniquePlatforms = Array.from(new Set(allPlatforms))
+  const stat = typeof stats === 'undefined' ? 0 : (stats['install'] - stats['remove'])
 
   return {
     name: pkg.name,
     author: cleanupAuthors(pkg.author),
     stars: pkg.stars ?? 0,
+    installed: stat,
     releases: dedupedReleases,
     otherReleases,
     labels: pkg.labels,
@@ -105,6 +107,7 @@ module.exports = function (eleventyConfig) {
 
   const libraries = JSON.parse(fs.readFileSync('libraries.json', 'utf8'))
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
+  const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
   // eslint-disable-next-line no-unused-vars
   const live_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg).filter(pkg => !pkg.removed)
 
@@ -142,7 +145,7 @@ module.exports = function (eleventyConfig) {
       }
       return {
         ...pkg,
-        ...minimalPackage(pkg),
+        ...minimalPackage(pkg, stats[pkg.name]),
         ...(readme_url !== pkg.readme ? { readme_url } : {}),
       }
     })
@@ -151,14 +154,14 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addCollection('minimal_packages', () => {
     return live_packages.map(pkg => ({
       description: pkg.description,
-      ...minimalPackage(pkg),
+      ...minimalPackage(pkg, stats[pkg.name]),
     })).sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
 
   eleventyConfig.addCollection('updated_packages', () => {
     return live_packages.map(pkg => ({
       last_modified: pkg.last_modified,
-      ...minimalPackage(pkg),
+      ...minimalPackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.last_modified ?? '1970-01-01 00:00:00') - new Date(a.last_modified ?? '1970-01-01 00:00:00')
     }).slice(0, 9)
@@ -167,7 +170,7 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addCollection('newest_packages', () => {
     return live_packages.map(pkg => ({
       created_at: pkg.created_at,
-      ...minimalPackage(pkg),
+      ...minimalPackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
     }).slice(0, 9)
@@ -185,9 +188,14 @@ module.exports = function (eleventyConfig) {
     return (new Date(date)).toDateString()
   })
 
-  eleventyConfig.addFilter('stars_format', (count) => {
-    const starsFormatter = new Intl.NumberFormat('en', { notation: 'compact' })
-    return starsFormatter.format(count)
+  eleventyConfig.addFilter('compact', (count) => {
+    const fmt = new Intl.NumberFormat('en', { notation: 'compact' })
+    return fmt.format(count)
+  })
+
+  eleventyConfig.addFilter('grouping', (count) => {
+    const fmt = new Intl.NumberFormat('en', { useGrouping: true })
+    return fmt.format(count)
   })
 
   eleventyConfig.addFilter('bust', (path) => {

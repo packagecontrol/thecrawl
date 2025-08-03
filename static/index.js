@@ -13,7 +13,7 @@ const minisrch = new minisearch({
   // keep the list of fields in sync with search/index.json.njk!
   fields: ['name', 'description', 'author', 'platforms', 'labels'],
   storeFields: [
-    'name', 'description', 'author', 'stars', 'platforms', 'labels', 'permalink',
+    'name', 'description', 'author', 'stars', 'installed', 'platforms', 'labels', 'permalink',
   ],
   searchOptions: {
     boost: { author: 2 },
