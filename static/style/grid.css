@@ -78,9 +78,9 @@
     align-items: flex-end;
     margin: 0;
     position: absolute;
-    top: 26px;
+    top: 22px;
     right: 1rem;
-    gap: .33em;
+    gap: 4px;
     font-size: calc(1rem / 1.33);
     color: var(--foreground-3);
     svg {
