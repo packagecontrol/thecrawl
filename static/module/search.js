@@ -1,5 +1,6 @@
 export class Search {
   minisearch = null
+  stringSearch = false // is there a string search, not just filtering?
 
   // pass this a prepared minisearch instance: https://github.com/lucaong/minisearch
   constructor(minisearch = []) {
@@ -50,7 +51,8 @@ export class Search {
     }
 
     // if a value remains, add a free text search query across name, author and discription
-    if (value.trim()) {
+    this.stringSearch = value.trim().length > 0
+    if (this.stringSearch) {
       queries.push({
         queries: value.trim().split(' '),
         fields: ['name', 'description', 'author'],

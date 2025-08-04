@@ -15,14 +15,23 @@ export class Card {
     this.clone.querySelector('a').setAttribute('href', this.pkg.permalink)
     this.authors(this.clone.querySelector('p'))
 
-    const dl = this.clone.querySelector('.stars').closest('dl')
+    const star = this.clone.querySelector('ul.stats .stars')
+    const install = this.clone.querySelector('ul.stats .installs')
 
     if (this.pkg.stars !== '0') {
-      dl.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub')
-      this.clone.querySelector('.stars').innerText = this.formatter.format(Number(this.pkg.stars))
+      star.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub')
+      star.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.stars))
     }
     else {
-      dl.remove()
+      star.remove()
+    }
+
+    if (this.pkg.installed !== '0') {
+      install.setAttribute('title', 'Installed ' + this.pkg.installed + (this.pkg.installed < 2 ? ' time' : ' times'))
+      install.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.installed))
+    }
+    else {
+      install.remove()
     }
 
     const labels = this.clone.querySelector('ul.labels')

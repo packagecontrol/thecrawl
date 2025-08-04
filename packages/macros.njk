@@ -20,12 +20,23 @@
   </ul>
 {% endmacro %}
 
-{% macro stars(count) %}
+{% macro stars(count, pretty=false) %}
   {% if count > 0 %}
-    <dl title="{{ count }} {{ 'star' if count < 2 else 'stars' }} on GitHub">
-      <dt aria-label="stars">{{ logo('star') }}</dt>
-      <dd class="stars">{{ count | stars_format }}</dd>
-    </dl>
+    <li class="stars" title="{{ count }} {{ 'star' if count < 2 else 'stars' }} on GitHub">
+      <span aria-hidden="true">{{ logo('star') }}</span>
+      <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
+      <span class="screenreader-only">stars</span>
+    </li>
+  {% endif %}
+{% endmacro %}
+
+{% macro installs(count, pretty=false) %}
+  {% if count > 0 %}
+    <li class="installs" title="Installed {{ count }} {{ 'time' if count < 2 else 'times' }}">
+      <span aria-hidden="true">{{ logo('download') }}</span>
+      <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
+      <span class="screenreader-only">installs</span>
+    </li>
   {% endif %}
 {% endmacro %}
 
@@ -42,7 +53,10 @@
       <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
     {%- endfor %}</p>
 
-    {{ stars(pkg.stars) }}
+    <ul class="stats">
+      {{ installs(pkg.installed, true) }}
+      {{ stars(pkg.stars, true) }}
+    </ul>
     {{ labels(pkg.platforms, pkg.labels) }}
   </div>
 {% endmacro %}

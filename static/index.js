@@ -10,10 +10,20 @@ async function fetchSearchData() {
 const data = await fetchSearchData()
 const minisrch = new minisearch({
   idField: 'name',
-  // keep the list of fields in sync with search/index.json.njk!
+  // search in these fields
   fields: ['name', 'description', 'author', 'platforms', 'labels'],
+  // return all fields from the index
   storeFields: [
-    'name', 'description', 'author', 'stars', 'platforms', 'labels', 'permalink',
+    'name',
+    'description',
+    'author',
+    'stars',
+    'installed',
+    'created_at',
+    'last_modified',
+    'platforms',
+    'labels',
+    'permalink',
   ],
   searchOptions: {
     boost: { author: 2 },

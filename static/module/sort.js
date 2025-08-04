@@ -9,18 +9,46 @@ export class Sort {
       case 'name-desc':
         return sortedPackages.sort((a, b) => b.name.toLowerCase().localeCompare(a.name.toLowerCase()))
 
+      case 'installed':
+        return sortedPackages.sort((a, b) => {
+          const A = parseInt(a.installed) || 0
+          const B = parseInt(b.installed) || 0
+          return B - A // High to low
+        })
+
       case 'stars':
         return sortedPackages.sort((a, b) => {
-          const starsA = parseInt(a.stars) || 0
-          const starsB = parseInt(b.stars) || 0
-          return starsB - starsA // High to low
+          const A = parseInt(a.stars) || 0
+          const B = parseInt(b.stars) || 0
+          return B - A // High to low
         })
 
       case 'stars-desc':
         return sortedPackages.sort((a, b) => {
-          const starsA = parseInt(a.stars) || 0
-          const starsB = parseInt(b.stars) || 0
-          return starsA - starsB // Low to high
+          const A = parseInt(a.stars) || 0
+          const B = parseInt(b.stars) || 0
+          return A - B // Low to high
+        })
+
+      case 'newest':
+        return sortedPackages.sort((a, b) => {
+          const A = parseInt(a.created_at) || 0
+          const B = parseInt(b.created_at) || 0
+          return B - A // High to low
+        })
+
+      case 'oldest':
+        return sortedPackages.sort((a, b) => {
+          const A = parseInt(a.created_at) || 0
+          const B = parseInt(b.created_at) || 0
+          return A - B // Low to high
+        })
+
+      case 'update':
+        return sortedPackages.sort((a, b) => {
+          const A = parseInt(a.last_modified) || 0
+          const B = parseInt(b.last_modified) || 0
+          return B - A // High to low
         })
 
       case 'author':
