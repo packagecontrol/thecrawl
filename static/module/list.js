@@ -127,6 +127,11 @@ export class List {
     }
 
     const searchResults = this.search.search(value)
+
+    // when not searching for strings, sorting magically switches to install number
+    if (sortBy === 'relevance' && !this.search.stringSearch) {
+      sortBy = 'installed'
+    }
     const sortedResults = Sort.sort(searchResults, sortBy)
 
     this.setCounter(sortedResults.length)
