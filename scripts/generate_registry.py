@@ -79,15 +79,13 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
         repos: list[str] = flatten(repos_lists)
         unseen = Unseen(repos)
         sem = asyncio.Semaphore(MAX_CONCURRENCY)
-        result: dict[Url, RepositorySchema] = {}
-        result = {
+        result: dict[Url, RepositorySchema] = {
             repo["self"]: repo
-            for repo in await asyncio.gather(*[
-                asyncio.create_task(fetch_repository(url, unseen, sem, session))
+            for repo in await asyncio.gather(*(
+                fetch_repository(url, unseen, sem, session)
                 for url in repos
-            ])
+            ))
             if repo
-            if not repo.get("schema_version", "1.").startswith("1.")
         }
 
     # Flatten packages and dependencies, adding source, schema_version, and
@@ -117,8 +115,7 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
     add_dependency = add_unique_(dependencies, "Dependency")
     for url in repos:
         if repo := result.get(url):
-            repo_info: PackageEntry
-            repo_info = {
+            repo_info: PackageEntry = {
                 "source": repo["self"],
                 "schema_version": repo["schema_version"],
             }
@@ -202,19 +199,29 @@ async def fetch_repository(
         err(f"Error fetching {location}: {e}")
         return None
 
+    main_schema_version = result.get("schema_version", "1.0")
+    if main_schema_version.startswith("1."):
+        # err(f"Ignoring unsupported repository: {location}")
+        return None
+
+    key = "libraries" if main_schema_version[0] == "4" else "dependencies"
     repository: RepositorySchema = {
         "self": location,
-        "schema_version": result.get("schema_version", "3.0.0"),
+        "schema_version": main_schema_version,
         "packages": result.get("packages", []),
-        "dependencies": result.get("dependencies", []),
+        "dependencies": result.get(key, []),
     }
     if includes := result.get("includes"):
-        for result in await asyncio.gather(*[
+        for result in await asyncio.gather(*(
             __fetch_repo(include, sem, session)
             for include in unseen(resolve_urls(location, includes))
-        ]):
+        )):
+            schema_version = result.get("schema_version")
+            if schema_version != main_schema_version:
+                err(f"Ignoring mismatching include in {location}")
+                continue
             repository["packages"].extend(result.get("packages", []))
-            repository["dependencies"].extend(result.get("dependencies", []))
+            repository["dependencies"].extend(result.get(key, []))
     return repository
 
 
