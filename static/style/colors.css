@@ -13,9 +13,9 @@
 
   --highlight: rgba(222, 222, 222, 0.3); /* inline code */
 
-  --foreground-1: rgb(60, 60, 67);    /* black */
-  --foreground-2: rgb(103, 103, 108); /* ..    */
-  --foreground-3: #8d8d94;            /* grey  */
+  --foreground-1: #45454d; /* black */
+  --foreground-2: #616169; /* ..    */
+  --foreground-3: #7e7e85; /* grey  */
 
   --white: #fff;
 
@@ -36,9 +36,9 @@
 
   --highlight: rgba(101, 117, 133, 0.16); /* inline code */
 
-  --foreground-1: rgb(223, 223, 214);
-  --foreground-2: rgb(218, 218, 210);
-  --foreground-3: rgb(152, 152, 159);
+  --foreground-1: #dadad2;
+  --foreground-2: #b8b8b0;
+  --foreground-3: #999993;
 
   --orange-1: #f5901d;
   --orange-2: #fd971f;
