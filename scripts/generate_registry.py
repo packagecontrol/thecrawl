@@ -33,6 +33,11 @@ class PackageEntry(TypedDict, total=False):
     name: str
     details: NotRequired[str]
     tombstoned: NotRequired[bool]
+    releases: NotRequired[list[PackageRelease]]
+
+
+class PackageRelease(TypedDict, total=False):
+    sublime_text: str
 
 
 class Registry(TypedDict):
@@ -109,21 +114,57 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
 
         return add
 
+    def is_compatible_release(release: PackageRelease, schema_v2: bool) -> bool:
+        """
+        Determines if package release is compatible with ST3 or ST4.
+        """
+        # schema v2: no key means ST2 / schema v3: no key defaults to "*"
+        st_version_spec = release.get("sublime_text", "<3000" if schema_v2 else "*")
+        try:
+            # PC4 supports ST3143+, drop anything compatible with earlier versions, only
+            if st_version_spec.startswith("<="):
+                return int(st_version_spec[2:]) >= 3143
+            elif st_version_spec.startswith("<"):
+                return int(st_version_spec[1:]) >= 3144
+            elif " - " in st_version_spec:
+                return int(st_version_spec[-4:]) >= 3143
+            else:
+                return True
+        except Exception:
+            return False
+
     packages: list[PackageEntry] = []
     dependencies: list[PackageEntry] = []
     add_package = add_unique_(packages, "Package")
     add_dependency = add_unique_(dependencies, "Dependency")
     for url in repos:
         if repo := result.get(url):
+            schema_version = repo["schema_version"]
+            schema_v2 = schema_version.startswith("2.")
+
             repo_info: PackageEntry = {
                 "source": repo["self"],
-                "schema_version": repo["schema_version"],
+                "schema_version": schema_version,
             }
             for pkg in repo["packages"]:
-                add_package(pkg | repo_info)
+                releases = [
+                    release
+                    for release in pkg.get("releases", [])
+                    if is_compatible_release(release, schema_v2)
+                ]
+                if releases:
+                    pkg["releases"] = releases
+                    add_package(pkg | repo_info)
 
             for dep in repo["dependencies"]:
-                add_dependency(dep | repo_info)
+                releases = [
+                    release
+                    for release in pkg.get("releases", [])
+                    if is_compatible_release(release, schema_v2)
+                ]
+                if releases:
+                    pkg["releases"] = releases
+                    add_dependency(dep | repo_info)
 
         elif db:
             # recreate the repo from db
