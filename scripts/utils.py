@@ -3,7 +3,7 @@ import re
 import sys
 from urllib.parse import urljoin
 
-from typing import Iterable, Iterator, overload
+from typing import Iterable, Iterator, NamedTuple, Optional, overload
 
 
 def err(*args, **kwargs):
@@ -95,6 +95,14 @@ def update_url(url: str) -> str:
     return url
 
 
+class VersionInfo(NamedTuple):
+    major: int
+    minor: int
+    patch: int
+    prerelease: Optional[str]
+    build: Optional[str]
+
+
 SEMVER_RE = re.compile(
     r'^'
     r'(0|[1-9]\d*)\.'                     # major
@@ -106,5 +114,19 @@ SEMVER_RE = re.compile(
 )
 
 
+def parse_version(s: str) -> Optional[VersionInfo]:
+    m = SEMVER_RE.match(s)
+    if not m:
+        return None
+    major, minor, patch, prerelease, build = m.groups()
+    return VersionInfo(
+        int(major),
+        int(minor),
+        int(patch),
+        prerelease,
+        build
+    )
+
+
 def is_semver(s: str) -> bool:
-    return bool(SEMVER_RE.match(s))
+    return parse_version(s) is not None
