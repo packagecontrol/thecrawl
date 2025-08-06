@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 from typing import AsyncIterable, Literal, Iterable, TypedDict
 
-from .utils import is_semver, drop_falsy
+from .utils import drop_falsy
 
 # This module exposes a single entrypoint
 # fetch_repo_info(Url, Iterable[QueryScope]) -> RepoInfo

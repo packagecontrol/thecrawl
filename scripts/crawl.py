@@ -11,9 +11,9 @@ from typing import Iterable, Literal, NotRequired, Required, TypedDict
 
 from .bitbucket import fetch_bitbucket_info
 from .generate_registry import Registry, PackageEntry as PackageEntryV1
-from .github import fetch_github_info, is_semver, rate_limit_info, strip_possible_prefix, QueryScope
+from .github import fetch_github_info, rate_limit_info, strip_possible_prefix, QueryScope
 from .gitlab import fetch_gitlab_info
-from .utils import resolve_url, update_url
+from .utils import is_semver, resolve_url, update_url
 import traceback
 
 
