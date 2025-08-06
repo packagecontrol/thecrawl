@@ -44,3 +44,27 @@ def test_parse_version_invalid(input_str):
 ])
 def test_is_semver(input_str, expected):
     assert is_semver(input_str) == expected
+
+
+@pytest.mark.parametrize("input_str,expected", [
+    ("1.2.3", True),
+    ("1.2.3-alpha", False),
+    ("1.2.3+build.1", False),
+    ("1.2.3-alpha+build.1", False),
+])
+def test_version_is_final(input_str, expected):
+    v = parse_version(input_str)
+    assert v is not None
+    assert v.is_final is expected
+
+
+@pytest.mark.parametrize("input_str,expected", [
+    ("1.2.3", False),
+    ("1.2.3-alpha", True),
+    ("1.2.3+build.1", False),
+    ("1.2.3-alpha+build.1", True),
+])
+def test_version_is_a_prerelease(input_str, expected):
+    v = parse_version(input_str)
+    assert v is not None
+    assert v.is_prerelease is expected

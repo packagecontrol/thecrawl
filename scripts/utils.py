@@ -102,6 +102,14 @@ class VersionInfo(NamedTuple):
     prerelease: Optional[str]
     build: Optional[str]
 
+    @property
+    def is_final(self) -> bool:
+        return self.prerelease is None and self.build is None
+
+    @property
+    def is_prerelease(self) -> bool:
+        return self.prerelease is not None
+
 
 SEMVER_RE = re.compile(
     r'^'
