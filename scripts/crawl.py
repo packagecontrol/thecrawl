@@ -2,6 +2,7 @@ import aiohttp
 import argparse
 import asyncio
 from collections import defaultdict
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import json
 import os
@@ -13,7 +14,7 @@ from .bitbucket import fetch_bitbucket_info
 from .generate_registry import Registry, PackageEntry as PackageEntryV1
 from .github import fetch_github_info, rate_limit_info, strip_possible_prefix, QueryScope
 from .gitlab import fetch_gitlab_info
-from .utils import is_semver, resolve_url, update_url
+from .utils import parse_version, resolve_url, update_url
 import traceback
 
 
@@ -358,20 +359,35 @@ async def crawl_package(
 
             if tag_definition := r.get("tags"):
                 tag_prefix = "" if tag_definition is True else tag_definition
+                # preleases are rare, but if used there can be many pre-releases
+                # before a valid final release.  We only need the first (newest)
+                # one, and `prerelease_pushed` is used to track that.
+                prerelease_pushed = False
                 async for tag in info["tags"]:
                     if (
                         tag["name"].startswith(tag_prefix)
-                        and (version := (
+                        and (version_string := (
                             tag["name"].removeprefix(tag_prefix)
                             if tag_prefix
                             else strip_possible_prefix(tag["name"])
                         ))
-                        and is_semver(version)
+                        and (version := parse_version(version_string))
                     ):
-                        r.pop("tags")
-                        r |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
-                        r |= {"version": version}
-                        break
+                        if version.is_prerelease and not prerelease_pushed:
+                            r_ = deepcopy(r)
+                            r_.pop("tags")
+                            r_ |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
+                            r_ |= {"version": version_string}
+                            release_definitions.append(r_)
+                            prerelease_pushed = True
+                            continue
+
+                        elif version.is_final:
+                            r.pop("tags")
+                            r |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
+                            r |= {"version": version_string}
+                            break
+
                 if "version" in r:
                     continue
 
