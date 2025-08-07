@@ -356,8 +356,8 @@ async def crawl_package(
             if r.get("base") != url:
                 continue
 
-            if tag_defintion := r.get("tags"):
-                tag_prefix = "" if tag_defintion is True else tag_defintion
+            if tag_definition := r.get("tags"):
+                tag_prefix = "" if tag_definition is True else tag_definition
                 async for tag in info["tags"]:
                     if (
                         tag["name"].startswith(tag_prefix)
@@ -381,12 +381,12 @@ async def crawl_package(
                     err(f"No tagged version found for {url}")
 
             # Fallback to the default branch
-            branches_defintion = r.get("branch", True)
+            branches_definition = r.get("branch", True)
             default_branch = info["metadata"].get("default_branch", "master")
             wanted_branch = (
                 default_branch
-                if branches_defintion is True
-                else branches_defintion
+                if branches_definition is True
+                else branches_definition
             )
             async for branch in info["branches"]:
                 if branch["name"] == wanted_branch:
