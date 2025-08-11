@@ -30,6 +30,11 @@ eleventyComputed:
     {%- endif %}{% if pkg.archived_at -%}
       , archived {{ pkg.archived_at | date_format }}
     {%- endif %}.
+  {% elif pkg.last_modified %}
+    <br>
+    Last updated {{ pkg.last_modified | date_format }}{% if pkg.archived_at -%}
+      , archived {{ pkg.archived_at | date_format }}
+    {%- endif %}
   {% endif %}
 </p>
 
