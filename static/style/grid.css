@@ -69,6 +69,10 @@
     }
   }
 
+  &.dead-on-arrival h3 {
+    color: var(--foreground-3);
+  }
+
   p:last-child {
     margin-bottom: 0;
   }
@@ -83,6 +87,7 @@
     right: 1rem;
     gap: 4px;
     font-size: calc(1rem / 1.33);
+    background: inherit;
     color: var(--foreground-3);
     svg {
       width: 12px;

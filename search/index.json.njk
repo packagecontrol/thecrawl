@@ -13,6 +13,8 @@ permalink: "/search/index.json"
     "created_at": "{{ pkg.created_at | timestamp }}",
     "archived_at": "{{ pkg.archived_at | timestamp }}",
     "last_modified": "{{ pkg.last_modified | timestamp }}",
+    "removed": "{{ (pkg.removed | timestamp) if pkg.removed }}",
+    "doa": "{{ pkg.doa }}",
     "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
     "labels": "{{ pkg.labels | default([]) | join(",") }}",
     "permalink": "/packages/{{ pkg.name | urlencode }}/"

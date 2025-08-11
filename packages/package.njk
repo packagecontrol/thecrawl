@@ -23,20 +23,31 @@ eleventyComputed:
     {% set q = 'author:"' ~ author ~ '"' %}
     <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
   {%- endfor %}
+
   {% if pkg.created_at %}
     <br>
     Since {{ pkg.created_at | date_format }}{% if (pkg.created_at | date_format) != (pkg.last_modified | date_format) -%}
       , last updated {{ pkg.last_modified | date_format }}
     {%- endif %}{% if pkg.archived_at -%}
       , archived {{ pkg.archived_at | date_format }}
+    {%- endif %}{% if pkg.removed -%}
+      , removed {{ pkg.removed | date_format }}
     {%- endif %}.
+
   {% elif pkg.last_modified %}
     <br>
     Last updated {{ pkg.last_modified | date_format }}{% if pkg.archived_at -%}
       , archived {{ pkg.archived_at | date_format }}
-    {%- endif %}
+    {%- endif %}{% if pkg.removed -%}
+      , removed {{ pkg.removed | date_format }}
+    {%- endif %}.
+  {% endif %}
+
+  {% if pkg.fail_reason %}
+    <br>{{ pack.logo('warning') }} {{ pkg.fail_reason }}
   {% endif %}
 </p>
+
 
 <ul class="stats">
   {{ pack.archived(pkg.archived_at) }}

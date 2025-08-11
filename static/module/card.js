@@ -37,8 +37,18 @@ export class Card {
 
     if (this.pkg.archived_at) {
       const date = new Date(Number(this.pkg.archived_at) * 1000)
-      archive.setAttribute('title', 'Archived at ' + date.toDateString())
-      archive.querySelector('.counter').innerText = 'Archived'
+      archive.setAttribute('title', 'Repo was archived on ' + date.toDateString())
+      archive.querySelector('.counter').innerText = 'Abandoned'
+    }
+    else if (this.pkg.removed) {
+      const date = new Date(Number(this.pkg.archived_at) * 1000)
+      archive.setAttribute('title', 'Package was removed on ' + date.toDateString())
+      archive.querySelector('.counter').innerText = 'RIP'
+      if (this.pkg.doa === 'true') {
+        // we have no data so remove the link to the detail page
+        this.clone.querySelector('h3').innerHTML = this.pkg.name
+        this.clone.firstElementChild.classList.add('dead-on-arrival')
+      }
     }
     else {
       archive.remove()
@@ -52,6 +62,11 @@ export class Card {
   }
 
   authors(parent) {
+    if (this.pkg.author.length < 1) {
+      parent.remove()
+      return
+    }
+
     parent.innerHTML = 'by '
     const list = this.pkg.author.split(',')
     list.forEach((name, iter) => {

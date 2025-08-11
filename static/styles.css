@@ -59,6 +59,10 @@ summary {
 
 svg {
   fill: currentColor;
+  p > & {
+    /* alignment of icons in text is just slighty off */
+    margin-bottom: -1px;
+  }
 }
 
 .home section {

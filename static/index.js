@@ -22,6 +22,8 @@ const minisrch = new minisearch({
     'created_at',
     'last_modified',
     'archived_at',
+    'removed',
+    'doa',
     'platforms',
     'labels',
     'permalink',

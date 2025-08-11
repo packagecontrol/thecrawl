@@ -64,12 +64,14 @@ function minimalPackage(pkg, stats) {
 
   return {
     name: pkg.name,
-    author: cleanupAuthors(pkg.author),
+    author: cleanupAuthors(pkg.author) ?? [],
     stars: pkg.stars ?? 0,
     installed: stat,
     created_at: pkg.created_at,
     last_modified: pkg.last_modified,
     archived_at: pkg.archived_at,
+    removed: pkg.removed,
+    doa: pkg.removed && !pkg.first_seen,
     releases: dedupedReleases,
     otherReleases,
     labels: pkg.labels,
@@ -112,7 +114,7 @@ module.exports = function (eleventyConfig) {
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
   const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
   // eslint-disable-next-line no-unused-vars
-  const live_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg).filter(pkg => !pkg.removed)
+  const all_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg)
 
   // if readme is in pkg
   // transform some links
@@ -127,7 +129,7 @@ module.exports = function (eleventyConfig) {
   //
   // and store the under readme_url
   eleventyConfig.addCollection('packages', () => {
-    return live_packages.map((pkg) => {
+    return all_packages.map((pkg) => {
       let readme_url = pkg.readme
       if (typeof readme_url === 'string') {
         // GitHub raw to blob
@@ -155,14 +157,14 @@ module.exports = function (eleventyConfig) {
   })
 
   eleventyConfig.addCollection('minimal_packages', () => {
-    return live_packages.map(pkg => ({
+    return all_packages.map(pkg => ({
       description: pkg.description,
       ...minimalPackage(pkg, stats[pkg.name]),
     })).sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
 
   eleventyConfig.addCollection('updated_packages', () => {
-    return live_packages.map(pkg => ({
+    return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
       ...minimalPackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.last_modified ?? '1970-01-01 00:00:00') - new Date(a.last_modified ?? '1970-01-01 00:00:00')
@@ -170,7 +172,7 @@ module.exports = function (eleventyConfig) {
   })
 
   eleventyConfig.addCollection('newest_packages', () => {
-    return live_packages.map(pkg => ({
+    return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
       ...minimalPackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
