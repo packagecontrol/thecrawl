@@ -46,7 +46,8 @@
   &.archive,
   &.archive:hover {
     background: var(--orange-1);
-    color: var(--white);
+    color: var(--foreground-1);
+    opacity: .5;
   }
 }
 

@@ -40,27 +40,6 @@
     flex-direction: column;
   }
 
-  * {
-    z-index: 1;
-  }
-
-  &.archived::before {
-    content: "Archived";
-    display: block;
-    background: var(--orange-1);
-    color: var(--white);
-    opacity: .5;
-    position: absolute;
-    bottom: 15px;
-    left: -66px;
-    width: 200px;
-    text-align: center;
-    font-size: calc(1rem / 1.33);
-    pointer-events: none;
-    transform: rotate(45deg);
-    z-index: 0;
-  }
-
   &:has(h3 a:hover),
   &:has(h3 a:focus) {
     outline: 2px solid var(--orange-1);
@@ -122,7 +101,7 @@
     justify-content: flex-start;
   }
 
-  .button:not(.platform) {
+  .button:not(.platform):not(.archive) {
     background: var(--background-2);
     &:hover:not(:disabled) {
       background: var(--background-3);

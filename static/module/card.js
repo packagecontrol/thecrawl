@@ -34,12 +34,8 @@ export class Card {
       install.remove()
     }
 
-    if (this.pkg.archived_at) {
-      console.log(this.clone.firstElementChild)
-      this.clone.firstElementChild.classList.add('archived')
-    }
-
     const labels = this.clone.querySelector('ul.labels')
+    this.archived(labels)
     this.platforms(labels)
     this.labels(labels)
 
@@ -80,6 +76,14 @@ export class Card {
     })
   }
 
+  archived(parent) {
+    if (!this.pkg.archived_at) {
+      return
+    }
+
+    parent.appendChild(this.button('Archived'))
+  }
+
   button(name) {
     const li = document.createElement('li')
     const a = document.createElement('a')
@@ -91,6 +95,10 @@ export class Card {
     else {
       a.classList.add('button', 'label')
       a.setAttribute('href', '/?q=' + encodeURI('label:"' + name + '"'))
+    }
+
+    if (name == 'Archived') {
+      a.classList.add('archive')
     }
 
     a.innerText = name
