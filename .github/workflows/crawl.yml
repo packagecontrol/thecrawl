@@ -92,6 +92,14 @@ jobs:
           echo "Updating release notes..."
           gh release edit ${{ env.RELEASE_TAG }} --notes-file notes.txt
 
+      - name: Upload wrk backup
+        id: crawl-backup-step
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawl-backup
+          path: wrk/
+          retention-days: 30
+
   fetch_stats:
     runs-on: ubuntu-latest
     env:
