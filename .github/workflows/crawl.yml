@@ -91,3 +91,56 @@ jobs:
 
           echo "Updating release notes..."
           gh release edit ${{ env.RELEASE_TAG }} --notes-file notes.txt
+
+      - name: Upload wrk backup
+        id: crawl-backup-step
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawl-backup
+          path: wrk/
+          retention-days: 30
+
+  fetch_stats:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: crawler-status
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Ensure wrk directory exists
+        run: mkdir -p ./wrk
+
+      - name: Restore wrk cache
+        uses: actions/cache@v4
+        with:
+          path: ./wrk
+          key: stats-cache-${{ github.run_id }}
+          restore-keys: |
+            stats-cache-
+
+      - name: Run script
+        run: uv run -m scripts.accumulate_stats --wd ./wrk
+
+      - name: Update stats
+        run: |
+          echo "Upload stats..."
+          gh release upload ${{ env.RELEASE_TAG }} ./wrk/stats.json --clobber
+
+      - name: Upload wrk backup
+        id: stats-backup-step
+        uses: actions/upload-artifact@v4
+        with:
+          name: stats-backup
+          path: wrk/
+          retention-days: 30
