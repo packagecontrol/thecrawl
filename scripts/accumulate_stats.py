@@ -38,6 +38,17 @@ def main():
     day_label = today.isoformat()
     week_label = f"{today.isocalendar().year}-W{today.isocalendar().week:02d}"
     year_label = str(today.year)
+
+    for label, key, keep in [
+        (day_label, "__daily_dates", HISTORY_DAYS),
+        (week_label, "__weekly_dates", HISTORY_WEEKS),
+        (year_label, "__yearly_dates", HISTORY_YEARS),
+    ]:
+        dates = output_data.setdefault(key, [])
+        if not dates or dates[0] != label:
+            dates.insert(0, label)
+        output_data[key] = dates[:keep]
+
     for pkg, metrics in current_totals.items():
         prev_metrics = prev_totals.get(pkg, {})
         pkg_data = output_data.setdefault(pkg, {})
@@ -46,9 +57,7 @@ def main():
             ("install", "installs"), ("upgrade", "upgrades"), ("remove", "removals")
         ):
             container = pkg_data.setdefault(target_key, {
-                "daily": {"dates": [], "data": []},
-                "weekly": {"dates": [], "data": []},
-                "yearly": {"dates": [], "data": []},
+                "daily": [], "weekly": [], "yearly": []
             })
 
             current_total = metrics.get(source_key, 0)
@@ -56,25 +65,23 @@ def main():
             delta = max(0, current_total - prev_total)
 
             container["totals"] = current_total
-            accumulate(delta, container["daily"], day_label, HISTORY_DAYS)
-            accumulate(delta, container["weekly"], week_label, HISTORY_WEEKS)
-            accumulate(delta, container["yearly"], year_label, HISTORY_YEARS)
+            accumulate(delta, container, "daily", len(output_data["__daily_dates"]))
+            accumulate(delta, container, "weekly", len(output_data["__weekly_dates"]))
+            accumulate(delta, container, "yearly", len(output_data["__yearly_dates"]))
 
     save_json(args.output, output_data)
     save_json(prev_path, current_totals)
 
 
-def accumulate(value: int, section_data: dict, label: str, keep: int):
-    if not section_data["dates"] or section_data["dates"][0] != label:
-        # start new period
-        section_data["dates"].insert(0, label)
-        section_data["data"].insert(0, value)
-    else:
-        section_data["data"][0] += value
-
-    # trim history
-    section_data["dates"] = section_data["dates"][:keep]
-    section_data["data"] = section_data["data"][:keep]
+def accumulate(value: int, container: dict, key: str, wanted_length: int):
+    dates = container.get(key, [])
+    # Maybe left pad data
+    dates = [0] * (wanted_length - len(dates)) + dates
+    # Trim to the wanted length
+    dates = dates[:wanted_length]
+    # Accumulate the value
+    dates[0] += value
+    container[key] = dates
 
 
 def fetch_totals(url: str) -> dict:
@@ -92,7 +99,7 @@ def load_json(path: str) -> dict | None:
 
 def save_json(path: str, data: dict):
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+        json.dump(data, f)
 
 
 def parse_args():
