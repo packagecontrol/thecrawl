@@ -63,6 +63,8 @@ def main():
             current_total = metrics.get(source_key, 0)
             prev_total = prev_metrics.get(source_key, current_total)
             delta = max(0, current_total - prev_total)
+            if delta > 0:
+                print(f'"{pkg}" {target_key} +{delta}')
 
             container["totals"] = current_total
             accumulate(delta, container, "daily", len(output_data["__daily_dates"]))
