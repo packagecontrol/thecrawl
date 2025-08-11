@@ -160,12 +160,16 @@ ul.stats {
   line-height: 1;
   padding: 0;
   color: var(--foreground-2);
+
   > * {
     display: flex;
     margin: 0;
   }
   svg {
     margin-right: 1ex;
+  }
+  .archived {
+    color: var(--orange-2);
   }
 }
 

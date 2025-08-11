@@ -17,6 +17,7 @@ export class Card {
 
     const star = this.clone.querySelector('ul.stats .stars')
     const install = this.clone.querySelector('ul.stats .installs')
+    const archive = this.clone.querySelector('ul.stats .archived')
 
     if (this.pkg.stars !== '0') {
       star.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub')
@@ -34,8 +35,16 @@ export class Card {
       install.remove()
     }
 
+    if (this.pkg.archived_at) {
+      const date = new Date(Number(this.pkg.archived_at) * 1000)
+      archive.setAttribute('title', 'Archived at ' + date.toDateString())
+      archive.querySelector('.counter').innerText = 'Archived'
+    }
+    else {
+      archive.remove()
+    }
+
     const labels = this.clone.querySelector('ul.labels')
-    this.archived(labels)
     this.platforms(labels)
     this.labels(labels)
 
@@ -74,14 +83,6 @@ export class Card {
     this.pkg.labels.split(',').forEach((item) => {
       parent.appendChild(this.button(item))
     })
-  }
-
-  archived(parent) {
-    if (!this.pkg.archived_at) {
-      return
-    }
-
-    parent.appendChild(this.button('Archived'))
   }
 
   button(name) {

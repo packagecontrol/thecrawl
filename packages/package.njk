@@ -27,19 +27,14 @@ eleventyComputed:
     <br>
     Since {{ pkg.created_at | date_format }}{% if (pkg.created_at | date_format) != (pkg.last_modified | date_format) -%}
       , last updated {{ pkg.last_modified | date_format }}
-    {%- endif %}
+      , archived {{ pkg.archived_at | date_format }}
+    {%- endif %}{% if pkg.archived_at -%}
+    {%- endif %}.
   {% endif %}
 </p>
 
-{% if pkg.archived_at %}
-  <p>
-    <span class="button archive">
-      {{ pack.logo('archive') }} Archived at {{ pkg.archived_at | date_format }}
-    </span>
-  </p>
-{% endif %}
-
 <ul class="stats">
+  {{ pack.archived(pkg.archived_at) }}
   {{ pack.installs(pkg.installed) }}
   {{ pack.stars(pkg.stars) }}
 </ul>

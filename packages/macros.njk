@@ -40,6 +40,16 @@
   {% endif %}
 {% endmacro %}
 
+{% macro archived(date) %}
+  {% if date %}
+    <li class="archived" title="Archived at {{ date | date_format }}">
+      <span aria-hidden="true">{{ logo('archive') }}</span>
+      <span class="counter">Archived</span>
+      <span class="screenreader-only">{{ date | date_format }}</span>
+    </li>
+  {% endif %}
+{% endmacro %}
+
 {% macro card(pkg) %}
   <div class="card {{ 'archived' if pkg.archived_at }}">
     <h3>
@@ -54,6 +64,7 @@
     {%- endfor %}</p>
 
     <ul class="stats">
+      {{ archived(pkg.archived_at) }}
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
     </ul>

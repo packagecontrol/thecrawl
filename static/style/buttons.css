@@ -42,13 +42,6 @@
   &:focus {
     outline: 2px solid var(--orange-1);
   }
-
-  &.archive,
-  &.archive:hover {
-    background: var(--orange-1);
-    color: var(--foreground-1);
-    opacity: .5;
-  }
 }
 
 span.button {
