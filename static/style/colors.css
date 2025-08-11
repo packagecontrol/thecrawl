@@ -6,44 +6,48 @@
 
 :root {
   /* light */
-  --background-1: rgb(255, 255, 255); /* white */
-  --background-2: rgb(242, 242, 242); /* ..    */
-  --background-3: rgb(230, 230, 230); /* ..    */
-  --background-4: rgb(222, 222, 222); /* grey  */
+  --background-1: hsl(0 0 100); /* white */
+  --background-2: hsl(0 0 94);  /* ..    */
+  --background-3: hsl(0 0 90);  /* ..    */
+  --background-4: hsl(0 0 87);  /* grey  */
 
-  --highlight: rgba(222, 222, 222, 0.3); /* inline code */
+  --highlight: hsl(0 0 87 / 0.3); /* inline code */
 
-  --foreground-1: #45454d; /* black */
-  --foreground-2: #616169; /* ..    */
-  --foreground-3: #7e7e85; /* grey  */
+  --foreground-1: hsl(240 5 29); /* black */
+  --foreground-2: hsl(240 4 40); /* ..    */
+  --foreground-3: hsl(240 3 51); /* grey  */
 
   --white: #fff;
 
-  --orange-1: #fd971f;
-  --orange-2: #f5901d;
-  --blue-1: #1ebbfc;
-  --blue-2: #1db2f2;
-  --green-1: #a0da2c;
-  --green-2: #97cf29;
+  --red-1: hsl(7 98 56);
+  --red-2: hsl(7 92 54);
+  --orange-1: hsl(32 98 56);
+  --orange-2: hsl(32 92 54);
+  --blue-1: hsl(198 97 55);
+  --blue-2: hsl(198 89 53);
+  --green-1: hsl(80 70 51);
+  --green-2: hsl(80 67 49);
 }
 
 :root[data-theme='dark'] {
   /* dark */
-  --background-1: rgb(34, 40, 48);
-  --background-2: #272e37;
-  --background-3: #424c57;
-  --background-4: #4f5964;
+  --background-1: hsl(214 17 16);
+  --background-2: hsl(214 17 18);
+  --background-3: hsl(211 14 30);
+  --background-4: hsl(211 12 35);
 
-  --highlight: rgba(101, 117, 133, 0.16); /* inline code */
+  --highlight: hsl(210 14 46 / 0.16); /* inline code */
 
-  --foreground-1: #dadad2;
-  --foreground-2: #b8b8b0;
-  --foreground-3: #999993;
+  --foreground-1: hsl(60 10 84);
+  --foreground-2: hsl(60 5 71);
+  --foreground-3: hsl(60 3 59);
 
-  --orange-1: #f5901d;
-  --orange-2: #fd971f;
-  --blue-1: #1db2f2;
-  --blue-2: #1ebbfc;
-  --green-1: #97cf29;
-  --green-2: #a0da2c;
+  --red-1: hsl(7 92 54);
+  --red-2: hsl(7 98 56);
+  --orange-1: hsl(32 92 54);
+  --orange-2: hsl(32 98 56);
+  --blue-1: hsl(198 89 53);
+  --blue-2: hsl(198 97 55);
+  --green-1: hsl(80 67 49);
+  --green-2: hsl(80 70 51);
 }

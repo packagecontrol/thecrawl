@@ -169,7 +169,7 @@ ul.stats {
     margin-right: 1ex;
   }
   .archived {
-    color: var(--orange-2);
+    color: var(--red-1);
   }
 }
 
