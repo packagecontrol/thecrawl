@@ -42,6 +42,12 @@
   &:focus {
     outline: 2px solid var(--orange-1);
   }
+
+  &.archive,
+  &.archive:hover {
+    background: var(--orange-1);
+    color: var(--white);
+  }
 }
 
 span.button {
@@ -49,4 +55,8 @@ span.button {
   &:hover {
     background: var(--background-3);
   }
+}
+
+p > .button {
+  display: inline-flex;
 }

@@ -69,6 +69,7 @@ function minimalPackage(pkg, stats) {
     installed: stat,
     created_at: pkg.created_at,
     last_modified: pkg.last_modified,
+    archived_at: pkg.archived_at,
     releases: dedupedReleases,
     otherReleases,
     labels: pkg.labels,

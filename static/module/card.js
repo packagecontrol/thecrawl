@@ -34,6 +34,11 @@ export class Card {
       install.remove()
     }
 
+    if (this.pkg.archived_at) {
+      console.log(this.clone.firstElementChild)
+      this.clone.firstElementChild.classList.add('archived')
+    }
+
     const labels = this.clone.querySelector('ul.labels')
     this.platforms(labels)
     this.labels(labels)

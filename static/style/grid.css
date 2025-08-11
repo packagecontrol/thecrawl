@@ -32,11 +32,33 @@
   position: relative;
   outline: 2px solid transparent;
   transition: outline .3s ease-in-out;
+  overflow: hidden;
 
   .grid & {
     /* stretch cards vertically across the grid cells */
     display: flex;
     flex-direction: column;
+  }
+
+  * {
+    z-index: 1;
+  }
+
+  &.archived::before {
+    content: "Archived";
+    display: block;
+    background: var(--orange-1);
+    color: var(--white);
+    opacity: .5;
+    position: absolute;
+    bottom: 15px;
+    left: -66px;
+    width: 200px;
+    text-align: center;
+    font-size: calc(1rem / 1.33);
+    pointer-events: none;
+    transform: rotate(45deg);
+    z-index: 0;
   }
 
   &:has(h3 a:hover),
