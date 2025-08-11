@@ -44,12 +44,13 @@ eleventyComputed:
   {% endif %}
 
   {% if pkg.fail_reason %}
-    <br>{{ pack.logo('warning') }} {{ pkg.fail_reason }}
+    <br><span class="warning">{{ pack.logo('warning') }}</span> {{ pkg.fail_reason }}
   {% endif %}
 </p>
 
 
 <ul class="stats">
+  {{ pack.rip(pkg.removed) }}
   {{ pack.archived(pkg.archived_at) }}
   {{ pack.installs(pkg.installed) }}
   {{ pack.stars(pkg.stars) }}

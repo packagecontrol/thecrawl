@@ -17,7 +17,7 @@ export class Card {
 
     const star = this.clone.querySelector('ul.stats .stars')
     const install = this.clone.querySelector('ul.stats .installs')
-    const archive = this.clone.querySelector('ul.stats .archived')
+    const warning = this.clone.querySelector('ul.stats .warning')
 
     if (this.pkg.stars !== '0') {
       star.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub')
@@ -37,13 +37,13 @@ export class Card {
 
     if (this.pkg.archived_at) {
       const date = new Date(Number(this.pkg.archived_at) * 1000)
-      archive.setAttribute('title', 'Repo was archived on ' + date.toDateString())
-      archive.querySelector('.counter').innerText = 'Abandoned'
+      warning.setAttribute('title', 'Repo was archived on ' + date.toDateString())
+      warning.querySelector('.counter').innerText = 'Abandoned'
     }
     else if (this.pkg.removed) {
       const date = new Date(Number(this.pkg.archived_at) * 1000)
-      archive.setAttribute('title', 'Package was removed on ' + date.toDateString())
-      archive.querySelector('.counter').innerText = 'RIP'
+      warning.setAttribute('title', 'Package was removed on ' + date.toDateString())
+      warning.querySelector('.counter').innerText = 'RIP'
       if (this.pkg.doa === 'true') {
         // we have no data so remove the link to the detail page
         this.clone.querySelector('h3').innerHTML = this.pkg.name
@@ -51,7 +51,7 @@ export class Card {
       }
     }
     else {
-      archive.remove()
+      warning.remove()
     }
 
     const labels = this.clone.querySelector('ul.labels')

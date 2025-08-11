@@ -106,7 +106,7 @@
     justify-content: flex-start;
   }
 
-  .button:not(.platform):not(.archive) {
+  .button:not(.platform) {
     background: var(--background-2);
     &:hover:not(:disabled) {
       background: var(--background-3);

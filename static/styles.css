@@ -134,6 +134,10 @@ pre {
   font-style: italic;
 }
 
+.warning {
+  color: var(--red-1);
+}
+
 .description {
   font-size: 25px;
   line-height: 44px;
@@ -171,9 +175,6 @@ ul.stats {
   }
   svg {
     margin-right: 1ex;
-  }
-  .archived {
-    color: var(--red-1);
   }
 }
 
