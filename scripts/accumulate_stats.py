@@ -69,7 +69,7 @@ def main():
             accumulate(delta, container, "weekly", len(output_data["__weekly_dates"]))
             accumulate(delta, container, "yearly", len(output_data["__yearly_dates"]))
 
-    save_json(args.output, output_data)
+    save_json(args.output, output_data, pretty=args.pretty)
     save_json(prev_path, current_totals)
 
 
@@ -97,9 +97,12 @@ def load_json(path: str) -> dict | None:
         return None
 
 
-def save_json(path: str, data: dict):
+def save_json(path: str, data: dict, pretty: bool = False):
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f)
+        if pretty:
+            json.dump(data, f, indent=2)
+        else:
+            json.dump(data, f, separators=(",", ":"))
 
 
 def parse_args():
@@ -122,6 +125,11 @@ def parse_args():
         type=str,
         default=DEFAULT_URL,
         help=f"Stats URL (default: {DEFAULT_URL}).",
+    )
+    parser.add_argument(
+        "--pretty",
+        action="store_true",
+        help="Pretty-print JSON output (indent=2)",
     )
     return parser.parse_args()
 
