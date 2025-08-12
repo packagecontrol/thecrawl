@@ -188,7 +188,12 @@ module.exports = function (eleventyConfig) {
   // simple to date string for some dates without times
   eleventyConfig.addFilter('date_format', (date) => {
     if (typeof date !== 'string') return date
-    return (new Date(date)).toDateString()
+    const value = new Date(date)
+    return (new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })).format(value)
+  })
+
+  eleventyConfig.addFilter('date_time_format', (date) => {
+    return (new Date(date)).toISOString().slice(0, 16).replace('T', ' ')
   })
 
   // number of seconds since epoch, to facilitate comparisons in search

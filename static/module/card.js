@@ -37,12 +37,12 @@ export class Card {
 
     if (this.pkg.archived_at) {
       const date = new Date(Number(this.pkg.archived_at) * 1000)
-      warning.setAttribute('title', 'Repo was archived on ' + date.toDateString())
+      warning.setAttribute('title', 'Repo was archived on ' + this.pretty(date))
       warning.querySelector('.counter').innerText = 'Abandoned'
     }
     else if (this.pkg.removed) {
-      const date = new Date(Number(this.pkg.archived_at) * 1000)
-      warning.setAttribute('title', 'Package was removed on ' + date.toDateString())
+      const date = new Date(Number(this.pkg.removed) * 1000)
+      warning.setAttribute('title', 'Package was removed on ' + this.pretty(date))
       warning.querySelector('.counter').innerText = 'RIP'
       if (this.pkg.doa === 'true') {
         // we have no data so remove the link to the detail page
@@ -123,5 +123,10 @@ export class Card {
     li.appendChild(a)
 
     return li
+  }
+
+  pretty(date) {
+    const value = new Date(date)
+    return (new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })).format(value)
   }
 }

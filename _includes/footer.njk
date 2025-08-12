@@ -10,7 +10,7 @@
     <br>
     Dates and times are in UTC.
     <br>
-    &copy; {{ page.date.getFullYear() }} — Built: {{ page.date.toISOString().slice(0,16).replace('T', ' ') }}
+    &copy; {{ page.date.getFullYear() }} — Built: {{ page.date | date_time_format }}
   </p>
 
   <nav>
