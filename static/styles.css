@@ -139,10 +139,10 @@ pre {
 }
 
 .description {
-  font-size: 25px;
-  line-height: 44px;
-  padding-top: 14px;
-  margin-bottom: 8px;
+  font-size: 21px;
+  line-height: 26px;
+  padding-top: 6px;
+  margin-bottom: 20px;
   font-style: italic;
 
   &::before {
@@ -165,16 +165,18 @@ ul.stats {
   gap: 1em;
   align-content: center;
   align-items: center;
-  line-height: 1;
-  padding: 0;
+  line-height: 1.6;
+  padding-left: 0;
   color: var(--foreground-2);
 
   > * {
     display: flex;
     margin: 0;
   }
+
   svg {
     margin-right: 1ex;
+    margin-bottom: -1px;
   }
 }
 
@@ -233,6 +235,21 @@ ul.stats {
   }
   pre code {
     background: var(--background-2);
+  }
+}
+
+.warning-message {
+  padding: 1.6em;
+  border-radius: 6px;
+  background: var(--background-1);
+  margin: 18px auto 8px auto;
+  text-align: center;
+  max-width: 24rem;
+  overflow-wrap: anywhere;
+  svg {
+    color: var(--red-1);
+    width: 32px;
+    height: 32px;
   }
 }
 

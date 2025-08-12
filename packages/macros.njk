@@ -1,23 +1,25 @@
 {% macro labels(platforms, labels) %}
-  <ul class="button-group labels">
-    {% for platform in platforms %}
-      {% set q = 'platform:"' ~ platform ~ '"' %}
-      <li>
-        <a class="button platform platform-{{ platform }}" href="/?q={{ q | urlencode }}">
-          {{ platform }}
-        </a>
-      </li>
-    {% endfor %}
+  {% if platforms | length > 0 or  labels | length > 0 %}
+    <ul class="button-group labels">
+      {% for platform in platforms %}
+        {% set q = 'platform:"' ~ platform ~ '"' %}
+        <li>
+          <a class="button platform platform-{{ platform }}" href="/?q={{ q | urlencode }}">
+            {{ platform }}
+          </a>
+        </li>
+      {% endfor %}
 
-    {% for label in labels %}
-      {% set q = 'label:"' ~ label ~ '"' %}
-      <li>
-        <a class="button label" href="/?q={{ q | urlencode }}">
-          {{ label }}
-        </a>
-      </li>
-    {%- endfor %}
-  </ul>
+      {% for label in labels %}
+        {% set q = 'label:"' ~ label ~ '"' %}
+        <li>
+          <a class="button label" href="/?q={{ q | urlencode }}">
+            {{ label }}
+          </a>
+        </li>
+      {%- endfor %}
+    </ul>
+  {% endif %}
 {% endmacro %}
 
 {% macro stars(count, pretty=false) %}

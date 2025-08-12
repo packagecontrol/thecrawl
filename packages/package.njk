@@ -17,6 +17,13 @@ eleventyComputed:
 <p class="description">{{ pkg.description }}</p>
 {% endif %}
 
+{% if pkg.fail_reason %}
+  <aside class="warning-message">
+    {{ pack.logo('warning') }}
+    <p>{{ pkg.fail_reason }}</p>
+  </aside>
+{% endif %}
+
 <p>
   By
   {% for author in pkg.author -%}
@@ -28,26 +35,21 @@ eleventyComputed:
     <br>
     Since {{ pkg.created_at | date_format }}{% if (pkg.created_at | date_format) != (pkg.last_modified | date_format) -%}
       , last updated {{ pkg.last_modified | date_format }}
-    {%- endif %}{% if pkg.archived_at -%}
-      , archived {{ pkg.archived_at | date_format }}
     {%- endif %}{% if pkg.removed -%}
       , removed {{ pkg.removed | date_format }}
+    {%- elif pkg.archived_at -%}
+      , archived {{ pkg.archived_at | date_format }}
     {%- endif %}.
 
   {% elif pkg.last_modified %}
     <br>
-    Last updated {{ pkg.last_modified | date_format }}{% if pkg.archived_at -%}
-      , archived {{ pkg.archived_at | date_format }}
-    {%- endif %}{% if pkg.removed -%}
+    Last updated {{ pkg.last_modified | date_format }}{% if pkg.removed -%}
       , removed {{ pkg.removed | date_format }}
+    {%- elif pkg.archived_at -%}
+      , archived {{ pkg.archived_at | date_format }}
     {%- endif %}.
   {% endif %}
-
-  {% if pkg.fail_reason %}
-    <br><span class="warning">{{ pack.logo('warning') }}</span> {{ pkg.fail_reason }}
-  {% endif %}
 </p>
-
 
 <ul class="stats">
   {{ pack.rip(pkg.removed) }}
@@ -55,6 +57,7 @@ eleventyComputed:
   {{ pack.installs(pkg.installed) }}
   {{ pack.stars(pkg.stars) }}
 </ul>
+
 {{ pack.labels(pkg.platforms, pkg.labels) }}
 
 <h2>Links</h2>

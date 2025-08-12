@@ -55,6 +55,8 @@ export class Card {
     }
 
     const labels = this.clone.querySelector('ul.labels')
+    // clear the placeholder then fill with data
+    labels.innerHTML = ''
     this.platforms(labels)
     this.labels(labels)
 
