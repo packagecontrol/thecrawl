@@ -40,15 +40,16 @@ export class Card {
       warning.setAttribute('title', 'Repository was archived on ' + this.pretty(date))
       warning.querySelector('.counter').innerText = 'Unmaintained'
     }
+    else if (this.pkg.doa) {
+      warning.setAttribute('title', 'Package was never crawled')
+      warning.querySelector('.counter').innerText = 'RIP'
+      this.clone.querySelector('h3').innerHTML = this.pkg.name
+      this.clone.firstElementChild.classList.add('dead-on-arrival')
+    }
     else if (this.pkg.removed) {
       const date = new Date(Number(this.pkg.removed) * 1000)
       warning.setAttribute('title', 'Package was removed on ' + this.pretty(date))
       warning.querySelector('.counter').innerText = 'RIP'
-      if (this.pkg.doa === 'true') {
-        // we have no data so remove the link to the detail page
-        this.clone.querySelector('h3').innerHTML = this.pkg.name
-        this.clone.firstElementChild.classList.add('dead-on-arrival')
-      }
     }
     else {
       warning.remove()
