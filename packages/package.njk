@@ -39,7 +39,7 @@ eleventyComputed:
   {% if pkg.removed %}
     <br>
     {% if pkg.created_at -%}
-      Since {{ pkg.created_at | date_format }}, removed {{ pkg.removed | date_format }}.
+      Created {{ pkg.created_at | date_format }}, removed {{ pkg.removed | date_format }}.
     {% else %}
       Removed {{ pkg.removed | date_format }}.
     {%- endif %}
