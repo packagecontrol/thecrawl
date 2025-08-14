@@ -44,7 +44,7 @@
 
 {% macro archived(date) %}
   {% if date %}
-    <li class="warning" title="Repo was archived on {{ date | date_format }}">
+    <li class="warning" title="Repository was archived on {{ date | date_format }}">
       <span aria-hidden="true">{{ logo('archive') }}</span>
       <span class="counter">Unmaintained</span>
       <span class="screenreader-only">{{ date | date_format }}</span>

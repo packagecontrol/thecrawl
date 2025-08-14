@@ -17,9 +17,14 @@ eleventyComputed:
 <p class="description">{{ pkg.description }}</p>
 {% endif %}
 
-{% if pkg.fail_reason %}
+{% if pkg.fail_reason and not pkg.removed %}
+  {#
+    after removal the failed state does not necessarily reflect the reason for removal
+    the failure is basically only relevant for packages still in the registry
+  #}
   <aside class="warning-message">
     {{ pack.logo('warning') }}
+    <h2>Updating our information on this package failed:</h2>
     <p>{{ pkg.fail_reason }}</p>
   </aside>
 {% endif %}
@@ -31,21 +36,25 @@ eleventyComputed:
     <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
   {%- endfor %}
 
-  {% if pkg.created_at %}
+  {% if pkg.removed %}
+    <br>
+    {% if pkg.created_at -%}
+      Since {{ pkg.created_at | date_format }}, removed {{ pkg.removed | date_format }}.
+    {% else %}
+      Removed {{ pkg.removed | date_format }}.
+    {%- endif %}
+
+  {% elif pkg.created_at %}
     <br>
     Since {{ pkg.created_at | date_format }}{% if (pkg.created_at | date_format) != (pkg.last_modified | date_format) -%}
       , last updated {{ pkg.last_modified | date_format }}
-    {%- endif %}{% if pkg.removed -%}
-      , removed {{ pkg.removed | date_format }}
-    {%- elif pkg.archived_at -%}
+    {%- endif %}{%- if pkg.archived_at -%}
       , archived {{ pkg.archived_at | date_format }}
     {%- endif %}.
 
   {% elif pkg.last_modified %}
     <br>
-    Last updated {{ pkg.last_modified | date_format }}{% if pkg.removed -%}
-      , removed {{ pkg.removed | date_format }}
-    {%- elif pkg.archived_at -%}
+    Last updated {{ pkg.last_modified | date_format }}{%- if pkg.archived_at -%}
       , archived {{ pkg.archived_at | date_format }}
     {%- endif %}.
   {% endif %}

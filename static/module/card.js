@@ -37,7 +37,7 @@ export class Card {
 
     if (this.pkg.archived_at) {
       const date = new Date(Number(this.pkg.archived_at) * 1000)
-      warning.setAttribute('title', 'Repo was archived on ' + this.pretty(date))
+      warning.setAttribute('title', 'Repository was archived on ' + this.pretty(date))
       warning.querySelector('.counter').innerText = 'Unmaintained'
     }
     else if (this.pkg.removed) {
