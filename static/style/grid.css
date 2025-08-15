@@ -32,6 +32,7 @@
   position: relative;
   outline: 2px solid transparent;
   transition: outline .3s ease-in-out;
+  overflow: hidden;
 
   .grid & {
     /* stretch cards vertically across the grid cells */
@@ -48,7 +49,7 @@
   h3 {
     color: var(--foreground-1);
     padding-top: 0;
-    padding-right: 2em;
+    padding-right: 3.2em;
     margin-top: 0;
     margin-bottom: 2px;
     overflow-wrap: anywhere;
@@ -58,6 +59,13 @@
       margin-top: 0;
       flex: 1; /* push other content to the end of the card */
     }
+  }
+  &:has(.stats .warning) h3 {
+    padding-right: 4.8em;
+  }
+
+  h3 {
+    color: var(--foreground-3);
   }
 
   h3 a,
@@ -76,12 +84,15 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    padding: 0;
     margin: 0;
+    line-height: 1.6;
     position: absolute;
-    top: 22px;
+    top: 21px;
     right: 1rem;
-    gap: 4px;
+    gap: 0;
     font-size: calc(1rem / 1.33);
+    background: inherit;
     color: var(--foreground-3);
     svg {
       width: 12px;
@@ -98,6 +109,10 @@
 
   .list & .labels {
     justify-content: flex-start;
+  }
+
+  .button-group {
+    line-height: 18px;
   }
 
   .button:not(.platform) {

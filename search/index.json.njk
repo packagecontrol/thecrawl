@@ -12,6 +12,13 @@ permalink: "/search/index.json"
     "installed": "{{ pkg.installed }}",
     "created_at": "{{ pkg.created_at | timestamp }}",
     "last_modified": "{{ pkg.last_modified | timestamp }}",
+    {%- if pkg.doa -%}
+      "doa": true,
+    {%- elif pkg.removed -%}
+      "removed": true,
+    {%- elif pkg.archived_at -%}
+      "archived_at": "{{ pkg.archived_at | timestamp }}",
+    {%- endif %}
     "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
     "labels": "{{ pkg.labels | default([]) | join(",") }}",
     "permalink": "/packages/{{ pkg.name | urlencode }}/"

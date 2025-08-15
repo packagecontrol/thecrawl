@@ -1,23 +1,25 @@
 {% macro labels(platforms, labels) %}
-  <ul class="button-group labels">
-    {% for platform in platforms %}
-      {% set q = 'platform:"' ~ platform ~ '"' %}
-      <li>
-        <a class="button platform platform-{{ platform }}" href="/?q={{ q | urlencode }}">
-          {{ platform }}
-        </a>
-      </li>
-    {% endfor %}
+  {% if platforms | length > 0 or  labels | length > 0 %}
+    <ul class="button-group labels">
+      {% for platform in platforms %}
+        {% set q = 'platform:"' ~ platform ~ '"' %}
+        <li>
+          <a class="button platform platform-{{ platform }}" href="/?q={{ q | urlencode }}">
+            {{ platform }}
+          </a>
+        </li>
+      {% endfor %}
 
-    {% for label in labels %}
-      {% set q = 'label:"' ~ label ~ '"' %}
-      <li>
-        <a class="button label" href="/?q={{ q | urlencode }}">
-          {{ label }}
-        </a>
-      </li>
-    {%- endfor %}
-  </ul>
+      {% for label in labels %}
+        {% set q = 'label:"' ~ label ~ '"' %}
+        <li>
+          <a class="button label" href="/?q={{ q | urlencode }}">
+            {{ label }}
+          </a>
+        </li>
+      {%- endfor %}
+    </ul>
+  {% endif %}
 {% endmacro %}
 
 {% macro stars(count, pretty=false) %}
@@ -40,6 +42,26 @@
   {% endif %}
 {% endmacro %}
 
+{% macro archived(date) %}
+  {% if date %}
+    <li class="warning" title="Repository was archived on {{ date | date_format }}">
+      <span aria-hidden="true">{{ logo('archive') }}</span>
+      <span class="counter">Unmaintained</span>
+      <span class="screenreader-only">{{ date | date_format }}</span>
+    </li>
+  {% endif %}
+{% endmacro %}
+
+{% macro rip(date) %}
+  {% if date %}
+    <li class="warning" title="Package was removed on {{ date | date_format }}">
+      <span aria-hidden="true">{{ logo('archive') }}</span>
+      <span class="counter">R.I.P.</span>
+      <span class="screenreader-only">{{ date | date_format }}</span>
+    </li>
+  {% endif %}
+{% endmacro %}
+
 {% macro card(pkg) %}
   <div class="card">
     <h3>
@@ -54,6 +76,8 @@
     {%- endfor %}</p>
 
     <ul class="stats">
+      {{ rip(pkg.removed) }}
+      {{ archived(pkg.archived_at) }}
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
     </ul>
@@ -83,5 +107,9 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M2 2.75A2.75 2.75 0 0 1 4.75 0c.983 0 1.873.42 2.57 1.232.268.318.497.668.68 1.042.183-.375.411-.725.68-1.044C9.376.42 10.266 0 11.25 0a2.75 2.75 0 0 1 2.45 4h.55c.966 0 1.75.784 1.75 1.75v2c0 .698-.409 1.301-1 1.582v4.918A1.75 1.75 0 0 1 13.25 16H2.75A1.75 1.75 0 0 1 1 14.25V9.332C.409 9.05 0 8.448 0 7.75v-2C0 4.784.784 4 1.75 4h.55c-.192-.375-.3-.8-.3-1.25ZM7.25 9.5H2.5v4.75c0 .138.112.25.25.25h4.5Zm1.5 0v5h4.5a.25.25 0 0 0 .25-.25V9.5Zm0-4V8h5.5a.25.25 0 0 0 .25-.25v-2a.25.25 0 0 0-.25-.25Zm-7 0a.25.25 0 0 0-.25.25v2c0 .138.112.25.25.25h5.5V5.5h-5.5Zm3-4a1.25 1.25 0 0 0 0 2.5h2.309c-.233-.818-.542-1.401-.878-1.793-.43-.502-.915-.707-1.431-.707ZM8.941 4h2.309a1.25 1.25 0 0 0 0-2.5c-.516 0-1 .205-1.43.707-.337.392-.646.975-.879 1.793Z"></path></svg>
   {% elif which == 'repo' %}
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"></path></svg>
+  {% elif which == 'archive' %}
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M0 2.75C0 1.784.784 1 1.75 1h12.5c.966 0 1.75.784 1.75 1.75v1.5A1.75 1.75 0 0 1 14.25 6H1.75A1.75 1.75 0 0 1 0 4.25ZM1.75 7a.75.75 0 0 1 .75.75v5.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-5.5a.75.75 0 0 1 1.5 0v5.5A1.75 1.75 0 0 1 13.25 15H2.75A1.75 1.75 0 0 1 1 13.25v-5.5A.75.75 0 0 1 1.75 7Zm0-4.5a.25.25 0 0 0-.25.25v1.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25ZM6.25 8h3.5a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1 0-1.5Z"></path></svg>
+  {% elif which == 'warning' %}
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>
   {% endif %}
 {% endmacro %}

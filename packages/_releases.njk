@@ -1,0 +1,39 @@
+{% if pkg.releases | length > 1 %}
+  <h2>Versions</h2>
+{% else %}
+  <h2>Version</h2>
+{% endif %}
+
+{% for release in pkg.releases %}
+  <p><a class="release" href="{{ release.url }}">{{ release.version }}</a>
+  {% if release.sublime_text != "*" %}
+    <span class="requirement">({{ release.sublime_text }})</span>
+  {% endif %}
+  <br>
+  {{ release.date | date_time_format }}
+  {% if release.platforms | length > 0 %}
+    — {{ release.platforms | join(', ') }}
+  {% endif %}
+  </p>
+{% endfor %}
+
+{% if pkg.otherReleases and pkg.otherReleases | length > 0 %}
+<details class="other-releases">
+  <summary>Other releases</summary>
+  <ul>
+    {% for release in pkg.otherReleases %}
+      <li>
+        <a class="release" href="{{ release.url }}">{{ release.version }}</a>
+        {% if release.sublime_text != "*" %}
+          <span class="requirement">({{ release.sublime_text }})</span>
+        {% endif %}
+        <br>
+        {{ release.date | date_time_format }}
+        {% if release.platforms | length > 0 %}
+          — {{ release.platforms | join(', ') }}
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</details>
+{% endif %}
