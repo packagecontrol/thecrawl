@@ -70,6 +70,7 @@ eleventyComputed:
 {{ pack.labels(pkg.platforms, pkg.labels) }}
 
 {% if not pkg.removed %}
+  {# once a package is removed none of the links or the readme are still reliable #}
   <h2>Links</h2>
   <ul class="button-group links">
     {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}

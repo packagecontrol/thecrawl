@@ -76,6 +76,7 @@
     {%- endfor %}</p>
 
     <ul class="stats">
+      {{ rip(pkg.removed) }}
       {{ archived(pkg.archived_at) }}
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
