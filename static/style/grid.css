@@ -64,16 +64,16 @@
     padding-right: 4.8em;
   }
 
+  h3 {
+    color: var(--foreground-3);
+  }
+
   h3 a,
   a[href*="q=author"] {
     color: var(--foreground-1);
     &:hover {
       color: var(--orange-1);
     }
-  }
-
-  &.dead-on-arrival h3 {
-    color: var(--foreground-3);
   }
 
   p:last-child {

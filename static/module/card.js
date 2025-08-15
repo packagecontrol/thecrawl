@@ -44,7 +44,6 @@ export class Card {
       warning.setAttribute('title', 'Package was never crawled')
       warning.querySelector('.counter').innerText = 'R.I.P.'
       this.clone.querySelector('h3').innerHTML = this.pkg.name
-      this.clone.firstElementChild.classList.add('dead-on-arrival')
     }
     else if (this.pkg.removed) {
       const date = new Date(Number(this.pkg.removed) * 1000)
@@ -114,10 +113,6 @@ export class Card {
     else {
       a.classList.add('button', 'label')
       a.setAttribute('href', '/?q=' + encodeURI('label:"' + name + '"'))
-    }
-
-    if (name == 'Archived') {
-      a.classList.add('archive')
     }
 
     a.innerText = name

@@ -51,7 +51,3 @@ span.button {
     background: var(--background-3);
   }
 }
-
-p > .button {
-  display: inline-flex;
-}
