@@ -42,14 +42,14 @@ export class Card {
     }
     else if (this.pkg.doa) {
       warning.setAttribute('title', 'Package was never crawled')
-      warning.querySelector('.counter').innerText = 'RIP'
+      warning.querySelector('.counter').innerText = 'R.I.P.'
       this.clone.querySelector('h3').innerHTML = this.pkg.name
       this.clone.firstElementChild.classList.add('dead-on-arrival')
     }
     else if (this.pkg.removed) {
       const date = new Date(Number(this.pkg.removed) * 1000)
       warning.setAttribute('title', 'Package was removed on ' + this.pretty(date))
-      warning.querySelector('.counter').innerText = 'RIP'
+      warning.querySelector('.counter').innerText = 'R.I.P.'
     }
     else {
       warning.remove()
