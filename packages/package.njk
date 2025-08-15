@@ -46,7 +46,7 @@ eleventyComputed:
 
   {% elif pkg.created_at %}
     <br>
-    Since {{ pkg.created_at | date_format }}{% if (pkg.created_at | date_format) != (pkg.last_modified | date_format) -%}
+    Created {{ pkg.created_at | date_format }}{% if (pkg.created_at | date_format) != (pkg.last_modified | date_format) -%}
       , last updated {{ pkg.last_modified | date_format }}
     {%- endif %}{%- if pkg.archived_at -%}
       , archived {{ pkg.archived_at | date_format }}
