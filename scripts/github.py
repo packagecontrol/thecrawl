@@ -310,7 +310,11 @@ async def fetch_github_info(
             "default_branch": default_branch,
             "stars": repo_data.get("stargazerCount"),
             "created_at": repo_data.get("createdAt")[:19].replace('T', ' '),
-            "archived_at": repo_data.get("archivedAt", "")[:19].replace('T', ' '),
+            "archived_at":
+                archived_at[:19].replace('T', ' ')
+                if (archived_at := repo_data.get("archivedAt"))
+                else None
+            ,
         }) if "METADATA" in scopes else {},
         "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
         "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
