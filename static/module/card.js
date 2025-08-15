@@ -38,7 +38,7 @@ export class Card {
     if (this.pkg.archived_at) {
       const date = new Date(Number(this.pkg.archived_at) * 1000)
       warning.setAttribute('title', 'Repository was archived on ' + this.pretty(date))
-      warning.querySelector('.counter').innerText = 'UNMAINTAINED'
+      warning.querySelector('.counter').innerText = 'Unmaintained'
     }
     else if (this.pkg.doa) {
       warning.setAttribute('title', 'Package was never crawled')
