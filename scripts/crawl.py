@@ -272,6 +272,11 @@ async def crawl(
 
     out["first_seen"] = existing.get("first_seen", now_string)
     out["last_seen"] = now_string
+    # TODO: We need to think about if "fatal" states can be recovered from.
+    #       The tendency is that 404's and `HeartAttack`s are final states.
+    if not out.get("fail_reason", "").startswith("fatal: "):
+        out.pop("failing_since", None)
+        out.pop("fail_reason", None)
 
     releases = out["releases"]
     if not releases:
