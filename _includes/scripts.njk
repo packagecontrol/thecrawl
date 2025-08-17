@@ -40,3 +40,152 @@
 
   })();
 </script>
+
+<script>
+  (function(){
+    class HumanDateElement extends HTMLElement {
+      static get observedAttributes() { return ["datetime"]; }
+
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+        this._timer = null;
+      }
+
+      connectedCallback() {
+        this._render();
+      }
+
+      disconnectedCallback() {
+        this._clearTimer();
+      }
+
+      attributeChangedCallback(name, oldVal, newVal) {
+        if (name === 'datetime' && oldVal !== newVal) {
+          this._render();
+        }
+      }
+
+      get datetime() {
+        return this.getAttribute('datetime');
+      }
+      set datetime(v) {
+        if (v == null) {
+          this.removeAttribute('datetime');
+        } else {
+          this.setAttribute('datetime', v);
+        }
+      }
+
+      _clearTimer() {
+        if (this._timer) {
+          clearTimeout(this._timer);
+          this._timer = null;
+        }
+      }
+
+      _parseDate(raw) {
+        if (!raw || typeof raw !== 'string') {
+          return null;
+        }
+        const normalized = raw.replace(/\s+/, 'T');
+        const d = new Date(normalized);
+        if (!isNaN(d.getTime())) {
+          return d;
+        }
+        const d2 = new Date(raw);
+        return isNaN(d2.getTime()) ? null : d2;
+      }
+
+      _format(now, dt) {
+        const ms = now - dt;
+        const minute = 60 * 1000;
+        const hour = 60 * minute;
+        const day = 24 * hour;
+        const year = 365 * day;
+
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dtStart = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+        const yesterdayStart = new Date(todayStart.getTime() - day);
+
+        const monthShort = new Intl.DateTimeFormat('en-US', { month: 'short' });
+        const yearNum = new Intl.DateTimeFormat('en-US', { year: 'numeric' });
+        const hm = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        if (ms > 7 * year) {
+          return yearNum.format(dt);
+        }
+        if (ms > 1 * year) {
+          return `${monthShort.format(dt)} ${yearNum.format(dt)}`;
+        }
+        if (dtStart.getTime() === yesterdayStart.getTime()) {
+          return 'yesterday';
+        }
+        if (todayStart - dtStart > 1 * day) {
+          const dayNum = new Intl.DateTimeFormat('en-US', { day: 'numeric' }).format(dt);
+          return `${monthShort.format(dt)} ${dayNum}, ${yearNum.format(dt)}`;
+        }
+        if (ms >= 6 * hour) {
+          return `${hm.format(dt)}, today`;
+        }
+        if (ms < minute) {
+          return 'just now';
+        }
+        const mins = Math.floor(ms / minute);
+        if (mins < 60) {
+          return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+        }
+        const hours = Math.floor(ms / hour);
+        return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+      }
+
+      _nextUpdateInMs(now, dt) {
+        const ms = now - dt;
+        const minute = 60 * 1000;
+        const hour = 60 * minute;
+        const day = 24 * hour;
+
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dtStart = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+        const tomorrowStart = new Date(todayStart.getTime() + day);
+        const nextMinute = minute - (now.getSeconds() * 1000 + now.getMilliseconds());
+
+        if (ms < 6 * hour && dtStart.getTime() === todayStart.getTime()) {
+          return Math.max(5 * 1000, nextMinute);
+        }
+        if (ms >= 6 * hour && dtStart.getTime() === todayStart.getTime()) {
+          return tomorrowStart.getTime() - now.getTime() + 250;
+        }
+        const yesterdayStart = new Date(tomorrowStart.getTime() - day);
+        if (dtStart.getTime() === yesterdayStart.getTime()) {
+          return tomorrowStart.getTime() - now.getTime() + 250;
+        }
+        return null;
+      }
+
+      _render() {
+        this._clearTimer();
+        const raw = this.getAttribute('datetime');
+        const dt = this._parseDate(raw);
+
+        if (!dt) {
+          this.title = raw || '';
+          return;
+        }
+
+        const now = new Date();
+        const text = this._format(now, dt);
+        this.shadowRoot.textContent = text;
+        this.title = raw;
+
+        const wait = this._nextUpdateInMs(now, dt);
+        if (wait != null && isFinite(wait) && wait > 0) {
+          this._timer = setTimeout(() => this._render(), wait);
+        }
+      }
+    }
+
+    customElements.define('human-date', HumanDateElement);
+
+  })();
+</script>

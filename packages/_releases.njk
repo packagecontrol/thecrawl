@@ -10,7 +10,7 @@
     <span class="requirement">({{ release.sublime_text }})</span>
   {% endif %}
   <br>
-  {{ release.date | date_time_format }}
+  <human-date datetime="{{ release.date }}">{{ release.date | date_time_format }}</human-date>
   {% if release.platforms | length > 0 %}
     — {{ release.platforms | join(', ') }}
   {% endif %}
@@ -28,7 +28,7 @@
           <span class="requirement">({{ release.sublime_text }})</span>
         {% endif %}
         <br>
-        {{ release.date | date_time_format }}
+        <human-date datetime="{{ release.date }}">{{ release.date | date_time_format }}</human-date>
         {% if release.platforms | length > 0 %}
           — {{ release.platforms | join(', ') }}
         {% endif %}
