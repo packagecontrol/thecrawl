@@ -96,6 +96,7 @@
     class HumanDateElement extends HTMLElement {
       static attrs = {
         "abbreviate-months": "bool",
+        "always-months": "bool",
         clickable: "bool",
         datetime: "string",
         raw: "bool",
@@ -116,7 +117,7 @@
       }
 
       attributeChangedCallback(name, oldVal, newVal) {
-        if ((name === 'datetime' || name === 'raw' || name === 'abbreviate-months') && oldVal !== newVal) {
+        if ((name === 'datetime' || name === 'raw' || name === 'abbreviate-months' || name === 'always-months') && oldVal !== newVal) {
           this._render();
         }
         if (name === 'clickable') {
@@ -167,6 +168,8 @@
         const dtStart = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
         const yesterdayStart = new Date(todayStart.getTime() - day);
 
+        // Always show month if attribute is present
+        const alwaysMonths = this.hasAttribute('always-months');
         // Use full month if attribute is present, otherwise short (Jan vs January)
         const abbreviate = this.hasAttribute('abbreviate-months');
         const monthFormat = abbreviate ? { month: 'short' } : { month: 'long' };
@@ -174,7 +177,7 @@
         const yearNum = new Intl.DateTimeFormat('en-US', { year: 'numeric' });
         const hm = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-        if (ms > 7 * year) {
+        if (!alwaysMonths && ms > 7 * year) {
           return yearNum.format(dt);
         }
         if (ms > 1 * year) {
