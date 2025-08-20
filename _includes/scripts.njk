@@ -95,9 +95,10 @@
 
     class HumanDateElement extends HTMLElement {
       static attrs = {
+        "abbreviate-months": "bool",
         clickable: "bool",
         datetime: "string",
-        raw: "bool"
+        raw: "bool",
       };
 
       constructor() {
@@ -115,7 +116,7 @@
       }
 
       attributeChangedCallback(name, oldVal, newVal) {
-        if ((name === 'datetime' && oldVal !== newVal) || name === 'raw') {
+        if ((name === 'datetime' && oldVal !== newVal) || name === 'raw' || name === 'abbreviate-months') {
           this._render();
         }
         if (name === 'clickable') {
@@ -166,7 +167,10 @@
         const dtStart = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
         const yesterdayStart = new Date(todayStart.getTime() - day);
 
-        const monthShort = new Intl.DateTimeFormat('en-US', { month: 'short' });
+        // Use full month if attribute is present, otherwise short (Jan vs January)
+        const abbreviate = this.hasAttribute('abbreviate-months');
+        const monthFormat = abbreviate ? { month: 'short' } : { month: 'long' };
+        const monthFmt = new Intl.DateTimeFormat('en-US', monthFormat);
         const yearNum = new Intl.DateTimeFormat('en-US', { year: 'numeric' });
         const hm = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
@@ -174,14 +178,14 @@
           return yearNum.format(dt);
         }
         if (ms > 1 * year) {
-          return `${monthShort.format(dt)} ${yearNum.format(dt)}`;
+          return `${monthFmt.format(dt)} ${yearNum.format(dt)}`;
         }
         if (dtStart.getTime() === yesterdayStart.getTime()) {
           return 'yesterday';
         }
         if (todayStart - dtStart > 1 * day) {
           const dayNum = new Intl.DateTimeFormat('en-US', { day: 'numeric' }).format(dt);
-          return `${monthShort.format(dt)} ${dayNum}, ${yearNum.format(dt)}`;
+          return `${monthFmt.format(dt)} ${dayNum}, ${yearNum.format(dt)}`;
         }
         if (ms >= 6 * hour) {
           return `${hm.format(dt)}, today`;
