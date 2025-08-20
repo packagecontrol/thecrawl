@@ -116,7 +116,7 @@
       }
 
       attributeChangedCallback(name, oldVal, newVal) {
-        if ((name === 'datetime' && oldVal !== newVal) || name === 'raw' || name === 'abbreviate-months') {
+        if ((name === 'datetime' || name === 'raw' || name === 'abbreviate-months') && oldVal !== newVal) {
           this._render();
         }
         if (name === 'clickable') {
