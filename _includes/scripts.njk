@@ -43,10 +43,62 @@
 
 <script>
   (function(){
-    class HumanDateElement extends HTMLElement {
-      static get observedAttributes() {
-        return ["clickable", "datetime", "raw"];
+    // WebComponent helpers
+    // setup attributes and the corresponding properties
+    function setupReflectedAttributes(klass) {
+      const schema = klass.attrs || {};
+      const descriptors = {};
+
+      for (const [name, type] of Object.entries(schema)) {
+        const prop = dashToCamel(name);  // attribute names are kebab, properties camel
+        descriptors[prop] = type === "bool"
+          ? reflectBool(name)
+          : reflectString(name);
       }
+      Object.defineProperties(klass.prototype, descriptors);
+      klass.observedAttributes = Object.keys(schema);
+    }
+
+    function dashToCamel(attr) {
+      return attr.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    }
+
+    function reflectString(attr) {
+      return {
+        get() {
+          return this.getAttribute(attr);
+        },
+        set(v) {
+          if (v == null) {
+            this.removeAttribute(attr);
+          } else {
+            this.setAttribute(attr, v);
+          }
+        }
+      };
+    }
+
+    function reflectBool(attr) {
+      return {
+        get() {
+          return this.hasAttribute(attr);
+        },
+        set(v) {
+          if (v) {
+            this.setAttribute(attr, "");
+          } else {
+            this.removeAttribute(attr);
+          }
+        }
+      };
+    }
+
+    class HumanDateElement extends HTMLElement {
+      static attrs = {
+        clickable: "bool",
+        datetime: "string",
+        raw: "bool"
+      };
 
       constructor() {
         super();
@@ -72,39 +124,6 @@
           } else {
             this.removeEventListener('click', this._toggleRaw);
           }
-        }
-      }
-
-      get datetime() {
-        return this.getAttribute('datetime');
-      }
-      set datetime(v) {
-        if (v == null) {
-          this.removeAttribute('datetime');
-        } else {
-          this.setAttribute('datetime', v);
-        }
-      }
-
-      get clickable() {
-        return this.hasAttribute('clickable');
-      }
-      set clickable(val) {
-        if (val) {
-          this.setAttribute('clickable', '');
-        } else {
-          this.removeAttribute('clickable');
-        }
-      }
-
-      get raw() {
-        return this.hasAttribute('raw');
-      }
-      set raw(val) {
-        if (val) {
-          this.setAttribute('raw', '');
-        } else {
-          this.removeAttribute('raw');
         }
       }
 
@@ -230,6 +249,7 @@
       }
     }
 
+    setupReflectedAttributes(HumanDateElement);
     customElements.define('human-date', HumanDateElement);
 
   })();
