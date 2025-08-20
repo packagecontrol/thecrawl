@@ -39,24 +39,24 @@ eleventyComputed:
   {% if pkg.removed %}
     <br>
     {% if pkg.created_at -%}
-      Created <human-date datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>,
-      removed <human-date datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
+      Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>,
+      removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
     {% else %}
-      Removed <human-date datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
+      Removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
     {%- endif %}
 
   {% elif pkg.created_at %}
     <br>
-    Created <human-date datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>{% if pkg.created_at != pkg.last_modified -%}
-      , last updated <human-date datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
+    Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>{% if pkg.created_at != pkg.last_modified -%}
+      , last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
     {%- endif %}{%- if pkg.archived_at -%}
-      , archived <human-date datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
+      , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
     {%- endif %}.
 
   {% elif pkg.last_modified %}
     <br>
-    Last updated <human-date datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>{%- if pkg.archived_at -%}
-      , archived <human-date datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
+    Last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>{%- if pkg.archived_at -%}
+      , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
     {%- endif %}.
   {% endif %}
 </p>
