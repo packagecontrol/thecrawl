@@ -129,13 +129,18 @@
         }
       }
 
-      _toggleRaw = (event) => {
-        if (this.hasAttribute('raw')) {
-          this.removeAttribute('raw');
-        } else {
-          this.setAttribute('raw', '');
+      _toggleRaw = (ev) => {
+        if (ev.altKey) {
+          return; // alt/option + click to avoid toggle
         }
-      }
+        const sel = typeof this.shadowRoot.getSelection === "function"
+          ? this.shadowRoot.getSelection()
+          : document.getSelection();
+        if (sel && sel.rangeCount && !sel.isCollapsed) {
+          return;
+        }
+        this.toggleAttribute("raw");
+      };
 
       _clearTimer() {
         if (this._timer) {
