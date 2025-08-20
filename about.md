@@ -15,7 +15,7 @@ The system consists of several components:
 - A [crawler](https://github.com/packagecontrol/thecrawl) that compiles the data that drives the system: it finds new versions of all packages and makes them available to the site and to the Package Control package.
 - The [Package Control package](https://packages.sublimetext.io/packages/Package%20Control/) that provides the user interface inside Sublime Text to find, install, and update packages.
 
-You can start using the new hotness today by replacing the existing channel in your Package Control package settings with the new one:
+You can start using the new package registry today by replacing the existing channel in your Package Control package settings with the new one:
 
 ```sh
 https://packages.sublimetext.io/channel.json
@@ -34,8 +34,8 @@ Building this while keeping the original in place, allows us to iterate towards 
 
 ## State of affairs
 
-This project is a work in progress. Some features, like counting how often a package has been installed, are currently missing. While the project is in flux, much of the user facing aspects of Package Control remains unchanged to avoid disturbing users with potential breaking or disorienting changes.  
-The package registry is still in its "old" GitHub repository and might be moved eventually. The "old" website is still up and still much more visible than this new one. The "old" `channel.json` is still the default that's included in the Package Control package.
+This project is a work in progress. Some features, like detailed installation statistics, are currently missing. While the project is in flux, much of the user facing aspects of Package Control remains unchanged to avoid disturbing users with potential breaking or disorienting changes.  
+The package registry is still in its "old" GitHub repository and might be moved eventually. The "old" website is still up and still much more visible than this new one.
 
 However, the website is functionally very far along, features all packages, and is updated throughout the day with new release versions. And more importantly, the crawler and the `channel.json` it generates are fully functional and very reliable. 
 
@@ -50,7 +50,7 @@ You are very much invited to make the switch and come along for the ride!
 - Q: What does the "R" stand for?
   - A: Rewrite, refactor, revisited... something along those lines 😉
 - Q: How do I even use this?
-  - A: Find a package you like using the search feature on the [homepage](/), then paste the name into the "Install Package" command in Sublime Text. The [existing documentation](https://packagecontrol.io/docs/usage) for this is still valid.
+  - A: Find a package you like using the search feature on the [homepage](/), then paste the name into the "Install Package" command in Sublime Text. See also the [documentation](https://docs.sublimetext.io/guide/package-control/usage.html).
 
 <script type="module">
   document.querySelectorAll('pre').forEach(codeblock => {
