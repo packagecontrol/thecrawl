@@ -44,7 +44,9 @@
 <script>
   (function(){
     class HumanDateElement extends HTMLElement {
-      static get observedAttributes() { return ["datetime", "raw"]; }
+      static get observedAttributes() {
+        return ["clickable", "datetime", "raw"];
+      }
 
       constructor() {
         super();
@@ -64,6 +66,13 @@
         if ((name === 'datetime' && oldVal !== newVal) || name === 'raw') {
           this._render();
         }
+        if (name === 'clickable') {
+          if (newVal !== null) {
+            this.addEventListener('click', this._toggleRaw);
+          } else {
+            this.removeEventListener('click', this._toggleRaw);
+          }
+        }
       }
 
       get datetime() {
@@ -74,6 +83,17 @@
           this.removeAttribute('datetime');
         } else {
           this.setAttribute('datetime', v);
+        }
+      }
+
+      get clickable() {
+        return this.hasAttribute('clickable');
+      }
+      set clickable(val) {
+        if (val) {
+          this.setAttribute('clickable', '');
+        } else {
+          this.removeAttribute('clickable');
         }
       }
 
