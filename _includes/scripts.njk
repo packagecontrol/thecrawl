@@ -44,7 +44,7 @@
 <script>
   (function(){
     class HumanDateElement extends HTMLElement {
-      static get observedAttributes() { return ["datetime"]; }
+      static get observedAttributes() { return ["datetime", "raw"]; }
 
       constructor() {
         super();
@@ -61,7 +61,7 @@
       }
 
       attributeChangedCallback(name, oldVal, newVal) {
-        if (name === 'datetime' && oldVal !== newVal) {
+        if ((name === 'datetime' && oldVal !== newVal) || name === 'raw') {
           this._render();
         }
       }
@@ -74,6 +74,25 @@
           this.removeAttribute('datetime');
         } else {
           this.setAttribute('datetime', v);
+        }
+      }
+
+      get raw() {
+        return this.hasAttribute('raw');
+      }
+      set raw(val) {
+        if (val) {
+          this.setAttribute('raw', '');
+        } else {
+          this.removeAttribute('raw');
+        }
+      }
+
+      _toggleRaw = (event) => {
+        if (this.hasAttribute('raw')) {
+          this.removeAttribute('raw');
+        } else {
+          this.setAttribute('raw', '');
         }
       }
 
@@ -167,6 +186,7 @@
         this._clearTimer();
         const raw = this.getAttribute('datetime');
         const dt = this._parseDate(raw);
+        const showRaw = this.hasAttribute('raw');
 
         if (!dt) {
           this.title = raw || '';
@@ -174,9 +194,14 @@
         }
 
         const now = new Date();
-        const text = this._format(now, dt);
-        this.shadowRoot.textContent = text;
-        this.title = raw;
+        const formatted_text = this._format(now, dt);
+        if (showRaw) {
+          this.shadowRoot.textContent = raw;
+          this.title = formatted_text;
+        } else {
+          this.shadowRoot.textContent = formatted_text;
+          this.title = raw;
+        }
 
         const wait = this._nextUpdateInMs(now, dt);
         if (wait != null && isFinite(wait) && wait > 0) {
