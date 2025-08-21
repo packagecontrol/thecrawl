@@ -153,6 +153,24 @@ async def test_happy_path(
     set_now("2025-08-13 21:44:16")
     set_github_info(github_info)
 
+    await main_(registry, workspace, None, 100)
+    assert workspace == expected
+
+
+@pytest.mark.asyncio
+async def test_drop_packagecontrolio_as_homepage(
+    registry,
+    workspace,
+    github_info,
+    expected,
+    set_now,
+    set_github_info
+):
+    github_info["metadata"]["homepage"] = "https://packagecontrol.io/packages/GitSavvy"
+    expected["packages"]["GitSavvy"].pop("homepage")
+
+    set_now("2025-08-13 21:44:16")
+    set_github_info(github_info)
 
     await main_(registry, workspace, None, 100)
     assert workspace == expected

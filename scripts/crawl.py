@@ -349,6 +349,9 @@ async def crawl_package(
                 continue
 
         if url == details:
+            if info["metadata"].get("homepage", "").startswith("https://packagecontrol.io/packages/"):
+                info["metadata"].pop("homepage")
+
             out = info["metadata"] | out
             if (
                 existing.get("id")

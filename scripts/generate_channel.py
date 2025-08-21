@@ -186,7 +186,7 @@ def normalize_package(pkg) -> Package | None:
         "releases": releases,
 
         # mandatory with fallback
-        "homepage": pkg.get("homepage", pkg.get("source")),
+        "homepage": pkg.get("homepage", pkg.get("details", pkg.get("source"))),
 
         # mandatory keys but with null or empty defaults
         "description": pkg.get("description"),

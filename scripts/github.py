@@ -297,7 +297,7 @@ async def fetch_github_info(
             "id": repo_data.get("id"),
             "name": repo_data.get("name"),
             "description": repo_data.get("description"),
-            "homepage": repo_data.get("homepageUrl") or repo_data.get("url"),
+            "homepage": repo_data.get("homepageUrl"),
             "author": repo_data.get("owner", {}).get("login"),
             "readme": find_readme_url(
                 repo_data.get("files", {}).get("entries", []),
