@@ -5,10 +5,10 @@ import pytest
 
 
 @pytest.fixture
-def set_date(monkeypatch):
-    def _set_date(date_str):
+def set_now(monkeypatch):
+    def _set_now(date_str):
         monkeypatch.setattr("scripts.crawl.datetime", fixed_date(date_str))
-    return _set_date
+    return _set_now
 
 
 def fixed_date(date_str: str):
@@ -30,13 +30,14 @@ def set_github_info(monkeypatch):
 
 
 def mock_github(info):
+    if isinstance(info, str):
+        info = json.loads(info)
     async def wrapper(*args, **kwargs):
-        result = json.loads(info)
-        if "tags" in result:
-            result["tags"] = AsyncList(result["tags"])
-        if "branches" in result:
-            result["branches"] = AsyncList(result["branches"])
-        return result
+        if "tags" in info:
+            info["tags"] = AsyncList(info["tags"])
+        if "branches" in info:
+            info["branches"] = AsyncList(info["branches"])
+        return info
 
     return wrapper
 

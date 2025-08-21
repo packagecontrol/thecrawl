@@ -3,6 +3,7 @@ import pytest
 
 from scripts.crawl import main_
 
+
 REGISTRY = """
 {
   "repositories": [
@@ -119,14 +120,39 @@ EXPECTED = """
 """
 
 
-@pytest.mark.asyncio
-async def test_crawl_basic(set_date, set_github_info):
-    set_date("2025-08-13 21:44:16")
-    set_github_info(GITHUB_INFO)
+@pytest.fixture
+def registry():
+    return json.loads(REGISTRY)
 
-    registry = json.loads(REGISTRY)
-    workspace = json.loads(WORKSPACE)
-    expected = json.loads(EXPECTED)
+
+@pytest.fixture
+def workspace():
+    return json.loads(WORKSPACE)
+
+
+@pytest.fixture
+def github_info():
+    return json.loads(GITHUB_INFO)
+
+
+@pytest.fixture()
+def expected():
+    return json.loads(EXPECTED)
+
+
+
+@pytest.mark.asyncio
+async def test_happy_path(
+    registry,
+    workspace,
+    github_info,
+    expected,
+    set_now,
+    set_github_info
+):
+    set_now("2025-08-13 21:44:16")
+    set_github_info(github_info)
+
 
     await main_(registry, workspace, None, 100)
     assert workspace == expected
