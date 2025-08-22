@@ -24,6 +24,12 @@ export default defineConfig([
       globals: globals.node,
     },
   },
+  {
+    rules: {
+      '@stylistic/brace-style': 'off',
+      '@stylistic/quote-props': 'off',
+    },
+  },
   globalIgnores([
     '!.eleventy.js',
     '_site',

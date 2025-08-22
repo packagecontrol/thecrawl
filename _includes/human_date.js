@@ -1,4 +1,4 @@
-;(function(){
+;(function () {
   // WebComponent helpers
   // setup attributes and the corresponding properties
   function setupReflectedAttributes(klass) {
@@ -265,4 +265,3 @@
     return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute} ${map.timeZoneName}`
   }
 })()
-
