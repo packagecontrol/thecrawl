@@ -160,7 +160,7 @@ pre {
 }
 
 human-date[clickable] {
-  border-bottom: 1px dotted #ababab;
+  border-bottom: 1px dotted var(--foreground-4);
   cursor: pointer;
 }
 
