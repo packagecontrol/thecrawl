@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 const execSync = require('child_process').execSync
 
 const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
@@ -107,6 +108,36 @@ function minimalLib(pkg) {
 }
 
 module.exports = function (eleventyConfig) {
+  // Inline JS shortcode with optional minification via Terser
+  const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
+
+  eleventyConfig.addAsyncShortcode('inline_js', async (relPath) => {
+    const filePath = path.isAbsolute(relPath) ? relPath : path.join(process.cwd(), relPath)
+    let code = fs.readFileSync(filePath, 'utf8')
+
+    if (isProd) {
+      const terser = require('terser')
+      try {
+        const out = await terser.minify(code, {
+          compress: true,
+          mangle: true,
+          ecma: 2022,
+          module: false,
+          toplevel: false,
+        })
+        if (out.error) throw out.error
+        code = out.code || code
+      } catch (e) {
+        console.warn(`[inline_js] Minification failed for ${relPath}: ${e && e.message ? e.message : e}`)
+      }
+    }
+
+    // Prevent closing tag from breaking inline script
+    const safe = code.replace(/<\/script>/gi, '<\\/script>')
+    return `<script>${safe}</script>`
+  })
+
+  eleventyConfig.addWatchTarget('_includes/human_date.js')
   eleventyConfig.addPassthroughCopy('assets')
   eleventyConfig.addPassthroughCopy({ static: 'static_' + gitHash })
 
