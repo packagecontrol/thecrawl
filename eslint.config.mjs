@@ -19,8 +19,10 @@ export default defineConfig([
     },
   },
   {
-    files: ['.eleventy.js'],
-    languageOptions: { globals: globals.node },
+    files: ['.eleventy.js', '_data/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
   },
   globalIgnores([
     '!.eleventy.js',

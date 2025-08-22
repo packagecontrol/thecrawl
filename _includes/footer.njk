@@ -8,9 +8,9 @@
     Package Control is the community-driven package management solution
     for <a href="https://www.sublimetext.com/">Sublime Text</a>.
     <br>
-    Dates and times are in UTC.
+    Dates and times are in local time.
     <br>
-    &copy; {{ page.date.getFullYear() }} — Built: {{ page.date | date_time_format }}
+    &copy; {{ build.fullYear }} — Built: <human-date raw datetime="{{ build.timestamp }}">{{ build.formatted }}</human-date>
   </p>
 
   <nav>
