@@ -172,13 +172,9 @@
         if (!raw || typeof raw !== 'string') {
           return null;
         }
-        const normalized = raw.replace(/\s+/, 'T');
-        const d = new Date(normalized);
-        if (!isNaN(d.getTime())) {
-          return d;
-        }
-        const d2 = new Date(raw);
-        return isNaN(d2.getTime()) ? null : d2;
+        const actual_iso = raw.replace(" ", "T") + (raw.endsWith("Z") ? "" : "Z");
+        const d = new Date(actual_iso);
+        return isNaN(d.getTime()) ? null : d;
       }
 
       _format(now, dt) {
