@@ -109,6 +109,9 @@
       }
 
       connectedCallback() {
+        this.setAttribute("role", "button");
+        this.setAttribute("tabindex", "0");
+        this.setAttribute("aria-label", "Toggle between relative and absolute date")
         this._render();
       }
 
@@ -117,17 +120,33 @@
       }
 
       attributeChangedCallback(name, oldVal, newVal) {
+        if (name === 'raw') {
+          if (newVal !== null) {
+            this.setAttribute("aria-pressed", "true");
+          } else {
+            this.setAttribute("aria-pressed", "false");
+          }
+        }
         if ((name === 'datetime' || name === 'raw' || name === 'abbreviate-months' || name === 'always-months') && oldVal !== newVal) {
           this._render();
         }
         if (name === 'clickable') {
           if (newVal !== null) {
             this.addEventListener('click', this._toggleRaw);
+            this.addEventListener('keydown', this._handleKeyboard);
           } else {
             this.removeEventListener('click', this._toggleRaw);
+            this.removeEventListener('keydown', this._handleKeyboard);
           }
         }
       }
+
+      _handleKeyboard = (ev) => {
+        if (ev.key === "Enter" || ev.key === " ") {
+          ev.preventDefault();
+          this._toggleRaw(ev);
+        }
+      };
 
       _toggleRaw = (ev) => {
         if (ev.altKey) {
