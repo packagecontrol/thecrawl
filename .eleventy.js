@@ -108,7 +108,6 @@ function minimalLib(pkg) {
 }
 
 module.exports = function (eleventyConfig) {
-  // Inline JS shortcode with optional minification via Terser
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
 
   eleventyConfig.addAsyncShortcode('inline_js', async (relPath) => {
@@ -139,7 +138,11 @@ module.exports = function (eleventyConfig) {
 
   eleventyConfig.addWatchTarget('_includes/human_date.js')
   eleventyConfig.addPassthroughCopy('assets')
-  eleventyConfig.addPassthroughCopy({ static: 'static_' + gitHash })
+  if (isProd) {
+    eleventyConfig.addPassthroughCopy({ static: 'static_' + gitHash })
+  } else {
+    eleventyConfig.addPassthroughCopy('static')
+  }
 
   const libraries = JSON.parse(fs.readFileSync('libraries.json', 'utf8'))
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
@@ -243,8 +246,9 @@ module.exports = function (eleventyConfig) {
     return fmt.format(count)
   })
 
-  eleventyConfig.addFilter('bust', (path) => {
-    return path.replace('static/', 'static_' + gitHash + '/')
+  eleventyConfig.addFilter('bust', (p) => {
+    if (!isProd) return p
+    return p.replace('static/', 'static_' + gitHash + '/')
   })
 
   return {
