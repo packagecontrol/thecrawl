@@ -252,7 +252,6 @@
         this._clearTimer();
         const raw = this.getAttribute('datetime');
         const dt = this._parseDate(raw);
-        const showRaw = this.hasAttribute('raw');
 
         if (!dt) {
           this.title = raw || '';
@@ -261,12 +260,27 @@
 
         const now = new Date();
         const formatted_text = this._format(now, dt);
+        const iso_formatted = dt.toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
+        const iso_ish = formatAsLocalISO(dt);
+        const abbreviate = this.hasAttribute('abbreviate-months');
+        const monthFormat = abbreviate ? 'short' : 'long';
+        const longFormat = new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: monthFormat,
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: false,
+          timeZoneName: "short"
+        });
+        const github_style = longFormat.format(dt).replace(" at", ",");
+        const showRaw = this.hasAttribute('raw');
         if (showRaw) {
-          this.shadowRoot.textContent = raw;
+          this.shadowRoot.textContent = github_style;
           this.title = formatted_text;
         } else {
           this.shadowRoot.textContent = formatted_text;
-          this.title = raw;
+          this.title = github_style;
         }
 
         const wait = this._nextUpdateInMs(now, dt);
@@ -279,5 +293,20 @@
     setupReflectedAttributes(HumanDateElement);
     customElements.define('human-date', HumanDateElement);
 
+    const _formatter = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZoneName: "short",
+    });
+
+    function formatAsLocalISO(dt) {
+      const parts = _formatter.formatToParts(dt);
+      const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+      return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute} ${map.timeZoneName}`;
+    }
   })();
 </script>
