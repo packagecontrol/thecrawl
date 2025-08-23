@@ -21,3 +21,5 @@ clean:
 serve:
 	open http://localhost:8080/
 	npx @11ty/eleventy --serve --quiet
+	# If you want to speed up the dev cycle, you can limit the packages set, e.g.
+	# LIMIT_DATASET=100 npx @11ty/eleventy --serve --quiet

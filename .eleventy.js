@@ -157,7 +157,17 @@ module.exports = function (eleventyConfig) {
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
   const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
   // eslint-disable-next-line no-unused-vars
-  const all_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg)
+  let all_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg)
+
+  // Optional dataset limiting for faster local dev
+  const limitRaw = process.env.LIMIT_DATASET
+  const limit = typeof limitRaw === 'string' ? parseInt(limitRaw, 10) : NaN
+  const shouldLimit = Number.isFinite(limit) && limit > 0
+  if (shouldLimit) {
+    const before = all_packages.length
+    all_packages = all_packages.slice(0, limit)
+    console.warn(`[eleventy] LIMIT_DATASET=${limit} active: ${before} -> ${all_packages.length} packages`)
+  }
 
   // if readme is in pkg
   // transform some links
