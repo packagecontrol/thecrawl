@@ -93,7 +93,10 @@
           this.setAttribute('aria-pressed', 'false')
         }
       }
-      if ((name === 'datetime' || name === 'raw' || name === 'abbreviate-months' || name === 'always-months') && oldVal !== newVal) {
+      if (
+        ['abbreviate-months', 'always-months', 'datetime', 'raw'].includes(name)
+        && oldVal !== newVal
+      ) {
         this._render()
       }
     }
