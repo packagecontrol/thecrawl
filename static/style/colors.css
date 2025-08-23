@@ -21,12 +21,12 @@
 
   --red-1: hsl(7 98 56);
   --red-2: hsl(7 92 54);
-  --orange-1: hsl(32 98 56);
-  --orange-2: hsl(32 92 54);
-  --blue-1: hsl(198 97 55);
-  --blue-2: hsl(198 89 53);
-  --green-1: hsl(80 70 51);
-  --green-2: hsl(80 67 49);
+  --orange-1: hsl(32 94 55);
+  --orange-2: hsl(32 92 49);
+  --blue-1: hsl(198 97 54);
+  --blue-2: hsl(198 88 51);
+  --green-1: hsl(80 70 49);
+  --green-2: hsl(80 67 47);
 }
 
 :root[data-theme='dark'] {
