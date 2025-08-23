@@ -65,9 +65,6 @@
     }
 
     connectedCallback() {
-      this.setAttribute('role', 'button')
-      this.setAttribute('tabindex', '0')
-      this.setAttribute('aria-label', 'Toggle between relative and absolute date')
       this._render()
     }
 
@@ -76,7 +73,20 @@
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
-      if (name === 'raw') {
+      if (name === 'clickable') {
+        if (newVal !== null) {
+          this.setAttribute('role', 'button')
+          this.setAttribute('tabindex', '0')
+          this.addEventListener('click', this._toggleRaw)
+          this.addEventListener('keydown', this._handleKeyboard)
+        } else {
+          this.removeAttribute('role')
+          this.removeAttribute('tabindex')
+          this.removeEventListener('click', this._toggleRaw)
+          this.removeEventListener('keydown', this._handleKeyboard)
+        }
+      }
+      if (name === 'raw' && this.clickable) {
         if (newVal !== null) {
           this.setAttribute('aria-pressed', 'true')
         } else {
@@ -85,15 +95,6 @@
       }
       if ((name === 'datetime' || name === 'raw' || name === 'abbreviate-months' || name === 'always-months') && oldVal !== newVal) {
         this._render()
-      }
-      if (name === 'clickable') {
-        if (newVal !== null) {
-          this.addEventListener('click', this._toggleRaw)
-          this.addEventListener('keydown', this._handleKeyboard)
-        } else {
-          this.removeEventListener('click', this._toggleRaw)
-          this.removeEventListener('keydown', this._handleKeyboard)
-        }
       }
     }
 
