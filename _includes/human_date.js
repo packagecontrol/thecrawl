@@ -62,6 +62,15 @@
       super()
       this.attachShadow({ mode: 'open' })
       this._timer = null
+
+      this._text = document.createElement('span')
+
+      const desc = document.createElement('span')
+      desc.style.display = 'none'
+      desc.id = 'desc'
+      desc.textContent = 'Toggle date format.'
+
+      this.shadowRoot.append(this._text, desc)
     }
 
     connectedCallback() {
@@ -75,22 +84,26 @@
     attributeChangedCallback(name, oldVal, newVal) {
       if (name === 'clickable') {
         if (newVal !== null) {
-          this.setAttribute('role', 'button')
-          this.setAttribute('tabindex', '0')
-          this.addEventListener('click', this._toggleRaw)
-          this.addEventListener('keydown', this._handleKeyboard)
+          this._text.setAttribute('role', 'button')
+          this._text.setAttribute('tabindex', '0')
+          this._text.setAttribute('aria-describedby', 'desc')
+          this._text.setAttribute('aria-pressed', this.raw ? 'true' : 'false')
+          this._text.addEventListener('click', this._toggleRaw)
+          this._text.addEventListener('keydown', this._handleKeyboard)
         } else {
-          this.removeAttribute('role')
-          this.removeAttribute('tabindex')
-          this.removeEventListener('click', this._toggleRaw)
-          this.removeEventListener('keydown', this._handleKeyboard)
+          this._text.removeAttribute('role')
+          this._text.removeAttribute('tabindex')
+          this._text.removeAttribute('aria-describedby')
+          this._text.removeAttribute('aria-pressed')
+          this._text.removeEventListener('click', this._toggleRaw)
+          this._text.removeEventListener('keydown', this._handleKeyboard)
         }
       }
       if (name === 'raw' && this.clickable) {
         if (newVal !== null) {
-          this.setAttribute('aria-pressed', 'true')
+          this._text.setAttribute('aria-pressed', 'true')
         } else {
-          this.setAttribute('aria-pressed', 'false')
+          this._text.setAttribute('aria-pressed', 'false')
         }
       }
       if (
@@ -233,10 +246,10 @@
       }).format(dt).replace(' at', ',')
       const showRaw = this.hasAttribute('raw')
       if (showRaw) {
-        this.shadowRoot.textContent = longFormat
+        this._text.textContent = longFormat
         this.title = shortFormat
       } else {
-        this.shadowRoot.textContent = shortFormat
+        this._text.textContent = shortFormat
         this.title = longFormat
       }
 
