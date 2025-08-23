@@ -219,9 +219,7 @@
       }
 
       const now = new Date()
-      const formatted_text = this._format(now, dt)
-      const iso_formatted = dt.toISOString().slice(0, 16).replace('T', ' ') + ' UTC'
-      const iso_ish = formatAsLocalISO(dt)
+      const shortFormat = this._format(now, dt)
       const abbreviate = this.hasAttribute('abbreviate-months')
       const monthFormat = abbreviate ? 'short' : 'long'
       const longFormat = new Intl.DateTimeFormat('en-US', {
@@ -232,15 +230,14 @@
         minute: '2-digit',
         hour12: false,
         timeZoneName: 'short',
-      })
-      const github_style = longFormat.format(dt).replace(' at', ',')
+      }).format(dt).replace(' at', ',')
       const showRaw = this.hasAttribute('raw')
       if (showRaw) {
-        this.shadowRoot.textContent = github_style
-        this.title = formatted_text
+        this.shadowRoot.textContent = longFormat
+        this.title = shortFormat
       } else {
-        this.shadowRoot.textContent = formatted_text
-        this.title = github_style
+        this.shadowRoot.textContent = shortFormat
+        this.title = longFormat
       }
 
       const wait = this._nextUpdateInMs(now, dt)
@@ -252,20 +249,4 @@
 
   setupReflectedAttributes(HumanDateElement)
   customElements.define('human-date', HumanDateElement)
-
-  const _formatter = new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZoneName: 'short',
-  })
-
-  function formatAsLocalISO(dt) {
-    const parts = _formatter.formatToParts(dt)
-    const map = Object.fromEntries(parts.map(p => [p.type, p.value]))
-    return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute} ${map.timeZoneName}`
-  }
 })()
