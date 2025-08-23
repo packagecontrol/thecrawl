@@ -109,9 +109,16 @@ function minimalLib(pkg) {
 
 module.exports = function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
+  const inlineJsCache = new Map()
 
   eleventyConfig.addAsyncShortcode('inline_js', async (relPath) => {
     const filePath = path.isAbsolute(relPath) ? relPath : path.join(process.cwd(), relPath)
+    const stat = fs.statSync(filePath)
+    const cacheKey = JSON.stringify({ path: filePath, mtime: stat.mtimeMs, prod: isProd })
+    if (inlineJsCache.has(cacheKey)) {
+      return inlineJsCache.get(cacheKey)
+    }
+
     let code = fs.readFileSync(filePath, 'utf8')
 
     if (isProd) {
@@ -133,7 +140,9 @@ module.exports = function (eleventyConfig) {
 
     // Prevent closing tag from breaking inline script
     const safe = code.replace(/<\/script>/gi, '<\\/script>')
-    return `<script>${safe}</script>`
+    const out = `<script>${safe}</script>`
+    inlineJsCache.set(cacheKey, out)
+    return out
   })
 
   eleventyConfig.addWatchTarget('_includes/human_date.js')
