@@ -19,8 +19,16 @@ export default defineConfig([
     },
   },
   {
-    files: ['.eleventy.js'],
-    languageOptions: { globals: globals.node },
+    files: ['.eleventy.js', '_data/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    rules: {
+      '@stylistic/brace-style': 'off',
+      '@stylistic/quote-props': 'off',
+    },
   },
   globalIgnores([
     '!.eleventy.js',

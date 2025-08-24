@@ -15,8 +15,8 @@
 
   --foreground-1: hsl(240 5 29); /* black */
   --foreground-2: hsl(240 4 40); /* ..    */
-  --foreground-3: hsl(240 3 51); /* grey  */
-
+  --foreground-3: hsl(240 3 51); /* ..    */
+  --foreground-4: hsl(240 3 60); /* grey  */
   --white: #fff;
 
   --red-1: hsl(7 98 56);
@@ -41,6 +41,7 @@
   --foreground-1: hsl(60 10 84);
   --foreground-2: hsl(60 5 71);
   --foreground-3: hsl(60 3 59);
+  --foreground-4: hsl(60 2 48);
 
   --red-1: hsl(7 92 54);
   --red-2: hsl(7 98 56);

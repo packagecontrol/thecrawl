@@ -159,6 +159,11 @@ pre {
   color: var(--foreground-3);
 }
 
+human-date[clickable] {
+  border-bottom: 1px dotted var(--foreground-4);
+  cursor: pointer;
+}
+
 ul.stats {
   list-style: none;
   display: flex;

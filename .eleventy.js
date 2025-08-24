@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 const execSync = require('child_process').execSync
 
 const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
@@ -107,14 +108,66 @@ function minimalLib(pkg) {
 }
 
 module.exports = function (eleventyConfig) {
+  const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
+  const inlineJsCache = new Map()
+
+  eleventyConfig.addAsyncShortcode('inline_js', async (relPath) => {
+    const filePath = path.isAbsolute(relPath) ? relPath : path.join(process.cwd(), relPath)
+    const stat = fs.statSync(filePath)
+    const cacheKey = JSON.stringify({ path: filePath, mtime: stat.mtimeMs, prod: isProd })
+    if (inlineJsCache.has(cacheKey)) {
+      return inlineJsCache.get(cacheKey)
+    }
+
+    let code = fs.readFileSync(filePath, 'utf8')
+
+    if (isProd) {
+      const terser = require('terser')
+      try {
+        const out = await terser.minify(code, {
+          compress: true,
+          mangle: true,
+          ecma: 2022,
+          module: false,
+          toplevel: false,
+        })
+        if (out.error) throw out.error
+        code = out.code || code
+      } catch (e) {
+        console.warn(`[inline_js] Minification failed for ${relPath}: ${e && e.message ? e.message : e}`)
+      }
+    }
+
+    // Prevent closing tag from breaking inline script
+    const safe = code.replace(/<\/script>/gi, '<\\/script>')
+    const out = `<script>${safe}</script>`
+    inlineJsCache.set(cacheKey, out)
+    return out
+  })
+
+  eleventyConfig.addWatchTarget('_includes/human_date.js')
   eleventyConfig.addPassthroughCopy('assets')
-  eleventyConfig.addPassthroughCopy({ static: 'static_' + gitHash })
+  if (isProd) {
+    eleventyConfig.addPassthroughCopy({ static: 'static_' + gitHash })
+  } else {
+    eleventyConfig.addPassthroughCopy('static')
+  }
 
   const libraries = JSON.parse(fs.readFileSync('libraries.json', 'utf8'))
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
   const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
   // eslint-disable-next-line no-unused-vars
-  const all_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg)
+  let all_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg)
+
+  // Optional dataset limiting for faster local dev
+  const limitRaw = process.env.LIMIT_DATASET
+  const limit = typeof limitRaw === 'string' ? parseInt(limitRaw, 10) : NaN
+  const shouldLimit = Number.isFinite(limit) && limit > 0
+  if (shouldLimit) {
+    const before = all_packages.length
+    all_packages = all_packages.slice(0, limit)
+    console.warn(`[eleventy] LIMIT_DATASET=${limit} active: ${before} -> ${all_packages.length} packages`)
+  }
 
   // if readme is in pkg
   // transform some links
@@ -212,8 +265,9 @@ module.exports = function (eleventyConfig) {
     return fmt.format(count)
   })
 
-  eleventyConfig.addFilter('bust', (path) => {
-    return path.replace('static/', 'static_' + gitHash + '/')
+  eleventyConfig.addFilter('bust', (p) => {
+    if (!isProd) return p
+    return p.replace('static/', 'static_' + gitHash + '/')
   })
 
   return {
