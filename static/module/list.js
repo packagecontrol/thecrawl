@@ -89,7 +89,9 @@ export class List {
 
   // scroll to top of results after updating the list "in place"
   scrollUp(all_the_way = true) {
-    const el = all_the_way ? document.querySelector('h1') : this.getSection().querySelector('h2')
+    const el = all_the_way
+      ? (document.forms.search)
+      : (document.getElementById('result-header') || document.forms.search)
     const rect = el.getBoundingClientRect()
     const completelyAbove = rect.bottom < 0
     const completelyBelow = rect.top > window.innerHeight
