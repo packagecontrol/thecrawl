@@ -7,6 +7,7 @@ header {
     max-width: 92rem;
     margin: 0 auto;
     position: relative;
+    padding-top: 6px;
   }
 
   * {
@@ -14,8 +15,18 @@ header {
     padding: 0;
   }
 
+  .brand {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  .brand-text {
+    position: relative;
+    top: -6px;
+  }
+
   h2 + p {
-    margin-top: -6px;
+    line-height: 1.2em;
   }
 
   h2 a {

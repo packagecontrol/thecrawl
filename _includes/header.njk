@@ -7,22 +7,28 @@
       <a href="/about">About / FAQ</a>
     </nav>
 
-    <h2><a href="/">Package Control <span class="hot">R</span></a></h2>
-    <p>The Sublime Text package directory, {{ [
-        "re-imagined",
-        "reassembled",
-        "rebooted",
-        "reborn",
-        "recompiled",
-        "refactored",
-        "reinvigorated",
-        "remastered",
-        "replenished",
-        "restarted",
-        "resurrected",
-        "revisited",
-        "rewired"
-      ] | random
-    }}.</p>
+    <div class="brand">
+      <img src="/assets/logo.webp" width="80" height="80" alt="Package Control R logo">
+      <div class="brand-text">
+        <h2><a href="/">Package Control <span class="hot">R</span></a></h2>
+        <p>The Sublime Text package directory, {{ [
+            "re-imagined",
+            "reassembled",
+            "rebooted",
+            "reborn",
+            "recompiled",
+            "refactored",
+            "reinvigorated",
+            "remastered",
+            "replenished",
+            "restarted",
+            "resurrected",
+            "revisited",
+            "rewired"
+          ] | random
+        }}.</p>
+        <p>{{ collections.packages | length | grouping }} packages in.</p>
+      </div>
+    </div>
   </div>
 </header>
