@@ -47,6 +47,8 @@
   stroke: var(--blue-1);
   stroke-width: 2;
   fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .install-chart .upgrades-point {

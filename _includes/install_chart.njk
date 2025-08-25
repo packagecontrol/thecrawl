@@ -153,22 +153,59 @@
             {% endif %}
           {% endfor %}
 
-          {# upgrades line path #}
+          {# upgrades line path (smoothed cubic Bézier via Catmull-Rom approximation) #}
           {% set d = '' %}
-          {% for val in upgrades %}
-            {% set i = loop.index0 %}
+          {% set n = upgrades | length %}
+          {% if n > 0 %}
+            {# move to first point #}
+            {% set val0 = upgrades[0] %}
             {% if max_scale_r > 0 %}
-              {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
+              {% set y0 = chart_h - (val0 / max_scale_r) * chart_h %}
             {% else %}
-              {% set y2 = chart_h %}
+              {% set y0 = chart_h %}
             {% endif %}
-            {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
-            {% if i == 0 %}
-              {% set d = 'M ' ~ x2 ~ ' ' ~ y2 %}
-            {% else %}
-              {% set d = d ~ ' L ' ~ x2 ~ ' ' ~ y2 %}
-            {% endif %}
-          {% endfor %}
+            {% set x0 = (bar_w / 2) %}
+            {% set d = 'M ' ~ x0 ~ ' ' ~ y0 %}
+
+            {# build cubic segments #}
+            {% for i in range(0, n - 1) %}
+              {# indices p0, p1, p2, p3 (clamped) #}
+              {% if i - 1 < 0 %}{% set i0 = 0 %}{% else %}{% set i0 = i - 1 %}{% endif %}
+              {% set i1 = i %}
+              {% set i2 = i + 1 %}
+              {% if i + 2 > n - 1 %}{% set i3 = n - 1 %}{% else %}{% set i3 = i + 2 %}{% endif %}
+
+              {% set v0 = upgrades[i0] %}
+              {% set v1 = upgrades[i1] %}
+              {% set v2 = upgrades[i2] %}
+              {% set v3 = upgrades[i3] %}
+
+              {% set x0 = i0 * (bar_w + gap) + (bar_w / 2) %}
+              {% set x1 = i1 * (bar_w + gap) + (bar_w / 2) %}
+              {% set x2 = i2 * (bar_w + gap) + (bar_w / 2) %}
+              {% set x3 = i3 * (bar_w + gap) + (bar_w / 2) %}
+
+              {% if max_scale_r > 0 %}
+                {% set y0 = chart_h - (v0 / max_scale_r) * chart_h %}
+                {% set y1 = chart_h - (v1 / max_scale_r) * chart_h %}
+                {% set y2 = chart_h - (v2 / max_scale_r) * chart_h %}
+                {% set y3 = chart_h - (v3 / max_scale_r) * chart_h %}
+              {% else %}
+                {% set y0 = chart_h %}
+                {% set y1 = chart_h %}
+                {% set y2 = chart_h %}
+                {% set y3 = chart_h %}
+              {% endif %}
+
+              {# Catmull-Rom to Bezier control points #}
+              {% set c1x = x1 + (x2 - x0) / 6 %}
+              {% set c1y = y1 + (y2 - y0) / 6 %}
+              {% set c2x = x2 - (x3 - x1) / 6 %}
+              {% set c2y = y2 - (y3 - y1) / 6 %}
+
+              {% set d = d ~ ' C ' ~ c1x ~ ' ' ~ c1y ~ ' ' ~ c2x ~ ' ' ~ c2y ~ ' ' ~ x2 ~ ' ' ~ y2 %}
+            {% endfor %}
+          {% endif %}
           <path d="{{ d }}" class="upgrades-line" />
 
           {# Points to host tooltips #}
