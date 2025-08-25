@@ -1,5 +1,6 @@
 .install-chart {
   margin: 10px 0 18px;
+  transition: opacity 0.3s ease-in;
 }
 
 .install-chart .axis {
@@ -19,10 +20,18 @@
 
 .install-chart .tick-right {
   fill: var(--blue-1);
+  transition: opacity 0.1s ease-in;
+  opacity: 0.0;
 }
 
-.install-chart .bar-net { fill: var(--orange-1); }
-.install-chart .bar-remove { fill: var(--orange-2); }
+.install-chart .bar-net {
+  transition: filter 0.1s ease-in;
+  fill: var(--orange-1);
+}
+.install-chart .bar-remove {
+  transition: filter 0.1s ease-in;
+  fill: var(--orange-2);
+}
 
 /* Fallback: highlight hovered rect */
 .install-chart .bar-remove:hover,
@@ -33,6 +42,8 @@
 .install-chart:has(.bar-remove:hover) .bar-remove { filter: brightness(1.12); }
 
 .install-chart .upgrades-line {
+  transition: opacity 0.1s ease-in;
+  opacity: 0.2;
   stroke: var(--blue-1);
   stroke-width: 2;
   fill: none;
@@ -40,4 +51,13 @@
 
 .install-chart .upgrades-point {
   fill: var(--blue-2);
+}
+
+.install-chart :hover {
+  .tick-right {
+    opacity: 1;
+  }
+  .upgrades-line {
+    opacity: 1;
+  }
 }
