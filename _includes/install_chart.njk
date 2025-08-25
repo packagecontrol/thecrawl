@@ -22,6 +22,25 @@
   {% endfor %}
 
   {# choose nice step for ~5 ticks #}
+  {#
+    We want about 5 evenly spaced tick labels on the y-axis, regardless of
+    the data magnitude. To achieve this we:
+
+    1) Pick a target number of ticks (target = 5).
+    2) Compute a rough step as ceil(max_value / target).
+       This is the smallest step that could cover the range with ~target ticks
+       but it may be an awkward number (e.g. 37, 413, 9876).
+    3) Normalize the rough step to a “nice” human-friendly step using a
+       1–2–5 sequence scaled by a power of 10. Concretely, we find the order of
+       magnitude of rough, then round it up to one of {1, 2, 5} × 10^k.
+       Examples: 37 → 50, 413 → 500, 9876 → 10000.
+    4) Set the axis step = nice_step and the axis maximum (= scale) to
+       max_scale = step × target. This ensures the top grid line lands on a
+       clean number and we end up with ~target ticks.
+
+    We apply the same method for the right axis (upgrades) independently so
+    both series look well-scaled even if their magnitudes differ.
+  #}
   {% set target = 5 %}
   {% set rough = (maxv + target - 1) // target %}
   {% set mag = 1 %}
