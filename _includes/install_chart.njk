@@ -153,7 +153,23 @@
             {% endif %}
           {% endfor %}
 
-          {# upgrades line path (smoothed cubic Bézier via Catmull-Rom approximation) #}
+          {#
+            upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
+
+            Basics:
+            - A straight polyline would use SVG 'L' commands between points: M x0 y0 L x1 y1 L x2 y2 …
+              That produces sharp corners. To smooth the line we switch to cubic Bézier segments ('C').
+              We start with a first point (M), and then continue with two control points and a segment
+              end-point (C).
+              Refer: https://svg-tutorial.com/editor/cubic-bezier
+
+            - For each curved segment from P1 to P2 we take four points P0, P1, P2, P3
+              (clamping at the ends) and compute the two control points as:
+                C1 = P1 + (P2 − P0) / 6
+                C2 = P2 − (P3 − P1) / 6
+              This is a common Catmull–Rom to Bézier conversion that yields a smooth line
+              passing through all data points.
+          #}
           {% set d = '' %}
           {% set n = upgrades | length %}
           {% if n > 0 %}
@@ -197,7 +213,18 @@
                 {% set y3 = chart_h %}
               {% endif %}
 
-              {# Catmull-Rom to Bezier control points #}
+              {#
+                Catmull–Rom → Bézier control points
+                Intuition: Catmull–Rom defines the tangent at P1 as (P2−P0)/2 and at P2 as (P3−P1)/2
+                (with unit spacing). A cubic Bézier's tangents are 3·(C1−P1) at the start and
+                3·(P2−C2) at the end. T.i.:
+                  3·(C1−P1) = (P2−P0)/2
+                     C1−P1  = (P2−P0)/6
+                         C1 = P1 + (P2−P0)/6
+                Likewise:
+                  3·(P2−C2) = (P3−P1)/2
+                         C2 = P2 − (P3−P1)/6
+              #}
               {% set c1x = x1 + (x2 - x0) / 6 %}
               {% set c1y = y1 + (y2 - y0) / 6 %}
               {% set c2x = x2 - (x3 - x1) / 6 %}
