@@ -72,6 +72,7 @@ function basePackage(pkg, stats) {
   const allPlatforms = releases.flatMap(release => release.platforms)
   const uniquePlatforms = Array.from(new Set(allPlatforms))
   const stat = typeof stats === 'undefined' ? 0 : Math.max(0, stats['install'] - stats['remove'])
+  const installs_weekly = (stats && stats.installs && Array.isArray(stats.installs.weekly)) ? stats.installs.weekly : []
 
   return {
     name: pkg.name,
@@ -87,6 +88,7 @@ function basePackage(pkg, stats) {
     otherReleases,
     labels: pkg.labels,
     platforms: uniquePlatforms,
+    installs_weekly,
   }
 }
 
@@ -179,6 +181,7 @@ export default function (eleventyConfig) {
       return {
         ...pkg,
         ...basePackage(pkg, stats[pkg.name]),
+        weekly_dates: stats['__weekly_dates'],
         ...(readme_url !== pkg.readme ? { readme_url } : {}),
       }
     })

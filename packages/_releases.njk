@@ -1,3 +1,9 @@
+{% import "_includes/install_chart.njk" as charts %}
+
+<div class="chart-container">
+  {{ charts.chart(pkg.installs_weekly, pkg.weekly_dates) }}
+</div>
+
 {% if pkg.releases | length > 1 %}
   <h2>Versions</h2>
 {% else %}

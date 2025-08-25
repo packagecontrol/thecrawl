@@ -1,0 +1,28 @@
+.install-chart {
+  margin: 10px 0 18px;
+}
+
+.install-chart .axis {
+  stroke: var(--background-4);
+  stroke-width: 1;
+}
+
+.install-chart .grid {
+  stroke: var(--background-3);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.install-chart .tick {
+  fill: var(--foreground-3);
+  font-size: 12px;
+}
+
+.install-chart .bar {
+  fill: var(--orange-1);
+}
+
+.install-chart .bar:hover {
+  fill: var(--orange-2);
+}
+

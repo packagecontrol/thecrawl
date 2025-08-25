@@ -1,0 +1,77 @@
+{% macro chart(weekly=[], dates=[]) %}
+  {% set count = weekly | length %}
+  {% set dates_count = dates | length %}
+  {% if count > 0 and dates_count > 0 %}
+
+  {# dimensions #}
+  {% set bar_w = 12 %}
+  {% set gap = 1 %}
+  {% set top = 10 %}
+  {% set bottom = 20 %}
+  {% set left = 40 %}
+  {% set right = 6 %}
+  {% set chart_h = 120 %}
+  {% set chart_w = (count * (bar_w + gap)) - gap %}
+  {% set svg_w = left + chart_w + right %}
+  {% set svg_h = top + chart_h + bottom %}
+
+  {# compute max #}
+  {% set maxv = 0 %}
+  {% for v in weekly %}
+    {% if v > maxv %}{% set maxv = v %}{% endif %}
+  {% endfor %}
+
+  {# choose nice step for ~5 ticks #}
+  {% set target = 5 %}
+  {% set rough = (maxv + target - 1) // target %}
+  {% set mag = 1 %}
+  {% set digits = (('' ~ rough) | length) %}
+  {% for i in range(1, digits) %}
+    {% set mag = mag * 10 %}
+  {% endfor %}
+  {% set lead = (rough + mag - 1) // mag %}
+  {% if lead <= 1 %}
+    {% set step = 1 * mag %}
+  {% elif lead <= 2 %}
+    {% set step = 2 * mag %}
+  {% elif lead <= 5 %}
+    {% set step = 5 * mag %}
+  {% else %}
+    {% set step = 10 * mag %}
+  {% endif %}
+  {% set max_scale = step * target %}
+
+  <div class="install-chart">
+    <svg width="{{ svg_w }}" height="{{ svg_h }}" viewBox="0 0 {{ svg_w }} {{ svg_h }}" role="img" aria-label="Weekly installs">
+      <g transform="translate({{ left }}, {{ top }})">
+        {# y-axis line #}
+        <line x1="0" y1="0" x2="0" y2="{{ chart_h }}" class="axis" />
+
+        {# ticks and labels #}
+        {% for i in range(0, target + 1) %}
+          {% set t = i * step %}
+          {% if t > max_scale %}{% set t = max_scale %}{% endif %}
+          {% set y = chart_h - (t / max_scale) * chart_h %}
+          <line x1="0" y1="{{ y }}" x2="{{ chart_w }}" y2="{{ y }}" class="grid" />
+          <text x="-6" y="{{ y }}" text-anchor="end" dominant-baseline="middle" class="tick">{{ t | compact }}</text>
+        {% endfor %}
+
+        {# bars #}
+        {% for v in weekly %}
+          {% set i = loop.index0 %}
+          {% if max_scale > 0 %}
+            {% set h = (v / max_scale) * chart_h %}
+          {% else %}
+            {% set h = 0 %}
+          {% endif %}
+          {% set x = i * (bar_w + gap) %}
+          {% set y = chart_h - h %}
+          <rect x="{{ x }}" y="{{ y }}" width="{{ bar_w }}" height="{{ h }}" class="bar">
+            <title>{{ dates[i] }}: {{ v | grouping }}</title>
+          </rect>
+        {% endfor %}
+      </g>
+    </svg>
+  </div>
+  {% endif %}
+{% endmacro %}
