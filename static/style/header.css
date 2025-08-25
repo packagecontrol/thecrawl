@@ -19,7 +19,16 @@ header {
     display: flex;
     gap: 1rem;
     align-items: center;
+
+    a :hover {
+      color: var(--foreground-1);
+      background: var(--background-3);
+      padding: 8px;
+      margin: -8px;
+      border-radius: 4px;
+    }
   }
+
   .brand-text {
     position: relative;
     top: -6px;
