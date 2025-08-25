@@ -18,11 +18,6 @@
   font-size: 12px;
 }
 
-.install-chart .bar {
-  fill: var(--orange-1);
-}
-
-.install-chart .bar:hover {
-  fill: var(--orange-2);
-}
-
+.install-chart .bar-net { fill: var(--orange-1); }
+.install-chart .bar-remove { fill: var(--orange-2); }
+.install-chart .bar-remove:hover, .install-chart .bar-net:hover { filter: brightness(1.05); }

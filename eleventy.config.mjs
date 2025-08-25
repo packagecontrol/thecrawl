@@ -73,6 +73,7 @@ function basePackage(pkg, stats) {
   const uniquePlatforms = Array.from(new Set(allPlatforms))
   const stat = typeof stats === 'undefined' ? 0 : Math.max(0, stats['install'] - stats['remove'])
   const installs_weekly = (stats && stats.installs && Array.isArray(stats.installs.weekly)) ? stats.installs.weekly : []
+  const removals_weekly = (stats && stats.removals && Array.isArray(stats.removals.weekly)) ? stats.removals.weekly : []
 
   return {
     name: pkg.name,
@@ -89,6 +90,7 @@ function basePackage(pkg, stats) {
     labels: pkg.labels,
     platforms: uniquePlatforms,
     installs_weekly,
+    removals_weekly,
   }
 }
 

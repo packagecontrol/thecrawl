@@ -1,4 +1,4 @@
-{% macro chart(weekly=[], dates=[]) %}
+{% macro chart(weekly=[], removals=[], dates=[]) %}
   {% set count = weekly | length %}
   {% set dates_count = dates | length %}
   {% if count > 0 and dates_count > 0 %}
@@ -57,17 +57,31 @@
         {% endfor %}
 
         {# bars #}
-        {% for v in weekly %}
+        {% for inst in weekly %}
           {% set i = loop.index0 %}
+          {% set rem = (removals[i] or 0) %}
+          {% set net_val = inst - rem %}
+          {% if net_val < 0 %}{% set net_val = 0 %}{% endif %}
+          {% set rem_draw = rem %}
+          {% if rem_draw > inst %}{% set rem_draw = inst %}{% endif %}
+
           {% if max_scale > 0 %}
-            {% set h = (v / max_scale) * chart_h %}
+            {% set net_h = (net_val / max_scale) * chart_h %}
+            {% set rem_h = (rem_draw / max_scale) * chart_h %}
           {% else %}
-            {% set h = 0 %}
+            {% set net_h = 0 %}
+            {% set rem_h = 0 %}
           {% endif %}
+
           {% set x = i * (bar_w + gap) %}
-          {% set y = chart_h - h %}
-          <rect x="{{ x }}" y="{{ y }}" width="{{ bar_w }}" height="{{ h }}" class="bar">
-            <title>{{ dates[i] }}: {{ v | grouping }}</title>
+          {% set y_net = chart_h - net_h %}
+          {% set y_rem = y_net - rem_h %}
+
+          <rect x="{{ x }}" y="{{ y_net }}" width="{{ bar_w }}" height="{{ net_h }}" class="bar bar-net">
+            <title>{{ dates[i] }}: installs {{ inst | grouping }}, removals {{ rem | grouping }}</title>
+          </rect>
+          <rect x="{{ x }}" y="{{ y_rem }}" width="{{ bar_w }}" height="{{ rem_h }}" class="bar bar-remove">
+            <title>{{ dates[i] }}: installs {{ inst | grouping }}, removals {{ rem | grouping }}</title>
           </rect>
         {% endfor %}
       </g>
