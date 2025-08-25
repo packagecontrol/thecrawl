@@ -76,6 +76,7 @@ function basePackage(pkg, stats) {
   const net_installs = Math.max(0, total_installs - total_removals)
   const installs_weekly = (stats && stats.installs && Array.isArray(stats.installs.weekly)) ? stats.installs.weekly : []
   const removals_weekly = (stats && stats.removals && Array.isArray(stats.removals.weekly)) ? stats.removals.weekly : []
+  const upgrades_weekly = (stats && stats.upgrades && Array.isArray(stats.upgrades.weekly)) ? stats.upgrades.weekly : []
 
   return {
     name: pkg.name,
@@ -93,6 +94,7 @@ function basePackage(pkg, stats) {
     platforms: uniquePlatforms,
     installs_weekly,
     removals_weekly,
+    upgrades_weekly,
   }
 }
 

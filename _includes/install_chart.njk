@@ -1,4 +1,4 @@
-{% macro chart(weekly=[], removals=[], dates=[]) %}
+{% macro chart(weekly=[], removals=[], dates=[], upgrades=[]) %}
   {% set count = weekly | length %}
   {% set dates_count = dates | length %}
   {% if count > 0 and dates_count > 0 %}
@@ -9,7 +9,7 @@
   {% set top = 10 %}
   {% set bottom = 20 %}
   {% set left = 40 %}
-  {% set right = 6 %}
+  {% set right = 44 %}
   {% set chart_h = 120 %}
   {% set chart_w = (count * (bar_w + gap)) - gap %}
   {% set svg_w = left + chart_w + right %}
@@ -67,6 +67,31 @@
   {% endif %}
   {% set max_scale = step * target %}
 
+  {# compute right-axis for upgrades #}
+  {% set maxu = 0 %}
+  {% for u in upgrades %}
+    {% if u > maxu %}{% set maxu = u %}{% endif %}
+  {% endfor %}
+
+  {% set target_r = 5 %}
+  {% set rough_r = (maxu + target_r - 1) // target_r %}
+  {% set mag_r = 1 %}
+  {% set digits_r = (('' ~ rough_r) | length) %}
+  {% for i in range(1, digits_r) %}
+    {% set mag_r = mag_r * 10 %}
+  {% endfor %}
+  {% set lead_r = (rough_r + mag_r - 1) // mag_r %}
+  {% if lead_r <= 1 %}
+    {% set step_r = 1 * mag_r %}
+  {% elif lead_r <= 2 %}
+    {% set step_r = 2 * mag_r %}
+  {% elif lead_r <= 5 %}
+    {% set step_r = 5 * mag_r %}
+  {% else %}
+    {% set step_r = 10 * mag_r %}
+  {% endif %}
+  {% set max_scale_r = step_r * target_r %}
+
   <div class="install-chart">
     <svg width="{{ svg_w }}" height="{{ svg_h }}" viewBox="0 0 {{ svg_w }} {{ svg_h }}" role="img" aria-label="Weekly installs">
       <g transform="translate({{ left }}, {{ top }})">
@@ -112,6 +137,53 @@
             <title>{{ dates[i] }}: installs {{ inst | grouping }}, removals {{ rem | grouping }}</title>
           </rect>
         {% endfor %}
+
+        {# right y-axis and labels for upgrades #}
+        {% if (upgrades | length) > 0 and max_scale_r > 0 %}
+          <line x1="{{ chart_w }}" y1="0" x2="{{ chart_w }}" y2="{{ chart_h }}" class="axis" />
+          {% for i in range(0, target_r + 1) %}
+            {% set tr = i * step_r %}
+            {% if tr > max_scale_r %}{% set tr = max_scale_r %}{% endif %}
+            {% set yr = chart_h - (tr / max_scale_r) * chart_h %}
+            {# small tick marks on the right axis #}
+            <line x1="{{ chart_w }}" y1="{{ yr }}" x2="{{ chart_w + 4 }}" y2="{{ yr }}" class="axis" />
+            {% if (i % 2) == 0 %}
+              <text x="{{ chart_w + 6 }}" y="{{ yr }}" text-anchor="start" dominant-baseline="middle" class="tick tick-right">{{ tr | compact }}</text>
+            {% endif %}
+          {% endfor %}
+
+          {# upgrades line path #}
+          {% set d = '' %}
+          {% for val in upgrades %}
+            {% set i = loop.index0 %}
+            {% if max_scale_r > 0 %}
+              {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
+            {% else %}
+              {% set y2 = chart_h %}
+            {% endif %}
+            {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
+            {% if i == 0 %}
+              {% set d = 'M ' ~ x2 ~ ' ' ~ y2 %}
+            {% else %}
+              {% set d = d ~ ' L ' ~ x2 ~ ' ' ~ y2 %}
+            {% endif %}
+          {% endfor %}
+          <path d="{{ d }}" class="upgrades-line" />
+
+          {# Points to host tooltips #}
+          {% for val in upgrades %}
+            {% set i = loop.index0 %}
+            {% if max_scale_r > 0 %}
+              {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
+            {% else %}
+              {% set y2 = chart_h %}
+            {% endif %}
+            {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
+            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="2.5" class="upgrades-point">
+              <title>{{ dates[i] }}: upgrades {{ val | grouping }}</title>
+            </circle>
+          {% endfor %}
+        {% endif %}
       </g>
     </svg>
   </div>

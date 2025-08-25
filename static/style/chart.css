@@ -17,6 +17,10 @@
   font-size: 12px;
 }
 
+.install-chart .tick-right {
+  fill: var(--blue-1);
+}
+
 .install-chart .bar-net { fill: var(--orange-1); }
 .install-chart .bar-remove { fill: var(--orange-2); }
 
@@ -27,3 +31,13 @@
 /* Group highlight: when hovering one, highlight all of the same color */
 .install-chart:has(.bar-net:hover) .bar-net { filter: brightness(1.12); }
 .install-chart:has(.bar-remove:hover) .bar-remove { filter: brightness(1.12); }
+
+.install-chart .upgrades-line {
+  stroke: var(--blue-1);
+  stroke-width: 2;
+  fill: none;
+}
+
+.install-chart .upgrades-point {
+  fill: var(--blue-2);
+}
