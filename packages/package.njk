@@ -8,11 +8,12 @@ pagination:
 eleventyComputed:
   title: "{{ pkg.name }}"
   description: "{{ pkg.description | default('') }}"
+isPackagePage: true
 ---
 
 {% import "packages/macros.njk" as pack %}
 
-{% include "_includes/search_form.njk" %}
+
 
 <section name="package">
 <h1>{{ pkg.name }}</h1>

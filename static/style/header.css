@@ -1,14 +1,11 @@
 header {
-  margin-bottom: 22px;
-  padding: 4px var(--side-padding);
+  position: relative;
+  max-width: 78rem;
+  margin: 0 auto 22px auto;
+  padding: 6px var(--side-padding);
   color: var(--foreground-3);
-
-  .inner {
-    max-width: 92rem;
-    margin: 0 auto;
-    position: relative;
-    padding-top: 6px;
-  }
+  display: flex;
+  justify-content: space-between;
 
   * {
     margin: 0;
@@ -42,8 +39,12 @@ header {
     color: var(--foreground-2);
   }
 
+  .right-side {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+  }
   nav {
-    float: right;
     line-height: 1.33;
     padding-top: 1.33rem;
 

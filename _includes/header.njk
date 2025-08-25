@@ -1,36 +1,42 @@
 <header>
-  <div class="inner">
+  <div class="brand">
+    <a href="/" aria-label="Package Control R homepage">
+      <img src="/assets/logo.webp" width="80" height="80" alt="Package Control R logo">
+    </a>
+    <div class="brand-text">
+      <h2>Package Control <span class="hot">R</span></h2>
+      <p>The Sublime Text package directory, {{ [
+          "re-imagined",
+          "reassembled",
+          "rebooted",
+          "reborn",
+          "recompiled",
+          "refactored",
+          "reinvigorated",
+          "remastered",
+          "replenished",
+          "restarted",
+          "resurrected",
+          "revisited",
+          "rewired"
+        ] | random
+      }}.</p>
+      <p>{{ collections.packages | length | grouping }} packages in.</p>
+    </div>
+  </div>
+
+  <div class="right-side">
+    {% if isPackagePage %}
+      {% import "_includes/search_form.njk" as search_ui %}
+      {{ search_ui.form(false) }}
+    {% endif %}
+
     <nav>
       {% if page.url != "/" %}
         <a href="/">Home</a>
       {% endif %}
       <a href="/about">About / FAQ</a>
     </nav>
-
-    <div class="brand">
-      <a href="/" aria-label="Package Control R homepage">
-        <img src="/assets/logo.webp" width="80" height="80" alt="Package Control R logo">
-      </a>
-      <div class="brand-text">
-        <h2>Package Control <span class="hot">R</span></h2>
-        <p>The Sublime Text package directory, {{ [
-            "re-imagined",
-            "reassembled",
-            "rebooted",
-            "reborn",
-            "recompiled",
-            "refactored",
-            "reinvigorated",
-            "remastered",
-            "replenished",
-            "restarted",
-            "resurrected",
-            "revisited",
-            "rewired"
-          ] | random
-        }}.</p>
-        <p>{{ collections.packages | length | grouping }} packages in.</p>
-      </div>
-    </div>
   </div>
+
 </header>
