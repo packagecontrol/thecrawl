@@ -6,13 +6,10 @@ import { Search } from './search.js'
 // utilities to manage the search result list
 export class List {
   search = null
-  homepage = false
   initialPath = '/'
 
   constructor() {
     this.initialPath = window.location.pathname
-    const h1 = document.querySelector('h1')
-    this.homepage = !!(h1 && h1.hasAttribute('data-all'))
   }
 
   // the section where we'll render search results
