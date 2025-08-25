@@ -71,7 +71,9 @@ function basePackage(pkg, stats) {
   // Remove duplicate platforms
   const allPlatforms = releases.flatMap(release => release.platforms)
   const uniquePlatforms = Array.from(new Set(allPlatforms))
-  const stat = typeof stats === 'undefined' ? 0 : Math.max(0, stats['install'] - stats['remove'])
+  const total_installs = (stats && stats.installs) ? stats.installs.totals : 0
+  const total_removals = (stats && stats.removals) ? stats.removals.totals : 0
+  const net_installs = Math.max(0, total_installs - total_removals)
   const installs_weekly = (stats && stats.installs && Array.isArray(stats.installs.weekly)) ? stats.installs.weekly : []
   const removals_weekly = (stats && stats.removals && Array.isArray(stats.removals.weekly)) ? stats.removals.weekly : []
 
@@ -79,7 +81,7 @@ function basePackage(pkg, stats) {
     name: pkg.name,
     author: util.cleanAuthors(pkg.author) ?? [],
     stars: pkg.stars ?? 0,
-    installed: stat,
+    installed: net_installs,
     created_at: pkg.created_at,
     last_modified: pkg.last_modified,
     archived_at: pkg.archived_at,
