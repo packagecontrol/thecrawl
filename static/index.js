@@ -46,8 +46,9 @@ const handleInput = () => {
   if (query === '') {
     list.revertToNormal()
     // Update URL to remove search parameters
-    if (window.location.pathname !== '/' || window.location.search !== '') {
-      history.pushState({}, '', '/')
+    if (window.location.search !== '') {
+      const target = list.initialPath
+      history.pushState({}, '', target)
     }
   }
   else {

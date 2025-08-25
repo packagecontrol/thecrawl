@@ -6,6 +6,14 @@ import { Search } from './search.js'
 // utilities to manage the search result list
 export class List {
   search = null
+  homepage = false
+  initialPath = '/'
+
+  constructor() {
+    this.initialPath = window.location.pathname
+    const h1 = document.querySelector('h1')
+    this.homepage = !!(h1 && h1.hasAttribute('data-all'))
+  }
 
   // the section where we'll render search results
   getSection() {
@@ -18,13 +26,30 @@ export class List {
   }
 
   setCounter(count = null) {
-    const counter = document.querySelector('h1')
-    if (count === 1) {
-      counter.innerText = '1 Package'
-      return
+    const h1 = document.querySelector('h1')
+    const resultsHeader = document.getElementById('result-header')
+
+    // Update H1 only on homepage (keep package title on detail pages)
+    if (this.homepage && h1) {
+      if (count === null) {
+        h1.innerText = `${h1.dataset.all} Packages`
+      } else if (count === 1) {
+        h1.innerText = '1 Package'
+      } else {
+        h1.innerText = `${count} Packages`
+      }
     }
 
-    counter.innerText = (count ?? counter.dataset.all) + ' Packages'
+    // Always update the results header if present
+    if (resultsHeader) {
+      if (count === null) {
+        resultsHeader.innerText = 'Results'
+      } else if (count === 1) {
+        resultsHeader.innerText = '1 result'
+      } else {
+        resultsHeader.innerText = `${count} results`
+      }
+    }
   }
 
   // reveal search results and hide the static homepage
@@ -110,7 +135,7 @@ export class List {
     }
 
     const queryString = params.toString()
-    const newUrl = queryString ? '?' + queryString : '/'
+    const newUrl = '/' + (queryString ? ('?' + queryString) : '')
 
     // Only push state if URL is actually changing
     if (window.location.search !== (queryString ? '?' + queryString : '')) {

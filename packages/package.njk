@@ -12,6 +12,9 @@ eleventyComputed:
 
 {% import "packages/macros.njk" as pack %}
 
+{% include "_includes/search_form.njk" %}
+
+<section name="package">
 <h1>{{ pkg.name }}</h1>
 {% if pkg.description %}
 <p class="description">{{ pkg.description }}</p>
@@ -110,3 +113,28 @@ eleventyComputed:
   <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
   {% endif %}
 {% endif %}
+</section>
+
+<section name="result" style="display:none;">
+  <h2 id="result-header">Results</h2>
+  <ul class="grid"></ul>
+  {# pagination will render here #}
+  <div class="pagination"></div>
+</section>
+
+{# template used by JS to render cards #}
+<template id="package-card">
+  {{ pack.card({
+    "name": "placeholder-name",
+    "description": "placeholder-description",
+    "author": "placeholder-author",
+    "stars": 666,
+    "installed": 999,
+    "archived_at": "1970-01-01 00:00:00",
+    "platforms": ["foo"],
+    "labels": ["foo"],
+    "permalink": "placeholder-permalink"
+  }) }}
+  </template>
+
+<script src="{{ '/static/index.js' | bust }}" type="module" async></script>
