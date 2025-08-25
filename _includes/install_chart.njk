@@ -53,7 +53,9 @@
           {% if t > max_scale %}{% set t = max_scale %}{% endif %}
           {% set y = chart_h - (t / max_scale) * chart_h %}
           <line x1="0" y1="{{ y }}" x2="{{ chart_w }}" y2="{{ y }}" class="grid" />
-          <text x="-6" y="{{ y }}" text-anchor="end" dominant-baseline="middle" class="tick">{{ t | compact }}</text>
+          {% if (i % 2) == 0 %}
+            <text x="-6" y="{{ y }}" text-anchor="end" dominant-baseline="middle" class="tick">{{ t | compact }}</text>
+          {% endif %}
         {% endfor %}
 
         {# bars #}
