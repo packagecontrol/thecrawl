@@ -26,21 +26,7 @@ export class List {
   }
 
   setCounter(count = null) {
-    const h1 = document.querySelector('h1')
     const resultsHeader = document.getElementById('result-header')
-
-    // Update H1 only on homepage (keep package title on detail pages)
-    if (this.homepage && h1) {
-      if (count === null) {
-        h1.innerText = `${h1.dataset.all} Packages`
-      } else if (count === 1) {
-        h1.innerText = '1 Package'
-      } else {
-        h1.innerText = `${count} Packages`
-      }
-    }
-
-    // Always update the results header if present
     if (resultsHeader) {
       if (count === null) {
         resultsHeader.innerText = 'Results'
