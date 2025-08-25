@@ -42,6 +42,13 @@
     both series look well-scaled even if their magnitudes differ.
   #}
   {% set target = 5 %}
+  {#
+    Integer ceiling
+    Example: maxv = 371, target = 5
+      ceil(371 / 5) = ceil(74.2) = 75
+      naive 371 // 5 = 74 (too small), which would under-estimate the step.
+      integer form: (371 + 5 - 1) // 5 = 375 // 5 = 75
+  #}
   {% set rough = (maxv + target - 1) // target %}
   {% set mag = 1 %}
   {% set digits = (('' ~ rough) | length) %}
