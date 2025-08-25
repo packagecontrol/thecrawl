@@ -6,6 +6,7 @@
   {# dimensions #}
   {% set bar_w = 12 %}
   {% set gap = 1 %}
+  {% set upgrade_pt_r = 2.5 %}
   {% set top = 10 %}
   {% set bottom = 20 %}
   {% set left = 40 %}
@@ -179,7 +180,7 @@
               {% set y2 = chart_h %}
             {% endif %}
             {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
-            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="2.5" class="upgrades-point">
+            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
               <title>{{ dates[i] }}: upgrades {{ val | grouping }}</title>
             </circle>
           {% endfor %}
