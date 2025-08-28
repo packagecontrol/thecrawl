@@ -108,5 +108,6 @@ eleventyComputed:
   {% if pkg.readme %}
   <section id="md" class="readme" data-readme-url="{{ pkg.readme }}"></section>
   <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
+  <script src="{{ '/static/tosearch.js' | bust }}" type="module" async></script>
   {% endif %}
 {% endif %}
