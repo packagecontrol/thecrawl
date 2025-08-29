@@ -119,9 +119,10 @@ window.addEventListener('popstate', () => {
     const effectiveSortBy = sortBy || (query ? 'relevance' : 'name')
     sortSelect.value = effectiveSortBy
     list.goSearch(query, effectiveSortBy, page)
-  }
-  else {
+  } else if (window.location.pathname === '/') {
     list.revertToNormal()
+  } else {
+    history.go()
   }
 })
 
