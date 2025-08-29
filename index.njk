@@ -35,19 +35,4 @@ date: Last Modified
   <ul class="grid"></ul>
 </section>
 
-{% import "packages/macros.njk" as pack %}
-<template id="package-card">
-  {{ pack.card({
-    "name": "placeholder-name",
-    "description": "placeholder-description",
-    "author": "placeholder-author",
-    "stars": 666,
-    "installed": 999,
-    "archived_at": "1970-01-01 00:00:00",
-    "platforms": ["foo"],
-    "labels": ["foo"],
-    "permalink": "placeholder-permalink"
-  }) }}
-</template>
-
-<script src="{{ '/static/index.js' | bust }}" type="module" async></script>
+{% include "_includes/enable_search.njk" %}
