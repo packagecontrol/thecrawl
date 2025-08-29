@@ -58,6 +58,7 @@ select {
   .button {
     align-self: center;
     margin: 6px;
+    transition: opacity .18s ease, max-width .22s ease, margin .22s ease;
 
     &:has(select:focus) {
       outline: 2px solid var(--orange-1);
@@ -75,3 +76,22 @@ select {
     }
   }
 }
+
+/* Compact header search: hide Sort By until focus, with animation */
+.search-controls.compact .button {
+  opacity: 0;
+  max-width: 0;
+  margin: 6px 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.search-controls.compact .button:hover,
+.search-controls.compact:has(label:active) .button,
+.search-controls.compact:focus-within .button {
+  opacity: 1;
+  max-width: 240px;
+  margin: 6px;
+  pointer-events: auto;
+}
+

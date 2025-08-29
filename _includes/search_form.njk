@@ -1,6 +1,6 @@
 {% macro form(verbose=true) %}
   <form name="search" action="/">
-    <div class="search-controls">
+    <div class="search-controls{% if not verbose %} compact{% endif %}">
       <label for="search-field" class="screenreader-only">Search</label>
       <input type="search" autocomplete="off" name="q" id="search-field" placeholder="Search packages …">
 

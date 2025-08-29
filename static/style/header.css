@@ -48,6 +48,13 @@ header {
     align-items: baseline;
     gap: 1rem;
   }
+  /* Header search: compact by default, expands on focus */
+  .right-side form {
+    transition: flex-basis .22s ease, max-width .22s ease;
+  }
+  .right-side form:focus {
+    flex: 1 0 30vw;
+  }
   nav {
     line-height: 1.33;
     padding-top: 1.33rem;
