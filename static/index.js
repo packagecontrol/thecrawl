@@ -48,7 +48,9 @@ const handleInput = () => {
     // Update URL to remove search parameters
     if (window.location.search !== '') {
       const target = list.initialPath
-      history.pushState({}, '', target)
+      const title = target === '/' ? 'Package Control R' : list.initialTitle
+      history.pushState({ title }, '', target)
+      document.title = title
     }
   }
   else {
@@ -105,7 +107,12 @@ sortSelect.addEventListener('change', (event) => {
 })
 
 // Handle browser back/forward navigation
-window.addEventListener('popstate', () => {
+window.addEventListener('popstate', (event) => {
+  if (event.state && event.state.title) {
+    document.title = event.state.title
+  } else if (list && list.initialTitle) {
+    document.title = list.initialTitle
+  }
   const urlParams = new URLSearchParams(window.location.search)
   const query = urlParams.get('q') || ''
   const sortBy = urlParams.get('sort')

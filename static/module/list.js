@@ -7,9 +7,11 @@ import { Search } from './search.js'
 export class List {
   search = null
   initialPath = '/'
+  initialTitle = document.title
 
   constructor() {
     this.initialPath = window.location.pathname
+    this.initialTitle = document.title
   }
 
   // the section where we'll render search results
@@ -124,7 +126,9 @@ export class List {
 
     // Only push state if URL is actually changing
     if (window.location.search !== (queryString ? '?' + queryString : '')) {
-      history.pushState({}, '', newUrl)
+      const title = value.length > 0 ? `Search - ${value}` : this.initialTitle
+      history.pushState({ title }, '', newUrl)
+      document.title = title
     }
 
     // clear previous results
