@@ -93,6 +93,12 @@ input.form.onsubmit = (event) => {
 input.addEventListener('input', () => {
   clearTimeout(debounceTimeout)
 
+  if (input.value.length > 0) {
+    input.classList.add('has-input')
+  } else {
+    input.classList.remove('has-input')
+  }
+
   debounceTimeout = setTimeout(() => {
     handleInput()
   }, 300) // .3 seconds

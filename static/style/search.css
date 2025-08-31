@@ -1,3 +1,14 @@
+@keyframes grow {
+  0%   {
+    opacity: 0;
+    max-width: 0;
+  }
+  100% {
+    opacity: 1;
+    max-width: 200px;
+  }
+}
+
 input {
   background: var(--background-1);
   color: var(--foreground-1);
@@ -30,6 +41,7 @@ select {
   border-radius: 3px;
   border: 1px solid var(--background-3);
   transition: border .2s ease-in-out, outline .2s ease-in-out;
+  overflow: hidden;
 
   &:has(input:focus) {
     border-color: var(--orange-1);
@@ -44,6 +56,7 @@ select {
     flex: 1;
     margin-bottom: 0;
     border: none;
+    line-height: 28px;
     &:focus {
       outline: none;
     }
@@ -58,7 +71,6 @@ select {
   .button {
     align-self: center;
     margin: 6px;
-    transition: opacity .18s ease, max-width .22s ease, margin .22s ease;
 
     &:has(select:focus) {
       outline: 2px solid var(--orange-1);
@@ -78,17 +90,11 @@ select {
 
   /* Compact header search: hide Sort By until focus, with animation */
   &.compact .button {
-    opacity: 0;
-    max-width: 0;
-    margin: 6px 0;
-    pointer-events: none;
-    overflow: hidden;
+    display: none;
+    animation: .2s ease-in-out forwards grow;
   }
-
-  &.compact:has(:focus) .button {
-    opacity: 1;
-    max-width: 240px;
-    margin: 6px;
-    pointer-events: auto;
+  &.compact:focus-within .button,
+  &.compact:has(input.has-input) .button {
+    display: revert;
   }
 }
