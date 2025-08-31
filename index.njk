@@ -10,9 +10,9 @@ date: Last Modified
   {{ collections.packages | length }}
   Packages
 </h1>
-{{ search_ui.form(true, (collections.packages | length | grouping)) }}
+{{ search_ui.form(true) }}
 
-<section name="newest">
+<section name="newest" class="package-list">
   <h2>Newest</h2>
   <ul class="grid">
     {% for pkg in collections.newest_packages %}
@@ -23,7 +23,7 @@ date: Last Modified
   </ul>
 </section>
 
-<section name="recent">
+<section name="recent" class="package-list">
   <h2>Recently updated</h2>
   <ul class="grid">
     {% for pkg in collections.updated_packages %}
@@ -34,7 +34,7 @@ date: Last Modified
   </ul>
 </section>
 
-<section name="result" style="display:none;">
+<section name="result" class="package-list" style="display:none;">
   <h2 id="result-header">Results</h2>
   <ul class="grid"></ul>
 </section>

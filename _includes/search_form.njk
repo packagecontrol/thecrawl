@@ -1,8 +1,8 @@
-{% macro form(verbose=true, total_count=0) %}
+{% macro form(verbose=true) %}
   <form name="search" action="/">
     <div class="search-controls{% if not verbose %} compact{% endif %}">
       <label for="search-field" class="screenreader-only">Search</label>
-      <input type="search" autocomplete="off" name="q" id="search-field" placeholder="Search {{ total_count }} packages …">
+      <input type="search" autocomplete="off" name="q" id="search-field" placeholder="Search packages …">
 
         <div class="button">
           <label for="sort-field">Sort by</label>
