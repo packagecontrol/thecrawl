@@ -14,110 +14,110 @@ isPackagePage: true
 {% import "packages/macros.njk" as pack %}
 
 
+<h1 data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
 
 <section name="package">
-<h1>{{ pkg.name }}</h1>
-{% if pkg.description %}
-<p class="description">{{ pkg.description }}</p>
-{% endif %}
-
-{% if pkg.fail_reason and not pkg.removed %}
-  {#
-    after removal the failed state does not necessarily reflect the reason for removal
-    the failure is basically only relevant for packages still in the registry
-  #}
-  <aside class="warning-message">
-    {{ pack.logo('warning') }}
-    <h2>Updating our information on this package failed:</h2>
-    <p>{{ pkg.fail_reason }}</p>
-  </aside>
-{% endif %}
-
-<p>
-  By
-  {% for author in pkg.author -%}
-    {% set q = 'author:"' ~ author ~ '"' %}
-    <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
-  {%- endfor %}
-
-  {% if pkg.removed %}
-    <br>
-    {% if pkg.created_at -%}
-      Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>,
-      removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
-    {% else %}
-      Removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
-    {%- endif %}
-
-  {% elif pkg.created_at %}
-    <br>
-    Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>
-    {%- if pkg.created_at != pkg.last_modified -%}
-      , last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
-    {%- endif %}{%- if pkg.archived_at -%}
-      , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
-    {%- endif %}.
-
-  {% elif pkg.last_modified %}
-    <br>
-    Last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
-    {%- if pkg.archived_at -%}
-      , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
-    {%- endif %}.
+  {% if pkg.description %}
+    <p class="description">{{ pkg.description }}</p>
   {% endif %}
-</p>
 
-<ul class="stats">
-  {{ pack.rip(pkg.removed) }}
-  {{ pack.archived(pkg.archived_at) }}
-  {{ pack.installs(pkg.installed) }}
-  {{ pack.stars(pkg.stars) }}
-</ul>
+  {% if pkg.fail_reason and not pkg.removed %}
+    {#
+      after removal the failed state does not necessarily reflect the reason for removal
+      the failure is basically only relevant for packages still in the registry
+    #}
+    <aside class="warning-message">
+      {{ pack.logo('warning') }}
+      <h2>Updating our information on this package failed:</h2>
+      <p>{{ pkg.fail_reason }}</p>
+    </aside>
+  {% endif %}
 
-{{ pack.labels(pkg.platforms, pkg.labels) }}
+  <p>
+    By
+    {% for author in pkg.author -%}
+      {% set q = 'author:"' ~ author ~ '"' %}
+      <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
+    {%- endfor %}
 
-{% if not pkg.removed %}
-  {# once a package is removed none of the links or the readme are still reliable #}
-  <h2>Links</h2>
-  <ul class="button-group links">
-    {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
-    <li>
-      <a class="button" href="{{ pkg.homepage }}">{{ pack.logo('home') }} <span>Website</span></a>
-    </li>
+    {% if pkg.removed %}
+      <br>
+      {% if pkg.created_at -%}
+        Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>,
+        removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
+      {% else %}
+        Removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
+      {%- endif %}
+
+    {% elif pkg.created_at %}
+      <br>
+      Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>
+      {%- if pkg.created_at != pkg.last_modified -%}
+        , last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
+      {%- endif %}{%- if pkg.archived_at -%}
+        , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
+      {%- endif %}.
+
+    {% elif pkg.last_modified %}
+      <br>
+      Last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
+      {%- if pkg.archived_at -%}
+        , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
+      {%- endif %}.
     {% endif %}
-    {% if pkg.details %}
-    <li>
-      <a class="button" href="{{ pkg.details }}">{{ pack.logo('repo') }} <span>Repository</span></a>
-    </li>
-    {% endif %}
-    {% if pkg.readme %}
-    <li>
-      <a class="button" href="{{ pkg.readme_url | default(pkg.readme) }}">{{ pack.logo('file') }} <span>README</span></a>
-    </li>
-    {% endif %}
-    {% if pkg.issues %}
-      <li>
-      <a class="button" href="{{ pkg.issues }}">{{ pack.logo('bug') }} <span>Issues</span></a>
-    </li>
-    {% endif %}
-    {% if pkg.donate %}
-      <li>
-      <a class="button" href="{{ pkg.donate }}">{{ pack.logo('gift') }} <span>Donate</span></a>
-    </li>
-    {% endif %}
+  </p>
+
+  <ul class="stats">
+    {{ pack.rip(pkg.removed) }}
+    {{ pack.archived(pkg.archived_at) }}
+    {{ pack.installs(pkg.installed) }}
+    {{ pack.stars(pkg.stars) }}
   </ul>
 
-  {% include "./_releases.njk" %}
+  {{ pack.labels(pkg.platforms, pkg.labels) }}
 
-  {% if pkg.readme %}
-  <section id="md" class="readme" data-readme-url="{{ pkg.readme }}"></section>
-  <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
+  {% if not pkg.removed %}
+    {# once a package is removed none of the links or the readme are still reliable #}
+    <h2>Links</h2>
+    <ul class="button-group links">
+      {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
+      <li>
+        <a class="button" href="{{ pkg.homepage }}">{{ pack.logo('home') }} <span>Website</span></a>
+      </li>
+      {% endif %}
+      {% if pkg.details %}
+      <li>
+        <a class="button" href="{{ pkg.details }}">{{ pack.logo('repo') }} <span>Repository</span></a>
+      </li>
+      {% endif %}
+      {% if pkg.readme %}
+      <li>
+        <a class="button" href="{{ pkg.readme_url | default(pkg.readme) }}">{{ pack.logo('file') }} <span>README</span></a>
+      </li>
+      {% endif %}
+      {% if pkg.issues %}
+        <li>
+        <a class="button" href="{{ pkg.issues }}">{{ pack.logo('bug') }} <span>Issues</span></a>
+      </li>
+      {% endif %}
+      {% if pkg.donate %}
+        <li>
+        <a class="button" href="{{ pkg.donate }}">{{ pack.logo('gift') }} <span>Donate</span></a>
+      </li>
+      {% endif %}
+    </ul>
+
+    {% include "./_releases.njk" %}
   {% endif %}
-{% endif %}
 </section>
 
+{% if pkg.readme %}
+  <section id="md" class="readme" data-readme-url="{{ pkg.readme }}"></section>
+  <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
+{% endif %}
+
 <section name="result" style="display:none;">
-  <h2 id="result-header">Results</h2>
+  <h2>Results</h2>
   <ul class="grid"></ul>
   {# pagination will render here #}
   <div class="pagination"></div>

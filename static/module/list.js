@@ -25,15 +25,13 @@ export class List {
   }
 
   setCounter(count = null) {
-    const resultsHeader = document.getElementById('result-header')
-    if (resultsHeader) {
-      if (count === null) {
-        resultsHeader.innerText = 'Results'
-      } else if (count === 1) {
-        resultsHeader.innerText = '1 result'
-      } else {
-        resultsHeader.innerText = `${count} results`
-      }
+    const header = document.querySelector('h1')
+    if (count === null) {
+      header.innerText = header.dataset.default
+    } else if (count === 1) {
+      header.innerText = '1 Packages'
+    } else {
+      header.innerText = `${count} Packages`
     }
   }
 

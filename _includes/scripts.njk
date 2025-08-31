@@ -20,14 +20,12 @@
     const setContent = () => {
       // set temporary content that will be replaced after search completes
       document.querySelector('[name=q]').value = q;
-      const header = document.getElementById('result-header');
-      if (header) header.innerText = 'Searching…';
+      document.querySelector('h1').innerText = 'Searching…';
     }
 
     const timer = window.setTimeout(() => {
       // if loading takes long reveal h1 to explain the state to the user
-      const header = document.getElementById('result-header');
-      if (header) header.style.visibility = 'revert';
+      document.querySelector('h1').style.visibility = 'revert';
     }, 600);
 
     window.addEventListener('DOMContentLoaded', setContent);
@@ -44,6 +42,6 @@
   })();
 </script>
 
+{# WebComponent helpers inlined from _includes/human_date.js (minified if terser is installed) #}
 {% inline_js '_includes/human_date.js' %}
 
-{# WebComponent helpers inlined from _includes/human_date.js (minified if terser is installed) #}
