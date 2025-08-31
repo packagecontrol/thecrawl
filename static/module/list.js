@@ -125,7 +125,7 @@ export class List {
     // Only push state if URL is actually changing
     if (window.location.search !== queryString_) {
       const target = '/' + queryString_
-      const title = value.length > 0 ? `Search - ${value}` : this.initialTitle
+      const title = value.length > 0 ? `Search — ${value}` : this.initialTitle
       history.pushState({ title }, '', target)
       document.title = title
     }
