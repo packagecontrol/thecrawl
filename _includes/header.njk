@@ -1,7 +1,8 @@
 <header>
-  <div class="brand">
-    <div class="brand-text">
-      <h2><a href="/">Package Control <span class="hot">R</span></a></h2>
+  <div class="inner">
+
+    <div class="left-side">
+      <p class="brand"><a href="/">Package Control <span class="hot">R</span></a></p>
       <p>The Sublime Text package directory, {{ [
           "re-imagined",
           "reassembled",
@@ -19,17 +20,18 @@
         ] | random
       }}.</p>
     </div>
-  </div>
 
-  <div class="right-side">
-    {% if isPackagePage %}
-      {% import "_includes/search_form.njk" as search_ui %}
-      {{ search_ui.form(false) }}
-    {% endif %}
+    <div class="right-side">
+      {% if isPackagePage %}
+        {% import "_includes/search_form.njk" as search_ui %}
+        {{ search_ui.form(false) }}
+      {% endif %}
 
-    <nav>
-      <a href="/about">About / FAQ</a>
-    </nav>
+      <nav>
+        <a href="/about">About / FAQ</a>
+      </nav>
+    </div>
+
   </div>
 
 </header>

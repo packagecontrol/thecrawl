@@ -1,72 +1,55 @@
 header {
-  position: relative;
-  max-width: 78rem;
-  margin: 0 auto 22px auto;
-  padding: 6px var(--side-padding);
+  margin-bottom: 22px;
+  padding: 4px var(--side-padding);
   color: var(--foreground-3);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  @media (max-width: 830px) {
-    flex-direction: column;
-  }
 
   * {
     margin: 0;
     padding: 0;
   }
 
-  .brand {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-
-    img {
-      transition: filter 0.2s ease-in-out;
-    }
-    a:hover img {
-      filter: brightness(1.08);
-    }
-  }
-
-  .brand-text {
+  .inner {
+    max-width: 92rem;
+    margin: 0 auto;
     position: relative;
-    top: -6px;
-  }
-
-  h2 + p {
-    line-height: 1.2em;
-  }
-
-  h2 a {
-    color: var(--foreground-2);
+    display: flex;
   }
 
   .right-side {
+    flex: 1;
     display: flex;
-    align-items: baseline;
-    gap: 1rem;
+    justify-content: flex-end;
   }
-  /* Header search: compact by default, expands on focus */
-  .right-side form {
-    transition: flex-basis .22s ease, max-width .22s ease;
+
+  .brand {
+    font-size: 28px;
+    line-height: 52px;
+    font-weight: bold;
+
+    a {
+      color: var(--foreground-2);
+    }
+
+    + p {
+      margin-top: -6px;
+    }
   }
-  .right-side form:focus {
-    flex: 1 0 30vw;
-  }
+
+
   nav {
-    line-height: 1.33;
-    padding-top: 1.33rem;
+    line-height: 21px;
+    padding-top: 20px;
 
     * + * {
       margin-left: 1.6em;
     }
+  }
 
-    @media (max-width: 480px) {
-      [href="/"] {
-        display: none;
-      }
+  form {
+    padding: 8px var(--side-padding) 0 0;
+
+    @media (max-width: 900px) {
+      display: none;
     }
   }
 }
