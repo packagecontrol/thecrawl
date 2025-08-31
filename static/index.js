@@ -104,6 +104,19 @@ input.addEventListener('input', () => {
   }, 300) // .3 seconds
 })
 
+input.addEventListener('blur', () => {
+  if (input.value.length < 1) {
+    input.form.classList.remove('overlay')
+  }
+})
+
+document.querySelector('header [href="/#search-field"]').onclick = (event) => {
+  event.preventDefault()
+  event.stopPropagation()
+  input.form.classList.add('overlay')
+  input.form.querySelector('input').focus()
+}
+
 // Handle sort dropdown changes
 sortSelect.addEventListener('change', (event) => {
   const query = input.value.toLowerCase()

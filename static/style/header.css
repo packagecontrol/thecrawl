@@ -40,8 +40,18 @@ header {
     line-height: 21px;
     padding-top: 20px;
 
-    * + * {
-      margin-left: 1.6em;
+    > *:not(:last-child) {
+      margin-right: 1.6em;
+    }
+
+    svg {
+      margin-bottom: -2px;
+    }
+
+    [href="/#search-field"] {
+      @media (min-width: 901px) {
+        display: none;
+      }
     }
   }
 
@@ -50,6 +60,17 @@ header {
 
     @media (max-width: 900px) {
       display: none;
+
+      &.overlay {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        padding: 8px 0 0 0;
+        background: var(--background-2);
+      }
     }
   }
 }

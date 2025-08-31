@@ -1,3 +1,6 @@
+{% import "packages/macros.njk" as pack %}
+{% import "_includes/search_form.njk" as search_ui %}
+
 <header>
   <div class="inner">
 
@@ -23,11 +26,17 @@
 
     <div class="right-side">
       {% if isPackagePage %}
-        {% import "_includes/search_form.njk" as search_ui %}
         {{ search_ui.form(false) }}
       {% endif %}
 
       <nav>
+        {% if isPackagePage %}
+          <a href="/#search-field">
+            {{ pack.logo('search') }}
+            <span class="screenreader-only">Search</span>
+          </a>
+        {% endif %}
+
         <a href="/about">About / FAQ</a>
       </nav>
     </div>
