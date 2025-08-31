@@ -1,8 +1,5 @@
 <header>
   <div class="brand">
-    <a href="/" aria-label="Package Control R homepage">
-      <img src="/assets/logo.webp" width="80" height="80" alt="Package Control R logo">
-    </a>
     <div class="brand-text">
       <h2><a href="/">Package Control <span class="hot">R</span></a></h2>
       <p>The Sublime Text package directory, {{ [
@@ -21,14 +18,13 @@
           "rewired"
         ] | random
       }}.</p>
-      <p>{{ collections.packages | length | grouping }} packages in.</p>
     </div>
   </div>
 
   <div class="right-side">
     {% if isPackagePage %}
       {% import "_includes/search_form.njk" as search_ui %}
-      {{ search_ui.form(false) }}
+      {{ search_ui.form(false, collections.packages | length | grouping) }}
     {% endif %}
 
     <nav>

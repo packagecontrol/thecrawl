@@ -6,7 +6,7 @@ date: Last Modified
 {% import "packages/macros.njk" as pack %}
 {% import "_includes/search_form.njk" as search_ui %}
 
-{{ search_ui.form(true) }}
+{{ search_ui.form(true, (collections.packages | length | grouping)) }}
 
 <section name="newest">
   <h2>Newest</h2>
