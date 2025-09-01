@@ -96,21 +96,7 @@
   <div class="install-chart">
     <svg width="{{ svg_w }}" height="{{ svg_h }}" viewBox="0 0 {{ svg_w }} {{ svg_h }}" role="img" aria-label="Weekly installs">
       <g transform="translate({{ left }}, {{ top }})">
-        {# y-axis line #}
-        <line x1="0" y1="0" x2="0" y2="{{ chart_h }}" class="axis" />
-
-        {# ticks and labels #}
-        {% for i in range(0, target + 1) %}
-          {% set t = i * step %}
-          {% if t > max_scale %}{% set t = max_scale %}{% endif %}
-          {% set y = chart_h - (t / max_scale) * chart_h %}
-          <line x1="0" y1="{{ y }}" x2="{{ chart_w }}" y2="{{ y }}" class="grid" />
-          {% if (i % 2) == 0 %}
-            <text x="-6" y="{{ y }}" text-anchor="end" dominant-baseline="middle" class="tick">{{ t | compact }}</text>
-          {% endif %}
-        {% endfor %}
-
-        {# bars #}
+        {# bars + week overlays #}
         {% for inst in weekly %}
           {% set i = loop.index0 %}
           {% set rem = (removals[i] or 0) %}
@@ -130,14 +116,46 @@
           {% set x = i * (bar_w + gap) %}
           {% set y_net = chart_h - net_h %}
           {% set y_rem = y_net - rem_h %}
-
+          {% set slice_w = (i < (count - 1)) and (bar_w + gap) or bar_w %}
           {% set up = (upgrades[i] or 0) %}
-          <rect x="{{ x }}" y="{{ y_net }}" width="{{ bar_w }}" height="{{ net_h }}" class="bar bar-net">
-            <title>{{ dates[i] }}: installs: {{ inst | grouping }}, removals: {{ rem | grouping }}, upgrades: {{ up | grouping }}</title>
-          </rect>
-          <rect x="{{ x }}" y="{{ y_rem }}" width="{{ bar_w }}" height="{{ rem_h }}" class="bar bar-remove">
-            <title>{{ dates[i] }}: installs: {{ inst | grouping }}, removals: {{ rem | grouping }}, upgrades: {{ up | grouping }}</title>
-          </rect>
+
+          <g class="week">
+            {# subtle hover background spanning the full slice #}
+            <rect x="{{ x }}" y="0" width="{{ slice_w }}" height="{{ chart_h }}" class="week-slice-bg" />
+
+            {# grid line #}
+            <clipPath id="clip-week-{{ i }}">
+              <rect x="{{ x }}" y="0" width="{{ slice_w }}" height="{{ chart_h }}" />
+            </clipPath>
+            <g clip-path="url(#clip-week-{{ i }})">
+              {% for gi in range(0, target + 1) %}
+                {% set gt = gi * step %}
+                {% if gt > max_scale %}{% set gt = max_scale %}{% endif %}
+                {% set gy = chart_h - (gt / max_scale) * chart_h %}
+                <line x1="0" y1="{{ gy }}" x2="{{ chart_w }}" y2="{{ gy }}" class="grid" />
+              {% endfor %}
+            </g>
+
+            {# the actual bars #}
+            <rect x="{{ x }}" y="{{ y_net }}" width="{{ bar_w }}" height="{{ net_h }}" class="bar bar-net">
+              <title>{{ dates[i] }}: installs: {{ inst | grouping }}, removals: {{ rem | grouping }}, upgrades: {{ up | grouping }}</title>
+            </rect>
+            <rect x="{{ x }}" y="{{ y_rem }}" width="{{ bar_w }}" height="{{ rem_h }}" class="bar bar-remove">
+              <title>{{ dates[i] }}: installs: {{ inst | grouping }}, removals: {{ rem | grouping }}, upgrades: {{ up | grouping }}</title>
+            </rect>
+
+            {# third bar: invisible hit area from top to top of installs just for the tooltip #}
+            {% if max_scale > 0 %}
+              {% set inst_h = (inst / max_scale) * chart_h %}
+            {% else %}
+              {% set inst_h = 0 %}
+            {% endif %}
+            {% set y_top_inst = chart_h - inst_h %}
+            <rect x="{{ x }}" y="0" width="{{ bar_w }}" height="{{ y_top_inst }}" class="week-slice-hit">
+              <title>{{ dates[i] }}: installs: {{ inst | grouping }}, removals: {{ rem | grouping }}, upgrades: {{ up | grouping }}</title>
+            </rect>
+
+          </g>
         {% endfor %}
 
         {# average lines (exclude running week at index 0)
@@ -281,6 +299,17 @@
           <path d="{{ d }}" class="upgrades-line" />
 
         {% endif %}
+
+        {# left axis and tick labels (foreground, above bars) #}
+        <line x1="0" y1="0" x2="0" y2="{{ chart_h }}" class="axis" />
+        {% for i in range(0, target + 1) %}
+          {% set t = i * step %}
+          {% if t > max_scale %}{% set t = max_scale %}{% endif %}
+          {% set y = chart_h - (t / max_scale) * chart_h %}
+          {% if (i % 2) == 0 %}
+            <text x="-6" y="{{ y }}" text-anchor="end" dominant-baseline="middle" class="tick">{{ t | compact }}</text>
+          {% endif %}
+        {% endfor %}
       </g>
     </svg>
   </div>

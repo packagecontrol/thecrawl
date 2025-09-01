@@ -58,6 +58,7 @@
 .install-chart .avg-line {
   transition: opacity 0.1s ease-in;
   opacity: 0.5;
+  pointer-events: none;
 }
 
 .install-chart .avg-line-inst {
@@ -84,4 +85,18 @@
   .avg-line {
     opacity: 1;
   }
+}
+
+.install-chart .week-slice-bg {
+  fill: var(--background-2);
+  opacity: 0;
+}
+
+.install-chart .week-slice-hit {
+  fill: transparent;
+}
+
+.install-chart .week:hover .week-slice-bg {
+  opacity: 0.08;
+  filter: brightness(0.7);
 }
