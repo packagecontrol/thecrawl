@@ -39,7 +39,7 @@
 
 /* Group highlight: when hovering one, highlight all of the same color */
 .install-chart:has(.bar-net:hover) .bar-net { filter: brightness(1.12); }
-.install-chart:has(.bar-remove:hover) .bar-remove { filter: brightness(1.12); }
+.install-chart:has(.bar-remove:hover) .bar-remove { filter: brightness(1.22); }
 
 .install-chart .upgrades-line {
   transition: opacity 0.1s ease-in;
