@@ -29,7 +29,7 @@ export class List {
     if (count === null) {
       header.innerText = header.dataset.default
     } else if (count === 1) {
-      header.innerText = '1 Packages'
+      header.innerText = '1 Package'
     } else {
       header.innerText = `${count} Packages`
     }
