@@ -55,11 +55,33 @@
   fill: var(--blue-2);
 }
 
+.install-chart .avg-line {
+  transition: opacity 0.1s ease-in;
+  opacity: 0.5;
+}
+
+.install-chart .avg-line-inst {
+  stroke: var(--orange-2);
+  filter: brightness(0.8);
+  stroke-width: 1;
+  stroke-dasharray: 2 1;
+}
+
+.install-chart .avg-line-net {
+  stroke: var(--orange-1);
+  filter: brightness(1.3);
+  stroke-width: 1;
+  stroke-dasharray: 2 1;
+}
+
 .install-chart :hover {
   .tick-right {
     opacity: 1;
   }
   .upgrades-line {
+    opacity: 1;
+  }
+  .avg-line {
     opacity: 1;
   }
 }

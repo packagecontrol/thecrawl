@@ -139,6 +139,32 @@
           </rect>
         {% endfor %}
 
+        {# average lines (exclude running week at index 0)
+           - installs: mean(weekly[i]) for i >= 1
+           - net installs: mean(max(weekly[i] - removals[i], 0)) for i >= 1
+        #}
+        {% set sum_inst_excl0 = 0 %}
+        {% set sum_net_excl0 = 0 %}
+        {% for inst in weekly %}
+          {% set i = loop.index0 %}
+          {% if i > 0 %}
+            {% set rem_i = (removals[i] or 0) %}
+            {% set net_i = inst - rem_i %}
+            {% if net_i < 0 %}{% set net_i = 0 %}{% endif %}
+            {% set sum_inst_excl0 = sum_inst_excl0 + inst %}
+            {% set sum_net_excl0 = sum_net_excl0 + net_i %}
+          {% endif %}
+        {% endfor %}
+        {% set count_excl0 = count - 1 %}
+        {% if count_excl0 > 0 and max_scale > 0 %}
+          {% set avg_inst = (sum_inst_excl0 / count_excl0) %}
+          {% set avg_net = (sum_net_excl0 / count_excl0) %}
+          {% set y_avg_inst = chart_h - (avg_inst / max_scale) * chart_h %}
+          {% set y_avg_net = chart_h - (avg_net / max_scale) * chart_h %}
+          <line x1="0" y1="{{ y_avg_inst }}" x2="{{ chart_w }}" y2="{{ y_avg_inst }}" class="avg-line avg-line-inst" />
+          <line x1="0" y1="{{ y_avg_net }}" x2="{{ chart_w }}" y2="{{ y_avg_net }}" class="avg-line avg-line-net" />
+        {% endif %}
+
         {# upgrades overlay #}
         {% if (upgrades | length) > 0 and max_scale_r > 0 %}
           {# right y-axis and labels for upgrades #}
