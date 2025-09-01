@@ -15,12 +15,15 @@
 
 .install-chart .axis {
   stroke: var(--background-4);
+  stroke-linecap: round;
   stroke-width: 1;
 }
 
 .install-chart .grid {
   stroke: var(--background-3);
-  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-width: 1;
+  pointer-events: none;
 }
 
 .install-chart .tick {
