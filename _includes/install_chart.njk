@@ -139,8 +139,9 @@
           </rect>
         {% endfor %}
 
-        {# right y-axis and labels for upgrades #}
+        {# upgrades overlay #}
         {% if (upgrades | length) > 0 and max_scale_r > 0 %}
+          {# right y-axis and labels for upgrades #}
           <line x1="{{ chart_w }}" y1="0" x2="{{ chart_w }}" y2="{{ chart_h }}" class="axis" />
           {% for i in range(0, target_r + 1) %}
             {% set tr = i * step_r %}
@@ -151,6 +152,20 @@
             {% if (i % 2) == 0 %}
               <text x="{{ chart_w + 6 }}" y="{{ yr }}" text-anchor="start" dominant-baseline="middle" class="tick tick-right">{{ tr | compact }}</text>
             {% endif %}
+          {% endfor %}
+
+          {# Points with tooltips #}
+          {% for val in upgrades %}
+            {% set i = loop.index0 %}
+            {% if max_scale_r > 0 %}
+              {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
+            {% else %}
+              {% set y2 = chart_h %}
+            {% endif %}
+            {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
+            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
+              <title>{{ dates[i] }}: upgrades {{ val | grouping }}</title>
+            </circle>
           {% endfor %}
 
           {#
@@ -236,19 +251,6 @@
           {% endif %}
           <path d="{{ d }}" class="upgrades-line" />
 
-          {# Points to host tooltips #}
-          {% for val in upgrades %}
-            {% set i = loop.index0 %}
-            {% if max_scale_r > 0 %}
-              {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
-            {% else %}
-              {% set y2 = chart_h %}
-            {% endif %}
-            {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
-            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
-              <title>{{ dates[i] }}: upgrades {{ val | grouping }}</title>
-            </circle>
-          {% endfor %}
         {% endif %}
       </g>
     </svg>
