@@ -94,7 +94,7 @@
   {% set max_scale_r = step_r * target_r %}
 
   <div class="install-chart">
-    <svg width="{{ svg_w }}" height="{{ svg_h }}" viewBox="0 0 {{ svg_w }} {{ svg_h }}" role="img" aria-label="Weekly installs">
+    <svg viewBox="0 0 {{ svg_w }} {{ svg_h }}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Weekly installs">
       <g transform="translate({{ left }}, {{ top }})">
         {# bars + week overlays #}
         {% for inst in weekly %}

@@ -1,6 +1,16 @@
+.chart-container {
+  max-width: 15vw;
+}
 .install-chart {
   margin: 10px 0 18px;
   transition: opacity 0.3s ease-in;
+  width: 100%;
+}
+
+.install-chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .install-chart .axis {
