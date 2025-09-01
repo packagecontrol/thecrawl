@@ -131,11 +131,12 @@
           {% set y_net = chart_h - net_h %}
           {% set y_rem = y_net - rem_h %}
 
+          {% set up = (upgrades[i] or 0) %}
           <rect x="{{ x }}" y="{{ y_net }}" width="{{ bar_w }}" height="{{ net_h }}" class="bar bar-net">
-            <title>{{ dates[i] }}: installs {{ inst | grouping }}, removals {{ rem | grouping }}</title>
+            <title>{{ dates[i] }}: installs: {{ inst | grouping }}, removals: {{ rem | grouping }}, upgrades: {{ up | grouping }}</title>
           </rect>
           <rect x="{{ x }}" y="{{ y_rem }}" width="{{ bar_w }}" height="{{ rem_h }}" class="bar bar-remove">
-            <title>{{ dates[i] }}: installs {{ inst | grouping }}, removals {{ rem | grouping }}</title>
+            <title>{{ dates[i] }}: installs: {{ inst | grouping }}, removals: {{ rem | grouping }}, upgrades: {{ up | grouping }}</title>
           </rect>
         {% endfor %}
 
@@ -189,8 +190,10 @@
               {% set y2 = chart_h %}
             {% endif %}
             {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
+            {% set inst_i = (weekly[i] or 0) %}
+            {% set rem_i = (removals[i] or 0) %}
             <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
-              <title>{{ dates[i] }}: upgrades {{ val | grouping }}</title>
+              <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
             </circle>
           {% endfor %}
 
