@@ -199,22 +199,6 @@
             {% endif %}
           {% endfor %}
 
-          {# Points with tooltips #}
-          {% for val in upgrades %}
-            {% set i = loop.index0 %}
-            {% if max_scale_r > 0 %}
-              {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
-            {% else %}
-              {% set y2 = chart_h %}
-            {% endif %}
-            {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
-            {% set inst_i = (weekly[i] or 0) %}
-            {% set rem_i = (removals[i] or 0) %}
-            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
-              <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
-            </circle>
-          {% endfor %}
-
           {#
             upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
 
@@ -298,6 +282,21 @@
           {% endif %}
           <path d="{{ d }}" class="upgrades-line" />
 
+          {# Points with tooltips #}
+          {% for val in upgrades %}
+            {% set i = loop.index0 %}
+            {% if max_scale_r > 0 %}
+              {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
+            {% else %}
+              {% set y2 = chart_h %}
+            {% endif %}
+            {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
+            {% set inst_i = (weekly[i] or 0) %}
+            {% set rem_i = (removals[i] or 0) %}
+            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
+              <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
+            </circle>
+          {% endfor %}
         {% endif %}
 
         {# left axis and tick labels (foreground, above bars) #}
