@@ -6,7 +6,7 @@ import stylistic from '@stylistic/eslint-plugin'
 export default defineConfig([
   stylistic.configs.recommended,
   {
-    files: ['**/*.{js,mjs,cjs}', '.eleventy.js'],
+    files: ['**/*.{js,mjs,cjs}'],
     plugins: { js, '@stylistic': stylistic },
     extends: ['js/recommended'],
   },
@@ -19,7 +19,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['.eleventy.js', '_data/**/*.js'],
+    files: ['eleventy.config.mjs'],
     languageOptions: {
       globals: globals.node,
     },

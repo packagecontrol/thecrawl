@@ -1,6 +1,6 @@
-const fs = require('fs')
-const path = require('path')
-const execSync = require('child_process').execSync
+import fs from 'fs'
+import path from 'path'
+import { execSync } from 'child_process'
 
 const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
 
@@ -107,7 +107,7 @@ function minimalLib(pkg) {
   }
 }
 
-module.exports = function (eleventyConfig) {
+export default function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
   const inlineJsCache = new Map()
 
@@ -236,6 +236,15 @@ module.exports = function (eleventyConfig) {
     return libraries.libraries.map(lib => ({
       ...minimalLib(lib),
     }))
+  })
+
+  eleventyConfig.addGlobalData('built', () => {
+    const now = new Date()
+    return {
+      timestamp: now.toISOString(),
+      formatted: now.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
+      year: now.getFullYear(),
+    }
   })
 
   // simple to date string for some dates without times
