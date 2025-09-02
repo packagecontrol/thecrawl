@@ -1,10 +1,9 @@
 .chart-container {
-  max-width: 15vw;
+  max-width: 800px;
 }
 .install-chart {
   margin: 10px 0 18px;
   transition: opacity 0.3s ease-in;
-  width: 100%;
 }
 
 .install-chart svg {
@@ -34,7 +33,7 @@
 .install-chart .tick-right {
   fill: var(--blue-1);
   transition: opacity 0.1s ease-in;
-  opacity: 0.0;
+  opacity: 1;
 }
 
 .install-chart .bar-net {

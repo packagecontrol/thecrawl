@@ -12,7 +12,10 @@
   {% set left = 40 %}
   {% set right = 44 %}
   {% set chart_h = 120 %}
-  {% set chart_w = (count * (bar_w + gap)) - gap %}
+  {# Pad chart width to a fixed 53 weeks to avoid width changes #}
+  {% set weeks_total = 53 %}
+  {% set padded_count = (count < weeks_total) and weeks_total or count %}
+  {% set chart_w = (padded_count * (bar_w + gap)) - gap %}
   {% set svg_w = left + chart_w + right %}
   {% set svg_h = top + chart_h + bottom %}
 
@@ -96,6 +99,20 @@
   <div class="install-chart">
     <svg viewBox="0 0 {{ svg_w }} {{ svg_h }}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Weekly installs">
       <g transform="translate({{ left }}, {{ top }})">
+        {# left axis and tick labels #}
+        <line x1="0" y1="0" x2="0" y2="{{ chart_h }}" class="axis" />
+        {% for i in range(0, target + 1) %}
+          {% set t = i * step %}
+          {% if t > max_scale %}{% set t = max_scale %}{% endif %}
+          {% set y = chart_h - (t / max_scale) * chart_h %}
+          {% if (i % 2) == 0 %}
+            <text x="-6" y="{{ y }}" text-anchor="end" dominant-baseline="middle" class="tick">{{ t | compact }}</text>
+          {% endif %}
+        {% endfor %}
+
+        {# x-axis #}
+        <line x1="0" y1="{{ chart_h }}" x2="{{ chart_w }}" y2="{{ chart_h }}" class="axis" />
+
         {# bars + week overlays #}
         {% for inst in weekly %}
           {% set i = loop.index0 %}
@@ -155,6 +172,26 @@
               <title>{{ dates[i] }}: installs: {{ inst | grouping }}, removals: {{ rem | grouping }}, upgrades: {{ up | grouping }}</title>
             </rect>
 
+          </g>
+        {% endfor %}
+
+        {# render empty week slices to fill padded width so grid/hover work in padded area #}
+        {% for i in range(count, padded_count) %}
+          {% set x = i * (bar_w + gap) %}
+          {% set slice_w = (i < (padded_count - 1)) and (bar_w + gap) or bar_w %}
+          <g class="week">
+            <rect x="{{ x }}" y="0" width="{{ slice_w }}" height="{{ chart_h }}" class="week-slice-bg" />
+            <clipPath id="clip-week-{{ i }}">
+              <rect x="{{ x }}" y="0" width="{{ slice_w }}" height="{{ chart_h }}" />
+            </clipPath>
+            <g clip-path="url(#clip-week-{{ i }})">
+              {% for gi in range(0, target + 1) %}
+                {% set gt = gi * step %}
+                {% if gt > max_scale %}{% set gt = max_scale %}{% endif %}
+                {% set gy = chart_h - (gt / max_scale) * chart_h %}
+                <line x1="0" y1="{{ gy }}" x2="{{ chart_w }}" y2="{{ gy }}" class="grid" />
+              {% endfor %}
+            </g>
           </g>
         {% endfor %}
 
@@ -297,16 +334,6 @@
           {% endfor %}
         {% endif %}
 
-        {# left axis and tick labels (foreground, above bars) #}
-        <line x1="0" y1="0" x2="0" y2="{{ chart_h }}" class="axis" />
-        {% for i in range(0, target + 1) %}
-          {% set t = i * step %}
-          {% if t > max_scale %}{% set t = max_scale %}{% endif %}
-          {% set y = chart_h - (t / max_scale) * chart_h %}
-          {% if (i % 2) == 0 %}
-            <text x="-6" y="{{ y }}" text-anchor="end" dominant-baseline="middle" class="tick">{{ t | compact }}</text>
-          {% endif %}
-        {% endfor %}
       </g>
     </svg>
   </div>
