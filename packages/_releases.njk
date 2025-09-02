@@ -1,15 +1,14 @@
 {% import "_includes/install_chart.njk" as charts %}
 
-<div class="chart-container">
-  {{ charts.chart(pkg.installs_weekly, pkg.removals_weekly, pkg.weekly_dates, pkg.upgrades_weekly) }}
-</div>
-
 {% if pkg.releases | length > 1 %}
   <h2>Versions</h2>
 {% else %}
   <h2>Version</h2>
 {% endif %}
 
+<div class="chart-container">
+  {{ charts.chart(pkg.installs_weekly, pkg.removals_weekly, pkg.weekly_dates, pkg.upgrades_weekly) }}
+</div>
 {% for release in pkg.releases %}
   <p><a class="release" href="{{ release.url }}">{{ release.version }}</a>
   {% if release.sublime_text != "*" %}
