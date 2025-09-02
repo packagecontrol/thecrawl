@@ -3,7 +3,7 @@ permalink: "/search/index.json"
 ---
 {% import "packages/macros.njk" as pack %}
 [
-{% for pkg in collections.minimal_packages -%}
+{% for pkg in collections.searchable_packages -%}
   {
     "name": "{{ pkg.name }}",
     "description": "{{ pkg.description | default('') | nl2br | replace('\n', '') }}",
