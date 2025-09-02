@@ -1,4 +1,4 @@
-{% import "packages/macros.njk" as pack %}
+{% import "util/icon.njk" as icon %}
 {% import "_includes/search_form.njk" as search_ui %}
 
 <header>
@@ -32,7 +32,7 @@
       <nav>
         {% if isPackagePage %}
           <a href="/#search-field">
-            {{ pack.logo('search') }}
+            {{ icon.octicon('search') }}
             <span class="screenreader-only">Search</span>
           </a>
         {% endif %}

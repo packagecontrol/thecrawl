@@ -1,4 +1,4 @@
-{% import "packages/macros.njk" as pack %}
+{% import "util/icon.njk" as icon %}
 
 <footer>
   <img src="/assets/logo.webp" width="80" height="80" alt="Package Control R logo">
@@ -26,8 +26,8 @@
 
   <button id="theme-toggle" aria-label="Toggle color scheme">
     <div class="icon">
-      <span class="light" aria-label="light">{{ pack.logo('sun') }}</span>
-      <span class="dark" aria-label="dark">{{ pack.logo('moon') }}</span>
+      <span class="light" aria-label="light">{{ icon.octicon('sun') }}</span>
+      <span class="dark" aria-label="dark">{{ icon.octicon('moon') }}</span>
     </div>
   </button>
 </footer>
