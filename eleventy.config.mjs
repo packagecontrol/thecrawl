@@ -171,7 +171,6 @@ export default function (eleventyConfig) {
     return out
   })
 
-  eleventyConfig.addWatchTarget('_includes/human_date.js')
   eleventyConfig.addPassthroughCopy('assets')
   if (isProd) {
     eleventyConfig.addPassthroughCopy({ static: 'static_' + gitHash })
