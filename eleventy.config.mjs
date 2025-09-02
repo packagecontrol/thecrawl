@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { execSync } from 'child_process'
+import { minify } from 'terser'
 
 const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
 
@@ -122,9 +123,8 @@ export default function (eleventyConfig) {
     let code = fs.readFileSync(filePath, 'utf8')
 
     if (isProd) {
-      const terser = require('terser')
       try {
-        const out = await terser.minify(code, {
+        const out = await minify(code, {
           compress: true,
           mangle: true,
           ecma: 2022,
