@@ -192,8 +192,6 @@
             {% set tr = i * step_r %}
             {% if tr > max_scale_r %}{% set tr = max_scale_r %}{% endif %}
             {% set yr = chart_h - (tr / max_scale_r) * chart_h %}
-            {# small tick marks on the right axis #}
-            <line x1="{{ chart_w }}" y1="{{ yr }}" x2="{{ chart_w + 4 }}" y2="{{ yr }}" class="axis" />
             {% if (i % 2) == 0 %}
               <text x="{{ chart_w + 6 }}" y="{{ yr }}" text-anchor="start" dominant-baseline="middle" class="tick tick-right">{{ tr | compact }}</text>
             {% endif %}
