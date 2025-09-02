@@ -1,30 +1,18 @@
 import fs from 'fs'
 import path from 'path'
-import { execSync } from 'child_process'
 import { minify } from 'terser'
 
-const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
+import {
+  cleanPlatforms,
+  cleanAuthors,
+  getReadmeUrl,
+  gitHash } from './eleventy.util.mjs'
 
-// rename macos and remove */any
-function cleanupPlatforms(platforms) {
-  return platforms
-    .filter(platform => platform !== '*')
-    .map(platform => platform === 'osx' ? 'macos' : platform)
-}
-
-// author can be string or array, convert to all arrays
-function cleanupAuthors(author) {
-  if (typeof author === 'string') {
-    return [author]
-  }
-  return author
-}
-
-function minimalPackage(pkg, stats) {
+function basePackage(pkg, stats) {
   // Create a new array of releases with cleaned platforms
   const releases = (pkg.releases || []).map(release => ({
     ...release,
-    platforms: cleanupPlatforms(release.platforms),
+    platforms: cleanPlatforms(release.platforms),
   }))
 
   // For each release, infer a human web URL under key "web"
@@ -92,7 +80,7 @@ function minimalPackage(pkg, stats) {
 
   return {
     name: pkg.name,
-    author: cleanupAuthors(pkg.author) ?? [],
+    author: cleanAuthors(pkg.author) ?? [],
     stars: pkg.stars ?? 0,
     installed: stat,
     created_at: pkg.created_at,
@@ -107,14 +95,13 @@ function minimalPackage(pkg, stats) {
   }
 }
 
-function minimalLib(pkg) {
+function normalizedLib(pkg) {
   const allPlatforms = pkg.releases.flatMap((release) => {
     if (typeof release.platforms !== 'undefined') {
       return release.platforms
     }
     return []
   })
-  const uniquePlatforms = Array.from(new Set(allPlatforms))
 
   const homepage = pkg.issues.replace('/issues', '')
   let gh_path = ''
@@ -126,18 +113,21 @@ function minimalLib(pkg) {
     name: pkg.name,
     homepage: homepage,
     path: gh_path,
-    author: cleanupAuthors(pkg.author),
+    author: cleanAuthors(pkg.author),
     description: pkg.description,
     releases: pkg.releases,
     labels: [],
-    platforms: uniquePlatforms,
+    platforms: Array.from(new Set(allPlatforms)),
   }
 }
 
 export default function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
-  const inlineJsCache = new Map()
 
+  eleventyConfig.addPassthroughCopy('assets')
+  eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + gitHash : 'static' })
+
+  const inlineJsCache = new Map()
   eleventyConfig.addAsyncShortcode('inline_js', async (relPath) => {
     const filePath = path.isAbsolute(relPath) ? relPath : path.join(process.cwd(), relPath)
     const stat = fs.statSync(filePath)
@@ -171,14 +161,6 @@ export default function (eleventyConfig) {
     return out
   })
 
-  eleventyConfig.addPassthroughCopy('assets')
-  if (isProd) {
-    eleventyConfig.addPassthroughCopy({ static: 'static_' + gitHash })
-  } else {
-    eleventyConfig.addPassthroughCopy('static')
-  }
-
-  const libraries = JSON.parse(fs.readFileSync('libraries.json', 'utf8'))
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
   const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
   // eslint-disable-next-line no-unused-vars
@@ -194,56 +176,27 @@ export default function (eleventyConfig) {
     console.warn(`[eleventy] LIMIT_DATASET=${limit} active: ${before} -> ${all_packages.length} packages`)
   }
 
-  // if readme is in pkg
-  // transform some links
-  // https://raw.githubusercontent.com/relikd/CUE-Sheet_sublime/main/README.md
-  // => https://github.com/relikd/CUE-Sheet_sublime/blob/main/README.md
-  //
-  // https://gitlab.com/patopest/Sublime-Text-Cuelang-Syntax/-/raw/master/README.md
-  // => https://gitlab.com/patopest/sublime-text-cuelang-syntax/-/blob/master/README.md
-  //
-  // https://bitbucket.org/JeisonJHA/sublime-delphi-language/raw/master/README.md
-  // => https://bitbucket.org/JeisonJHA/sublime-delphi-language/src/master/README.md
-  //
-  // and store the under readme_url
   eleventyConfig.addCollection('packages', () => {
     return all_packages.map((pkg) => {
-      let readme_url = pkg.readme
-      if (typeof readme_url === 'string') {
-        // GitHub raw to blob
-        readme_url = readme_url.replace(
-          /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
-          'https://github.com/$1/$2/blob/$3/$4',
-        )
-        // GitLab raw to blob
-        readme_url = readme_url.replace(
-          /^https:\/\/gitlab\.com\/([^/]+)\/([^/]+)\/-\/raw\/([^/]+)\/(.+)$/,
-          'https://gitlab.com/$1/$2/-/blob/$3/$4',
-        )
-        // Bitbucket raw to src
-        readme_url = readme_url.replace(
-          /^https:\/\/bitbucket\.org\/([^/]+)\/([^/]+)\/raw\/([^/]+)\/(.+)$/,
-          'https://bitbucket.org/$1/$2/src/$3/$4',
-        )
-      }
+      const readme_url = getReadmeUrl(pkg.readme)
       return {
         ...pkg,
-        ...minimalPackage(pkg, stats[pkg.name]),
+        ...basePackage(pkg, stats[pkg.name]),
         ...(readme_url !== pkg.readme ? { readme_url } : {}),
       }
     })
   })
 
-  eleventyConfig.addCollection('minimal_packages', () => {
+  eleventyConfig.addCollection('searchable_packages', () => {
     return all_packages.map(pkg => ({
       description: pkg.description,
-      ...minimalPackage(pkg, stats[pkg.name]),
+      ...basePackage(pkg, stats[pkg.name]),
     })).sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
 
   eleventyConfig.addCollection('updated_packages', () => {
     return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
-      ...minimalPackage(pkg, stats[pkg.name]),
+      ...basePackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.last_modified ?? '1970-01-01 00:00:00') - new Date(a.last_modified ?? '1970-01-01 00:00:00')
     }).slice(0, 9)
@@ -251,15 +204,16 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addCollection('newest_packages', () => {
     return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
-      ...minimalPackage(pkg, stats[pkg.name]),
+      ...basePackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
     }).slice(0, 9)
   })
 
   eleventyConfig.addCollection('libraries', () => {
+    const libraries = JSON.parse(fs.readFileSync('libraries.json', 'utf8'))
     return libraries.libraries.map(lib => ({
-      ...minimalLib(lib),
+      ...normalizedLib(lib),
     }))
   })
 
@@ -279,6 +233,7 @@ export default function (eleventyConfig) {
     return (new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })).format(value)
   })
 
+  // simple to date string for some dates _with_ times
   eleventyConfig.addFilter('date_time_format', (date) => {
     return (new Date(date)).toISOString().slice(0, 16).replace('T', ' ')
   })
@@ -289,16 +244,19 @@ export default function (eleventyConfig) {
     return (new Date(date)).getTime() / 1000
   })
 
+  // compact number formatting (e.g. 10k)
   eleventyConfig.addFilter('compact', (count) => {
     const fmt = new Intl.NumberFormat('en', { notation: 'compact' })
     return fmt.format(count)
   })
 
+  // number formatting with grouping (e.g. 10,000)
   eleventyConfig.addFilter('grouping', (count) => {
     const fmt = new Intl.NumberFormat('en', { useGrouping: true })
     return fmt.format(count)
   })
 
+  // cache bust static files
   eleventyConfig.addFilter('bust', (p) => {
     if (!isProd) return p
     return p.replace('static/', 'static_' + gitHash + '/')

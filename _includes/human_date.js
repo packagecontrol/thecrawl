@@ -1,3 +1,7 @@
+/**
+ * Define the <human-date> custom element.
+ */
+
 ;(function () {
   // WebComponent helpers
   // setup attributes and the corresponding properties
