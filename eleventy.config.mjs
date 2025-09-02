@@ -101,6 +101,9 @@ export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy('assets')
   eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + gitHash : 'static' })
 
+  eleventyConfig.ignores.add('util')
+  eleventyConfig.ignores.add('README.md')
+
   const inlineJsCache = new Map()
   eleventyConfig.addAsyncShortcode('inline_js', async (relPath) => {
     const filePath = path.isAbsolute(relPath) ? relPath : path.join(process.cwd(), relPath)
