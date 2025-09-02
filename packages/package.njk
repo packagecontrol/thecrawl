@@ -115,6 +115,7 @@ isPackagePage: true
 {% if pkg.readme %}
   <section id="md" class="readme" data-readme-url="{{ pkg.readme }}"></section>
   <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
+  <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
 {% endif %}
 
 <section name="result" class="package-list" style="display:none;">

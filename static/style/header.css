@@ -44,10 +44,6 @@ header {
       margin-right: 1.6em;
     }
 
-    svg {
-      margin-bottom: -2px;
-    }
-
     [href="/#search-field"] {
       @media (min-width: 901px) {
         display: none;
