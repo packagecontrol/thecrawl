@@ -1,5 +1,6 @@
-{# template used by JS to render cards #}
 {% import "packages/macros.njk" as pack %}
+
+{# template used by JS to render cards #}
 <template id="package-card">
   {{ pack.card({
     "name": "placeholder-name",
@@ -13,4 +14,3 @@
     "permalink": "placeholder-permalink"
   }) }}
 </template>
-<script src="{{ '/static/index.js' | bust }}" type="module" async></script>
