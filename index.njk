@@ -4,13 +4,13 @@ date: Last Modified
 ---
 
 {% import "packages/macros.njk" as pack %}
-{% import "_includes/search_form.njk" as search_ui %}
+{% import "util/macros.njk" as util %}
 
 <h1 data-default="{{ collections.packages | length }} Packages">
   {{ collections.packages | length }}
   Packages
 </h1>
-{{ search_ui.form(true) }}
+{{ util.form(true) }}
 
 <section name="newest" class="package-list">
   <h2>Newest</h2>

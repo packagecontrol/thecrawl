@@ -12,10 +12,10 @@ isPackagePage: true
 ---
 
 {% import "packages/macros.njk" as pack %}
-{% import "util/icon.njk" as icon %}
 
 
 <h1 data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
+{% import "util/macros.njk" as util %}
 
 <section name="package">
   {% if pkg.description %}
@@ -28,7 +28,7 @@ isPackagePage: true
       the failure is basically only relevant for packages still in the registry
     #}
     <aside class="warning-message">
-      {{ icon.octicon('warning') }}
+      {{ util.icon('warning') }}
       <h2>Updating our information on this package failed:</h2>
       <p>{{ pkg.fail_reason }}</p>
     </aside>
@@ -83,27 +83,27 @@ isPackagePage: true
     <ul class="button-group links">
       {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
       <li>
-        <a class="button" href="{{ pkg.homepage }}">{{ icon.octicon('home') }} <span>Website</span></a>
+        <a class="button" href="{{ pkg.homepage }}">{{ util.icon('home') }} <span>Website</span></a>
       </li>
       {% endif %}
       {% if pkg.details %}
       <li>
-        <a class="button" href="{{ pkg.details }}">{{ icon.octicon('repo') }} <span>Repository</span></a>
+        <a class="button" href="{{ pkg.details }}">{{ util.icon('repo') }} <span>Repository</span></a>
       </li>
       {% endif %}
       {% if pkg.readme %}
       <li>
-        <a class="button" href="{{ pkg.readme_url | default(pkg.readme) }}">{{ icon.octicon('file') }} <span>README</span></a>
+        <a class="button" href="{{ pkg.readme_url | default(pkg.readme) }}">{{ util.icon('file') }} <span>README</span></a>
       </li>
       {% endif %}
       {% if pkg.issues %}
         <li>
-        <a class="button" href="{{ pkg.issues }}">{{ icon.octicon('bug') }} <span>Issues</span></a>
+        <a class="button" href="{{ pkg.issues }}">{{ util.icon('bug') }} <span>Issues</span></a>
       </li>
       {% endif %}
       {% if pkg.donate %}
         <li>
-        <a class="button" href="{{ pkg.donate }}">{{ icon.octicon('gift') }} <span>Donate</span></a>
+        <a class="button" href="{{ pkg.donate }}">{{ util.icon('gift') }} <span>Donate</span></a>
       </li>
       {% endif %}
     </ul>

@@ -1,4 +1,4 @@
-{% import "util/icon.njk" as icon %}
+{% import "util/macros.njk" as util %}
 
 {% macro labels(platforms, labels) %}
   {% if platforms | length > 0 or  labels | length > 0 %}
@@ -27,7 +27,7 @@
 {% macro stars(count, pretty=false) %}
   {% if count > 0 %}
     <li class="stars" title="{{ count }} {{ 'star' if count < 2 else 'stars' }} on GitHub">
-      <span aria-hidden="true">{{ icon.octicon('star') }}</span>
+      <span aria-hidden="true">{{ util.icon('star') }}</span>
       <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
       <span class="screenreader-only">stars</span>
     </li>
@@ -37,7 +37,7 @@
 {% macro installs(count, pretty=false) %}
   {% if count > 0 %}
     <li class="installs" title="Installed {{ count }} {{ 'time' if count < 2 else 'times' }}">
-      <span aria-hidden="true">{{ icon.octicon('download') }}</span>
+      <span aria-hidden="true">{{ util.icon('download') }}</span>
       <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
       <span class="screenreader-only">installs</span>
     </li>
@@ -47,7 +47,7 @@
 {% macro archived(date) %}
   {% if date %}
     <li class="warning" title="Repository was archived on {{ date | date_format }}">
-      <span aria-hidden="true">{{ icon.octicon('archive') }}</span>
+      <span aria-hidden="true">{{ util.icon('archive') }}</span>
       <span class="counter">Unmaintained</span>
       <span class="screenreader-only">{{ date | date_format }}</span>
     </li>
@@ -57,7 +57,7 @@
 {% macro rip(date) %}
   {% if date %}
     <li class="warning" title="Package was removed on {{ date | date_format }}">
-      <span aria-hidden="true">{{ icon.octicon('archive') }}</span>
+      <span aria-hidden="true">{{ util.icon('archive') }}</span>
       <span class="counter">R.I.P.</span>
       <span class="screenreader-only">{{ date | date_format }}</span>
     </li>

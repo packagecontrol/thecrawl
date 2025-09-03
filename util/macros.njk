@@ -1,6 +1,6 @@
 {# https://primer.style/octicons #}
 
-{% macro octicon(which) %}
+{% macro icon(which) %}
   {% if which == 'star' %}
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Zm0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41L8 2.694Z"></path></svg>
   {% elif which == 'sun' %}
@@ -28,4 +28,42 @@
   {% elif which == 'warning' %}
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>
   {% endif %}
+{% endmacro %}
+
+
+
+{% macro form(verbose=true) %}
+  <form name="search" action="/">
+    <div class="search-controls{% if not verbose %} compact{% endif %}">
+      <label for="search-field" class="screenreader-only">Search</label>
+      <input type="search" autocomplete="off" name="q" id="search-field" placeholder="{{ 'Search 100 packages' if verbose else 'Search' }}…">
+
+        <div class="button">
+          <label for="sort-field">Sort by</label>
+          <select name="sort-field" id="sort-field">
+            <option value="relevance" selected>Magic</option>
+            <optgroup label="Popularity">
+              <option value="installed">Installs</option>
+              <option value="stars">Stars</option>
+            </optgroup>
+            <optgroup label="Date">
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="update">Recent update</option>
+            </optgroup>
+            <optgroup label="Alphabetical">
+              <option value="name">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="author">Author (A-Z)</option>
+              <option value="author-desc">Author (Z-A)</option>
+            </optgroup>
+          </select>
+        </div>
+    </div>
+
+    {% if verbose %}
+      {% import "packages/macros.njk" as pack %}
+      {{ pack.labels(['linux','macos','windows'], ['language syntax','snippets','linting','auto-complete','color scheme','theme']) }}
+    {% endif %}
+  </form>
 {% endmacro %}
