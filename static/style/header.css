@@ -1,18 +1,22 @@
 header {
-  margin-bottom: 22px;
-  padding: 4px var(--side-padding);
+  display: flex;
+  position: relative;
+  margin: 0 auto 21px auto;
+  padding: 11px var(--side-padding) 0 var(--side-padding);
+  max-width: 92rem;
   color: var(--foreground-3);
+
+  &:has(h1) {
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 479px) {
+    font-size: 13px;
+  }
 
   * {
     margin: 0;
     padding: 0;
-  }
-
-  .inner {
-    max-width: 92rem;
-    margin: 0 auto;
-    position: relative;
-    display: flex;
   }
 
   .right-side {
@@ -22,23 +26,45 @@ header {
   }
 
   .brand {
-    font-size: 28px;
-    line-height: 52px;
+    margin: 0;
+    padding: 0;
     font-weight: bold;
+    font-size: 21px;
+    line-height: 26px;
 
     a {
       color: var(--foreground-2);
     }
 
-    + p {
-      margin-top: -6px;
+    @media (min-width: 480px) {
+      font-size: 28px;
+      line-height: 38px;
+    }
+
+    + .tagline {
+      padding-top: 0;
+      margin-top: -4px;
+      margin-bottom: 0;
+      font-size: inherit;
+
+      @media (min-width: 480px) {
+        margin-top: -2px;
+      }
+    }
+
+    h1& {
+      color: var(--foreground-1);
+
+      @media (min-width: 480px) {
+        font-size: 38px;
+        line-height: 52px;
+      }
     }
   }
 
-
   nav {
-    line-height: 21px;
-    padding-top: 20px;
+    line-height: 26px;
+    padding-top: 22px;
 
     > *:not(:last-child) {
       margin-right: 1.6em;

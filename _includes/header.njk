@@ -1,45 +1,53 @@
 {% import "util/macros.njk" as util %}
 
 <header>
-  <div class="inner">
 
-    <div class="left-side">
-      <p class="brand"><a href="/">Package Control <span class="hot">R</span></a></p>
-      <p>The Sublime Text package directory, {{ [
-          "re-imagined",
-          "reassembled",
-          "rebooted",
-          "reborn",
-          "recompiled",
-          "refactored",
-          "reinvigorated",
-          "remastered",
-          "replenished",
-          "restarted",
-          "resurrected",
-          "revisited",
-          "rewired"
-        ] | random
-      }}.</p>
-    </div>
+  <div class="left-side">
+    {% if page.url == '/' %}
+      <h1 class="brand">
+        Package Control <span class="hot">R</span>
+      </h1>
+    {% else %}
+      <p class="brand">
+        <a href="/">
+          Package Control <span class="hot">R</span>
+        </a>
+      </p>
+    {% endif %}
 
-    <div class="right-side">
+    <p class="tagline">The Sublime Text package directory, {{ [
+        "re-imagined",
+        "reassembled",
+        "rebooted",
+        "reborn",
+        "recompiled",
+        "refactored",
+        "reinvigorated",
+        "remastered",
+        "replenished",
+        "restarted",
+        "resurrected",
+        "revisited",
+        "rewired"
+      ] | random
+    }}.</p>
+  </div>
+
+  <div class="right-side">
+    {% if isPackagePage %}
+      {{ util.form(false) }}
+    {% endif %}
+
+    <nav>
       {% if isPackagePage %}
-        {{ search_ui.form(false) }}
+        <a href="/#search-field">
+          {{ util.icon('search') }}
+          <span class="screenreader-only">Search</span>
+        </a>
       {% endif %}
 
-      <nav>
-        {% if isPackagePage %}
-          <a href="/#search-field">
-            {{ icon.octicon('search') }}
-            <span class="screenreader-only">Search</span>
-          </a>
-        {% endif %}
-
-        <a href="/about">About / FAQ</a>
-      </nav>
-    </div>
-
+      <a href="/about">About / FAQ</a>
+    </nav>
   </div>
 
 </header>

@@ -12,12 +12,11 @@ isPackagePage: true
 ---
 
 {% import "packages/macros.njk" as pack %}
-
-
-<h1 data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
 {% import "util/macros.njk" as util %}
 
 <section name="package">
+  <h1 data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
+
   {% if pkg.description %}
     <p class="description">{{ pkg.description }}</p>
   {% endif %}
@@ -119,7 +118,8 @@ isPackagePage: true
 {% endif %}
 
 <section name="result" class="package-list" style="display:none;">
-  <h2>Results</h2>
+  <h1>Results</h1>
+  <h2 class="screenreader-only">Packages</h2>
   <ul class="grid"></ul>
   {# pagination will render here #}
   <div class="pagination"></div>

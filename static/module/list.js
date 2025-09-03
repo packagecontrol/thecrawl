@@ -25,13 +25,13 @@ export class List {
   }
 
   setCounter(count = null) {
-    const header = document.querySelector('h1')
+    const header = this.getSection().querySelector('h1, h2')
     if (count === null) {
       header.innerText = header.dataset.default
     } else if (count === 1) {
-      header.innerText = '1 Package'
+      header.innerText = '1 Result'
     } else {
-      header.innerText = `${count} Packages`
+      header.innerText = `${count} Results`
     }
   }
 

@@ -6,10 +6,6 @@ date: Last Modified
 {% import "packages/macros.njk" as pack %}
 {% import "util/macros.njk" as util %}
 
-<h1 data-default="{{ collections.packages | length }} Packages">
-  {{ collections.packages | length }}
-  Packages
-</h1>
 {{ util.form(true) }}
 
 <section name="newest" class="package-list">
@@ -34,9 +30,11 @@ date: Last Modified
   </ul>
 </section>
 
-<section name="result" class="package-list" style="display:none;">
-  <h2 id="result-header">Results</h2>
-  <ul class="grid"></ul>
-</section>
+<div>
+  <section name="result" class="package-list" style="display:none;">
+    <h2 id="result-header">Results</h2>
+    <ul class="grid"></ul>
+  </section>
+</div>
 
 <script src="{{ '/static/index.js' | bust }}" type="module" async></script>

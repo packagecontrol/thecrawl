@@ -15,7 +15,6 @@
   const setContent = () => {
     // set temporary content that will be replaced after search completes
     document.querySelector('[name=q]').value = q
-    document.querySelector('h1').innerText = 'Searching…'
   }
 
   const timer = window.setTimeout(() => {
