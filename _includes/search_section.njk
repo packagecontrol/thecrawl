@@ -1,9 +1,9 @@
-<section name="result" style="display:none;">
+<section data-list-target="section" style="display:none;">
   {% if isPackagePage %}
-    <h1>Results</h1>
+    <h1 data-list-target="heading">Results</h1>
     <h2 class="screenreader-only">Packages</h2>
   {% else %}
-    <h2>Results</h2>
+    <h2 data-list-target="heading">Results</h2>
   {% endif %}
-  <ul class="grid"></ul>
+  <ul class="grid" data-list-target="list"></ul>
 </section>

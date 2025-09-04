@@ -14,7 +14,7 @@ isPackagePage: true
 {% import "packages/macros.njk" as pack %}
 {% import "util/macros.njk" as util %}
 
-<section name="package">
+<section name="package" data-list-target="hideme">
   <h1 data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
 
   {% if pkg.description %}
@@ -112,7 +112,7 @@ isPackagePage: true
 </section>
 
 {% if pkg.readme %}
-  <section id="md" class="readme" data-readme-url="{{ pkg.readme }}"></section>
+  <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="hideme"></section>
   <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
   <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
 {% endif %}

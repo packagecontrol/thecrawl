@@ -7,6 +7,8 @@ export class Pagination {
 
     this.totalPages = 0
     this.itemsPerPage = 24
+
+    this.id = 'pagination'
   }
 
   // calculate pagination and result the items of the current page
@@ -18,13 +20,18 @@ export class Pagination {
     return this.items.slice(startIndex, endIndex)
   }
 
+  clear() {
+    document.getElementById(this.id)?.remove()
+  }
+
   render() {
     if (this.totalPages < 2) {
       return
     }
 
     const pagination = document.createElement('div')
-    pagination.className = 'pagination'
+    pagination.id = this.id
+    pagination.className = this.id
 
     // info text
     const startItem = (this.currentPage - 1) * this.itemsPerPage + 1

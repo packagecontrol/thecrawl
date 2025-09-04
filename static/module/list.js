@@ -6,72 +6,62 @@ import { Search } from './search.js'
 /**
  * Manage the search results section.
  *
- * Swaps all <section> elements with the "result" section, and back, on search.
+ * On search:
+ * - Swap all registed "hideme" elements with the "result" section, and back.
+ * - Insert pagination if needed.
+ * - Update the heading with the number of results.
+ * - .. oh and don't forget to render the results themselves :)
  */
 
 export class List {
   search = null
+  pagination = null
   initialPath = '/'
   initialTitle = document.title
 
+  attr = 'data-list-target'
+  section = document.querySelector(`[${this.attr}='section']`)
+  heading = document.querySelector(`[${this.attr}='heading']`)
+  list = document.querySelector(`[${this.attr}='list']`)
+  hideme = document.querySelectorAll(`[${this.attr}='hideme']`)
+
   constructor() {
     this.initialPath = window.location.pathname
-    this.initialTitle = document.title
-  }
-
-  // the section where we'll render search results
-  getSection() {
-    return document.querySelector('section[name="result"]')
-  }
-
-  // the first heading above the results list
-  getHeading() {
-    return this.getSection().querySelector('h1, h2')
-  }
-
-  // the list inside that section
-  getList() {
-    return this.getSection().querySelector('ul')
   }
 
   setCounter(count = null) {
     if (count === null) {
-      this.getHeading().innerText = 'Results'
+      this.heading.innerText = 'Results'
     } else if (count === 1) {
-      this.getHeading().innerText = '1 Result'
+      this.heading.innerText = '1 Result'
     } else {
-      this.getHeading().innerText = `${count} Results`
+      this.heading.innerText = `${count} Results`
     }
   }
 
   // reveal search results and hide any other sections
   switchToResults() {
-    document.querySelectorAll('section').forEach((section) => {
-      if (section === this.getSection()) {
-        section.style.display = null
-      }
-      else {
-        section.style.display = 'none'
-      }
+    this.hideme.forEach((section) => {
+      section.style.display = 'none'
     })
+
+    this.section.style.display = null
   }
 
   // hide search results and reveal other sections
   revertToNormal() {
-    document.querySelectorAll('section').forEach((section) => {
-      if (section === this.getSection()) {
-        section.style.display = 'none'
-      }
-      else {
-        section.style.display = null
-      }
+    this.hideme.forEach((section) => {
+      section.style.display = null
     })
+
+    this.section.style.display = 'none'
   }
 
-  // clear previous results and pagination ui
+  // clear any pagination ui and previous results
   clear() {
-    this.getSection().querySelectorAll('li, .pagination').forEach((ui) => {
-      ui.remove()
+    this.pagination?.clear()
+    Array.from(this.list.children).forEach((card) => {
+      card.remove()
     })
   }
 
@@ -79,29 +69,27 @@ export class List {
   renderPage(items, page) {
     this.clear()
 
-    const pagination = new Pagination(this, items, page, this.getSection())
+    this.pagination = new Pagination(this, items, page, this.section)
 
     // Render items for current page
-    pagination.calculate().forEach((pkg) => {
+    this.pagination.calculate().forEach((pkg) => {
       const li = document.createElement('li')
       li.appendChild((new Card(pkg)).render())
-      this.getList().appendChild(li)
+      this.list.appendChild(li)
     })
 
-    pagination.render()
+    this.pagination.render()
   }
 
   // scroll to top of results after updating the list "in place"
   scrollUp(all_the_way = true) {
-    const el = all_the_way
-      ? (document.forms.search)
-      : (document.getElementById('result-header') || document.forms.search)
-    const rect = el.getBoundingClientRect()
+    const target = all_the_way ? document.forms.search : this.heading
+    const rect = target.getBoundingClientRect()
     const completelyAbove = rect.bottom < 0
     const completelyBelow = rect.top > window.innerHeight
 
     if (completelyAbove || completelyBelow) {
-      el.scrollIntoView()
+      target.scrollIntoView()
     }
   }
 
@@ -163,7 +151,7 @@ export class List {
     // render results with pagination
     this.renderPage(sortedResults, page)
 
-    this.getSection().dispatchEvent(
+    this.section.dispatchEvent(
       new Event('search-is-ready', { bubbles: true }),
     )
   }
