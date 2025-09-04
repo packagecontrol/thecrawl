@@ -59,6 +59,10 @@ header {
       @media (min-width: 480px) {
         font-size: 38px;
         line-height: 52px;
+
+        + .tagline {
+          margin-top: -4px;
+        }
       }
     }
   }
