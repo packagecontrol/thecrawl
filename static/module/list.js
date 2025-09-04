@@ -3,7 +3,12 @@ import { Pagination } from './pagination.js'
 import { Sort } from './sort.js'
 import { Search } from './search.js'
 
-// utilities to manage the search result list
+/**
+ * Manage the search results section.
+ *
+ * Swaps all <section> elements with the "result" section, and back, on search.
+ */
+
 export class List {
   search = null
   initialPath = '/'
@@ -19,26 +24,30 @@ export class List {
     return document.querySelector('section[name="result"]')
   }
 
+  // the first heading above the results list
+  getHeading() {
+    return this.getSection().querySelector('h1, h2')
+  }
+
   // the list inside that section
   getList() {
     return this.getSection().querySelector('ul')
   }
 
   setCounter(count = null) {
-    const header = this.getSection().querySelector('h1, h2')
     if (count === null) {
-      header.innerText = header.dataset.default
+      this.getHeading().innerText = 'Results'
     } else if (count === 1) {
-      header.innerText = '1 Result'
+      this.getHeading().innerText = '1 Result'
     } else {
-      header.innerText = `${count} Results`
+      this.getHeading().innerText = `${count} Results`
     }
   }
 
-  // reveal search results and hide the static homepage
+  // reveal search results and hide any other sections
   switchToResults() {
     document.querySelectorAll('section').forEach((section) => {
-      if (section.getAttribute('name') === 'result') {
+      if (section === this.getSection()) {
         section.style.display = null
       }
       else {
@@ -47,18 +56,16 @@ export class List {
     })
   }
 
-  // revert to the static homepage
+  // hide search results and reveal other sections
   revertToNormal() {
     document.querySelectorAll('section').forEach((section) => {
-      if (section.getAttribute('name') === 'result') {
+      if (section === this.getSection()) {
         section.style.display = 'none'
       }
       else {
         section.style.display = null
       }
     })
-
-    this.setCounter()
   }
 
   // clear previous results and pagination ui
@@ -135,6 +142,7 @@ export class List {
 
     if (value.length < 1) {
       // no search query - revert to static homepage
+      this.setCounter()
       this.revertToNormal()
       return
     }

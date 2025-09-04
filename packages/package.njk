@@ -117,11 +117,7 @@ isPackagePage: true
   <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
 {% endif %}
 
-<section name="result" style="display:none;">
-  <h1>Results</h1>
-  <h2 class="screenreader-only">Packages</h2>
-  <ul class="grid"></ul>
-</section>
+{% include "search_section.njk" %}
 
 <script src="{{ '/static/index.js' | bust }}" type="module" async></script>
 <script src="{{ '/static/compact_search.js' | bust }}" type="module" async></script>
