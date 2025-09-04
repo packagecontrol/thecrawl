@@ -90,6 +90,10 @@ pre {
   }
 }
 
+h2 {
+  color: var(--foreground-2);
+}
+
 .screenreader-only {
     width: 1px;
     height: 1px;
@@ -135,4 +139,8 @@ human-date[clickable] {
       color: var(--orange-1);
     }
   }
+}
+
+section {
+  margin-bottom: 1.6rem;
 }

@@ -8,7 +8,7 @@ date: Last Modified
 
 {{ util.form(true) }}
 
-<section name="newest" class="package-list">
+<section name="newest">
   <h2>Newest</h2>
   <ul class="grid">
     {% for pkg in collections.newest_packages %}
@@ -19,7 +19,7 @@ date: Last Modified
   </ul>
 </section>
 
-<section name="recent" class="package-list">
+<section name="recent">
   <h2>Recently updated</h2>
   <ul class="grid">
     {% for pkg in collections.updated_packages %}
@@ -30,11 +30,9 @@ date: Last Modified
   </ul>
 </section>
 
-<div>
-  <section name="result" class="package-list" style="display:none;">
-    <h2 id="result-header">Results</h2>
-    <ul class="grid"></ul>
-  </section>
-</div>
+<section name="result" style="display:none;">
+  <h2>Results</h2>
+  <ul class="grid"></ul>
+</section>
 
 <script src="{{ '/static/index.js' | bust }}" type="module" async></script>

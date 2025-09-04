@@ -188,13 +188,3 @@ form.compact {
     }
   }
 }
-
-section.package-list {
-  h2 {
-    color: var(--foreground-2);
-  }
-
-  + .package-list {
-    padding-top: 24px;
-  }
-}
