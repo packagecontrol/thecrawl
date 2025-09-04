@@ -2,12 +2,13 @@
   0%   {
     opacity: 0;
     width: 0;
-    margin: 2px 0;
+    margin-left: 0;
+    margin-right: 0;
   }
   100% {
     opacity: 1;
     width: 10rem;
-    margin: 2px 4px;
+    margin: 4px;
   }
 }
 
@@ -15,12 +16,13 @@
   0% {
     opacity: 1;
     width: 10rem;
-    margin: 2px 4px;
+    margin: 4px;
   }
   100% {
     opacity: 0;
     width: 0;
-    margin: 2px 0;
+    margin-left: 0;
+    margin-right: 0;
     padding: 0;
   }
 }
@@ -59,6 +61,10 @@ select {
   transition: border .2s ease-in-out, outline .2s ease-in-out;
   overflow: hidden;
 
+  * {
+    box-sizing: border-box;
+  }
+
   --animation-timing: .3s ease-in-out;
 
   &:has(input:focus) {
@@ -91,7 +97,6 @@ select {
     margin: 6px;
     padding: 0;
     gap: 0;
-    box-sizing: border-box;
 
     label,
     select {
@@ -109,6 +114,11 @@ select {
       label {
         font-size: 0.8em;
         line-height: 1;
+        width: 100%;
+        padding-bottom: 0;
+      }
+      select {
+        padding-top: 0;
       }
     }
   }
@@ -130,7 +140,7 @@ form.compact {
       display: none;
       animation: var(--animation-timing) forwards grow;
       font-size: 13px;
-      margin: 2px 4px;
+      margin: 4px;
 
       label {
         padding-right: 0;
@@ -158,18 +168,23 @@ form.compact {
 
   padding: 0 var(--side-padding) 0 0;
 
-  @media (max-width: 900px) {
+  @media (max-width: 50rem) {
     display: none;
 
     &.overlay {
-      display: block;
+      display: flex;
       position: absolute;
       top: 0;
       right: 0;
       bottom: 0;
       left: 0;
-      padding: 8px 0 0 0;
+      padding: 8px var(--side-padding);
       background: var(--background-2);
+      align-items: center;
+
+      > * {
+        flex: 1;
+      }
     }
   }
 }

@@ -21,6 +21,7 @@ function goAway() {
     form.classList.add('going-away')
     button.onanimationend = () => {
       form.classList.remove('going-away')
+      form.classList.remove('overlay')
     }
   }
 }
@@ -37,9 +38,6 @@ input.addEventListener('input', () => {
 input.addEventListener('focus', () => {
   reset()
   form.classList.add('has-focus')
-  if (input.value.length < 1) {
-    form.classList.remove('overlay')
-  }
 })
 
 select.addEventListener('focus', () => {
@@ -48,9 +46,6 @@ select.addEventListener('focus', () => {
 })
 
 input.addEventListener('blur', () => {
-  if (input.value.length < 1) {
-    input.form.classList.remove('overlay')
-  }
   timer = window.setTimeout(() => {
     goAway()
   }, 500)
@@ -62,7 +57,7 @@ select.addEventListener('blur', () => {
   }, 500)
 })
 
-document.querySelector('header [href="/#search-field"]').onclick = (event) => {
+document.querySelector('[href="/#search-field"]').onclick = (event) => {
   event.preventDefault()
   event.stopPropagation()
   form.classList.add('overlay')

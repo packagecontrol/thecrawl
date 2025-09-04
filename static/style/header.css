@@ -24,10 +24,6 @@ header {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-
-    > * + * {
-      margin-left: var(--side-padding);
-    }
   }
 
   .brand {
@@ -71,11 +67,11 @@ header {
     line-height: 26px;
 
     > *:not(:last-child) {
-      margin-right: 1.6em;
+      margin-right: 1em;
     }
 
     [href="/#search-field"] {
-      @media (min-width: 901px) {
+      @media (min-width: calc(50rem + 1px)) {
         display: none;
       }
     }
