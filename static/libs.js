@@ -1,6 +1,10 @@
 import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
 import { Search } from './module/search.js'
 
+/**
+ * Simplified search features on the library listing page.
+ */
+
 const data = []
 const cards = document.querySelectorAll('[data-lib-name]')
 cards.forEach((card) => {

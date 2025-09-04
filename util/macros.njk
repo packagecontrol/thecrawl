@@ -33,32 +33,34 @@
 
 
 {% macro form(verbose=true) %}
-  <form name="search" action="/">
-    <div class="search-controls{% if not verbose %} compact{% endif %}">
+  <form name="search" action="/" class="{% if not verbose %}compact{% endif %}">
+    <div class="search-controls">
+
       <label for="search-field" class="screenreader-only">Search</label>
       <input type="search" autocomplete="off" name="q" id="search-field" placeholder="{{ 'Search 100 packages' if verbose else 'Search' }}…">
 
-        <div class="button">
-          <label for="sort-field">Sort by</label>
-          <select name="sort-field" id="sort-field">
-            <option value="relevance" selected>Magic</option>
-            <optgroup label="Popularity">
-              <option value="installed">Installs</option>
-              <option value="stars">Stars</option>
-            </optgroup>
-            <optgroup label="Date">
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="update">Recent update</option>
-            </optgroup>
-            <optgroup label="Alphabetical">
-              <option value="name">Name (A-Z)</option>
-              <option value="name-desc">Name (Z-A)</option>
-              <option value="author">Author (A-Z)</option>
-              <option value="author-desc">Author (Z-A)</option>
-            </optgroup>
-          </select>
-        </div>
+      <div class="button">
+        <label for="sort-field">Sort by</label>
+        <select name="sort" id="sort-field">
+          <option value="relevance" selected>Magic</option>
+          <optgroup label="Popularity">
+            <option value="installed">Installs</option>
+            <option value="stars">Stars</option>
+          </optgroup>
+          <optgroup label="Date">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="update">Recent update</option>
+          </optgroup>
+          <optgroup label="Alphabetical">
+            <option value="name">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="author">Author (A-Z)</option>
+            <option value="author-desc">Author (Z-A)</option>
+          </optgroup>
+        </select>
+      </div>
+
     </div>
 
     {% if verbose %}

@@ -1,6 +1,10 @@
 import { List } from './module/list.js'
 import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
 
+/**
+ * Handle search features on the index and package pages.
+ */
+
 // Fetches and returns the search data from the index
 async function fetchSearchData() {
   const res = await fetch('/search/index.json')
@@ -60,7 +64,7 @@ const handleInput = () => {
 
 const form = document.forms.search
 const input = form.elements['q']
-const sortSelect = form.elements['sort-field']
+const sortSelect = form.elements['sort']
 const url_search = window.location.search
 const urlParams = new URLSearchParams(url_search)
 
@@ -92,30 +96,10 @@ input.form.onsubmit = (event) => {
 // Handle input changes (search as you type)
 input.addEventListener('input', () => {
   clearTimeout(debounceTimeout)
-
-  if (input.value.length > 0) {
-    input.classList.add('has-input')
-  } else {
-    input.classList.remove('has-input')
-  }
-
   debounceTimeout = setTimeout(() => {
     handleInput()
   }, 300) // .3 seconds
 })
-
-input.addEventListener('blur', () => {
-  if (input.value.length < 1) {
-    input.form.classList.remove('overlay')
-  }
-})
-
-document.querySelector('header [href="/#search-field"]').onclick = (event) => {
-  event.preventDefault()
-  event.stopPropagation()
-  input.form.classList.add('overlay')
-  input.form.querySelector('input').focus()
-}
 
 // Handle sort dropdown changes
 sortSelect.addEventListener('change', (event) => {

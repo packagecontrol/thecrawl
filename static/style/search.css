@@ -1,11 +1,27 @@
 @keyframes grow {
   0%   {
     opacity: 0;
-    max-width: 0;
+    width: 0;
+    margin: 2px 0;
   }
   100% {
     opacity: 1;
-    max-width: 200px;
+    width: 10rem;
+    margin: 2px 4px;
+  }
+}
+
+@keyframes shrink {
+  0% {
+    opacity: 1;
+    width: 10rem;
+    margin: 2px 4px;
+  }
+  100% {
+    opacity: 0;
+    width: 0;
+    margin: 2px 0;
+    padding: 0;
   }
 }
 
@@ -43,6 +59,8 @@ select {
   transition: border .2s ease-in-out, outline .2s ease-in-out;
   overflow: hidden;
 
+  --animation-timing: .3s ease-in-out;
+
   &:has(input:focus) {
     border-color: var(--orange-1);
     outline: 1px solid var(--orange-1);
@@ -71,6 +89,14 @@ select {
   .button {
     align-self: center;
     margin: 6px;
+    padding: 0;
+    gap: 0;
+    box-sizing: border-box;
+
+    label,
+    select {
+      padding: 3px 8px;
+    }
 
     &:has(select:focus) {
       outline: 2px solid var(--orange-1);
@@ -79,7 +105,6 @@ select {
     @media (max-width: 600px) {
       flex-direction: column;
       align-items: flex-start;
-      gap: 0;
 
       label {
         font-size: 0.8em;
@@ -87,48 +112,64 @@ select {
       }
     }
   }
+}
 
-  /* Compact header search: hide Sort By until focus, with animation */
-  &.compact {
+
+/* Compact header search: hide Sort By until focus, with animation */
+form.compact {
+  .search-controls {
     margin-bottom: 0;
 
     input {
       line-height: 1;
       width: 9em;
-      transition: width .2s ease-in-out;
-      &:focus,
-      &.has-input {
-        width: 12em;
-      }
+      transition: width var(--animation-timing);
     }
 
     .button {
       display: none;
-      animation: .2s ease-in-out forwards grow;
+      animation: var(--animation-timing) forwards grow;
       font-size: 13px;
-    }
-    &:focus-within .button,
-    &:has(input.has-input) .button {
-      display: revert;
+      margin: 2px 4px;
+
+      label {
+        padding-right: 0;
+      }
     }
   }
 
-  form:has(.compact) {
-    padding: 0 var(--side-padding) 0 0;
-
-    @media (max-width: 900px) {
-      display: none;
-
-      &.overlay {
-        display: block;
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        padding: 8px 0 0 0;
-        background: var(--background-2);
+  &.has-focus,
+  &.has-input {
+    .search-controls {
+      input {
+        width: 12em;
       }
+
+      .button {
+        display: flex;
+      }
+    }
+  }
+
+  &.going-away .button {
+    display: flex;
+    animation: var(--animation-timing) forwards shrink;
+  }
+
+  padding: 0 var(--side-padding) 0 0;
+
+  @media (max-width: 900px) {
+    display: none;
+
+    &.overlay {
+      display: block;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      padding: 8px 0 0 0;
+      background: var(--background-2);
     }
   }
 }

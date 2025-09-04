@@ -77,8 +77,9 @@ export class Pagination {
 
     if (!isActive) {
       button.addEventListener('click', () => {
-        const input = document.forms.search.elements['q']
-        const sortSelect = document.forms.search.elements['sort-field']
+        const form = document.forms.search
+        const input = form.elements['q']
+        const sortSelect = form.elements['sort']
         const query = input.value.toLowerCase()
         const sortBy = sortSelect.value
 
