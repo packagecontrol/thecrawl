@@ -16,7 +16,7 @@ input {
   border-radius: 3px;
   padding: 8px;
   margin-bottom: 11px;
-  font-size: 1rem;
+  font-size: 1em;
   line-height: 1.6;
 }
 
@@ -28,7 +28,7 @@ select {
   border: 1px solid var(--background-3);
   border-radius: 3px;
   padding: 8px;
-  font-size: 1rem;
+  font-size: 1em;
   line-height: 1.6;
   cursor: pointer;
 }
@@ -89,13 +89,47 @@ select {
   }
 
   /* Compact header search: hide Sort By until focus, with animation */
-  &.compact .button {
-    display: none;
-    animation: .2s ease-in-out forwards grow;
+  &.compact {
+    margin-bottom: 0;
+
+    input {
+      line-height: 1;
+      width: 9em;
+      transition: width .2s ease-in-out;
+      &:focus,
+      &.has-input {
+        width: 12em;
+      }
+    }
+
+    .button {
+      display: none;
+      animation: .2s ease-in-out forwards grow;
+      font-size: 13px;
+    }
+    &:focus-within .button,
+    &:has(input.has-input) .button {
+      display: revert;
+    }
   }
-  &.compact:focus-within .button,
-  &.compact:has(input.has-input) .button {
-    display: revert;
+
+  form:has(.compact) {
+    padding: 0 var(--side-padding) 0 0;
+
+    @media (max-width: 900px) {
+      display: none;
+
+      &.overlay {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        padding: 8px 0 0 0;
+        background: var(--background-2);
+      }
+    }
   }
 }
 

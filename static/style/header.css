@@ -1,7 +1,7 @@
 header {
   display: flex;
   position: relative;
-  margin: 0 auto 21px auto;
+  margin: 0 auto 16px auto;
   padding: 11px var(--side-padding) 0 var(--side-padding);
   max-width: 92rem;
   color: var(--foreground-3);
@@ -23,6 +23,11 @@ header {
     flex: 1;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+
+    > * + * {
+      margin-left: var(--side-padding);
+    }
   }
 
   .brand {
@@ -64,7 +69,6 @@ header {
 
   nav {
     line-height: 26px;
-    padding-top: 22px;
 
     > *:not(:last-child) {
       margin-right: 1.6em;
@@ -77,22 +81,7 @@ header {
     }
   }
 
-  form {
-    padding: 8px var(--side-padding) 0 0;
-
-    @media (max-width: 900px) {
-      display: none;
-
-      &.overlay {
-        display: block;
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        padding: 8px 0 0 0;
-        background: var(--background-2);
-      }
-    }
+  &:has(h1) nav {
+    margin-top: -6px;
   }
 }
