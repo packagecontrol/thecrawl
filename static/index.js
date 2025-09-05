@@ -145,7 +145,11 @@ document.addEventListener('click', (event) => {
     if (labelQuery !== null) {
       event.preventDefault()
       event.stopPropagation()
+
+      const inputEvent = new Event('input', { bubbles: true })
       input.value = labelQuery
+      input.dispatchEvent(inputEvent)
+
       sortSelect.value = 'relevance'
       list.scrollUp()
       list.goSearch(labelQuery.toLowerCase(), 'relevance', 1)
