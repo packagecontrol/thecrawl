@@ -35,7 +35,7 @@
 
   <div class="right-side">
     {% if isPackagePage %}
-      {{ util.form(false) }}
+      {{ util.form(collections.packages | length, false) }}
     {% endif %}
 
     <nav>

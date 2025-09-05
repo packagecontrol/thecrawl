@@ -32,12 +32,12 @@
 
 
 
-{% macro form(verbose=true) %}
+{% macro form(count, verbose=true) %}
   <form name="search" action="/" class="{% if not verbose %}compact{% endif %}">
     <div class="search-controls">
 
       <label for="search-field" class="screenreader-only">Search</label>
-      <input type="search" autocomplete="off" name="q" id="search-field" placeholder="{{ 'Search 100 packages' if verbose else 'Search' }}…">
+      <input type="search" autocomplete="off" name="q" id="search-field" placeholder="{{ 'Search ' ~ count ~ ' packages' if verbose else 'Search' }}…">
 
       <div class="button">
         <label for="sort-field">Sort by</label>

@@ -6,7 +6,7 @@ date: Last Modified
 {% import "packages/macros.njk" as pack %}
 {% import "util/macros.njk" as util %}
 
-{{ util.form(true) }}
+{{ util.form(collections.packages | length, true) }}
 
 <section name="newest" data-list-target="hideme">
   <h2>Newest</h2>
