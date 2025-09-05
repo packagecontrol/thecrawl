@@ -16,11 +16,7 @@
     right: 44,
     chart_h: 120
   } %}
-  {% set dim = dim | merge({chart_w: (padded_count * (dim.bar_w + dim.gap)) - dim.gap }) %}
-  {% set dim = dim | merge({
-    svg_w: dim.left + dim.chart_w + dim.right,
-    svg_h: dim.top + dim.chart_h + dim.bottom
-  }) %}
+  {% set dim = dim | compute_dimensions(padded_count) %}
 
   {# compute axes for 5 ticks #}
   {% set l_axis = (installs | axis_for(5)) %}

@@ -338,6 +338,16 @@ export default function (eleventyConfig) {
     }
   })
 
+  eleventyConfig.addFilter('compute_dimensions', (dim, total_count) => {
+    let chart_w = (total_count * (dim.bar_w + dim.gap)) - dim.gap
+    return {
+      ...dim,
+      chart_w,
+      svg_w: dim.left + chart_w + dim.right,
+      svg_h: dim.top + dim.chart_h + dim.bottom,
+    }
+  })
+
   // cache bust static files
   eleventyConfig.addFilter('bust', (p) => {
     if (!isProd) return p
