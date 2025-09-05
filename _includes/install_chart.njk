@@ -12,8 +12,7 @@
   {% set right = 44 %}
   {% set chart_h = 120 %}
   {# Pad chart width to a fixed 53 weeks to avoid width changes #}
-  {% set weeks_total = 53 %}
-  {% set padded_count = (count < weeks_total) and weeks_total or count %}
+  {% set padded_count = (count | at_least(53)) %}
   {% set chart_w = (padded_count * (bar_w + gap)) - gap %}
   {% set svg_w = left + chart_w + right %}
   {% set svg_h = top + chart_h + bottom %}
@@ -50,8 +49,7 @@
         {% for inst in installs %}
           {% set i = loop.index0 %}
           {% set rem = (removals[i] or 0) %}
-          {% set net_val = inst - rem %}
-          {% if net_val < 0 %}{% set net_val = 0 %}{% endif %}
+          {% set net_val = ((inst - rem) | at_least(0)) %}
           {% set rem_draw = rem %}
           {% if rem_draw > inst %}{% set rem_draw = inst %}{% endif %}
 
@@ -125,8 +123,7 @@
         {% for inst in (installs | slice(1)) %}
           {% set i = loop.index0 %}
           {% set rem_i = (removals[i] or 0) %}
-          {% set net_i = inst - rem_i %}
-          {% if net_i < 0 %}{% set net_i = 0 %}{% endif %}
+          {% set net_i = ((inst - rem_i) | at_least(0)) %}
           {% set sum_inst_excl0 = sum_inst_excl0 + inst %}
           {% set sum_net_excl0 = sum_net_excl0 + net_i %}
         {% endfor %}
