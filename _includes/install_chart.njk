@@ -141,102 +141,99 @@
         {% endif %}
 
         {# upgrades overlay #}
-        {% if (upgrades | length) > 0 %}
-          {# right y-axis and labels for upgrades #}
-          <line x1="{{ chart_w }}" y1="0" x2="{{ chart_w }}" y2="{{ chart_h }}" class="axis" />
-          {% for i in range(0, target_r + 1) %}
-            {% set tr = i * step_r %}
-            {% set yr = chart_h - (tr / max_scale_r) * chart_h %}
-            {% if (i % 2) == 0 %}
-              <text x="{{ chart_w + 6 }}" y="{{ yr }}" text-anchor="start" dominant-baseline="middle" class="tick tick-right">{{ tr | compact }}</text>
-            {% endif %}
-          {% endfor %}
-
-          {#
-            upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
-
-            Basics:
-            - A straight polyline would use SVG 'L' commands between points: M x0 y0 L x1 y1 L x2 y2 …
-              That produces sharp corners. To smooth the line we switch to cubic Bézier segments ('C').
-              We start with a first point (M), and then continue with two control points and a segment
-              end-point (C).
-              Refer: https://svg-tutorial.com/editor/cubic-bezier
-
-            - For each curved segment from P1 to P2 we take four points P0, P1, P2, P3
-              (clamping at the ends) and compute the two control points as:
-                C1 = P1 + (P2 − P0) / 6
-                C2 = P2 − (P3 − P1) / 6
-              This is a common Catmull–Rom to Bézier conversion that yields a smooth line
-              passing through all data points.
-          #}
-          {% set d = '' %}
-          {% set n = upgrades | length %}
-          {% if n > 1 %}
-            {# move to SECOND point; do not connect week(0) → week(1) #}
-            {% set val1 = upgrades[1] %}
-            {% set y_start = chart_h - (val1 / max_scale_r) * chart_h %}
-            {% set x_start = 1 * (bar_w + gap) + (bar_w / 2) %}
-            {#               ^ shift one bar to the right #}
-            {% set d = 'M ' ~ x_start ~ ' ' ~ y_start %}
-
-            {# build cubic segments, starting at i=1 to skip 0→1 #}
-            {% for i in range(1, n - 1) %}
-              {# indices p0, p1, p2, p3 (clamped) #}
-              {% if i - 1 < 1 %}{% set i0 = i %}{% else %}{% set i0 = i - 1 %}{% endif %}
-              {% set i1 = i %}
-              {% set i2 = i + 1 %}
-              {% if i + 2 > n - 1 %}{% set i3 = n - 1 %}{% else %}{% set i3 = i + 2 %}{% endif %}
-
-              {% set v0 = upgrades[i0] %}
-              {% set v1 = upgrades[i1] %}
-              {% set v2 = upgrades[i2] %}
-              {% set v3 = upgrades[i3] %}
-
-              {% set x0 = i0 * (bar_w + gap) + (bar_w / 2) %}
-              {% set x1 = i1 * (bar_w + gap) + (bar_w / 2) %}
-              {% set x2 = i2 * (bar_w + gap) + (bar_w / 2) %}
-              {% set x3 = i3 * (bar_w + gap) + (bar_w / 2) %}
-
-              {% set y0 = chart_h - (v0 / max_scale_r) * chart_h %}
-              {% set y1 = chart_h - (v1 / max_scale_r) * chart_h %}
-              {% set y2 = chart_h - (v2 / max_scale_r) * chart_h %}
-              {% set y3 = chart_h - (v3 / max_scale_r) * chart_h %}
-
-              {#
-                Catmull–Rom → Bézier control points
-                Intuition: Catmull–Rom defines the tangent at P1 as (P2−P0)/2 and at P2 as (P3−P1)/2
-                (with unit spacing). A cubic Bézier's tangents are 3·(C1−P1) at the start and
-                3·(P2−C2) at the end. T.i.:
-                  3·(C1−P1) = (P2−P0)/2
-                     C1−P1  = (P2−P0)/6
-                         C1 = P1 + (P2−P0)/6
-                Likewise:
-                  3·(P2−C2) = (P3−P1)/2
-                         C2 = P2 − (P3−P1)/6
-              #}
-              {% set c1x = x1 + (x2 - x0) / 6 %}
-              {% set c1y = y1 + (y2 - y0) / 6 %}
-              {% set c2x = x2 - (x3 - x1) / 6 %}
-              {% set c2y = y2 - (y3 - y1) / 6 %}
-
-              {% set d = d ~ ' C ' ~ c1x ~ ' ' ~ c1y ~ ' ' ~ c2x ~ ' ' ~ c2y ~ ' ' ~ x2 ~ ' ' ~ y2 %}
-            {% endfor %}
+        {# right y-axis and labels for upgrades #}
+        <line x1="{{ chart_w }}" y1="0" x2="{{ chart_w }}" y2="{{ chart_h }}" class="axis" />
+        {% for i in range(0, target_r + 1) %}
+          {% set tr = i * step_r %}
+          {% set yr = chart_h - (tr / max_scale_r) * chart_h %}
+          {% if (i % 2) == 0 %}
+            <text x="{{ chart_w + 6 }}" y="{{ yr }}" text-anchor="start" dominant-baseline="middle" class="tick tick-right">{{ tr | compact }}</text>
           {% endif %}
-          <path d="{{ d }}" class="upgrades-line" />
+        {% endfor %}
 
-          {# Points with tooltips #}
-          {% for val in upgrades %}
-            {% set i = loop.index0 %}
-            {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
-            {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
-            {% set inst_i = (installs[i] or 0) %}
-            {% set rem_i = (removals[i] or 0) %}
-            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
-              <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
-            </circle>
+        {#
+          upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
+
+          Basics:
+          - A straight polyline would use SVG 'L' commands between points: M x0 y0 L x1 y1 L x2 y2 …
+            That produces sharp corners. To smooth the line we switch to cubic Bézier segments ('C').
+            We start with a first point (M), and then continue with two control points and a segment
+            end-point (C).
+            Refer: https://svg-tutorial.com/editor/cubic-bezier
+
+          - For each curved segment from P1 to P2 we take four points P0, P1, P2, P3
+            (clamping at the ends) and compute the two control points as:
+              C1 = P1 + (P2 − P0) / 6
+              C2 = P2 − (P3 − P1) / 6
+            This is a common Catmull–Rom to Bézier conversion that yields a smooth line
+            passing through all data points.
+        #}
+        {% set d = '' %}
+        {% set n = upgrades | length %}
+        {% if n > 1 %}
+          {# move to SECOND point; do not connect week(0) → week(1) #}
+          {% set val1 = upgrades[1] %}
+          {% set y_start = chart_h - (val1 / max_scale_r) * chart_h %}
+          {% set x_start = 1 * (bar_w + gap) + (bar_w / 2) %}
+          {#               ^ shift one bar to the right #}
+          {% set d = 'M ' ~ x_start ~ ' ' ~ y_start %}
+
+          {# build cubic segments, starting at i=1 to skip 0→1 #}
+          {% for i in range(1, n - 1) %}
+            {# indices p0, p1, p2, p3 (clamped) #}
+            {% if i - 1 < 1 %}{% set i0 = i %}{% else %}{% set i0 = i - 1 %}{% endif %}
+            {% set i1 = i %}
+            {% set i2 = i + 1 %}
+            {% if i + 2 > n - 1 %}{% set i3 = n - 1 %}{% else %}{% set i3 = i + 2 %}{% endif %}
+
+            {% set v0 = upgrades[i0] %}
+            {% set v1 = upgrades[i1] %}
+            {% set v2 = upgrades[i2] %}
+            {% set v3 = upgrades[i3] %}
+
+            {% set x0 = i0 * (bar_w + gap) + (bar_w / 2) %}
+            {% set x1 = i1 * (bar_w + gap) + (bar_w / 2) %}
+            {% set x2 = i2 * (bar_w + gap) + (bar_w / 2) %}
+            {% set x3 = i3 * (bar_w + gap) + (bar_w / 2) %}
+
+            {% set y0 = chart_h - (v0 / max_scale_r) * chart_h %}
+            {% set y1 = chart_h - (v1 / max_scale_r) * chart_h %}
+            {% set y2 = chart_h - (v2 / max_scale_r) * chart_h %}
+            {% set y3 = chart_h - (v3 / max_scale_r) * chart_h %}
+
+            {#
+              Catmull–Rom → Bézier control points
+              Intuition: Catmull–Rom defines the tangent at P1 as (P2−P0)/2 and at P2 as (P3−P1)/2
+              (with unit spacing). A cubic Bézier's tangents are 3·(C1−P1) at the start and
+              3·(P2−C2) at the end. T.i.:
+                3·(C1−P1) = (P2−P0)/2
+                   C1−P1  = (P2−P0)/6
+                       C1 = P1 + (P2−P0)/6
+              Likewise:
+                3·(P2−C2) = (P3−P1)/2
+                       C2 = P2 − (P3−P1)/6
+            #}
+            {% set c1x = x1 + (x2 - x0) / 6 %}
+            {% set c1y = y1 + (y2 - y0) / 6 %}
+            {% set c2x = x2 - (x3 - x1) / 6 %}
+            {% set c2y = y2 - (y3 - y1) / 6 %}
+
+            {% set d = d ~ ' C ' ~ c1x ~ ' ' ~ c1y ~ ' ' ~ c2x ~ ' ' ~ c2y ~ ' ' ~ x2 ~ ' ' ~ y2 %}
           {% endfor %}
         {% endif %}
+        <path d="{{ d }}" class="upgrades-line" />
 
+        {# Points with tooltips #}
+        {% for val in upgrades %}
+          {% set i = loop.index0 %}
+          {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
+          {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
+          {% set inst_i = (installs[i] or 0) %}
+          {% set rem_i = (removals[i] or 0) %}
+          <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
+            <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
+          </circle>
+        {% endfor %}
       </g>
     </svg>
   </div>
