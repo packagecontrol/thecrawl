@@ -181,15 +181,13 @@
         #}
         {% set sum_inst_excl0 = 0 %}
         {% set sum_net_excl0 = 0 %}
-        {% for inst in installs %}
+        {% for inst in (installs | slice(1)) %}
           {% set i = loop.index0 %}
-          {% if i > 0 %}
-            {% set rem_i = (removals[i] or 0) %}
-            {% set net_i = inst - rem_i %}
-            {% if net_i < 0 %}{% set net_i = 0 %}{% endif %}
-            {% set sum_inst_excl0 = sum_inst_excl0 + inst %}
-            {% set sum_net_excl0 = sum_net_excl0 + net_i %}
-          {% endif %}
+          {% set rem_i = (removals[i] or 0) %}
+          {% set net_i = inst - rem_i %}
+          {% if net_i < 0 %}{% set net_i = 0 %}{% endif %}
+          {% set sum_inst_excl0 = sum_inst_excl0 + inst %}
+          {% set sum_net_excl0 = sum_net_excl0 + net_i %}
         {% endfor %}
         {% set count_excl0 = count - 1 %}
         {% if count_excl0 > 0 %}

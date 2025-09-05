@@ -262,6 +262,11 @@ export default function (eleventyConfig) {
     return fmt.format(count)
   })
 
+  // slice: provide arr.slice to the templates
+  eleventyConfig.addFilter('slice', (arr, start, end = undefined) => {
+    return arr.slice(start, end)
+  })
+
   // max: provide Math.max to the templates
   eleventyConfig.addFilter('max', (arr, defaultValue = 0) => {
     return Math.max(defaultValue, ...(Array.isArray(arr) ? arr : [arr]))
