@@ -290,11 +290,6 @@ export default function (eleventyConfig) {
     return Math.min(defaultValue, v)
   })
 
-  // ceil: provide Math.ceil to the templates
-  eleventyConfig.addFilter('ceil', (value) => {
-    return Math.ceil(value)
-  })
-
   // sum: simple array sum via reduce
   eleventyConfig.addFilter('sum', (arr) => {
     if (!Array.isArray(arr)) return 0
@@ -302,12 +297,12 @@ export default function (eleventyConfig) {
   })
 
   // magnitude: highest power of 10 <= n
-  eleventyConfig.addFilter('magnitude', (x) => {
+  const magnitude = (x) => {
     if (x <= 0) return 1
     return Math.pow(10, Math.floor(Math.log10(x)))
-  })
+  }
 
-  eleventyConfig.addFilter('compute_step', (arr, target) => {
+  const compute_step = (arr, target) => {
     /*
       We want about n evenly spaced ticks, regardless of
       the data magnitude. To achieve this we:
@@ -323,16 +318,23 @@ export default function (eleventyConfig) {
     */
     let maximum = Math.max(0, ...arr)
     let approximation = Math.ceil(maximum / target)
-    let magnitude = Math.pow(10, Math.floor(Math.log10(approximation)))
-    let lead_number = Math.floor((approximation + magnitude - 1) / magnitude)
+    let mag = magnitude(approximation)
+    let lead_number = Math.floor((approximation + mag - 1) / mag)
     if (lead_number <= 1) {
-      return 1 * magnitude
+      return 1 * mag
     } else if (lead_number <= 2) {
-      return 2 * magnitude
+      return 2 * mag
     } else if (lead_number <= 5) {
-      return 5 * magnitude
+      return 5 * mag
     } else {
-      return 10 * magnitude
+      return 10 * mag
+    }
+  }
+
+  eleventyConfig.addFilter('axis_for', (arr, target) => {
+    let step = compute_step(arr, target)
+    return {
+      target, step, max_scale: target * step,
     }
   })
 
