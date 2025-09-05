@@ -29,7 +29,7 @@
         {{ draw_axis_with_labels(l_axis, 0, dim, 'tick') }}
 
         {# x-axis #}
-        <line x1="0" y1="{{ dim.chart_h }}" x2="{{ dim.chart_w }}" y2="{{ dim.chart_h }}" class="axis" />
+        {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
 
         {# bars + week overlays #}
         {% for inst in installs %}
@@ -94,8 +94,8 @@
           {% set avg_net  = (sum_net  / count_excl0) %}
           {% set y_avg_inst = dim.chart_h - (avg_inst / l_axis.max_scale) * dim.chart_h %}
           {% set y_avg_net = dim.chart_h - (avg_net / l_axis.max_scale) * dim.chart_h %}
-          <line x1="0" y1="{{ y_avg_inst }}" x2="{{ dim.chart_w }}" y2="{{ y_avg_inst }}" class="avg-line avg-line-inst" />
-          <line x1="0" y1="{{ y_avg_net }}" x2="{{ dim.chart_w }}" y2="{{ y_avg_net }}" class="avg-line avg-line-net" />
+          {{ line(0, y_avg_inst, dim.chart_w, y_avg_inst, 'avg-line avg-line-inst') }}
+          {{ line(0, y_avg_net,  dim.chart_w, y_avg_net,  'avg-line avg-line-net') }}
         {% endif %}
 
         {# upgrades overlay #}
@@ -192,7 +192,7 @@
 
 {% macro draw_axis_with_labels(axis, x_pos, dim, css_class='tick', text_anchor='end', offset=6) %}
   {% set sign = (text_anchor == 'end') and -1 or 1 %}
-  <line x1="{{ x_pos }}" y1="0" x2="{{ x_pos }}" y2="{{ dim.chart_h }}" class="axis" />
+  {{ line(x_pos, 0, x_pos, dim.chart_h, 'axis') }}
   {% for i in range(0, axis.target + 1) %}
     {% set t = i * axis.step %}
     {% set y = dim.chart_h - (t / axis.max_scale) * dim.chart_h %}
@@ -210,7 +210,7 @@
     {% for gi in range(0, axis.target + 1) %}
       {% set gt = gi * axis.step %}
       {% set gy = dim.chart_h - (gt / axis.max_scale) * dim.chart_h %}
-      <line x1="0" y1="{{ gy }}" x2="{{ dim.chart_w }}" y2="{{ gy }}" class="grid" />
+      {{ line(0, gy, dim.chart_w, gy, 'grid') }}
     {% endfor %}
   </g>
 {% endmacro %}
@@ -219,4 +219,8 @@
   <rect x="{{ x }}" y="{{ y }}" width="{{ w }}" height="{{ h }}" class="{{ class }}">
     {% if title %}<title>{{ title }}</title>{% endif %}
   </rect>
+{% endmacro %}
+
+{% macro line(x1, y1, x2, y2, class='') %}
+  <line x1="{{ x1 }}" y1="{{ y1 }}" x2="{{ x2 }}" y2="{{ y2 }}" class="{{ class }}" />
 {% endmacro %}
