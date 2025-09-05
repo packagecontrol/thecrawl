@@ -152,9 +152,10 @@ document.addEventListener('click', (event) => {
       input.dispatchEvent(inputEvent)
       input.dispatchEvent(changeEvent)
 
-      sortSelect.value = 'relevance'
       list.scrollUp()
       list.goSearch(labelQuery.toLowerCase(), 'relevance', 1)
+  const urlParams = new URLSearchParams(window.location.search)
     }
   }
+  list.goSearch(newQuery.toLowerCase(), urlParams.get('sort') ?? 'relevance', 1)
 })
