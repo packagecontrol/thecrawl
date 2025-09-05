@@ -68,9 +68,6 @@ function basePackage(pkg, stats) {
     }
   }
 
-  // Remove duplicate platforms
-  const allPlatforms = releases.flatMap(release => release.platforms)
-  const uniquePlatforms = Array.from(new Set(allPlatforms))
   const stat = typeof stats === 'undefined' ? 0 : Math.max(0, stats['install'] - stats['remove'])
 
   return {
@@ -86,7 +83,7 @@ function basePackage(pkg, stats) {
     releases: dedupedReleases,
     otherReleases,
     labels: pkg.labels,
-    platforms: uniquePlatforms,
+    platforms: util.dedupePlatforms(releases),
   }
 }
 

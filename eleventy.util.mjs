@@ -1,13 +1,31 @@
 import { execSync } from 'child_process'
 
-// rename macos and remove */any
+/**
+ * Rename macos and remove * (any).
+ */
 export function cleanPlatforms(platforms) {
   return platforms
     .filter(platform => platform !== '*')
     .map(platform => platform === 'osx' ? 'macos' : platform)
 }
 
-// author can be string or array, convert to all arrays
+/**
+ * Deduplicate supported platform across releases.
+ */
+export function dedupePlatforms(releases) {
+  const all = releases.flatMap(release => release.platforms)
+  const unique = Array.from(new Set(all))
+  // when a package actually supports all platforms (across multiple releases)
+  if (unique.includes('linux') && unique.includes('windows') && unique.includes('macos')) {
+    return []
+  }
+
+  return unique
+}
+
+/**
+ * Author can be string or array: convert to all arrays.
+ */
 export function cleanAuthors(author) {
   if (typeof author === 'string') {
     return [author]
@@ -15,6 +33,9 @@ export function cleanAuthors(author) {
   return author
 }
 
+/**
+ * Convert links for the raw readme data to one for the file blob.
+ */
 export function getReadmeUrl(readme) {
   if (typeof readme_url !== 'string') {
     return null
@@ -41,4 +62,7 @@ export function getReadmeUrl(readme) {
   )
 }
 
+/**
+ * Find the last git commit hash.
+ */
 export const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
