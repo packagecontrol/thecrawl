@@ -139,23 +139,43 @@ window.addEventListener('popstate', (event) => {
 // Add event delegation for label links
 document.addEventListener('click', (event) => {
   const target = event.target.closest('a')
-  if (target && target.href) {
-    const url = new URL(target.href, window.location.origin)
-    const labelQuery = url.searchParams.get('q')
-    if (labelQuery !== null) {
-      event.preventDefault()
-      event.stopPropagation()
+  if (!target || !target.href) {
+    return
+  }
 
-      const inputEvent = new Event('input', { bubbles: true })
-      const changeEvent = new Event('change', { bubbles: true })
-      input.value = labelQuery
-      input.dispatchEvent(inputEvent)
-      input.dispatchEvent(changeEvent)
-
-      list.scrollUp()
-      list.goSearch(labelQuery.toLowerCase(), 'relevance', 1)
+  const url = new URL(target.href, window.location.origin)
+  const oldQuery = input.value
   const urlParams = new URLSearchParams(window.location.search)
+
+  let newQuery = url.searchParams.get('q')
+  if (newQuery === null) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (target.closest('form')) {
+    // the shortcuts in the form should provide an additional narrowing of search,
+    // not replace it
+    if (oldQuery.includes('label:') && newQuery.includes('label:')) {
+      newQuery = oldQuery.replace(/label:("[^"]+"|\S+)/, newQuery)
+    } else if (oldQuery.includes('platform:') && newQuery.includes('platform:')) {
+      newQuery = oldQuery.replace(/platform:("[^"]+"|\S+)/, newQuery)
+    } else if (oldQuery.includes('author:') && newQuery.includes('author:')) {
+      newQuery = oldQuery.replace(/author:("[^"]+"|\S+)/, newQuery)
+    } else {
+      newQuery = oldQuery + ' ' + newQuery
     }
   }
+
+  input.value = newQuery
+
+  const inputEvent = new Event('input', { bubbles: true })
+  const changeEvent = new Event('change', { bubbles: true })
+  input.dispatchEvent(inputEvent)
+  input.dispatchEvent(changeEvent)
+
+  list.scrollUp()
   list.goSearch(newQuery.toLowerCase(), urlParams.get('sort') ?? 'relevance', 1)
 })
