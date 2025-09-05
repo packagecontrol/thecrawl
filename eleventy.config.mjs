@@ -74,9 +74,9 @@ function basePackage(pkg, stats) {
   const total_installs = stats?.installs?.totals ?? 0
   const total_removals = stats?.removals?.totals ?? 0
   const net_installs = Math.max(0, total_installs - total_removals)
-  const installs_weekly = stats?.installs?.weekly ?? []
-  const removals_weekly = stats?.removals?.weekly ?? []
-  const upgrades_weekly = stats?.upgrades?.weekly ?? []
+  const weekly_installs = stats?.installs?.weekly ?? []
+  const weekly_removals = stats?.removals?.weekly ?? []
+  const weekly_upgrades = stats?.upgrades?.weekly ?? []
 
   return {
     name: pkg.name,
@@ -92,9 +92,9 @@ function basePackage(pkg, stats) {
     otherReleases,
     labels: pkg.labels,
     platforms: uniquePlatforms,
-    installs_weekly,
-    removals_weekly,
-    upgrades_weekly,
+    weekly_installs,
+    weekly_removals,
+    weekly_upgrades,
   }
 }
 

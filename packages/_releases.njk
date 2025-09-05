@@ -7,7 +7,7 @@
 {% endif %}
 
 <div class="chart-container">
-  {{ charts.chart(pkg.installs_weekly, pkg.removals_weekly, pkg.weekly_dates, pkg.upgrades_weekly) }}
+  {{ charts.chart(pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_dates, pkg.weekly_upgrades) }}
 </div>
 {% for release in pkg.releases %}
   <p><a class="release" href="{{ release.url }}">{{ release.version }}</a>
