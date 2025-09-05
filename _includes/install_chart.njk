@@ -49,8 +49,7 @@
           {% set rem = removals[i] %}
           {% set up = upgrades[i] %}
           {% set net_val = ((inst - rem) | at_least(0)) %}
-          {% set rem_draw = rem %}
-          {% if rem_draw > inst %}{% set rem_draw = inst %}{% endif %}
+          {% set rem_draw = (rem | at_most(inst)) %}
 
           {% set net_h = (net_val / max_scale) * chart_h %}
           {% set rem_h = (rem_draw / max_scale) * chart_h %}
