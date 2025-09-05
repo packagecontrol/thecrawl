@@ -1,5 +1,5 @@
-{% macro chart(weekly=[], removals=[], upgrades=[], dates=[]) %}
-  {% set count = weekly | length %}
+{% macro chart(installs=[], removals=[], upgrades=[], dates=[]) %}
+  {% set count = installs | length %}
   {% set dates_count = dates | length %}
   {% if count > 0 and dates_count > 0 %}
 
@@ -21,7 +21,7 @@
 
   {# compute max #}
   {% set maxv = 0 %}
-  {% for v in weekly %}
+  {% for v in installs %}
     {% if v > maxv %}{% set maxv = v %}{% endif %}
   {% endfor %}
 
@@ -114,7 +114,7 @@
         <line x1="0" y1="{{ chart_h }}" x2="{{ chart_w }}" y2="{{ chart_h }}" class="axis" />
 
         {# bars + week overlays #}
-        {% for inst in weekly %}
+        {% for inst in installs %}
           {% set i = loop.index0 %}
           {% set rem = (removals[i] or 0) %}
           {% set net_val = inst - rem %}
@@ -195,12 +195,12 @@
         {% endfor %}
 
         {# average lines (exclude running week at index 0)
-           - installs: mean(weekly[i]) for i >= 1
-           - net installs: mean(max(weekly[i] - removals[i], 0)) for i >= 1
+           - installs: mean(installs[i]) for i >= 1
+           - net installs: mean(max(installs[i] - removals[i], 0)) for i >= 1
         #}
         {% set sum_inst_excl0 = 0 %}
         {% set sum_net_excl0 = 0 %}
-        {% for inst in weekly %}
+        {% for inst in installs %}
           {% set i = loop.index0 %}
           {% if i > 0 %}
             {% set rem_i = (removals[i] or 0) %}
@@ -325,7 +325,7 @@
               {% set y2 = chart_h %}
             {% endif %}
             {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
-            {% set inst_i = (weekly[i] or 0) %}
+            {% set inst_i = (installs[i] or 0) %}
             {% set rem_i = (removals[i] or 0) %}
             <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
               <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
