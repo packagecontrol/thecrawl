@@ -1,12 +1,12 @@
 import { execSync } from 'child_process'
 
 /**
- * Rename macos and remove * (any).
+ * Rename osx -> macos, * -> any
  */
 export function cleanPlatforms(platforms) {
   return platforms
-    .filter(platform => platform !== '*')
     .map(platform => platform === 'osx' ? 'macos' : platform)
+    .map(platform => platform === '*' ? 'any' : platform)
 }
 
 /**
@@ -17,7 +17,7 @@ export function dedupePlatforms(releases) {
   const unique = Array.from(new Set(all))
   // when a package actually supports all platforms (across multiple releases)
   if (unique.includes('linux') && unique.includes('windows') && unique.includes('macos')) {
-    return []
+    return ['any']
   }
 
   return unique

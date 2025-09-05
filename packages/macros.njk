@@ -1,6 +1,10 @@
 {% import "util/macros.njk" as util %}
 
 {% macro labels(platforms, labels) %}
+  {% if 'any' in platforms %}
+    {% set platforms = [] %}
+  {% endif %}
+
   {% if platforms | length > 0 or  labels | length > 0 %}
     <ul class="button-group labels">
       {% for platform in platforms %}

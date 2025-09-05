@@ -83,11 +83,13 @@ export class Card {
   }
 
   platforms(parent) {
-    if (this.pkg.platforms.length < 1) {
+    let os = this.pkg.platforms
+
+    if (os.length < 1 || os.includes('any')) {
       return
     }
 
-    this.pkg.platforms.split(',').forEach((item) => {
+    os.split(',').forEach((item) => {
       parent.appendChild(this.button(item))
     })
   }
