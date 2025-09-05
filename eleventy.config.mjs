@@ -277,6 +277,14 @@ export default function (eleventyConfig) {
     return Math.min(defaultValue, ...(Array.isArray(arr) ? arr : [arr]))
   })
 
+  eleventyConfig.addFilter('at_least', (v, defaultValue = 0) => {
+    return Math.max(defaultValue, v)
+  })
+
+  eleventyConfig.addFilter('at_most', (v, defaultValue = Number.POSITIVE_INFINITY) => {
+    return Math.min(defaultValue, v)
+  })
+
   // ceil: provide Math.ceil to the templates
   eleventyConfig.addFilter('ceil', (value) => {
     return Math.ceil(value)
