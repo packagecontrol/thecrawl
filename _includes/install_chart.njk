@@ -122,13 +122,8 @@
           {% set rem_draw = rem %}
           {% if rem_draw > inst %}{% set rem_draw = inst %}{% endif %}
 
-          {% if max_scale > 0 %}
-            {% set net_h = (net_val / max_scale) * chart_h %}
-            {% set rem_h = (rem_draw / max_scale) * chart_h %}
-          {% else %}
-            {% set net_h = 0 %}
-            {% set rem_h = 0 %}
-          {% endif %}
+          {% set net_h = (net_val / max_scale) * chart_h %}
+          {% set rem_h = (rem_draw / max_scale) * chart_h %}
 
           {% set x = i * (bar_w + gap) %}
           {% set y_net = chart_h - net_h %}
@@ -162,11 +157,7 @@
             </rect>
 
             {# third bar: invisible hit area from top to top of installs just for the tooltip #}
-            {% if max_scale > 0 %}
-              {% set inst_h = (inst / max_scale) * chart_h %}
-            {% else %}
-              {% set inst_h = 0 %}
-            {% endif %}
+            {% set inst_h = (inst / max_scale) * chart_h %}
             {% set y_top_inst = chart_h - inst_h %}
             <rect x="{{ x }}" y="0" width="{{ bar_w }}" height="{{ y_top_inst }}" class="week-slice-hit">
               <title>{{ dates[i] }}: installs: {{ inst | grouping }}, removals: {{ rem | grouping }}, upgrades: {{ up | grouping }}</title>
@@ -211,7 +202,7 @@
           {% endif %}
         {% endfor %}
         {% set count_excl0 = count - 1 %}
-        {% if count_excl0 > 0 and max_scale > 0 %}
+        {% if count_excl0 > 0 %}
           {% set avg_inst = (sum_inst_excl0 / count_excl0) %}
           {% set avg_net = (sum_net_excl0 / count_excl0) %}
           {% set y_avg_inst = chart_h - (avg_inst / max_scale) * chart_h %}
