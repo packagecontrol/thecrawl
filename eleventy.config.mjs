@@ -15,6 +15,32 @@ function basePackage(pkg, stats) {
     platforms: cleanPlatforms(release.platforms),
   }))
 
+  // For each release, infer a human web URL under key "web"
+  // Rules:
+  // - GitLab: replace any "/-/..." suffix with "/-/tags"
+  // - GitHub:
+  //   https://codeload.github.com/<owner>/<repo>/zip/<tag>
+  //   => https://github.com/<owner>/<repo>/releases/tag/<tag>
+  for (const release of releases) {
+    const url = release.url ?? ''
+    if (url.startsWith('https://gitlab.com/')) {
+      const idx = url.indexOf('/-/')
+      if (idx !== -1) {
+        release.web = url.slice(0, idx) + '/-/tags'
+      }
+    } else if (
+      url.startsWith('https://codeload.github.com/')
+      // check if the version looks like a "branch"-fallback version
+      && !/^\d{4}\.\d{2}\.\d{2}\.\d{2}\.\d{2}\.\d{2}$/.test(release.version ?? '')
+    ) {
+      const m = /^https:\/\/codeload\.github\.com\/([^/]+)\/([^/]+)\/zip\/([^/]+)$/.exec(url)
+      if (m) {
+        const [, owner, repo, tag] = m
+        release.web = `https://github.com/${owner}/${repo}/releases/tag/${tag}`
+      }
+    }
+  }
+
   // sort releases by date, newest first
   // secondary by .sublime_text. strip the leading non-digit from that string first, reverse alphabetical
   releases.sort((a, b) => {
