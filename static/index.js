@@ -147,8 +147,10 @@ document.addEventListener('click', (event) => {
       event.stopPropagation()
 
       const inputEvent = new Event('input', { bubbles: true })
+      const changeEvent = new Event('change', { bubbles: true })
       input.value = labelQuery
       input.dispatchEvent(inputEvent)
+      input.dispatchEvent(changeEvent)
 
       sortSelect.value = 'relevance'
       list.scrollUp()
