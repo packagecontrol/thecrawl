@@ -117,17 +117,11 @@
         #}
         {% set count_excl0 = count - 1 %}
         {% if count_excl0 > 0 %}
-          {% set sum_inst = 0 %}
-          {% set sum_net = 0 %}
-          {% for i in range(1, count_excl0 + 1) %}
-            {% set inst = installs[i] %}
-            {% set rem = removals[i] %}
-            {% set net = ((inst - rem) | at_least(0)) %}
-            {% set sum_inst = sum_inst + inst %}
-            {% set sum_net = sum_net + net %}
-          {% endfor %}
+          {% set sum_inst = (installs | slice(1) | sum) %}
+          {% set sum_rem  = (removals | slice(1) | sum) %}
+          {% set sum_net  = ((sum_inst - sum_rem) | at_least(0)) %}
           {% set avg_inst = (sum_inst / count_excl0) %}
-          {% set avg_net = (sum_net / count_excl0) %}
+          {% set avg_net  = (sum_net  / count_excl0) %}
           {% set y_avg_inst = chart_h - (avg_inst / max_scale) * chart_h %}
           {% set y_avg_net = chart_h - (avg_net / max_scale) * chart_h %}
           <line x1="0" y1="{{ y_avg_inst }}" x2="{{ chart_w }}" y2="{{ y_avg_inst }}" class="avg-line avg-line-inst" />

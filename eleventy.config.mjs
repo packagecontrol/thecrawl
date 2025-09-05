@@ -290,6 +290,12 @@ export default function (eleventyConfig) {
     return Math.ceil(value)
   })
 
+  // sum: simple array sum via reduce
+  eleventyConfig.addFilter('sum', (arr) => {
+    if (!Array.isArray(arr)) return 0
+    return arr.reduce((a, b) => a + b, 0)
+  })
+
   // magnitude: highest power of 10 <= n
   eleventyConfig.addFilter('magnitude', (x) => {
     if (x <= 0) return 1
