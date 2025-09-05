@@ -221,7 +221,7 @@
         {% endif %}
 
         {# upgrades overlay #}
-        {% if (upgrades | length) > 0 and max_scale_r > 0 %}
+        {% if (upgrades | length) > 0 %}
           {# right y-axis and labels for upgrades #}
           <line x1="{{ chart_w }}" y1="0" x2="{{ chart_w }}" y2="{{ chart_h }}" class="axis" />
           {% for i in range(0, target_r + 1) %}
@@ -255,11 +255,7 @@
           {% if n > 1 %}
             {# move to SECOND point; do not connect week(0) → week(1) #}
             {% set val1 = upgrades[1] %}
-            {% if max_scale_r > 0 %}
-              {% set y_start = chart_h - (val1 / max_scale_r) * chart_h %}
-            {% else %}
-              {% set y_start = chart_h %}
-            {% endif %}
+            {% set y_start = chart_h - (val1 / max_scale_r) * chart_h %}
             {% set x_start = 1 * (bar_w + gap) + (bar_w / 2) %}
             {#               ^ shift one bar to the right #}
             {% set d = 'M ' ~ x_start ~ ' ' ~ y_start %}
@@ -282,17 +278,10 @@
               {% set x2 = i2 * (bar_w + gap) + (bar_w / 2) %}
               {% set x3 = i3 * (bar_w + gap) + (bar_w / 2) %}
 
-              {% if max_scale_r > 0 %}
-                {% set y0 = chart_h - (v0 / max_scale_r) * chart_h %}
-                {% set y1 = chart_h - (v1 / max_scale_r) * chart_h %}
-                {% set y2 = chart_h - (v2 / max_scale_r) * chart_h %}
-                {% set y3 = chart_h - (v3 / max_scale_r) * chart_h %}
-              {% else %}
-                {% set y0 = chart_h %}
-                {% set y1 = chart_h %}
-                {% set y2 = chart_h %}
-                {% set y3 = chart_h %}
-              {% endif %}
+              {% set y0 = chart_h - (v0 / max_scale_r) * chart_h %}
+              {% set y1 = chart_h - (v1 / max_scale_r) * chart_h %}
+              {% set y2 = chart_h - (v2 / max_scale_r) * chart_h %}
+              {% set y3 = chart_h - (v3 / max_scale_r) * chart_h %}
 
               {#
                 Catmull–Rom → Bézier control points
@@ -319,11 +308,7 @@
           {# Points with tooltips #}
           {% for val in upgrades %}
             {% set i = loop.index0 %}
-            {% if max_scale_r > 0 %}
-              {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
-            {% else %}
-              {% set y2 = chart_h %}
-            {% endif %}
+            {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
             {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
             {% set inst_i = (installs[i] or 0) %}
             {% set rem_i = (removals[i] or 0) %}
