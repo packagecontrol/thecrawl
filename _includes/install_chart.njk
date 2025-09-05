@@ -170,7 +170,7 @@
         #}
         {% set d = '' %}
         {% if count > 1 %}
-          {# move to SECOND point; do not connect week(0) → week(1) #}
+          {# start at second point because week[0] is the running week #}
           {% set val1 = upgrades[1] %}
           {% set y_start = chart_h - (val1 / max_scale_r) * chart_h %}
           {% set x_start = 1 * (bar_w + gap) + (bar_w / 2) %}
