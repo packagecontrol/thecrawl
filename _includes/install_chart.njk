@@ -55,25 +55,19 @@
 
           <g class="week">
             {# subtle hover background spanning the full slice #}
-            <rect x="{{ x }}" y="0" width="{{ slice_w }}" height="{{ dim.chart_h }}" class="week-slice-bg" />
+            {{ rect(x, 0, slice_w, dim.chart_h, 'week-slice-bg') }}
 
             {# grid line #}
             {{ draw_grid_lines(i, x, slice_w, dim, l_axis) }}
 
             {# the actual bars #}
-            <rect x="{{ x }}" y="{{ y_net }}" width="{{ dim.bar_w }}" height="{{ net_h }}" class="bar bar-net">
-              <title>{{ title_text }}</title>
-            </rect>
-            <rect x="{{ x }}" y="{{ y_rem }}" width="{{ dim.bar_w }}" height="{{ rem_h }}" class="bar bar-remove">
-              <title>{{ title_text }}</title>
-            </rect>
+            {{ rect(x, y_net, dim.bar_w, net_h, 'bar bar-net', title_text) }}
+            {{ rect(x, y_rem, dim.bar_w, rem_h, 'bar bar-remove', title_text) }}
 
             {# third bar: invisible hit area from top to top of installs just for the tooltip #}
             {% set inst_h = (inst / l_axis.max_scale) * dim.chart_h %}
             {% set y_top_inst = dim.chart_h - inst_h %}
-            <rect x="{{ x }}" y="0" width="{{ dim.bar_w }}" height="{{ y_top_inst }}" class="week-slice-hit">
-              <title>{{ title_text }}</title>
-            </rect>
+            {{ rect(x, 0, dim.bar_w, y_top_inst, 'week-slice-hit', title_text) }}
 
           </g>
         {% endfor %}
@@ -210,7 +204,7 @@
 
 {% macro draw_grid_lines(i, x, slice_w, dim, axis) %}
   <clipPath id="clip-week-{{ i }}">
-    <rect x="{{ x }}" y="0" width="{{ slice_w }}" height="{{ dim.chart_h }}" />
+    {{ rect(x, 0, slice_w, dim.chart_h) }}
   </clipPath>
   <g clip-path="url(#clip-week-{{ i }})">
     {% for gi in range(0, axis.target + 1) %}
@@ -219,4 +213,10 @@
       <line x1="0" y1="{{ gy }}" x2="{{ dim.chart_w }}" y2="{{ gy }}" class="grid" />
     {% endfor %}
   </g>
+{% endmacro %}
+
+{% macro rect(x, y, w, h, class='', title='') %}
+  <rect x="{{ x }}" y="{{ y }}" width="{{ w }}" height="{{ h }}" class="{{ class }}">
+    {% if title %}<title>{{ title }}</title>{% endif %}
+  </rect>
 {% endmacro %}
