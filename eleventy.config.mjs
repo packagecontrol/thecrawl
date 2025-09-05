@@ -262,6 +262,11 @@ export default function (eleventyConfig) {
     return fmt.format(count)
   })
 
+  // merge: shallow-merge two objects, returning a new object
+  eleventyConfig.addFilter('merge', (obj, ext) => {
+    return { ...obj, ...ext }
+  })
+
   // slice: provide arr.slice to the templates
   eleventyConfig.addFilter('slice', (arr, start, end = undefined) => {
     return arr.slice(start, end)
