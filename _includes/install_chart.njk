@@ -13,6 +13,7 @@
   {% set chart_h = 120 %}
   {# Pad chart width to a fixed 53 weeks to avoid width changes #}
   {% set padded_count = (count | at_least(53)) %}
+  {% set has_padding = padded_count > count %}
   {% set chart_w = (padded_count * (bar_w + gap)) - gap %}
   {% set svg_w = left + chart_w + right %}
   {% set svg_h = top + chart_h + bottom %}
@@ -50,7 +51,11 @@
           {% set x = i * (bar_w + gap) %}
           {% set y_net = chart_h - net_h %}
           {% set y_rem = y_net - rem_h %}
-          {% set slice_w = (i < (count - 1)) and (bar_w + gap) or bar_w %}
+          {% if has_padding or (i < (count - 1)) %}
+            {% set slice_w = bar_w + gap %}
+          {% else %}
+            {% set slice_w = bar_w %}
+          {% endif %}
 
           <g class="week">
             {# subtle hover background spanning the full slice #}
