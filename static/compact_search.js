@@ -1,5 +1,5 @@
 /**
- * UX various states of behaviour of the compact search form in the header.
+ * UX and hide/show behaviour of the compact search form in the header.
  */
 
 const form = document.forms.search
@@ -11,7 +11,7 @@ let timer
 
 function reset() {
   window.clearTimeout(timer)
-  button.onanimationend = null
+  button.removeEventListener('animationend', goneAway)
   form.classList.remove('going-away')
 }
 
@@ -19,11 +19,13 @@ function goAway() {
   form.classList.remove('has-focus')
   if (!form.classList.contains('has-input')) {
     form.classList.add('going-away')
-    button.onanimationend = () => {
-      form.classList.remove('going-away')
-      form.classList.remove('overlay')
-    }
+    button.addEventListener('animationend', goneAway)
   }
+}
+
+function goneAway() {
+  form.classList.remove('going-away')
+  form.classList.remove('is-visible')
 }
 
 input.addEventListener('input', () => {
@@ -35,31 +37,22 @@ input.addEventListener('input', () => {
   }
 })
 
-input.addEventListener('focus', () => {
-  reset()
-  form.classList.add('has-focus')
-})
+Array.from(form.elements).forEach((el) => {
+  el.addEventListener('focus', () => {
+    reset()
+    form.classList.add('has-focus')
+  })
 
-select.addEventListener('focus', () => {
-  reset()
-  form.classList.add('has-focus')
-})
-
-input.addEventListener('blur', () => {
-  timer = window.setTimeout(() => {
-    goAway()
-  }, 500)
-})
-
-select.addEventListener('blur', () => {
-  timer = window.setTimeout(() => {
-    goAway()
-  }, 500)
+  el.addEventListener('blur', () => {
+    timer = window.setTimeout(() => {
+      goAway()
+    }, 500)
+  })
 })
 
 document.querySelector('[href="/#search-field"]').onclick = (event) => {
   event.preventDefault()
   event.stopPropagation()
-  form.classList.add('overlay')
+  form.classList.add('is-visible')
   input.focus()
 }

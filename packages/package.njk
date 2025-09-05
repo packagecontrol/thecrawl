@@ -112,12 +112,9 @@ isPackagePage: true
 </section>
 
 {% if pkg.readme %}
+  <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
   <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="hideme"></section>
   <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
-  <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
 {% endif %}
 
 {% include "search_section.njk" %}
-
-<script src="{{ '/static/index.js' | bust }}" type="module" async></script>
-<script src="{{ '/static/compact_search.js' | bust }}" type="module" async></script>

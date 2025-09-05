@@ -171,7 +171,7 @@ form.compact {
   @media (max-width: 50rem) {
     display: none;
 
-    &.overlay {
+    &.is-visible {
       display: flex;
       position: absolute;
       top: 0;
