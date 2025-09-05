@@ -18,57 +18,16 @@
   {% set svg_w = left + chart_w + right %}
   {% set svg_h = top + chart_h + bottom %}
 
-  {# choose nice step for ~5 ticks #}
-  {#
-    We want about 5 evenly spaced tick labels on the y-axis, regardless of
-    the data magnitude. To achieve this we:
-
-    1) Pick a target number of ticks (target = 5).
-    2) Compute a rough step as ceil(max_value / target).
-       This is the smallest step that could cover the range with ~target ticks
-       but it may be an awkward number (e.g. 37, 413, 9876).
-    3) Normalize the rough step to a “nice” human-friendly step using a
-       1–2–5 sequence scaled by a power of 10. Concretely, we find the order of
-       magnitude of rough, then round it up to one of {1, 2, 5} × 10^k.
-       Examples: 37 → 50, 413 → 500, 9876 → 10000.
-    4) Set the axis step = nice_step and the axis maximum (= scale) to
-       max_scale = step × target. This ensures the top grid line lands on a
-       clean number and we end up with ~target ticks.
-
-    We apply the same method for the right axis (upgrades) independently so
-    both series look well-scaled even if their magnitudes differ.
-  #}
+  {# compute left-axis for 5 ticks #}
   {% set maxv = (installs | max) %}
   {% set target = 5 %}
-  {% set rough = ((maxv / target) | ceil) %}
-  {% set mag = (rough | magnitude) %}
-  {% set lead = (rough + mag - 1) // mag %}
-  {% if lead <= 1 %}
-    {% set step = 1 * mag %}
-  {% elif lead <= 2 %}
-    {% set step = 2 * mag %}
-  {% elif lead <= 5 %}
-    {% set step = 5 * mag %}
-  {% else %}
-    {% set step = 10 * mag %}
-  {% endif %}
+  {% set step = (maxv | compute_step(target)) %}
   {% set max_scale = step * target %}
 
   {# compute right-axis for upgrades #}
   {% set maxu = (upgrades | max) %}
   {% set target_r = 5 %}
-  {% set rough_r = ((maxu / target_r) | ceil) %}
-  {% set mag_r = (rough_r | magnitude) %}
-  {% set lead_r = (rough_r + mag_r - 1) // mag_r %}
-  {% if lead_r <= 1 %}
-    {% set step_r = 1 * mag_r %}
-  {% elif lead_r <= 2 %}
-    {% set step_r = 2 * mag_r %}
-  {% elif lead_r <= 5 %}
-    {% set step_r = 5 * mag_r %}
-  {% else %}
-    {% set step_r = 10 * mag_r %}
-  {% endif %}
+  {% set step_r = (maxu | compute_step(target_r)) %}
   {% set max_scale_r = step_r * target_r %}
 
   <div class="install-chart">
