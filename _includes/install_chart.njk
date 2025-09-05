@@ -40,14 +40,7 @@
   #}
   {% set maxv = (installs | max) %}
   {% set target = 5 %}
-  {#
-    Integer ceiling
-    Example: maxv = 371, target = 5
-      ceil(371 / 5) = ceil(74.2) = 75
-      naive 371 // 5 = 74 (too small), which would under-estimate the step.
-      integer form: (371 + 5 - 1) // 5 = 375 // 5 = 75
-  #}
-  {% set rough = (maxv + target - 1) // target %}
+  {% set rough = ((maxv / target) | ceil) %}
   {% set mag = 1 %}
   {% set digits = (('' ~ rough) | length) %}
   {% for i in range(1, digits) %}
@@ -68,7 +61,7 @@
   {# compute right-axis for upgrades #}
   {% set maxu = (upgrades | max) %}
   {% set target_r = 5 %}
-  {% set rough_r = (maxu + target_r - 1) // target_r %}
+  {% set rough_r = ((maxu / target_r) | ceil) %}
   {% set mag_r = 1 %}
   {% set digits_r = (('' ~ rough_r) | length) %}
   {% for i in range(1, digits_r) %}

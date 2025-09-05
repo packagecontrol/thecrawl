@@ -272,6 +272,11 @@ export default function (eleventyConfig) {
     return Math.max(defaultValue, ...(Array.isArray(arr) ? arr : [arr]))
   })
 
+  // ceil: provide Math.ceil to the templates
+  eleventyConfig.addFilter('ceil', (value) => {
+    return Math.ceil(value)
+  })
+
   // cache bust static files
   eleventyConfig.addFilter('bust', (p) => {
     if (!isProd) return p
