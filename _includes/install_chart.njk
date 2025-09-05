@@ -39,12 +39,14 @@
           {% set net_val = ((inst - rem) | at_least(0)) %}
           {% set rem_draw = (rem | at_most(inst)) %}
 
-          {% set net_h = (net_val / l_axis.max_scale) * dim.chart_h %}
-          {% set rem_h = (rem_draw / l_axis.max_scale) * dim.chart_h %}
+          {% set inst_h = (inst / l_axis.max_scale) * dim.chart_h %}
+          {% set net_h  = (net_val / l_axis.max_scale) * dim.chart_h %}
+          {% set rem_h  = (rem_draw / l_axis.max_scale) * dim.chart_h %}
 
           {% set x = i * (dim.bar_w + dim.gap) %}
-          {% set y_net = dim.chart_h - net_h %}
-          {% set y_rem = y_net - rem_h %}
+          {% set y_top_inst = dim.chart_h - inst_h %}
+          {% set y_net      = dim.chart_h - net_h %}
+          {% set y_rem      = y_net - rem_h %}
           {% if has_padding or (i < (count - 1)) %}
             {% set slice_w = dim.bar_w + dim.gap %}
           {% else %}
@@ -65,8 +67,6 @@
             {{ rect(x, y_rem, dim.bar_w, rem_h, 'bar bar-remove', title_text) }}
 
             {# third bar: invisible hit area from top to top of installs just for the tooltip #}
-            {% set inst_h = (inst / l_axis.max_scale) * dim.chart_h %}
-            {% set y_top_inst = dim.chart_h - inst_h %}
             {{ rect(x, 0, dim.bar_w, y_top_inst, 'week-slice-hit', title_text) }}
 
           </g>
