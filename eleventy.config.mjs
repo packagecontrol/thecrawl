@@ -1,18 +1,13 @@
 import fs from 'fs'
 import path from 'path'
 import { minify } from 'terser'
-
-import {
-  cleanPlatforms,
-  cleanAuthors,
-  getReadmeUrl,
-  gitHash } from './eleventy.util.mjs'
+import * as util from './eleventy.util.mjs'
 
 function basePackage(pkg, stats) {
   // Create a new array of releases with cleaned platforms
   const releases = (pkg.releases || []).map(release => ({
     ...release,
-    platforms: cleanPlatforms(release.platforms),
+    platforms: util.cleanPlatforms(release.platforms),
   }))
 
   // For each release, infer a human web URL under key "web"
@@ -80,7 +75,7 @@ function basePackage(pkg, stats) {
 
   return {
     name: pkg.name,
-    author: cleanAuthors(pkg.author) ?? [],
+    author: util.cleanAuthors(pkg.author) ?? [],
     stars: pkg.stars ?? 0,
     installed: stat,
     created_at: pkg.created_at,
@@ -113,7 +108,7 @@ function normalizedLib(pkg) {
     name: pkg.name,
     homepage: homepage,
     path: gh_path,
-    author: cleanAuthors(pkg.author),
+    author: util.cleanAuthors(pkg.author),
     description: pkg.description,
     releases: pkg.releases,
     labels: [],
@@ -125,7 +120,7 @@ export default function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
 
   eleventyConfig.addPassthroughCopy('assets')
-  eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + gitHash : 'static' })
+  eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + util.gitHash : 'static' })
 
   eleventyConfig.ignores.add('util')
   eleventyConfig.ignores.add('README.md')
@@ -181,7 +176,7 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addCollection('packages', () => {
     return all_packages.map((pkg) => {
-      const readme_url = getReadmeUrl(pkg.readme)
+      const readme_url = util.getReadmeUrl(pkg.readme)
       return {
         ...pkg,
         ...basePackage(pkg, stats[pkg.name]),
@@ -262,7 +257,7 @@ export default function (eleventyConfig) {
   // cache bust static files
   eleventyConfig.addFilter('bust', (p) => {
     if (!isProd) return p
-    return p.replace('static/', 'static_' + gitHash + '/')
+    return p.replace('static/', 'static_' + util.gitHash + '/')
   })
 
   return {
