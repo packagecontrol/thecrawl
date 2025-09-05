@@ -46,7 +46,8 @@
         {# bars + week overlays #}
         {% for inst in installs %}
           {% set i = loop.index0 %}
-          {% set rem = (removals[i] or 0) %}
+          {% set rem = removals[i] %}
+          {% set up = upgrades[i] %}
           {% set net_val = ((inst - rem) | at_least(0)) %}
           {% set rem_draw = rem %}
           {% if rem_draw > inst %}{% set rem_draw = inst %}{% endif %}
@@ -58,7 +59,6 @@
           {% set y_net = chart_h - net_h %}
           {% set y_rem = y_net - rem_h %}
           {% set slice_w = (i < (count - 1)) and (bar_w + gap) or bar_w %}
-          {% set up = (upgrades[i] or 0) %}
 
           <g class="week">
             {# subtle hover background spanning the full slice #}
@@ -122,7 +122,7 @@
           {% set sum_net = 0 %}
           {% for i in range(1, count_excl0 + 1) %}
             {% set inst = installs[i] %}
-            {% set rem = (removals[i] or 0) %}
+            {% set rem = removals[i] %}
             {% set net = ((inst - rem) | at_least(0)) %}
             {% set sum_inst = sum_inst + inst %}
             {% set sum_net = sum_net + net %}
@@ -222,8 +222,8 @@
           {% set i = loop.index0 %}
           {% set y2 = chart_h - (val / max_scale_r) * chart_h %}
           {% set x2 = i * (bar_w + gap) + (bar_w / 2) %}
-          {% set inst_i = (installs[i] or 0) %}
-          {% set rem_i = (removals[i] or 0) %}
+          {% set inst_i = installs[i] %}
+          {% set rem_i = removals[i] %}
           <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ upgrade_pt_r }}" class="upgrades-point">
             <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
           </circle>
