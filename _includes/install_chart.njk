@@ -1,4 +1,4 @@
-{% macro chart(weekly=[], removals=[], dates=[], upgrades=[]) %}
+{% macro chart(weekly=[], removals=[], upgrades=[], dates=[]) %}
   {% set count = weekly | length %}
   {% set dates_count = dates | length %}
   {% if count > 0 and dates_count > 0 %}
