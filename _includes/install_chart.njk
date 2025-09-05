@@ -31,14 +31,7 @@
     <svg viewBox="0 0 {{ svg_w }} {{ svg_h }}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Weekly installs">
       <g transform="translate({{ left }}, {{ top }})">
         {# left axis and tick labels #}
-        <line x1="0" y1="0" x2="0" y2="{{ chart_h }}" class="axis" />
-        {% for i in range(0, target + 1) %}
-          {% set t = i * step %}
-          {% set y = chart_h - (t / max_scale) * chart_h %}
-          {% if (i % 2) == 0 %}
-            <text x="-6" y="{{ y }}" text-anchor="end" dominant-baseline="middle" class="tick">{{ t | compact }}</text>
-          {% endif %}
-        {% endfor %}
+        {{ draw_axis_with_labels(target, step, 0, chart_h, 'tick') }}
 
         {# x-axis #}
         <line x1="0" y1="{{ chart_h }}" x2="{{ chart_w }}" y2="{{ chart_h }}" class="axis" />
@@ -130,14 +123,7 @@
 
         {# upgrades overlay #}
         {# right y-axis and labels for upgrades #}
-        <line x1="{{ chart_w }}" y1="0" x2="{{ chart_w }}" y2="{{ chart_h }}" class="axis" />
-        {% for i in range(0, target_r + 1) %}
-          {% set tr = i * step_r %}
-          {% set yr = chart_h - (tr / max_scale_r) * chart_h %}
-          {% if (i % 2) == 0 %}
-            <text x="{{ chart_w + 6 }}" y="{{ yr }}" text-anchor="start" dominant-baseline="middle" class="tick tick-right">{{ tr | compact }}</text>
-          {% endif %}
-        {% endfor %}
+        {{ draw_axis_with_labels(target_r, step_r, chart_w, chart_h, 'tick tick-right', 'start') }}
 
         {#
           upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
@@ -225,4 +211,17 @@
     </svg>
   </div>
   {% endif %}
+{% endmacro %}
+
+{% macro draw_axis_with_labels(target, step, x_pos, height, css_class='tick', text_anchor='end', offset=6) %}
+  {% set max_scale = step * target %}
+  {% set sign = (text_anchor == 'end') and -1 or 1 %}
+  <line x1="{{ x_pos }}" y1="0" x2="{{ x_pos }}" y2="{{ height }}" class="axis" />
+  {% for i in range(0, target + 1) %}
+    {% set t = i * step %}
+    {% set y = height - (t / max_scale) * height %}
+    {% if (i % 2) == 0 %}
+      <text x="{{ x_pos + (sign * offset) }}" y="{{ y }}" text-anchor="{{ text_anchor }}" dominant-baseline="middle" class="{{ css_class }}">{{ t | compact }}</text>
+    {% endif %}
+  {% endfor %}
 {% endmacro %}
