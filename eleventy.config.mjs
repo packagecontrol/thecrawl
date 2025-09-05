@@ -277,6 +277,12 @@ export default function (eleventyConfig) {
     return Math.ceil(value)
   })
 
+  // magnitude: highest power of 10 <= n
+  eleventyConfig.addFilter('magnitude', (x) => {
+    if (x <= 0) return 1
+    return Math.pow(10, Math.floor(Math.log10(x)))
+  })
+
   // cache bust static files
   eleventyConfig.addFilter('bust', (p) => {
     if (!isProd) return p
