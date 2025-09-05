@@ -296,13 +296,13 @@ export default function (eleventyConfig) {
     return Math.pow(10, Math.floor(Math.log10(x)))
   })
 
-  eleventyConfig.addFilter('compute_step', (val, target) => {
+  eleventyConfig.addFilter('compute_step', (arr, target) => {
     /*
       We want about n evenly spaced ticks, regardless of
       the data magnitude. To achieve this we:
 
-      1) Pick a target number of ticks (n).
-      2) Compute a rough step as ceil(max_value / target).
+      1) Compute the maximum.
+      2) Compute a rough step as ceil(maximum / target).
          This is the smallest step that could cover the range with ~target ticks
          but it may be an awkward number (e.g. 37, 413, 9876).
       3) Normalize the rough step to a “nice” human-friendly step using a
@@ -310,7 +310,8 @@ export default function (eleventyConfig) {
          magnitude of rough, then round it up to one of {1, 2, 5} × 10^k.
          Examples: 37 → 50, 413 → 500, 9876 → 10000.
     */
-    let approximation = Math.ceil(val / target)
+    let maximum = Math.max(0, ...arr)
+    let approximation = Math.ceil(maximum / target)
     let magnitude = Math.pow(10, Math.floor(Math.log10(approximation)))
     let lead_number = Math.floor((approximation + magnitude - 1) / magnitude)
     if (lead_number <= 1) {

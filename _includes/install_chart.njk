@@ -18,15 +18,13 @@
   {% set svg_h = top + chart_h + bottom %}
 
   {# compute left-axis for 5 ticks #}
-  {% set maxv = (installs | max) %}
   {% set target = 5 %}
-  {% set step = (maxv | compute_step(target)) %}
+  {% set step = (installs | compute_step(target)) %}
   {% set max_scale = step * target %}
 
   {# compute right-axis for upgrades #}
-  {% set maxu = (upgrades | max) %}
   {% set target_r = 5 %}
-  {% set step_r = (maxu | compute_step(target_r)) %}
+  {% set step_r = (upgrades | compute_step(target_r)) %}
   {% set max_scale_r = step_r * target_r %}
 
   <div class="install-chart">
