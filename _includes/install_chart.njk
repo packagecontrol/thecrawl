@@ -18,12 +18,6 @@
   {% set svg_w = left + chart_w + right %}
   {% set svg_h = top + chart_h + bottom %}
 
-  {# compute max #}
-  {% set maxv = 0 %}
-  {% for v in installs %}
-    {% if v > maxv %}{% set maxv = v %}{% endif %}
-  {% endfor %}
-
   {# choose nice step for ~5 ticks #}
   {#
     We want about 5 evenly spaced tick labels on the y-axis, regardless of
@@ -44,6 +38,7 @@
     We apply the same method for the right axis (upgrades) independently so
     both series look well-scaled even if their magnitudes differ.
   #}
+  {% set maxv = (installs | max) %}
   {% set target = 5 %}
   {#
     Integer ceiling
@@ -71,11 +66,7 @@
   {% set max_scale = step * target %}
 
   {# compute right-axis for upgrades #}
-  {% set maxu = 0 %}
-  {% for u in upgrades %}
-    {% if u > maxu %}{% set maxu = u %}{% endif %}
-  {% endfor %}
-
+  {% set maxu = (upgrades | max) %}
   {% set target_r = 5 %}
   {% set rough_r = (maxu + target_r - 1) // target_r %}
   {% set mag_r = 1 %}

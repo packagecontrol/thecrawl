@@ -262,6 +262,11 @@ export default function (eleventyConfig) {
     return fmt.format(count)
   })
 
+  // max: provide Math.max to the templates
+  eleventyConfig.addFilter('max', (arr, defaultValue = 0) => {
+    return Math.max(defaultValue, ...(Array.isArray(arr) ? arr : [arr]))
+  })
+
   // cache bust static files
   eleventyConfig.addFilter('bust', (p) => {
     if (!isProd) return p
