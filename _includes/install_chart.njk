@@ -29,6 +29,18 @@
 
         {# x-axis #}
         {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
+        {# month change ticks over entire chart #}
+        {% for i in range(0, padded_count) %}
+          {% set day_offset = dates | month_tick_offset_at(i) %}
+          {% if day_offset >= 0 %}
+            {% set slice_w = (i < (padded_count - 1)) and (dim.bar_w_gap) or dim.bar_w %}
+            {# weeks are newest→oldest left→right; #}
+            {# that means Monday is at *right* edge of slice. #}
+            {% set x = i * (dim.bar_w_gap) %}
+            {% set xt = x + (slice_w * (1 - (day_offset / 7))) %}
+            {{ line(xt, dim.chart_h, xt, dim.chart_h + 12, 'x-month-tick') }}
+          {% endif %}
+        {% endfor %}
 
         {# bars + week overlays #}
         {% for inst in installs %}

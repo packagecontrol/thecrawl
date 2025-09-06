@@ -359,6 +359,50 @@ export default function (eleventyConfig) {
     }
   }
 
+  // given an ISO week string like "2025-W33" or "2024-W01",
+  // return the Monday for that week.
+  // ISO-8601: week 1 is the week with the year's first Thursday.
+  const mondayOfIsoWeek = (isoWeekStr) => {
+    let [yearStr, weekStr] = isoWeekStr.split('-W')
+    let year = parseInt(yearStr, 10)
+    let week = parseInt(weekStr, 10)
+
+    // Jan 4th is in ISO week 1 per rule
+    let jan4 = new Date(Date.UTC(year, 0, 4))
+    let weekday_jan4 = jan4.getUTCDay()
+    if (weekday_jan4 === 0) weekday_jan4 = 7 // Sunday (=0) is the last day (=7) in ISO
+
+    return new Date(Date.UTC(year, 0, 4 + (week - 1) * 7 - (weekday_jan4 - 1)))
+    //                                  ^ advance to wanted week
+    //                                                   ^ back to the monday
+  }
+
+  // for weeks with a new month, compute offset (0..6) for the weekday
+  // (Mon..Sun) *before* that change
+  // return -1 if no week change
+  const MS_PER_DAY = 24 * 60 * 60 * 1000
+  const monthTickOffsetFromMonday = (monday) => {
+    if (monday.getUTCDate() === 1) return 0
+    let nextMonthFirst = new Date(Date.UTC(
+      monday.getUTCFullYear(),
+      monday.getUTCMonth() + 1,
+      1,
+    ))
+    let diff = (nextMonthFirst - monday) / MS_PER_DAY
+
+    // is the 1st of next month inside this week?
+    return diff < 7 ? diff : -1
+  }
+
+  // given an array of ISO week strings (newest first) and an index i,
+  // compute the day offset (0..6) of where the next month starts or -1.
+  eleventyConfig.addFilter('month_tick_offset_at', (dates, i) => {
+    let anchorMonday = mondayOfIsoWeek(dates[0])
+    let monday = new Date(anchorMonday)
+    monday.setUTCDate(monday.getUTCDate() - i * 7)
+    return monthTickOffsetFromMonday(monday)
+  })
+
   // cache bust static files
   eleventyConfig.addFilter('bust', (p) => {
     if (!isProd) return p

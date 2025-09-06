@@ -18,6 +18,12 @@
   stroke-width: 1;
 }
 
+.install-chart .x-month-tick {
+  stroke: var(--background-4);
+  stroke-linecap: round;
+  stroke-width: 1;
+}
+
 .install-chart .grid {
   stroke: var(--background-3);
   stroke-linecap: round;
