@@ -15,12 +15,11 @@
     left: 40,
     right: 44,
     chart_h: 120
-  } %}
-  {% set dim = dim | compute_dimensions(padded_count) %}
+  } | dimensions(padded_count) %}
 
   {# compute axes for 5 ticks #}
-  {% set l_axis = (installs | axis_for(5, dim.chart_h)) %}
-  {% set r_axis = (upgrades | axis_for(5, dim.chart_h)) %}
+  {% set l_axis = dim.axis_for(installs, 5) %}
+  {% set r_axis = dim.axis_for(upgrades, 5) %}
 
   <div class="install-chart">
     <svg viewBox="0 0 {{ dim.svg_w }} {{ dim.svg_h }}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Weekly installs">

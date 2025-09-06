@@ -331,7 +331,20 @@ export default function (eleventyConfig) {
     }
   }
 
-  eleventyConfig.addFilter('axis_for', (arr, target, height = 1) => {
+  eleventyConfig.addFilter('dimensions', (dim, total_count) => {
+    let bar_w_gap = dim.bar_w + dim.gap
+    let chart_w = (total_count * bar_w_gap) - dim.gap
+    return {
+      ...dim,
+      bar_w_gap,
+      chart_w,
+      svg_w: dim.left + chart_w + dim.right,
+      svg_h: dim.top + dim.chart_h + dim.bottom,
+      axis_for: (arr, target) => axis_for(arr, target, dim.chart_h),
+    }
+  })
+
+  const axis_for = (arr, target, height = 1) => {
     let step = compute_step(arr, target)
     let max_scale = target * step
     let px_per_unit = height / max_scale
@@ -344,19 +357,7 @@ export default function (eleventyConfig) {
       to_px,
       y_for,
     }
-  })
-
-  eleventyConfig.addFilter('compute_dimensions', (dim, total_count) => {
-    let bar_w_gap = dim.bar_w + dim.gap
-    let chart_w = (total_count * bar_w_gap) - dim.gap
-    return {
-      ...dim,
-      bar_w_gap,
-      chart_w,
-      svg_w: dim.left + chart_w + dim.right,
-      svg_h: dim.top + dim.chart_h + dim.bottom,
-    }
-  })
+  }
 
   // cache bust static files
   eleventyConfig.addFilter('bust', (p) => {
