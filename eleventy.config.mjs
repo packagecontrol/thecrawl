@@ -331,10 +331,18 @@ export default function (eleventyConfig) {
     }
   }
 
-  eleventyConfig.addFilter('axis_for', (arr, target) => {
+  eleventyConfig.addFilter('axis_for', (arr, target, height = 1) => {
     let step = compute_step(arr, target)
+    let max_scale = target * step
+    let px_per_unit = height / max_scale
+    let to_px = v => v * px_per_unit
+    let y_for = v => height - to_px(v)
     return {
-      target, step, max_scale: target * step,
+      target,
+      step,
+      max_scale,
+      to_px,
+      y_for,
     }
   })
 

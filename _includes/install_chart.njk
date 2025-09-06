@@ -19,11 +19,8 @@
   {% set dim = dim | compute_dimensions(padded_count) %}
 
   {# compute axes for 5 ticks #}
-  {% set l_axis = (installs | axis_for(5)) %}
-  {% set r_axis = (upgrades | axis_for(5)) %}
-  {# precompute pixels-per-unit scale factors for each axis #}
-  {% set l_scale = dim.chart_h / l_axis.max_scale %}
-  {% set r_scale = dim.chart_h / r_axis.max_scale %}
+  {% set l_axis = (installs | axis_for(5, dim.chart_h)) %}
+  {% set r_axis = (upgrades | axis_for(5, dim.chart_h)) %}
 
   <div class="install-chart">
     <svg viewBox="0 0 {{ dim.svg_w }} {{ dim.svg_h }}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Weekly installs">
@@ -42,13 +39,12 @@
           {% set net_val = ((inst - rem) | at_least(0)) %}
           {% set rem_draw = (rem | at_most(inst)) %}
 
-          {% set inst_h = inst * l_scale %}
-          {% set net_h  = net_val * l_scale %}
-          {% set rem_h  = rem_draw * l_scale %}
+          {% set net_h  = l_axis.to_px(net_val) %}
+          {% set rem_h  = l_axis.to_px(rem_draw) %}
 
           {% set x = i * (dim.bar_w_gap) %}
-          {% set y_top_inst = dim.chart_h - inst_h %}
-          {% set y_net      = dim.chart_h - net_h %}
+          {% set y_top_inst = l_axis.y_for(inst) %}
+          {% set y_net      = l_axis.y_for(net_val) %}
           {% set y_rem      = y_net - rem_h %}
           {% if has_padding or (i < (count - 1)) %}
             {% set slice_w = dim.bar_w_gap %}
@@ -95,8 +91,8 @@
           {% set sum_net  = ((sum_inst - sum_rem) | at_least(0)) %}
           {% set avg_inst = (sum_inst / count_excl0) %}
           {% set avg_net  = (sum_net  / count_excl0) %}
-          {% set y_avg_inst = dim.chart_h - (avg_inst * l_scale) %}
-          {% set y_avg_net = dim.chart_h - (avg_net * l_scale) %}
+          {% set y_avg_inst = l_axis.y_for(avg_inst) %}
+          {% set y_avg_net = l_axis.y_for(avg_net) %}
           {{ line(0, y_avg_inst, dim.chart_w, y_avg_inst, 'avg-line avg-line-inst') }}
           {{ line(0, y_avg_net,  dim.chart_w, y_avg_net,  'avg-line avg-line-net') }}
         {% endif %}
@@ -126,7 +122,7 @@
         {% if count > 1 %}
           {# start at second point because week[0] is the running week #}
           {% set val1 = upgrades[1] %}
-          {% set y_start = dim.chart_h - (val1 * r_scale) %}
+          {% set y_start = r_axis.y_for(val1) %}
           {% set x_start = 1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
           {#               ^ shift one bar to the right #}
           {% set d = 'M ' ~ x_start ~ ' ' ~ y_start %}
@@ -149,10 +145,10 @@
             {% set x2 = i2 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
             {% set x3 = i3 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
 
-            {% set y0 = dim.chart_h - (v0 * r_scale) %}
-            {% set y1 = dim.chart_h - (v1 * r_scale) %}
-            {% set y2 = dim.chart_h - (v2 * r_scale) %}
-            {% set y3 = dim.chart_h - (v3 * r_scale) %}
+            {% set y0 = r_axis.y_for(v0) %}
+            {% set y1 = r_axis.y_for(v1) %}
+            {% set y2 = r_axis.y_for(v2) %}
+            {% set y3 = r_axis.y_for(v3) %}
 
             {#
               Catmull–Rom → Bézier control points
@@ -179,7 +175,7 @@
         {# Points with tooltips #}
         {% for val in upgrades %}
           {% set i = loop.index0 %}
-          {% set y2 = dim.chart_h - (val * r_scale) %}
+          {% set y2 = r_axis.y_for(val) %}
           {% set x2 = i * (dim.bar_w_gap) + (dim.bar_w / 2) %}
           {% set inst_i = installs[i] %}
           {% set rem_i = removals[i] %}
@@ -195,11 +191,10 @@
 
 {% macro draw_axis_with_labels(axis, x_pos, dim, css_class='tick', text_anchor='end', offset=6) %}
   {% set sign = (text_anchor == 'end') and -1 or 1 %}
-  {% set scale = dim.chart_h / axis.max_scale %}
   {{ line(x_pos, 0, x_pos, dim.chart_h, 'axis') }}
   {% for i in range(0, axis.target + 1) %}
     {% set t = i * axis.step %}
-    {% set y = dim.chart_h - (t * scale) %}
+    {% set y = axis.y_for(t) %}
     {% if (i % 2) == 0 %}
       <text x="{{ x_pos + (sign * offset) }}" y="{{ y }}" text-anchor="{{ text_anchor }}" dominant-baseline="middle" class="{{ css_class }}">{{ t | compact }}</text>
     {% endif %}
@@ -211,10 +206,9 @@
     {{ rect(x, 0, slice_w, dim.chart_h) }}
   </clipPath>
   <g clip-path="url(#clip-week-{{ i }})">
-    {% set scale = dim.chart_h / axis.max_scale %}
     {% for gi in range(0, axis.target + 1) %}
       {% set gt = gi * axis.step %}
-      {% set gy = dim.chart_h - (gt * scale) %}
+      {% set gy = axis.y_for(gt) %}
       {{ line(0, gy, dim.chart_w, gy, 'grid') }}
     {% endfor %}
   </g>
