@@ -377,11 +377,19 @@ export default function (eleventyConfig) {
     //                                                   ^ back to the monday
   }
 
-  // for weeks with a new month, compute offset (0..6) for the weekday
-  // (Mon..Sun) *before* that change
-  // return -1 if no week change
+  // given an array of ISO week strings (newest first) and an index i,
+  // return the Monday date of that week.
+  eleventyConfig.addFilter('monday_at', (dates, i) => {
+    let anchorMonday = mondayOfIsoWeek(dates[0])
+    let monday = new Date(anchorMonday)
+    monday.setUTCDate(monday.getUTCDate() - i * 7)
+    return monday
+  })
+
+  // given a Monday date, return the day offset (0..6) of where the
+  // next month starts if within that week or -1.
   const MS_PER_DAY = 24 * 60 * 60 * 1000
-  const monthTickOffsetFromMonday = (monday) => {
+  eleventyConfig.addFilter('day_offset_of_month_change', (monday) => {
     if (monday.getUTCDate() === 1) return 0
     let nextMonthFirst = new Date(Date.UTC(
       monday.getUTCFullYear(),
@@ -392,30 +400,16 @@ export default function (eleventyConfig) {
 
     // is the 1st of next month inside this week?
     return diff < 7 ? diff : -1
-  }
-
-  // given an array of ISO week strings (newest first) and an index i,
-  // compute the day offset (0..6) of where the next month starts or -1.
-  eleventyConfig.addFilter('month_tick_offset_at', (dates, i) => {
-    let anchorMonday = mondayOfIsoWeek(dates[0])
-    let monday = new Date(anchorMonday)
-    monday.setUTCDate(monday.getUTCDate() - i * 7)
-    return monthTickOffsetFromMonday(monday)
   })
 
   const shortMonthFormatter
     = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' })
 
-  // Filter: label for month boundary at index i (newest first).
-  // Returns e.g. "Jan" or "Dec 2024" (for December include year).
-  eleventyConfig.addFilter('abbr_month_at', (dates, i) => {
-    let anchorMonday = mondayOfIsoWeek(dates[0])
-    let monday = new Date(anchorMonday)
-    monday.setUTCDate(monday.getUTCDate() - i * 7)
-
-    let monthShort = shortMonthFormatter.format(monday)
-    let year = monday.getUTCFullYear()
-    let isDec = monday.getUTCMonth() === 11
+  // return abbreviated month of given (for December include year)
+  eleventyConfig.addFilter('abbr_month', (date) => {
+    let monthShort = shortMonthFormatter.format(date)
+    let year = date.getUTCFullYear()
+    let isDec = date.getUTCMonth() === 11
     return isDec ? `${monthShort} ${year}` : monthShort
   })
 

@@ -31,7 +31,7 @@
         {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
         {# month change ticks over entire chart #}
         {% for i in range(0, padded_count) %}
-          {% set day_offset = dates | month_tick_offset_at(i) %}
+          {% set day_offset = dates | monday_at(i) | day_offset_of_month_change %}
           {% if day_offset >= 0 %}
             {% set slice_w = (i < (padded_count - 1)) and (dim.bar_w_gap) or dim.bar_w %}
             {# weeks are newest→oldest left→right; #}
@@ -40,7 +40,7 @@
             {% set xt = x + (slice_w * (1 - (day_offset / 7))) %}
             {{ line(xt, dim.chart_h, xt, dim.chart_h + 12, 'x-month-tick') }}
             {# i + 1 to show the name of the next month #}
-            {% set label = dates | abbr_month_at(i + 1) %}
+            {% set label = dates | monday_at(i + 1) | abbr_month %}
             <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 12 }}" text-anchor="start" dominant-baseline="middle" class="x-month-label">{{ label }}</text>
           {% endif %}
         {% endfor %}
