@@ -403,6 +403,22 @@ export default function (eleventyConfig) {
     return monthTickOffsetFromMonday(monday)
   })
 
+  const shortMonthFormatter
+    = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' })
+
+  // Filter: label for month boundary at index i (newest first).
+  // Returns e.g. "Jan" or "Dec 2024" (for December include year).
+  eleventyConfig.addFilter('abbr_month_at', (dates, i) => {
+    let anchorMonday = mondayOfIsoWeek(dates[0])
+    let monday = new Date(anchorMonday)
+    monday.setUTCDate(monday.getUTCDate() - i * 7)
+
+    let monthShort = shortMonthFormatter.format(monday)
+    let year = monday.getUTCFullYear()
+    let isDec = monday.getUTCMonth() === 11
+    return isDec ? `${monthShort} ${year}` : monthShort
+  })
+
   // cache bust static files
   eleventyConfig.addFilter('bust', (p) => {
     if (!isProd) return p

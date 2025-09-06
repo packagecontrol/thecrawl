@@ -24,6 +24,12 @@
   stroke-width: 1;
 }
 
+.install-chart .x-month-label {
+  fill: var(--foreground-3);
+  font-size: 11px;
+  pointer-events: none;
+}
+
 .install-chart .grid {
   stroke: var(--background-3);
   stroke-linecap: round;

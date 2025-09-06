@@ -39,6 +39,9 @@
             {% set x = i * (dim.bar_w_gap) %}
             {% set xt = x + (slice_w * (1 - (day_offset / 7))) %}
             {{ line(xt, dim.chart_h, xt, dim.chart_h + 12, 'x-month-tick') }}
+            {# i + 1 to show the name of the next month #}
+            {% set label = dates | abbr_month_at(i + 1) %}
+            <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 12 }}" text-anchor="start" dominant-baseline="middle" class="x-month-label">{{ label }}</text>
           {% endif %}
         {% endfor %}
 
