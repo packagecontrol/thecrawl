@@ -43,12 +43,12 @@
           {% set net_h  = (net_val / l_axis.max_scale) * dim.chart_h %}
           {% set rem_h  = (rem_draw / l_axis.max_scale) * dim.chart_h %}
 
-          {% set x = i * (dim.bar_w + dim.gap) %}
+          {% set x = i * (dim.bar_w_gap) %}
           {% set y_top_inst = dim.chart_h - inst_h %}
           {% set y_net      = dim.chart_h - net_h %}
           {% set y_rem      = y_net - rem_h %}
           {% if has_padding or (i < (count - 1)) %}
-            {% set slice_w = dim.bar_w + dim.gap %}
+            {% set slice_w = dim.bar_w_gap %}
           {% else %}
             {% set slice_w = dim.bar_w %}
           {% endif %}
@@ -74,8 +74,8 @@
 
         {# render empty week slices to fill padded area width a grid #}
         {% for i in range(count, padded_count) %}
-          {% set x = i * (dim.bar_w + dim.gap) %}
-          {% set slice_w = (i < (padded_count - 1)) and (dim.bar_w + dim.gap) or dim.bar_w %}
+          {% set x = i * (dim.bar_w_gap) %}
+          {% set slice_w = (i < (padded_count - 1)) and (dim.bar_w_gap) or dim.bar_w %}
           <g class="week">
             {{ draw_grid_lines(i, x, slice_w, dim, l_axis) }}
           </g>
@@ -124,7 +124,7 @@
           {# start at second point because week[0] is the running week #}
           {% set val1 = upgrades[1] %}
           {% set y_start = dim.chart_h - (val1 / r_axis.max_scale) * dim.chart_h %}
-          {% set x_start = 1 * (dim.bar_w + dim.gap) + (dim.bar_w / 2) %}
+          {% set x_start = 1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
           {#               ^ shift one bar to the right #}
           {% set d = 'M ' ~ x_start ~ ' ' ~ y_start %}
 
@@ -141,10 +141,10 @@
             {% set v2 = upgrades[i2] %}
             {% set v3 = upgrades[i3] %}
 
-            {% set x0 = i0 * (dim.bar_w + dim.gap) + (dim.bar_w / 2) %}
-            {% set x1 = i1 * (dim.bar_w + dim.gap) + (dim.bar_w / 2) %}
-            {% set x2 = i2 * (dim.bar_w + dim.gap) + (dim.bar_w / 2) %}
-            {% set x3 = i3 * (dim.bar_w + dim.gap) + (dim.bar_w / 2) %}
+            {% set x0 = i0 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+            {% set x1 = i1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+            {% set x2 = i2 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+            {% set x3 = i3 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
 
             {% set y0 = dim.chart_h - (v0 / r_axis.max_scale) * dim.chart_h %}
             {% set y1 = dim.chart_h - (v1 / r_axis.max_scale) * dim.chart_h %}
@@ -177,7 +177,7 @@
         {% for val in upgrades %}
           {% set i = loop.index0 %}
           {% set y2 = dim.chart_h - (val / r_axis.max_scale) * dim.chart_h %}
-          {% set x2 = i * (dim.bar_w + dim.gap) + (dim.bar_w / 2) %}
+          {% set x2 = i * (dim.bar_w_gap) + (dim.bar_w / 2) %}
           {% set inst_i = installs[i] %}
           {% set rem_i = removals[i] %}
           <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point">

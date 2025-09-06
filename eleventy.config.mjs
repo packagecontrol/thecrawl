@@ -339,9 +339,11 @@ export default function (eleventyConfig) {
   })
 
   eleventyConfig.addFilter('compute_dimensions', (dim, total_count) => {
-    let chart_w = (total_count * (dim.bar_w + dim.gap)) - dim.gap
+    let bar_w_gap = dim.bar_w + dim.gap
+    let chart_w = (total_count * bar_w_gap) - dim.gap
     return {
       ...dim,
+      bar_w_gap,
       chart_w,
       svg_w: dim.left + chart_w + dim.right,
       svg_h: dim.top + dim.chart_h + dim.bottom,
