@@ -250,6 +250,21 @@ if (import.meta.vitest) {
     })
   })
 
+  describe('magnitude', () => {
+    it.each([
+      [0, 1],
+      [1, 1],
+      [9, 1],
+      [10, 10],
+      [11, 10],
+      [99, 10],
+      [100, 100],
+      [123456, 100000],
+    ])('magnitude(%d) = %d', (n, expected) => {
+      expect(magnitude(n)).toBe(expected)
+    })
+  })
+
   describe('mondayOfIsoWeek', () => {
     it.each([
       ['2025-W01', '2024-12-30'],
