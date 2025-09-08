@@ -67,11 +67,34 @@ export function sum(arr) {
   return arr.reduce((a, b) => a + b, 0)
 }
 
-// Helpers used by multiple filters
-// magnitude: highest power of 10 <= n
-function magnitude(x) {
-  if (x <= 0) return 1
-  return Math.pow(10, Math.floor(Math.log10(x)))
+export function dimensions(dim, total_count) {
+  let bar_w_gap = dim.bar_w + dim.gap
+  let chart_w = (total_count * bar_w_gap) - dim.gap
+  return {
+    ...dim,
+    bar_w_gap,
+    chart_w,
+    svg_w: dim.left + chart_w + dim.right,
+    svg_h: dim.top + dim.chart_h + dim.bottom,
+    axis_for: (arr, target) => axis_for(arr, target, dim.chart_h),
+  }
+}
+
+function axis_for(arr, target, height = 1) {
+  let step = compute_step(arr, target)
+  let steps = Array.from({ length: target + 1 }, (_, i) => i * step)
+  let max_scale = target * step
+  let px_per_unit = height / max_scale
+  let to_px = v => v * px_per_unit
+  let y_for = v => height - to_px(v)
+  return {
+    target,
+    step,
+    steps,
+    max_scale,
+    to_px,
+    y_for,
+  }
 }
 
 function compute_step(arr, target) {
@@ -103,32 +126,10 @@ function compute_step(arr, target) {
   }
 }
 
-export function dimensions(dim, total_count) {
-  let bar_w_gap = dim.bar_w + dim.gap
-  let chart_w = (total_count * bar_w_gap) - dim.gap
-  return {
-    ...dim,
-    bar_w_gap,
-    chart_w,
-    svg_w: dim.left + chart_w + dim.right,
-    svg_h: dim.top + dim.chart_h + dim.bottom,
-    axis_for: (arr, target) => axis_for(arr, target, dim.chart_h),
-  }
-}
-
-function axis_for(arr, target, height = 1) {
-  let step = compute_step(arr, target)
-  let max_scale = target * step
-  let px_per_unit = height / max_scale
-  let to_px = v => v * px_per_unit
-  let y_for = v => height - to_px(v)
-  return {
-    target,
-    step,
-    max_scale,
-    to_px,
-    y_for,
-  }
+// magnitude: highest power of 10 <= n
+function magnitude(x) {
+  if (x <= 0) return 1
+  return Math.pow(10, Math.floor(Math.log10(x)))
 }
 
 // given an array of ISO week strings (newest first) and an index i,
@@ -206,6 +207,37 @@ if (import.meta.vitest) {
 
     it('throws on invalid date input', () => {
       expect(() => date_time_format('not-a-date')).toThrow()
+    })
+  })
+
+  describe('axis_for', () => {
+    it.each([
+      [[0], 5, [0, 1, 2, 3, 4, 5]],
+      [[25], 5, [0, 5, 10, 15, 20, 25]],
+    ])('axis_for(%j, %d).steps -> %s', (arr, target, expected) => {
+      expect(axis_for(arr, target).steps).toStrictEqual(expected)
+    })
+
+    it.each([
+      [[25], 5, 100, 0, 0],
+      [[25], 5, 100, 5, 20],
+      [[25], 5, 100, 10, 40],
+      [[25], 5, 100, 15, 60],
+      [[25], 5, 100, 20, 80],
+      [[25], 5, 100, 25, 100],
+    ])('axis_for(%j, %d, %d).to_px(%d) -> %s', (arr, target, height, val, expected) => {
+      expect(axis_for(arr, target, height).to_px(val)).toBe(expected)
+    })
+
+    it.each([
+      [[25], 5, 100, 0, 100],
+      [[25], 5, 100, 5, 80],
+      [[25], 5, 100, 10, 60],
+      [[25], 5, 100, 15, 40],
+      [[25], 5, 100, 20, 20],
+      [[25], 5, 100, 25, 0],
+    ])('axis_for(%j, %d, %d).y_for(%d) -> %s', (arr, target, height, val, expected) => {
+      expect(axis_for(arr, target, height).y_for(val)).toBe(expected)
     })
   })
 

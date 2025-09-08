@@ -206,11 +206,10 @@
 {% macro draw_axis_with_labels(axis, x_pos, dim, css_class='tick', text_anchor='end', offset=6) %}
   {% set sign = (text_anchor == 'end') and -1 or 1 %}
   {{ line(x_pos, 0, x_pos, dim.chart_h, 'axis') }}
-  {% for i in range(0, axis.target + 1) %}
-    {% set t = i * axis.step %}
-    {% set y = axis.y_for(t) %}
-    {% if (i % 2) == 0 %}
-      <text x="{{ x_pos + (sign * offset) }}" y="{{ y }}" text-anchor="{{ text_anchor }}" dominant-baseline="middle" class="{{ css_class }}">{{ t | compact }}</text>
+  {% for step in axis.steps %}
+    {% set y = axis.y_for(step) %}
+    {% if (loop.index0 % 2) == 0 %}
+      <text x="{{ x_pos + (sign * offset) }}" y="{{ y }}" text-anchor="{{ text_anchor }}" dominant-baseline="middle" class="{{ css_class }}">{{ step | compact }}</text>
     {% endif %}
   {% endfor %}
 {% endmacro %}
@@ -220,9 +219,8 @@
     {{ rect(x, 0, slice_w, dim.chart_h) }}
   </clipPath>
   <g clip-path="url(#clip-week-{{ i }})">
-    {% for gi in range(0, axis.target + 1) %}
-      {% set gt = gi * axis.step %}
-      {% set gy = axis.y_for(gt) %}
+    {% for step in axis.steps %}
+      {% set gy = axis.y_for(step) %}
       {{ line(0, gy, dim.chart_w, gy, 'grid') }}
     {% endfor %}
   </g>
