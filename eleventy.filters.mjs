@@ -189,3 +189,60 @@ export function bust(p) {
   if (!isProd) return p
   return p.replace('static/', 'static_' + util.gitHash + '/')
 }
+
+// Inline tests (Vitest)
+if (import.meta.vitest) {
+  const { describe, it, expect } = import.meta.vitest
+
+  describe('date_time_format', () => {
+    it.each([
+      [[new Date('2025-09-08T11:12:59Z')], '2025-09-08 11:12'],
+      [['2025-09-08T00:01:00Z'], '2025-09-08 00:01'],
+      [['2025-09-08T11:12:00Z'], '2025-09-08 11:12'],
+      [['2025-01-01T00:00:00Z'], '2025-01-01 00:00'],
+    ])('date_time_format(%j) -> %s', (args, expected) => {
+      expect(date_time_format(...args)).toBe(expected)
+    })
+
+    it('throws on invalid date input', () => {
+      expect(() => date_time_format('not-a-date')).toThrow()
+    })
+  })
+
+  describe('mondayOfIsoWeek', () => {
+    it.each([
+      ['2025-W01', '2024-12-30'],
+      ['2025-W36', '2025-09-01'],
+      // W01 start-day variants
+      ['2018-W01', '2018-01-01'], // Jan 1 is Mon -> W01 Monday = Jan 1
+      ['2019-W01', '2018-12-31'], // Jan 1 is Tue -> W01 Monday = Dec 31 prev year
+      ['2020-W01', '2019-12-30'], // Jan 1 is Wed -> W01 Monday = Dec 30 prev year
+      ['2015-W01', '2014-12-29'], // Jan 1 is Thu -> W01 Monday = Dec 29 prev year
+      ['2016-W01', '2016-01-04'], // Jan 1 is Fri -> W01 Monday = Jan 4
+      ['2022-W01', '2022-01-03'], // Jan 1 is Sat -> W01 Monday = Jan 3
+      ['2017-W01', '2017-01-02'], // Jan 1 is Sun -> W01 Monday = Jan 2
+    ])('mondayOfIsoWeek(%s) -> %s', (iso, expectedIso) => {
+      expect(mondayOfIsoWeek(iso).toISOString().slice(0, 10)).toBe(expectedIso)
+    })
+  })
+
+  describe('day_offset_of_month_change', () => {
+    it.each([
+      // Monday is the 1st of the month -> offset 0
+      ['2025-09-01', 0],
+      // Next month starts within this week
+      ['2025-06-30', 1],
+      ['2024-12-30', 2],
+      ['2024-07-29', 3],
+      ['2024-10-28', 4],
+      ['2025-02-24', 5],
+      ['2024-08-26', 6],
+      // Next month not within the same week
+      ['2025-09-08', -1],
+    ])('offset for %s -> %d', (ymd, expected) => {
+      const monday = new Date(ymd + 'T00:00:00Z')
+      expect(monday.getUTCDay()).toBe(1)
+      expect(day_offset_of_month_change(monday)).toBe(expected)
+    })
+  })
+}
