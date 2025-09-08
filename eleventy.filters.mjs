@@ -67,6 +67,13 @@ export function sum(arr) {
   return arr.reduce((a, b) => a + b, 0)
 }
 
+// every_other: return every 2nd element starting at index `start` (0 or 1)
+export function every_other(arr, start = 0) {
+  if (!Array.isArray(arr)) return arr
+  let s = Math.abs(start) % 2
+  return arr.filter((_, i) => (i % 2) === s)
+}
+
 export function dimensions(dim, total_count) {
   let bar_w_gap = dim.bar_w + dim.gap
   let chart_w = (total_count * bar_w_gap) - dim.gap
@@ -207,6 +214,23 @@ if (import.meta.vitest) {
 
     it('throws on invalid date input', () => {
       expect(() => date_time_format('not-a-date')).toThrow()
+    })
+  })
+
+  describe('every_other', () => {
+    it.each([
+      [[[0, 1, 2, 3, 4], 0], [0, 2, 4]],
+      [[[0, 1, 2, 3, 4], 1], [1, 3]],
+      [[[0, 1, 2, 3, 4], 2], [0, 2, 4]], // start cycles every 2
+      [[[0, 1, 2, 3, 4], -1], [1, 3]],   // negative start handled
+    ])('every_other(%j) -> %j', (args, expected) => {
+      expect(every_other(...args)).toStrictEqual(expected)
+    })
+
+    it('passes through non-arrays', () => {
+      expect(every_other('not-array')).toBe('not-array')
+      expect(every_other(null)).toBe(null)
+      expect(every_other(undefined)).toBe(undefined)
     })
   })
 

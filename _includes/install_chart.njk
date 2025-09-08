@@ -206,11 +206,9 @@
 {% macro draw_axis_with_labels(axis, x_pos, dim, css_class='tick', text_anchor='end', offset=6) %}
   {% set sign = (text_anchor == 'end') and -1 or 1 %}
   {{ line(x_pos, 0, x_pos, dim.chart_h, 'axis') }}
-  {% for step in axis.steps %}
+  {% for step in axis.steps | every_other %}
     {% set y = axis.y_for(step) %}
-    {% if (loop.index0 % 2) == 0 %}
-      <text x="{{ x_pos + (sign * offset) }}" y="{{ y }}" text-anchor="{{ text_anchor }}" dominant-baseline="middle" class="{{ css_class }}">{{ step | compact }}</text>
-    {% endif %}
+    <text x="{{ x_pos + (sign * offset) }}" y="{{ y }}" text-anchor="{{ text_anchor }}" dominant-baseline="middle" class="{{ css_class }}">{{ step | compact }}</text>
   {% endfor %}
 {% endmacro %}
 
