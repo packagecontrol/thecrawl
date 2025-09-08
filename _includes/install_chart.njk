@@ -11,7 +11,7 @@
     gap: 1,
     upgrade_pt_r: 2.5,
     top: 10,
-    bottom: 20,
+    bottom: 30,
     left: 40,
     right: 44,
     chart_h: 120
@@ -42,6 +42,10 @@
             {# i + 1 to show the name of the next month #}
             {% set label = dates | monday_at(i + 1) | abbr_month %}
             <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 12 }}" text-anchor="start" dominant-baseline="middle" class="x-month-label">{{ label }}</text>
+            {% if label == 'Dec' %}
+              {% set label = dates | monday_at(i + 1) | full_year %}
+              <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 24 }}" text-anchor="start" dominant-baseline="middle" class="x-month-label">{{ label }}</text>
+            {% endif %}
           {% endif %}
         {% endfor %}
 

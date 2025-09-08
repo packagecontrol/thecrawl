@@ -184,12 +184,14 @@ export function day_offset_of_month_change(monday) {
 
 const shortMonthFormatter = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' })
 
-// return abbreviated month of given (for December include year)
+// return abbreviated month of given date
 export function abbr_month(date) {
-  let monthShort = shortMonthFormatter.format(date)
-  let year = date.getUTCFullYear()
-  let isDec = date.getUTCMonth() === 11
-  return isDec ? `${monthShort} ${year}` : monthShort
+  return shortMonthFormatter.format(date)
+}
+
+// return full year of given date
+export function full_year(date) {
+  return date.getUTCFullYear()
 }
 
 // cache bust static files
