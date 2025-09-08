@@ -11,9 +11,9 @@
     gap: 1,
     upgrade_pt_r: 2.5,
     top: 10,
-    bottom: 30,
-    left: 40,
-    right: 44,
+    bottom: 42,
+    left: 50,
+    right: 60,
     chart_h: 120
   } | dimensions(padded_count) %}
 
@@ -24,8 +24,18 @@
   <div class="install-chart">
     <svg viewBox="0 0 {{ dim.svg_w }} {{ dim.svg_h }}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Weekly installs">
       <g transform="translate({{ dim.left }}, {{ dim.top }})">
-        {# left axis and tick labels #}
+        {# left and right axis with its tick labels #}
         {{ draw_axis_with_labels(l_axis, 0, dim, 'tick') }}
+        {{ draw_axis_with_labels(r_axis, dim.chart_w, dim, 'tick tick-right', 'start') }}
+        {# axes legend #}
+        <g class="tick-label" transform="translate(-6, {{ dim.chart_h + 24 }})">
+          <text x="0" y="0" text-anchor="end" dominant-baseline="middle" class="tick">Weekly</text>
+          <text x="0" y="12"   text-anchor="end"   dominant-baseline="middle" class="tick">Installs</text>
+        </g>
+        <g class="tick-label" transform="translate({{ dim.chart_w + 6 }}, {{ dim.chart_h + 24 }})">
+          <text x="0" y="0" text-anchor="start"   dominant-baseline="middle" class="tick tick-right">Weekly</text>
+          <text x="0"  y="12"   text-anchor="start" dominant-baseline="middle" class="tick tick-right">Upgrades</text>
+        </g>
 
         {# x-axis #}
         {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
@@ -117,9 +127,6 @@
         {% endif %}
 
         {# upgrades overlay #}
-        {# right y-axis and labels for upgrades #}
-        {{ draw_axis_with_labels(r_axis, dim.chart_w, dim, 'tick tick-right', 'start') }}
-
         {#
           upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
 
