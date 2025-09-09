@@ -29,6 +29,9 @@
   font-size: 11px;
   pointer-events: none;
 }
+.install-chart .x-month-label-dimmed {
+  opacity: 0.6;
+}
 
 .install-chart .grid {
   stroke: var(--background-3);

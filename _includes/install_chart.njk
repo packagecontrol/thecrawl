@@ -41,10 +41,11 @@
             {{ line(xt, dim.chart_h, xt, dim.chart_h + 12, 'x-month-tick') }}
             {# i + 1 to show the name of the next month #}
             {% set label = dates | monday_at(i + 1) | abbr_month %}
-            <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 12 }}" text-anchor="start" dominant-baseline="middle" class="x-month-label">{{ label }}</text>
+            {% set css_class = (i < count - 1) and 'x-month-label' or 'x-month-label x-month-label-dimmed' %}
+            <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 12 }}" text-anchor="start" dominant-baseline="middle" class="{{ css_class }}">{{ label }}</text>
             {% if label == 'Dec' %}
               {% set label = dates | monday_at(i + 1) | full_year %}
-              <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 24 }}" text-anchor="start" dominant-baseline="middle" class="x-month-label">{{ label }}</text>
+              <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 24 }}" text-anchor="start" dominant-baseline="middle" class="{{ css_class }}">{{ label }}</text>
             {% endif %}
           {% endif %}
         {% endfor %}
