@@ -4,7 +4,7 @@ import { minify } from 'terser'
 import * as util from './eleventy.util.mjs'
 import * as filters from './eleventy.filters.mjs'
 
-function basePackage(pkg, stats) {
+function basePackage(pkg, stats, weekly_dates) {
   // Create a new array of releases with cleaned platforms
   const releases = (pkg.releases || []).map(release => ({
     ...release,
@@ -79,6 +79,16 @@ function basePackage(pkg, stats) {
   const weekly_removals = stats?.removals?.weekly ?? []
   const weekly_upgrades = stats?.upgrades?.weekly ?? []
 
+  // Trim stats to the package lifetime based on first_seen
+  let end = undefined
+  if (pkg.first_seen && weekly_dates) {
+    const iso = util.isoWeekString(pkg.first_seen)
+    const idx = weekly_dates.indexOf(iso)
+    if (idx >= 0) {
+      end = idx + 1
+    }
+  }
+
   return {
     name: pkg.name,
     author: util.cleanAuthors(pkg.author) ?? [],
@@ -93,9 +103,9 @@ function basePackage(pkg, stats) {
     otherReleases,
     labels: pkg.labels,
     platforms: uniquePlatforms,
-    weekly_installs,
-    weekly_removals,
-    weekly_upgrades,
+    weekly_installs: weekly_installs.slice(0, end),
+    weekly_removals: weekly_removals.slice(0, end),
+    weekly_upgrades: weekly_upgrades.slice(0, end),
   }
 }
 
@@ -187,7 +197,7 @@ export default function (eleventyConfig) {
       const readme_url = util.getReadmeUrl(pkg.readme)
       return {
         ...pkg,
-        ...basePackage(pkg, stats[pkg.name]),
+        ...basePackage(pkg, stats[pkg.name], stats['__weekly_dates']),
         weekly_dates: stats['__weekly_dates'],
         ...(readme_url !== pkg.readme ? { readme_url } : {}),
       }
@@ -197,13 +207,13 @@ export default function (eleventyConfig) {
   eleventyConfig.addCollection('searchable_packages', () => {
     return all_packages.map(pkg => ({
       description: pkg.description,
-      ...basePackage(pkg, stats[pkg.name]),
+      ...basePackage(pkg, stats[pkg.name], stats['__weekly_dates']),
     })).sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
 
   eleventyConfig.addCollection('updated_packages', () => {
     return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
-      ...basePackage(pkg, stats[pkg.name]),
+      ...basePackage(pkg, stats[pkg.name], stats['__weekly_dates']),
     })).sort((a, b) => {
       return new Date(b.last_modified ?? '1970-01-01 00:00:00') - new Date(a.last_modified ?? '1970-01-01 00:00:00')
     }).slice(0, 9)
@@ -211,7 +221,7 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addCollection('newest_packages', () => {
     return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
-      ...basePackage(pkg, stats[pkg.name]),
+      ...basePackage(pkg, stats[pkg.name], stats['__weekly_dates']),
     })).sort((a, b) => {
       return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
     }).slice(0, 9)

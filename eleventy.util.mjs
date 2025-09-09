@@ -42,3 +42,58 @@ export function getReadmeUrl(readme) {
 }
 
 export const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
+
+function utcifyISODateString(dateStr) {
+  return dateStr.replace(' ', 'T') + (dateStr.endsWith('Z') ? '' : 'Z')
+}
+
+// Convert a date string (assumed UTC like "YYYY-MM-DD HH:MM:SS")
+// to an ISO week string "YYYY-Www" (e.g. 2025-09-02 -> "2025-W36").
+export function isoWeekString(dateStr) {
+  if (!dateStr) return null
+  const tmp = new Date(utcifyISODateString(dateStr))
+  // ISO week: shift to Thursday of current week
+  const d = new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(), tmp.getUTCDate()))
+  const day = d.getUTCDay() || 7 // Mon (=1)...Sun (=7)
+  d.setUTCDate(d.getUTCDate() + 4 - day) // to Thursday
+  const isoYear = d.getUTCFullYear()
+  const yearStart = new Date(Date.UTC(isoYear, 0, 1))
+  const week = Math.ceil(((d - yearStart) / (24 * 60 * 60 * 1000) + 1) / 7)
+  return `${isoYear}-W${String(week).padStart(2, '0')}`
+}
+
+// Inline tests (Vitest)
+if (import.meta.vitest) {
+  const { describe, it, expect } = import.meta.vitest
+
+  describe('utcifyISODateString', () => {
+    it.each([
+      ['2025-09-02 11:50:44', '2025-09-02T11:50:44Z'],
+      ['2025-09-02T11:50:44', '2025-09-02T11:50:44Z'],
+      ['2025-09-02T11:50:44Z', '2025-09-02T11:50:44Z'],
+
+    ])('utcifyISODateString(%s) -> %s', (input, expected) => {
+      expect(utcifyISODateString(input)).toBe(expected)
+    })
+  })
+
+  describe('isoWeekString', () => {
+    it.each([
+      // User example: Tuesday in W36 of 2025
+      ['2025-09-02 11:50:44', '2025-W36'],
+      // Monday start and Sunday end of same week
+      ['2025-09-01 00:00:00', '2025-W36'],
+      ['2025-09-07 23:59:59', '2025-W36'],
+      // Year boundary cases
+      ['2018-12-31 12:00:00', '2019-W01'], // Mon belongs to 2019-W01
+      ['2019-01-01 00:00:00', '2019-W01'], // Tue
+      ['2020-01-01 00:00:00', '2020-W01'], // Wed
+      ['2016-01-01 00:00:00', '2015-W53'], // Fri belongs to last week of 2015
+      // Known anchors
+      ['2014-12-29 00:00:00', '2015-W01'], // Mon of 2015-W01
+      ['2016-01-04 00:00:00', '2016-W01'], // Mon of 2016-W01
+    ])('isoWeekString(%s) -> %s', (input, expected) => {
+      expect(isoWeekString(input)).toBe(expected)
+    })
+  })
+}
