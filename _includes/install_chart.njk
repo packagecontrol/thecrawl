@@ -45,7 +45,7 @@
           {% if day_offset >= 0 %}
             {% set slice_w = (i < (padded_count - 1)) and (dim.bar_w_gap) or dim.bar_w %}
             {# weeks are newest→oldest left→right; #}
-            {# that means Monday is at *right* edge of slice. #}
+            {# that means Monday is at *right* ("1 -") edge of slice. #}
             {% set x = i * (dim.bar_w_gap) %}
             {% set xt = x + (slice_w * (1 - (day_offset / 7))) %}
             {{ line(xt, dim.chart_h, xt, dim.chart_h + 12, 'x-month-tick') }}
