@@ -28,14 +28,8 @@
         {{ draw_axis_with_labels(l_axis, 0, dim, 'tick') }}
         {{ draw_axis_with_labels(r_axis, dim.chart_w, dim, 'tick tick-right', 'start') }}
         {# axes legend #}
-        <g class="tick-label" transform="translate(-6, {{ dim.chart_h + 24 }})">
-          <text x="0" y="0" text-anchor="end" dominant-baseline="middle" class="tick">Weekly</text>
-          <text x="0" y="12"   text-anchor="end"   dominant-baseline="middle" class="tick">Installs</text>
-        </g>
-        <g class="tick-label" transform="translate({{ dim.chart_w + 6 }}, {{ dim.chart_h + 24 }})">
-          <text x="0" y="0" text-anchor="start"   dominant-baseline="middle" class="tick tick-right">Weekly</text>
-          <text x="0"  y="12"   text-anchor="start" dominant-baseline="middle" class="tick tick-right">Upgrades</text>
-        </g>
+        {{ draw_text(-6,              dim.chart_h + 24, 'end',   ['Weekly', 'Installs']) }}
+        {{ draw_text(dim.chart_w + 6, dim.chart_h + 24, 'start', ['Weekly', 'Upgrades']) }}
 
         {# x-axis #}
         {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
@@ -240,4 +234,13 @@
 
 {% macro line(x1, y1, x2, y2, class='') %}
   <line x1="{{ x1 }}" y1="{{ y1 }}" x2="{{ x2 }}" y2="{{ y2 }}" class="{{ class }}" />
+{% endmacro %}
+
+{% macro draw_text(x, y, anchor, lines=[], step=12) %}
+  {% set cls = (anchor == 'end') and 'tick' or 'tick tick-right' %}
+  <g class="tick-label" transform="translate({{ x }}, {{ y }})">
+    {% for t in lines %}
+      <text x="0" y="{{ loop.index0 * step }}" text-anchor="{{ anchor }}" dominant-baseline="middle" class="{{ cls }}">{{ t }}</text>
+    {% endfor %}
+  </g>
 {% endmacro %}
