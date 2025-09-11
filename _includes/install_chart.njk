@@ -44,7 +44,7 @@
           {% set day_offset = dates | monday_at(i) | day_offset_of_month_change %}
           {% if day_offset >= 0 %}
             {% set x = i * (dim.bar_w_gap) %}
-            {% set slice_w = (i < (padded_count - 1)) and (dim.bar_w_gap) or dim.bar_w %}
+            {% set slice_w = dim.slice_width_at(i) %}
             {# weeks are newest→oldest left→right; #}
             {# that means Monday is at *right* ("1 -") edge of slice. #}
             {% set xt = x + (slice_w * (1 - (day_offset / 7))) %}
@@ -75,7 +75,7 @@
           {% set y_top_inst = l_axis.y_for(inst) %}
           {% set y_net      = l_axis.y_for(net_val) %}
           {% set y_rem      = y_net - rem_h %}
-          {% set slice_w = (i < (padded_count - 1)) and (dim.bar_w_gap) or dim.bar_w %}
+          {% set slice_w = dim.slice_width_at(i) %}
 
           {% set title_text = dates[i] ~ ': installs: ' ~ (inst | grouping) ~ ', removals: ' ~ (rem | grouping) ~ ', upgrades: ' ~ (up | grouping) %}
 
@@ -99,7 +99,7 @@
         {# render empty week slices to fill padded area width a grid #}
         {% for i in range(count, padded_count) %}
           {% set x = i * (dim.bar_w_gap) %}
-          {% set slice_w = (i < (padded_count - 1)) and (dim.bar_w_gap) or dim.bar_w %}
+          {% set slice_w = dim.slice_width_at(i) %}
           <g class="week">
             {{ draw_grid_lines(i, x, slice_w, dim, l_axis) }}
           </g>

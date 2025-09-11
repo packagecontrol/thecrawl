@@ -84,6 +84,7 @@ export function dimensions(dim, total_count) {
     svg_w: dim.left + chart_w + dim.right,
     svg_h: dim.top + dim.chart_h + dim.bottom,
     axis_for: (arr, target) => axis_for(arr, target, dim.chart_h),
+    slice_width_at: i => (i < (total_count - 1)) ? bar_w_gap : dim.bar_w,
   }
 }
 
@@ -357,6 +358,25 @@ if (import.meta.vitest) {
       const monday = new Date(ymd + 'T00:00:00Z')
       expect(monday.getUTCDay()).toBe(1)
       expect(day_offset_of_month_change(monday)).toBe(expected)
+    })
+  })
+
+  describe('dimensions.slice_width_at', () => {
+    it('uses bar_w_gap except for last slice', () => {
+      const base = { bar_w: 12, gap: 1, top: 0, bottom: 0, left: 0, right: 0, chart_h: 100 }
+      const total_count = 3
+      const d = dimensions(base, total_count)
+      expect(d.bar_w_gap).toBe(13)
+      expect(d.slice_width_at(0)).toBe(13)
+      expect(d.slice_width_at(1)).toBe(13)
+      expect(d.slice_width_at(2)).toBe(12)
+    })
+
+    it('handles single-slice charts', () => {
+      const base = { bar_w: 10, gap: 5, top: 0, bottom: 0, left: 0, right: 0, chart_h: 50 }
+      const d = dimensions(base, 1)
+      expect(d.bar_w_gap).toBe(15)
+      expect(d.slice_width_at(0)).toBe(10)
     })
   })
 }
