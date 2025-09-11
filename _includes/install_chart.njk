@@ -75,11 +75,7 @@
           {% set y_top_inst = l_axis.y_for(inst) %}
           {% set y_net      = l_axis.y_for(net_val) %}
           {% set y_rem      = y_net - rem_h %}
-          {% if has_padding or (i < (count - 1)) %}
-            {% set slice_w = dim.bar_w_gap %}
-          {% else %}
-            {% set slice_w = dim.bar_w %}
-          {% endif %}
+          {% set slice_w = (i < (padded_count - 1)) and (dim.bar_w_gap) or dim.bar_w %}
 
           {% set title_text = dates[i] ~ ': installs: ' ~ (inst | grouping) ~ ', removals: ' ~ (rem | grouping) ~ ', upgrades: ' ~ (up | grouping) %}
 
