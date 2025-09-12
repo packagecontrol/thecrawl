@@ -28,8 +28,8 @@
         {{ draw_axis_with_labels(l_axis, 0, dim, 'tick') }}
         {{ draw_axis_with_labels(r_axis, dim.chart_w, dim, 'tick tick-right', 'start') }}
         {# axes legend #}
-        {{ draw_text(-6,              dim.chart_h + 24, 'end',   ['Weekly', 'Installs']) }}
-        {{ draw_text(dim.chart_w + 6, dim.chart_h + 24, 'start', ['Weekly', 'Upgrades']) }}
+        {{ multiline_text(['Weekly', 'Installs'], -6,              dim.chart_h + 24, anchor='end') }}
+        {{ multiline_text(['Weekly', 'Upgrades'], dim.chart_w + 6, dim.chart_h + 24) }}
 
         {# x-axis #}
         {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
@@ -46,10 +46,11 @@
             {# i + 1 to show the name of the next month #}
             {% set label = dates | monday_at(i + 1) | abbr_month %}
             {% set css_class = (i < count - 1) and 'x-month-label' or 'x-month-label x-month-label-dimmed' %}
-            <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 12 }}" text-anchor="start" dominant-baseline="middle" class="{{ css_class }}">{{ label }}</text>
             {% if label == 'Dec' %}
-              {% set label = dates | monday_at(i + 1) | full_year %}
-              <text x="{{ xt + 2 }}" y="{{ dim.chart_h + 24 }}" text-anchor="start" dominant-baseline="middle" class="{{ css_class }}">{{ label }}</text>
+              {% set year = dates | monday_at(i + 1) | full_year %}
+              {{ multiline_text([label, year], xt + 2, dim.chart_h + 12, css_class) }}
+            {% else %}
+              {{ text(label, xt + 2, dim.chart_h + 12, css_class) }}
             {% endif %}
           {% endif %}
         {% endfor %}
@@ -210,7 +211,7 @@
   {{ line(x_pos, 0, x_pos, dim.chart_h, 'axis') }}
   {% for step in axis.steps | every_other %}
     {% set y = axis.y_for(step) %}
-    <text x="{{ x_pos + (sign * offset) }}" y="{{ y }}" text-anchor="{{ text_anchor }}" dominant-baseline="middle" class="{{ css_class }}">{{ step | compact }}</text>
+    {{ text(step | compact, x_pos + (sign * offset), y, css_class, text_anchor) }}
   {% endfor %}
 {% endmacro %}
 
@@ -236,11 +237,15 @@
   <line x1="{{ x1 }}" y1="{{ y1 }}" x2="{{ x2 }}" y2="{{ y2 }}" class="{{ class }}" />
 {% endmacro %}
 
-{% macro draw_text(x, y, anchor, lines=[], step=12) %}
-  {% set cls = (anchor == 'end') and 'tick' or 'tick tick-right' %}
+{% macro text(t, x, y, class='', anchor='start', baseline='middle') %}
+  <text x="{{ x }}" y="{{ y }}" text-anchor="{{ anchor }}" dominant-baseline="{{ baseline }}" class="{{ class }}">{{ t }}</text>
+{% endmacro %}
+
+{% macro multiline_text(lines, x, y, class='', anchor='start', line_height=12) %}
+  {% set cls = class or ((anchor == 'end') and 'tick' or 'tick tick-right') %}
   <g class="tick-label" transform="translate({{ x }}, {{ y }})">
     {% for t in lines %}
-      <text x="0" y="{{ loop.index0 * step }}" text-anchor="{{ anchor }}" dominant-baseline="middle" class="{{ cls }}">{{ t }}</text>
+      {{ text(t, 0, loop.index0 * line_height, cls, anchor) }}
     {% endfor %}
   </g>
 {% endmacro %}
