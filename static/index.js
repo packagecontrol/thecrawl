@@ -136,8 +136,14 @@ window.addEventListener('popstate', (event) => {
   }
 })
 
-// Add event delegation for label links
+// Add event delegation for search links
 document.addEventListener('click', (event) => {
+  // but only on the homepage ...
+  if (!document.documentElement.classList.contains('home')) {
+    return
+  }
+
+  // ... and only if you clicked an anchor with an href
   const target = event.target.closest('a')
   if (!target || !target.href) {
     return
@@ -148,6 +154,8 @@ document.addEventListener('click', (event) => {
   const urlParams = new URLSearchParams(window.location.search)
 
   let newQuery = url.searchParams.get('q')
+
+  // ... and only if you clicked something that would generate a "q" query
   if (newQuery === null) {
     return
   }
