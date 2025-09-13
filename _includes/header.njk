@@ -3,17 +3,12 @@
 <header>
 
   <div class="left-side">
-    {% if page.url == '/' %}
-      <h1 class="brand">
+    {% set tag = 'h1' if page.url == '/' else 'p' %}
+    <{{ tag }} class="brand">
+      <a href="/">
         Package Control <span class="hot">R</span>
-      </h1>
-    {% else %}
-      <p class="brand">
-        <a href="/">
-          Package Control <span class="hot">R</span>
-        </a>
-      </p>
-    {% endif %}
+      </a>
+    </{{ tag }}>
 
     <p class="tagline">The Sublime Text package directory, {{ [
         "re-imagined",
