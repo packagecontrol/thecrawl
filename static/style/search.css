@@ -27,6 +27,15 @@
   }
 }
 
+@keyframes fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 input {
   background: var(--background-1);
   color: var(--foreground-1);
@@ -171,7 +180,8 @@ form.compact {
   @media (max-width: 50rem) {
     display: none;
 
-    &.has-attention {
+    &.has-attention,
+    &.going-away {
       display: flex;
       position: absolute;
       top: 0;
@@ -185,6 +195,10 @@ form.compact {
       > * {
         flex: 1;
       }
+    }
+
+    &.going-away {
+      animation: var(--animation-timing) forwards fade;
     }
   }
 }

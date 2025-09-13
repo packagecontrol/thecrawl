@@ -13,6 +13,7 @@ let timer
 function stopAnimations() {
   window.clearTimeout(timer)
   select_button.removeEventListener('animationend', goneAway)
+  form.removeEventListener('animationend', goneAway)
   form.classList.remove('going-away')
 }
 
@@ -21,6 +22,7 @@ function goAway() {
     form.classList.remove('has-attention')
     form.classList.add('going-away')
     select_button.addEventListener('animationend', goneAway)
+    form.addEventListener('animationend', goneAway)
   }
 }
 
