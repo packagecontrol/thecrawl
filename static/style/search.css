@@ -150,8 +150,7 @@ form.compact {
     }
   }
 
-  &.has-focus,
-  &.has-input {
+  &.has-attention {
     .search-controls {
       input {
         width: 12em;
@@ -173,7 +172,7 @@ form.compact {
   @media (max-width: 50rem) {
     display: none;
 
-    &.is-visible {
+    &.has-attention {
       display: flex;
       position: absolute;
       top: 0;

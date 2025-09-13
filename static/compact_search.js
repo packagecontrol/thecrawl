@@ -5,54 +5,53 @@
 const form = document.forms.search
 const input = form.elements['q']
 const select = form.elements['sort']
-const button = select.closest('.button')
+const select_button = select.closest('.button')
+const select_label = form.querySelector(`label[for="${select.id}"]`)
 
 let timer
 
-function reset() {
+function stopAnimations() {
   window.clearTimeout(timer)
-  button.removeEventListener('animationend', goneAway)
+  select_button.removeEventListener('animationend', goneAway)
   form.classList.remove('going-away')
 }
 
 function goAway() {
-  form.classList.remove('has-focus')
-  if (!form.classList.contains('has-input')) {
+  if (!input.value) {
+    form.classList.remove('has-attention')
     form.classList.add('going-away')
-    button.addEventListener('animationend', goneAway)
+    select_button.addEventListener('animationend', goneAway)
   }
 }
 
 function goneAway() {
   form.classList.remove('going-away')
-  form.classList.remove('is-visible')
+  form.classList.remove('has-attention')
 }
 
-input.addEventListener('input', () => {
-  reset()
-  if (input.value.length > 0) {
-    form.classList.add('has-input')
-  } else {
-    form.classList.remove('has-input')
-  }
+// prevent various clumsly clicks on the select label from hiding the form
+select_label.addEventListener('dblclick', () => {
+  select.focus()
+})
+select_label.addEventListener('mouseup', () => {
+  select.focus()
 })
 
-Array.from(form.elements).forEach((el) => {
-  el.addEventListener('focus', () => {
-    reset()
-    form.classList.add('has-focus')
-  })
-
-  el.addEventListener('blur', () => {
-    timer = window.setTimeout(() => {
-      goAway()
-    }, 500)
-  })
+// when anything in the form receives focus ensure it's available for interaction
+form.addEventListener('focusin', () => {
+  stopAnimations()
+  form.classList.add('has-attention')
+})
+// and when focus leaves again, after a short delay, the user probably lost interest
+form.addEventListener('focusout', () => {
+  timer = window.setTimeout(() => {
+    goAway()
+  }, 500)
 })
 
 document.querySelector('[href="/#search-field"]').onclick = (event) => {
   event.preventDefault()
   event.stopPropagation()
-  form.classList.add('is-visible')
+  form.classList.add('has-attention')
   input.focus()
 }
