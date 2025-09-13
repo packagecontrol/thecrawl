@@ -58,6 +58,7 @@ select {
   background: var(--background-1);
   border-radius: 3px;
   border: 1px solid var(--background-3);
+  outline-color: transparent;
   transition: border .2s ease-in-out, outline .2s ease-in-out;
   overflow: hidden;
 
@@ -97,6 +98,7 @@ select {
     margin: 6px;
     padding: 0;
     gap: 0;
+    outline-color: transparent;
 
     label,
     select {
