@@ -31,6 +31,11 @@ function goneAway() {
   form.classList.remove('has-attention')
 }
 
+input.addEventListener('change', () => {
+  stopAnimations()
+  form.classList.add('has-attention')
+})
+
 // prevent various clumsly clicks on the select label from hiding the form
 select_label.addEventListener('dblclick', () => {
   select.focus()
