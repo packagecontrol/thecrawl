@@ -169,7 +169,7 @@ document.addEventListener('click', (event) => {
     }
   }
 
-  input.value = newQuery
+  input.value = newQuery.trim()
 
   const inputEvent = new Event('input', { bubbles: true })
   const changeEvent = new Event('change', { bubbles: true })
