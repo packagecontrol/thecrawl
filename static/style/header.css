@@ -19,11 +19,15 @@ header {
     padding: 0;
   }
 
+  .left-side {
+    max-width: 78%;
+  }
+
   .right-side {
     flex: 1;
     display: flex;
     justify-content: flex-end;
-    align-items: center;
+    align-items: baseline;
   }
 
   .brand {
@@ -45,13 +49,9 @@ header {
 
     + .tagline {
       padding-top: 0;
-      margin-top: -4px;
       margin-bottom: 0;
       font-size: inherit;
-
-      @media (min-width: 480px) {
-        margin-top: -2px;
-      }
+      line-height: 1.33;
     }
 
     h1& {
@@ -60,16 +60,15 @@ header {
       @media (min-width: 480px) {
         font-size: 38px;
         line-height: 52px;
-
-        + .tagline {
-          margin-top: -4px;
-        }
       }
     }
   }
 
   nav {
-    line-height: 26px;
+    line-height: 47px;
+    @media (max-width: 479px) {
+      line-height: 31px;
+    }
 
     > *:not(:last-child) {
       margin-right: 1em;
@@ -80,9 +79,5 @@ header {
         display: none;
       }
     }
-  }
-
-  &:has(h1) nav {
-    margin-top: -6px;
   }
 }
