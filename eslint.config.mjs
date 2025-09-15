@@ -19,7 +19,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['eleventy.config.mjs'],
+    files: ['eleventy.*.mjs'],
     languageOptions: {
       globals: globals.node,
     },

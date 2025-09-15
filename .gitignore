@@ -54,3 +54,5 @@ _site/*
 workspace.json
 libraries.json
 stats.json
+channel.json
+registry.json

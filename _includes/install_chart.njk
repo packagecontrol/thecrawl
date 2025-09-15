@@ -1,0 +1,251 @@
+{% macro chart(installs=[], removals=[], upgrades=[], dates=[]) %}
+  {% set count = installs | length %}
+  {# pad chart width to a fixed 53 weeks to avoid width changes #}
+  {% set padded_count = (count | at_least(53)) %}
+  {% set has_padding = padded_count > count %}
+  {% if count > 0 %}
+
+  {# dimensions #}
+  {% set dim = {
+    bar_w: 12,
+    gap: 1,
+    upgrade_pt_r: 2.5,
+    top: 10,
+    bottom: 42,
+    left: 50,
+    right: 60,
+    chart_h: 120
+  } | dimensions(padded_count) %}
+
+  {# compute axes for 5 ticks #}
+  {% set l_axis = dim.axis_for(installs, 5) %}
+  {% set r_axis = dim.axis_for(upgrades, 5) %}
+
+  <div class="install-chart">
+    <svg viewBox="0 0 {{ dim.svg_w }} {{ dim.svg_h }}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Weekly installs">
+      <g transform="translate({{ dim.left }}, {{ dim.top }})">
+        {# left and right axis with its tick labels #}
+        {{ draw_axis_with_labels(l_axis, 0, dim, 'tick') }}
+        {{ draw_axis_with_labels(r_axis, dim.chart_w, dim, 'tick tick-right', 'start') }}
+        {# axes legend #}
+        {{ multiline_text(['Weekly', 'Installs'], -6,              dim.chart_h + 24, anchor='end') }}
+        {{ multiline_text(['Weekly', 'Upgrades'], dim.chart_w + 6, dim.chart_h + 24) }}
+
+        {# x-axis #}
+        {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
+        {# month change ticks over entire chart #}
+        {% for i in range(0, padded_count) %}
+          {% set day_offset = dates | monday_at(i) | day_offset_of_month_change %}
+          {% if day_offset >= 0 %}
+            {% set x = i * (dim.bar_w_gap) %}
+            {% set slice_w = dim.slice_width_at(i) %}
+            {# weeks are newest→oldest left→right; #}
+            {# that means Monday is at *right* ("1 -") edge of slice. #}
+            {% set xt = x + (slice_w * (1 - (day_offset / 7))) %}
+            {{ line(xt, dim.chart_h, xt, dim.chart_h + 12, 'x-month-tick') }}
+            {# i + 1 to show the name of the next month #}
+            {% set label = dates | monday_at(i + 1) | abbr_month %}
+            {% set css_class = (i < count - 1) and 'x-month-label' or 'x-month-label x-month-label-dimmed' %}
+            {% if label == 'Dec' %}
+              {% set year = dates | monday_at(i + 1) | full_year %}
+              {{ multiline_text([label, year], xt + 2, dim.chart_h + 12, css_class) }}
+            {% else %}
+              {{ text(label, xt + 2, dim.chart_h + 12, css_class) }}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {# bars + week overlays #}
+        {% for inst in installs %}
+          {% set i = loop.index0 %}
+          {% set rem = removals[i] %}
+          {% set up = upgrades[i] %}
+          {% set net_val = ((inst - rem) | at_least(0)) %}
+          {% set rem_draw = (rem | at_most(inst)) %}
+
+          {% set net_h  = l_axis.to_px(net_val) %}
+          {% set rem_h  = l_axis.to_px(rem_draw) %}
+
+          {% set x = i * (dim.bar_w_gap) %}
+          {% set y_top_inst = l_axis.y_for(inst) %}
+          {% set y_net      = l_axis.y_for(net_val) %}
+          {% set y_rem      = y_net - rem_h %}
+          {% set slice_w = dim.slice_width_at(i) %}
+
+          {% set title_text = dates[i] ~ ': installs: ' ~ (inst | grouping) ~ ', removals: ' ~ (rem | grouping) ~ ', upgrades: ' ~ (up | grouping) %}
+
+          <g class="week">
+            {# subtle hover background spanning the full slice #}
+            {{ rect(x, 0, slice_w, dim.chart_h, 'week-slice-bg') }}
+
+            {# grid line #}
+            {{ draw_grid_lines(i, x, slice_w, dim, l_axis) }}
+
+            {# the actual bars #}
+            {{ rect(x, y_net, dim.bar_w, net_h, 'bar bar-net', title_text) }}
+            {{ rect(x, y_rem, dim.bar_w, rem_h, 'bar bar-remove', title_text) }}
+
+            {# third bar: invisible hit area from top to top of installs just for the tooltip #}
+            {{ rect(x, 0, dim.bar_w, y_top_inst, 'week-slice-hit', title_text) }}
+
+          </g>
+        {% endfor %}
+
+        {# render empty week slices to fill padded area width a grid #}
+        {% for i in range(count, padded_count) %}
+          {% set x = i * (dim.bar_w_gap) %}
+          {% set slice_w = dim.slice_width_at(i) %}
+          <g class="week">
+            {{ draw_grid_lines(i, x, slice_w, dim, l_axis) }}
+          </g>
+        {% endfor %}
+
+        {# average lines (exclude running week at index 0)
+           - installs: mean(installs[i]) for i >= 1
+           - net installs: mean(max(installs[i] - removals[i], 0)) for i >= 1
+        #}
+        {% set count_excl0 = count - 1 %}
+        {% if count_excl0 > 0 %}
+          {% set sum_inst = (installs | slice(1) | sum) %}
+          {% set sum_rem  = (removals | slice(1) | sum) %}
+          {% set sum_net  = ((sum_inst - sum_rem) | at_least(0)) %}
+          {% set avg_inst = (sum_inst / count_excl0) %}
+          {% set avg_net  = (sum_net  / count_excl0) %}
+          {% set y_avg_inst = l_axis.y_for(avg_inst) %}
+          {% set y_avg_net = l_axis.y_for(avg_net) %}
+          {{ line(0, y_avg_inst, dim.chart_w, y_avg_inst, 'avg-line avg-line-inst') }}
+          {{ line(0, y_avg_net,  dim.chart_w, y_avg_net,  'avg-line avg-line-net') }}
+        {% endif %}
+
+        {# upgrades overlay #}
+        {#
+          upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
+
+          Basics:
+          - A straight polyline would use SVG 'L' commands between points: M x0 y0 L x1 y1 L x2 y2 …
+            That produces sharp corners. To smooth the line we switch to cubic Bézier segments ('C').
+            We start with a first point (M), and then continue with two control points and a segment
+            end-point (C).
+            Refer: https://svg-tutorial.com/editor/cubic-bezier
+
+          - For each curved segment from P1 to P2 we take four points P0, P1, P2, P3
+            (clamping at the ends) and compute the two control points as:
+              C1 = P1 + (P2 − P0) / 6
+              C2 = P2 − (P3 − P1) / 6
+            This is a common Catmull–Rom to Bézier conversion that yields a smooth line
+            passing through all data points.
+        #}
+        {% set d = '' %}
+        {% if count > 1 %}
+          {# start at second point because week[0] is the running week #}
+          {% set val1 = upgrades[1] %}
+          {% set y_start = r_axis.y_for(val1) %}
+          {% set x_start = 1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+          {#               ^ shift one bar to the right #}
+          {% set d = 'M ' ~ x_start ~ ' ' ~ y_start %}
+
+          {# build cubic segments, starting at i=1 to skip 0→1 #}
+          {% for i in range(1, count - 1) %}
+            {# indices p0, p1, p2, p3 (clamped) #}
+            {% set i0 = ((i - 1) | at_least(1)) %}
+            {% set i1 = i %}
+            {% set i2 = i + 1 %}
+            {% set i3 = ((i + 2) | at_most(count - 1)) %}
+
+            {% set v0 = upgrades[i0] %}
+            {% set v1 = upgrades[i1] %}
+            {% set v2 = upgrades[i2] %}
+            {% set v3 = upgrades[i3] %}
+
+            {% set x0 = i0 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+            {% set x1 = i1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+            {% set x2 = i2 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+            {% set x3 = i3 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+
+            {% set y0 = r_axis.y_for(v0) %}
+            {% set y1 = r_axis.y_for(v1) %}
+            {% set y2 = r_axis.y_for(v2) %}
+            {% set y3 = r_axis.y_for(v3) %}
+
+            {#
+              Catmull–Rom → Bézier control points
+              Intuition: Catmull–Rom defines the tangent at P1 as (P2−P0)/2 and at P2 as (P3−P1)/2
+              (with unit spacing). A cubic Bézier's tangents are 3·(C1−P1) at the start and
+              3·(P2−C2) at the end. T.i.:
+                3·(C1−P1) = (P2−P0)/2
+                   C1−P1  = (P2−P0)/6
+                       C1 = P1 + (P2−P0)/6
+              Likewise:
+                3·(P2−C2) = (P3−P1)/2
+                       C2 = P2 − (P3−P1)/6
+            #}
+            {% set c1x = x1 + (x2 - x0) / 6 %}
+            {% set c1y = y1 + (y2 - y0) / 6 %}
+            {% set c2x = x2 - (x3 - x1) / 6 %}
+            {% set c2y = y2 - (y3 - y1) / 6 %}
+
+            {% set d = d ~ ' C ' ~ c1x ~ ' ' ~ c1y ~ ' ' ~ c2x ~ ' ' ~ c2y ~ ' ' ~ x2 ~ ' ' ~ y2 %}
+          {% endfor %}
+        {% endif %}
+        <path d="{{ d }}" class="upgrades-line" />
+
+        {# Points with tooltips #}
+        {% for val in upgrades %}
+          {% set i = loop.index0 %}
+          {% set y2 = r_axis.y_for(val) %}
+          {% set x2 = i * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+          {% set inst_i = installs[i] %}
+          {% set rem_i = removals[i] %}
+          <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point">
+            <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
+          </circle>
+        {% endfor %}
+      </g>
+    </svg>
+  </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro draw_axis_with_labels(axis, x_pos, dim, css_class='tick', text_anchor='end', offset=6) %}
+  {% set sign = (text_anchor == 'end') and -1 or 1 %}
+  {{ line(x_pos, 0, x_pos, dim.chart_h, 'axis') }}
+  {% for step in axis.steps | every_other %}
+    {% set y = axis.y_for(step) %}
+    {{ text(step | compact, x_pos + (sign * offset), y, css_class, text_anchor) }}
+  {% endfor %}
+{% endmacro %}
+
+{% macro draw_grid_lines(i, x, slice_w, dim, axis) %}
+  <clipPath id="clip-week-{{ i }}">
+    {{ rect(x, 0, slice_w, dim.chart_h) }}
+  </clipPath>
+  <g clip-path="url(#clip-week-{{ i }})">
+    {% for step in axis.steps %}
+      {% set gy = axis.y_for(step) %}
+      {{ line(0, gy, dim.chart_w, gy, 'grid') }}
+    {% endfor %}
+  </g>
+{% endmacro %}
+
+{% macro rect(x, y, w, h, class='', title='') %}
+  <rect x="{{ x }}" y="{{ y }}" width="{{ w }}" height="{{ h }}" class="{{ class }}">
+    {% if title %}<title>{{ title }}</title>{% endif %}
+  </rect>
+{% endmacro %}
+
+{% macro line(x1, y1, x2, y2, class='') %}
+  <line x1="{{ x1 }}" y1="{{ y1 }}" x2="{{ x2 }}" y2="{{ y2 }}" class="{{ class }}" />
+{% endmacro %}
+
+{% macro text(t, x, y, class='', anchor='start', baseline='middle') %}
+  <text x="{{ x }}" y="{{ y }}" text-anchor="{{ anchor }}" dominant-baseline="{{ baseline }}" class="{{ class }}">{{ t }}</text>
+{% endmacro %}
+
+{% macro multiline_text(lines, x, y, class='', anchor='start', line_height=12) %}
+  {% set cls = class or ((anchor == 'end') and 'tick' or 'tick tick-right') %}
+  <g class="tick-label" transform="translate({{ x }}, {{ y }})">
+    {% for t in lines %}
+      {{ text(t, 0, loop.index0 * line_height, cls, anchor) }}
+    {% endfor %}
+  </g>
+{% endmacro %}
