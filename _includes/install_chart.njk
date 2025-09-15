@@ -118,6 +118,8 @@
         {% endif %}
 
         {# upgrades overlay #}
+        {# Only show upgrades line and points when there is at least one upgrade #}
+        {% if (upgrades | sum) > 0 %}
         {#
           upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
 
@@ -200,6 +202,7 @@
             <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
           </circle>
         {% endfor %}
+        {% endif %}
       </g>
     </svg>
   </div>
