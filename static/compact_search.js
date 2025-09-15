@@ -50,7 +50,7 @@ form.addEventListener('focusin', () => {
 form.addEventListener('focusout', () => {
   timer = window.setTimeout(() => {
     goAway()
-  }, 500)
+  }, 200)
 })
 
 document.querySelector('[href="/#search-field"]').onclick = (event) => {
