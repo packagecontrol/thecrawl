@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: ["gh-pages"]
+  pull_request:
+    branches: ["gh-pages"]
 
 permissions:
   contents: write
@@ -11,7 +13,29 @@ permissions:
   id-token: write
 
 jobs:
-  gh-pages-on-push:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+  build-and_deploy:
+    if: ${{ github.event_name == 'push' }}
+    needs: lint-and-test
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -19,8 +43,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: "gh-pages"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -29,9 +51,6 @@ jobs:
 
       - name: Build
         run: make build
-
-      - name: Lint
-        run: make lint
 
       - name: Setup pages
         uses: actions/configure-pages@v4
