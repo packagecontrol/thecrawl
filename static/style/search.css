@@ -75,7 +75,7 @@ select {
     box-sizing: border-box;
   }
 
-  --animation-timing: .3s ease-in-out;
+  --animation-timing: .1s ease-in-out;
 
   &:has(input:focus) {
     border-color: var(--orange-1);
