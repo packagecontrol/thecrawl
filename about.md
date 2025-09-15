@@ -17,7 +17,7 @@ The system consists of several components:
 
 You can start using the new package registry today by replacing the existing channel in your Package Control package settings with the new one:
 
-```sh
+```
 https://packages.sublimetext.io/channel.json
 ```
 
@@ -30,14 +30,14 @@ The original [Package Control](https://packagecontrol.io) is aging. It was built
 
 Outages of certain aspects of the system over the past year or so have spurred members of the community (🙇‍♂️ [@kaste](https://github.com/kaste) and crew) to rebuild it from the ground up.
 
-Building this while keeping the original in place, allows us to iterate towards feature-completeness and stability. This also enables us to find new solutions that better fit the project's new "governance model". Hopefully we will eventually be able to fully replace Will Bond's original project (and domain name), but these things take time to organize properly.
+Building this while keeping the original in place allows us to iterate towards feature-completeness and stability. This also enables us to find new solutions that better fit the project's new "governance model". Hopefully we will eventually be able to fully replace Will Bond's original project (and domain name), but these things take time to organize properly.
 
 ## State of affairs
 
-This project is a work in progress. Some features, like detailed installation statistics, are currently missing. While the project is in flux, much of the user facing aspects of Package Control remains unchanged to avoid disturbing users with potential breaking or disorienting changes.  
+This project is a work in progress. Some features are currently missing, and detailed installation statistics have only collected since August 2025. While the project is in flux, many of the user-facing aspects of Package Control remain unchanged to avoid disturbing users with potential breaking or disorienting changes.  
 The package registry is still in its "old" GitHub repository and might be moved eventually. The "old" website is still up and still much more visible than this new one.
 
-However, the website is functionally very far along, features all packages, and is updated throughout the day with new release versions. And more importantly, the crawler and the `channel.json` it generates are fully functional and very reliable. 
+However, the website is functionally very far along, features all packages, and is updated throughout the day with new release versions. And more importantly, the crawler and the `channel.json` it generates are fully functional and very reliable.
 
 You are very much invited to make the switch and come along for the ride!
 
