@@ -68,13 +68,14 @@ select {
   border-radius: 3px;
   border: 1px solid var(--background-3);
   outline-color: transparent;
-  transition: border var(--animation-timing), outline var(--animation-timing);
+  transition: border .2s ease-in-out, outline .2s ease-in-out;
   overflow: hidden;
 
   * {
     box-sizing: border-box;
   }
 
+  --animation-timing: .3s ease-in-out;
 
   &:has(input:focus) {
     border-color: var(--orange-1);

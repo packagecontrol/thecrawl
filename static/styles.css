@@ -18,8 +18,6 @@ html {
     --side-padding: 1.6rem;
   }
 
-  --animation-timing: .2s ease-in-out;
-
   /* while initializing search, hide package listings */
   &.initializing {
     h1,

@@ -23,7 +23,7 @@
     color: var(--background-1);
     padding: 1px;
     margin: 0 2px;
-    transition: transform var(--animation-timing);
+    transition: transform .2s ease-in-out;
     will-change: transform;
   }
 
