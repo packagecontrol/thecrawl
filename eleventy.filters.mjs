@@ -225,7 +225,7 @@ if (import.meta.vitest) {
       [[[0, 1, 2, 3, 4], 0], [0, 2, 4]],
       [[[0, 1, 2, 3, 4], 1], [1, 3]],
       [[[0, 1, 2, 3, 4], 2], [0, 2, 4]], // start cycles every 2
-      [[[0, 1, 2, 3, 4], -1], [1, 3]],   // negative start handled
+      [[[0, 1, 2, 3, 4], -1], [1, 3]], // negative start handled
     ])('every_other(%j) -> %j', (args, expected) => {
       expect(every_other(...args)).toStrictEqual(expected)
     })
