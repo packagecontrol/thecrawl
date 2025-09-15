@@ -40,6 +40,10 @@ const minisrch = new minisearch({
 })
 minisrch.addAll(data)
 
+// Expose data for other modules and announce readiness
+window.__SEARCH_DATA__ = data
+document.dispatchEvent(new CustomEvent('search-data-ready', { detail: { data } }))
+
 const list = new List()
 
 list.setMinisearch(minisrch)
