@@ -40,9 +40,6 @@ input.addEventListener('change', () => {
 select_label.addEventListener('dblclick', () => {
   select.focus()
 })
-select_label.addEventListener('mouseup', () => {
-  select.focus()
-})
 
 // when anything in the form receives focus ensure it's available for interaction
 form.addEventListener('focusin', () => {
