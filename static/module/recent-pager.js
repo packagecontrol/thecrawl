@@ -112,37 +112,35 @@ class RecentPager {
   }
 
   currentMonthLabel() {
-    // Compute the most common month-year pair
+    // Show actual date range the page is showing
     const start = (this.page - 1) * this.perPage
     const end = Math.min(start + this.perPage, this.items.length)
-
     if (start >= end) return ''
 
-    const counts = new Map()
+    const first = this.items[start]
+    const last = this.items[end - 1]
 
-    for (let i = start; i < end; i++) {
-      const pkg = this.items[i]
-      const ts = Number(pkg.last_modified || 0) * 1000
-      if (!ts) continue // skip unknown months
-      const d = new Date(ts)
-      const keyIndex = d.getUTCFullYear() * 12 + d.getUTCMonth() // sortable index
-      const label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+    const f = new Date(Number(first.last_modified) * 1000)
+    const l = new Date(Number(last.last_modified) * 1000)
 
-      const prev = counts.get(keyIndex)
-      counts.set(keyIndex, { count: (prev?.count || 0) + 1, label })
+    const fY = f.getUTCFullYear(), fM = f.getUTCMonth()
+    const lY = l.getUTCFullYear(), lM = l.getUTCMonth()
+
+    const short = (y, m) => new Date(Date.UTC(y, m, 1)).toLocaleString('en-US', { month: 'short' })
+    const long = (y, m) => new Date(Date.UTC(y, m, 1)).toLocaleString('en-US', { month: 'long' })
+
+    // Same month
+    if (fY === lY && fM === lM) {
+      return `${long(fY, fM)} ${fY}`
     }
 
-    // pick the month with the highest count; tie-breaker: most recent month
-    let bestKey = null
-    let best = { count: -1, label: '' }
-    for (const [key, val] of counts.entries()) {
-      if (val.count > best.count || (val.count === best.count && key > bestKey)) {
-        bestKey = key
-        best = val
-      }
+    // Same year, different months
+    if (fY === lY) {
+      return `${short(lY, lM)}-${short(fY, fM)} ${fY}`
     }
 
-    return best.label
+    // Different years
+    return `${short(lY, lM)} ${lY} - ${short(fY, fM)} ${fY}`
   }
 
   updateMonthIndicator() {
