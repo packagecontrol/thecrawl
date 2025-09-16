@@ -11,6 +11,7 @@ class RecentPager {
     this.page = 1
 
     this.controls = null
+    this.monthIndicator = null
 
     this.init()
   }
@@ -52,7 +53,7 @@ class RecentPager {
 
     const container = document.createElement('div')
     container.className = 'recent-pagination'
-    container.style.cssText = 'align-self:end; gap:0.5rem; font-size:1.3rem; '
+    container.style.cssText = 'display:flex; align-items:center; align-self:end; gap:0.5rem; font-size:1.3rem;'
 
     const controls = document.createElement('div')
     controls.className = 'button-group'
@@ -88,6 +89,13 @@ class RecentPager {
       this.goto(this.page + 1)
     })
 
+    // Month indicator text (to the left of navigation)
+    const month = document.createElement('span')
+    month.className = 'month-indicator'
+    month.style.cssText = 'margin-left:.5rem; color: var(--foreground-3); font-size: 14px; align-self:center;'
+    month.textContent = this.currentMonthLabel()
+    container.appendChild(month)
+
     controls.appendChild(first)
     controls.appendChild(prev)
     controls.appendChild(next)
@@ -98,7 +106,30 @@ class RecentPager {
     header.appendChild(container)
 
     this.controls = { first, prev, next }
+    this.monthIndicator = month
     this.updateButtons()
+    this.updateMonthIndicator()
+  }
+
+  currentMonthLabel() {
+    const start = (this.page - 1) * this.perPage
+    const pkg = this.items[start]
+    if (!pkg) return ''
+    const t = Number(pkg.last_modified || 0) * 1000
+    const d = new Date(t)
+    return d.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+  }
+
+  updateMonthIndicator() {
+    if (!this.monthIndicator) return
+    // Only show from page 2 onwards
+    if (this.page > 1) {
+      this.monthIndicator.style.display = ''
+      this.monthIndicator.textContent = this.currentMonthLabel()
+    }
+    else {
+      this.monthIndicator.style.display = 'none'
+    }
   }
 
   // Switch the recent list from CSS grid to multi-column for top-to-bottom reading
@@ -151,58 +182,7 @@ class RecentPager {
     // replace list contents
     this.ul.querySelectorAll('li').forEach(li => li.remove())
 
-    const monthKey = (pkg) => {
-      const t = Number(pkg.last_modified || 0) * 1000
-      const d = new Date(t)
-      return `${d.getUTCFullYear()}-${d.getUTCMonth()}`
-    }
-    const monthLabel = (pkg) => {
-      const t = Number(pkg.last_modified || 0) * 1000
-      const d = new Date(t)
-      return d.toLocaleString('en-US', { month: 'long', year: 'numeric' })
-    }
-
-    slice.forEach((pkg, i) => {
-      // Starting with page 2, show month separators when month changes
-      if (this.page >= 2) {
-        const isFirstInSlice = i === 0
-        let prevKey
-        if (isFirstInSlice) {
-          const prev = this.items[start - 1]
-          prevKey = prev ? monthKey(prev) : monthKey(pkg)
-        }
-        else {
-          prevKey = monthKey(slice[i - 1])
-        }
-
-        if (prevKey !== monthKey(pkg)) {
-          const liSep = document.createElement('li')
-          liSep.className = 'month-separator'
-          // Month separator should behave like a single line item within a column
-          // liSep.style.cssText = 'display:block;'
-          liSep.style.cssText = 'display: block; break-inside: avoid; margin: -0.6rem 0px 0.4rem;'
-          // this.decorateLi(liSep)
-
-          const p = document.createElement('p')
-          p.textContent = monthLabel(pkg)
-          // inline style: one-line height, full width, rounded, grey bg
-          p.style.cssText = [
-            'margin:0',
-            'padding:0.0rem',
-            'line-height:30px',
-            'width:100%',
-            // 'flex:0 0 auto',
-            'border-radius:6px',
-            // 'background:var(--background-3)',
-            'color:var(--foreground-2)',
-            'text-align:center',
-            'font-size:0.9rem'
-          ].join(';')
-          liSep.appendChild(p)
-          this.ul.appendChild(liSep)
-        }
-      }
-
+    slice.forEach((pkg) => {
       const li = document.createElement('li')
       this.decorateLi(li)
       li.appendChild((new Card(pkg)).render())
@@ -211,6 +191,7 @@ class RecentPager {
 
     // update controls state
     this.updateButtons()
+    this.updateMonthIndicator()
   }
 }
 
