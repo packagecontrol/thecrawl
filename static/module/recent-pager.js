@@ -220,7 +220,7 @@ class RecentPager {
     }
 
     // Different years
-    return `${short(lY, lM)} ${lY} - ${short(fY, fM)} ${fY}`
+    return `${short(fY, fM)} ${fY} - ${short(lY, lM)} ${lY}`
   }
 
   updateMonthIndicator() {
