@@ -22,7 +22,6 @@ class RecentPager {
 
   init() {
     this.renderControls()
-    this.applyColumnLayout()
     this.syncFromUrl()
     // Start on page 1; keep initial static render until user interacts
     // so no need to re-render immediately
@@ -235,28 +234,6 @@ class RecentPager {
     }
   }
 
-  // Switch the recent list from CSS grid to multi-column for top-to-bottom reading
-  applyColumnLayout() {
-    // configure columns on the list
-    this.ul.style.display = 'block'
-    this.ul.style.columnCount = '3'
-    this.ul.style.columnGap = '1rem'
-
-    // ensure existing prerendered items behave well in columns
-    this.styleListItems()
-  }
-
-  styleListItems() {
-    this.ul.querySelectorAll('li').forEach((li) => {
-      this.decorateLi(li)
-    })
-  }
-
-  decorateLi(li) {
-    // keep items intact in a column and add vertical rhythm
-    li.style.cssText = 'display: block; break-inside: avoid; margin: 0 0 1rem 0;'
-  }
-
   updateButtons() {
     const total = this.totalPages()
     const atStart = this.page <= 1
@@ -288,7 +265,6 @@ class RecentPager {
 
     slice.forEach((pkg) => {
       const li = document.createElement('li')
-      this.decorateLi(li)
       li.appendChild((new Card(pkg)).render())
       this.ul.appendChild(li)
     })
