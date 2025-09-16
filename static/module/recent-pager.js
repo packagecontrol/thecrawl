@@ -112,12 +112,37 @@ class RecentPager {
   }
 
   currentMonthLabel() {
+    // Compute the most common month-year pair
     const start = (this.page - 1) * this.perPage
-    const pkg = this.items[start]
-    if (!pkg) return ''
-    const t = Number(pkg.last_modified || 0) * 1000
-    const d = new Date(t)
-    return d.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+    const end = Math.min(start + this.perPage, this.items.length)
+
+    if (start >= end) return ''
+
+    const counts = new Map()
+
+    for (let i = start; i < end; i++) {
+      const pkg = this.items[i]
+      const ts = Number(pkg.last_modified || 0) * 1000
+      if (!ts) continue // skip unknown months
+      const d = new Date(ts)
+      const keyIndex = d.getUTCFullYear() * 12 + d.getUTCMonth() // sortable index
+      const label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+
+      const prev = counts.get(keyIndex)
+      counts.set(keyIndex, { count: (prev?.count || 0) + 1, label })
+    }
+
+    // pick the month with the highest count; tie-breaker: most recent month
+    let bestKey = null
+    let best = { count: -1, label: '' }
+    for (const [key, val] of counts.entries()) {
+      if (val.count > best.count || (val.count === best.count && key > bestKey)) {
+        bestKey = key
+        best = val
+      }
+    }
+
+    return best.label
   }
 
   updateMonthIndicator() {
