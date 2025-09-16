@@ -17,6 +17,7 @@ class RecentPager {
 
   init() {
     this.renderControls()
+    this.applyColumnLayout()
     // Start on page 1; keep initial static render until user interacts
     // so no need to re-render immediately
   }
@@ -100,6 +101,28 @@ class RecentPager {
     this.updateButtons()
   }
 
+  // Switch the recent list from CSS grid to multi-column for top-to-bottom reading
+  applyColumnLayout() {
+    // configure columns on the list
+    this.ul.style.display = 'block'
+    this.ul.style.columnCount = '3'
+    this.ul.style.columnGap = '1rem'
+
+    // ensure existing prerendered items behave well in columns
+    this.styleListItems()
+  }
+
+  styleListItems() {
+    this.ul.querySelectorAll('li').forEach((li) => {
+      this.decorateLi(li)
+    })
+  }
+
+  decorateLi(li) {
+    // keep items intact in a column and add vertical rhythm
+    li.style.cssText = 'display: block; break-inside: avoid; margin: 0 0 1rem 0;'
+  }
+
   updateButtons() {
     const total = this.totalPages()
     const atStart = this.page <= 1
@@ -127,8 +150,61 @@ class RecentPager {
 
     // replace list contents
     this.ul.querySelectorAll('li').forEach(li => li.remove())
-    slice.forEach((pkg) => {
+
+    const monthKey = (pkg) => {
+      const t = Number(pkg.last_modified || 0) * 1000
+      const d = new Date(t)
+      return `${d.getUTCFullYear()}-${d.getUTCMonth()}`
+    }
+    const monthLabel = (pkg) => {
+      const t = Number(pkg.last_modified || 0) * 1000
+      const d = new Date(t)
+      return d.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+    }
+
+    slice.forEach((pkg, i) => {
+      // Starting with page 2, show month separators when month changes
+      if (this.page >= 2) {
+        const isFirstInSlice = i === 0
+        let prevKey
+        if (isFirstInSlice) {
+          const prev = this.items[start - 1]
+          prevKey = prev ? monthKey(prev) : monthKey(pkg)
+        }
+        else {
+          prevKey = monthKey(slice[i - 1])
+        }
+
+        if (prevKey !== monthKey(pkg)) {
+          const liSep = document.createElement('li')
+          liSep.className = 'month-separator'
+          // Month separator should behave like a single line item within a column
+          // liSep.style.cssText = 'display:block;'
+          liSep.style.cssText = 'display: block; break-inside: avoid; margin: -0.6rem 0px 0.4rem;'
+          // this.decorateLi(liSep)
+
+          const p = document.createElement('p')
+          p.textContent = monthLabel(pkg)
+          // inline style: one-line height, full width, rounded, grey bg
+          p.style.cssText = [
+            'margin:0',
+            'padding:0.0rem',
+            'line-height:30px',
+            'width:100%',
+            // 'flex:0 0 auto',
+            'border-radius:6px',
+            // 'background:var(--background-3)',
+            'color:var(--foreground-2)',
+            'text-align:center',
+            'font-size:0.9rem'
+          ].join(';')
+          liSep.appendChild(p)
+          this.ul.appendChild(liSep)
+        }
+      }
+
       const li = document.createElement('li')
+      this.decorateLi(li)
       li.appendChild((new Card(pkg)).render())
       this.ul.appendChild(li)
     })
