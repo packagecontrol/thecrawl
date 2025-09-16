@@ -12,6 +12,8 @@ class RecentPager {
 
     this.controls = null
     this.monthIndicator = null
+    this.queryParam = 'recent'
+    this.popStateHandler = null
 
     this.init()
   }
@@ -19,6 +21,8 @@ class RecentPager {
   init() {
     this.renderControls()
     this.applyColumnLayout()
+    this.syncFromUrl()
+    this.bindPopState()
     // Start on page 1; keep initial static render until user interacts
     // so no need to re-render immediately
   }
@@ -111,6 +115,98 @@ class RecentPager {
     this.updateMonthIndicator()
   }
 
+  bindPopState() {
+    if (this.popStateHandler) return
+    this.popStateHandler = (event) => {
+      const fromState = event.state && event.state[this.queryParam]
+      const timestamp = fromState ?? this.timestampFromUrl()
+      const desiredPage = this.pageForTimestamp(timestamp)
+      this.goto(desiredPage, { updateHistory: false })
+    }
+    window.addEventListener('popstate', this.popStateHandler)
+  }
+
+  syncFromUrl() {
+    if (!this.items.length) return
+    const timestamp = this.timestampFromUrl()
+    const desiredPage = this.pageForTimestamp(timestamp)
+    if (desiredPage > 1) {
+      this.goto(desiredPage, { updateHistory: false })
+    }
+    this.updateHistory({ method: 'replace' })
+  }
+
+  timestampFromUrl() {
+    try {
+      const url = new URL(window.location.href)
+      return url.searchParams.get(this.queryParam)
+    }
+    catch {
+      return null
+    }
+  }
+
+  pageForTimestamp(timestamp) {
+    if (!timestamp) return 1
+    const value = String(timestamp)
+    const total = this.totalPages()
+
+    for (let page = 1; page <= total; page++) {
+      if (this.pageTimestamp(page) === value) {
+        return page
+      }
+    }
+
+    const numeric = Number(value)
+    if (!Number.isNaN(numeric)) {
+      const index = this.items.findIndex(item => Number(item.last_modified || 0) <= numeric)
+      if (index !== -1) {
+        const page = Math.floor(index / this.perPage) + 1
+        return Math.min(total, Math.max(page, 1))
+      }
+    }
+
+    return 1
+  }
+
+  pageStartIndex(page) {
+    return Math.max(0, (page - 1) * this.perPage)
+  }
+
+  pageTimestamp(page = this.page) {
+    const item = this.items[this.pageStartIndex(page)]
+    return item && item.last_modified != null ? String(item.last_modified) : null
+  }
+
+  updateHistory({ method = 'push' } = {}) {
+    if (!window.history) return
+
+    const timestamp = this.pageTimestamp()
+    let url
+    try {
+      url = new URL(window.location.href)
+    }
+    catch {
+      return
+    }
+
+    if (timestamp) {
+      url.searchParams.set(this.queryParam, timestamp)
+    }
+    else {
+      url.searchParams.delete(this.queryParam)
+    }
+
+    const state = { [this.queryParam]: timestamp }
+
+    if (method === 'replace' && typeof window.history.replaceState === 'function') {
+      window.history.replaceState(state, '', url)
+    }
+    else if (typeof window.history.pushState === 'function') {
+      window.history.pushState(state, '', url)
+    }
+  }
+
   currentMonthLabel() {
     // Show actual date range the page is showing
     const start = (this.page - 1) * this.perPage
@@ -191,7 +287,8 @@ class RecentPager {
     })
   }
 
-  goto(page) {
+  goto(page, options = {}) {
+    const { updateHistory = true } = options
     const total = this.totalPages()
     const newPage = Math.min(Math.max(1, page), total)
     if (newPage === this.page) return
@@ -215,6 +312,10 @@ class RecentPager {
     // update controls state
     this.updateButtons()
     this.updateMonthIndicator()
+
+    if (updateHistory) {
+      this.updateHistory({ method: 'push' })
+    }
   }
 }
 
