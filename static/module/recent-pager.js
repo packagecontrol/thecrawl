@@ -174,6 +174,7 @@ class RecentPager {
   }
 
   pageTimestamp(page = this.page) {
+    if (page <= 1) return null
     const item = this.items[this.pageStartIndex(page)]
     return item && item.last_modified != null ? String(item.last_modified) : null
   }
@@ -197,7 +198,7 @@ class RecentPager {
       url.searchParams.delete(this.queryParam)
     }
 
-    const state = { [this.queryParam]: timestamp }
+    const state = timestamp ? { [this.queryParam]: timestamp } : {}
 
     if (method === 'replace' && typeof window.history.replaceState === 'function') {
       window.history.replaceState(state, '', url)
