@@ -1,5 +1,8 @@
 import { Card } from './card.js'
 
+const RECENT_QUERY_PARAM = 'recent'
+const RECENT_PER_PAGE = 9
+
 // Handles client-side paging for the pre-rendered "Recently updated" section
 class RecentPager {
   constructor(items, section) {
@@ -7,12 +10,12 @@ class RecentPager {
     this.section = section
     this.ul = section.querySelector('ul.grid')
     this.h2 = section.querySelector('h2')
-    this.perPage = 9
+    this.perPage = RECENT_PER_PAGE
     this.page = 1
 
     this.controls = null
     this.monthIndicator = null
-    this.queryParam = 'recent'
+    this.queryParam = RECENT_QUERY_PARAM
 
     this.init()
   }
