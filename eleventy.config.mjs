@@ -4,7 +4,7 @@ import { minify } from 'terser'
 import * as util from './eleventy.util.mjs'
 import * as filters from './eleventy.filters.mjs'
 
-function basePackage(pkg, stats, weekly_dates) {
+function basePackage(pkg, stat) {
   // Create a new array of releases with cleaned platforms
   const releases = (pkg.releases || []).map(release => ({
     ...release,
@@ -69,23 +69,9 @@ function basePackage(pkg, stats, weekly_dates) {
     }
   }
 
-  // Remove duplicate platforms
-  const total_installs = stats?.installs?.totals ?? 0
-  const total_removals = stats?.removals?.totals ?? 0
+  const total_installs = stat?.installs?.totals ?? 0
+  const total_removals = stat?.removals?.totals ?? 0
   const net_installs = Math.max(0, total_installs - total_removals)
-  const weekly_installs = stats?.installs?.weekly ?? []
-  const weekly_removals = stats?.removals?.weekly ?? []
-  const weekly_upgrades = stats?.upgrades?.weekly ?? []
-
-  // Trim stats to the package lifetime based on first_seen
-  let end = undefined
-  if (pkg.first_seen && weekly_dates) {
-    const iso = util.isoWeekString(pkg.first_seen)
-    const idx = weekly_dates.indexOf(iso)
-    if (idx >= 0) {
-      end = idx + 1
-    }
-  }
 
   return {
     name: pkg.name,
@@ -101,9 +87,6 @@ function basePackage(pkg, stats, weekly_dates) {
     otherReleases,
     labels: pkg.labels,
     platforms: util.dedupePlatforms(releases),
-    weekly_installs: weekly_installs.slice(0, end),
-    weekly_removals: weekly_removals.slice(0, end),
-    weekly_upgrades: weekly_upgrades.slice(0, end),
   }
 }
 
@@ -194,10 +177,29 @@ export default function (eleventyConfig) {
   eleventyConfig.addCollection('packages', () => {
     return all_packages.map((pkg) => {
       const readme_url = util.getReadmeUrl(pkg.readme)
+      const stat = stats[pkg.name]
+      const weekly_installs = stat?.installs?.weekly ?? []
+      const weekly_removals = stat?.removals?.weekly ?? []
+      const weekly_upgrades = stat?.upgrades?.weekly ?? []
+      const weekly_dates = stats['__weekly_dates']
+
+      // Trim stats to the package lifetime based on first_seen
+      let end = undefined
+      if (pkg.first_seen && weekly_dates) {
+        const iso = util.isoWeekString(pkg.first_seen)
+        const idx = weekly_dates.indexOf(iso)
+        if (idx >= 0) {
+          end = idx + 1
+        }
+      }
+
       return {
+        weekly_dates: weekly_dates,
+        weekly_installs: weekly_installs.slice(0, end),
+        weekly_removals: weekly_removals.slice(0, end),
+        weekly_upgrades: weekly_upgrades.slice(0, end),
         ...pkg,
-        ...basePackage(pkg, stats[pkg.name], stats['__weekly_dates']),
-        weekly_dates: stats['__weekly_dates'],
+        ...basePackage(pkg, stats[pkg.name]),
         ...(readme_url !== pkg.readme ? { readme_url } : {}),
       }
     })
@@ -206,13 +208,13 @@ export default function (eleventyConfig) {
   eleventyConfig.addCollection('searchable_packages', () => {
     return all_packages.map(pkg => ({
       description: pkg.description,
-      ...basePackage(pkg, stats[pkg.name], stats['__weekly_dates']),
+      ...basePackage(pkg, stats[pkg.name]),
     })).sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
 
   eleventyConfig.addCollection('updated_packages', () => {
     return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
-      ...basePackage(pkg, stats[pkg.name], stats['__weekly_dates']),
+      ...basePackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.last_modified ?? '1970-01-01 00:00:00') - new Date(a.last_modified ?? '1970-01-01 00:00:00')
     }).slice(0, 9)
@@ -220,7 +222,7 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addCollection('newest_packages', () => {
     return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
-      ...basePackage(pkg, stats[pkg.name], stats['__weekly_dates']),
+      ...basePackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
       return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
     }).slice(0, 9)
