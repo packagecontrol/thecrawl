@@ -2,11 +2,10 @@
 
 .chart-container {
   max-width: 800px;
+  margin: 10px 0 18px;
 }
 
 .install-chart {
-  margin: 10px 0 18px;
-
   svg {
     width: 100%;
     height: auto;
@@ -106,5 +105,27 @@
   /* bars behind the weeks */
   .week-slice-hit {
     fill: transparent;
+  }
+}
+
+.legend {
+  font-size: 14px;
+  line-height: 26px;
+  margin-top: 18px;
+  color: var(--foreground-2);
+
+  .color {
+    display: inline-block;
+    background: var(--orange-1);
+    width: 10px;
+    height: 10px;
+    margin-right: 1ex;
+  }
+  .color-net {
+    opacity: .6;
+  }
+  .color-upgrade {
+    background: var(--blue-2);
+    border-radius: 100%;
   }
 }

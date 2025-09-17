@@ -1,4 +1,6 @@
-{% macro chart(installs=[], removals=[], upgrades=[], dates=[]) %}
+{% import "util/macros.njk" as util %}
+
+{% macro chart(installed = 0, installs=[], removals=[], upgrades=[], dates=[]) %}
   {% set count = installs | length %}
   {# pad chart width to a fixed 53 weeks to avoid width changes #}
   {% set padded_count = (count | at_least(53)) %}
@@ -209,6 +211,21 @@
       </g>
     </svg>
   </div>
+
+  <div class="legend">
+    <div class="color"></div>
+    {{ installed | grouping}} installations
+    {%- if avg_net %}
+      (average {{ avg_net | grouping}} per week)
+    {%- endif %}
+    <br>
+    <div class="color color-net"></div>
+    Removals
+    <br>
+    <div class="color color-upgrade"></div>
+    Upgrades
+  </div>
+
   {% endif %}
 {% endmacro %}
 

@@ -62,9 +62,11 @@ summary {
 svg {
   fill: currentColor;
   p > &,
+  span > &,
   a > & {
     /* alignment of icons in text is just slighty off */
-    margin-bottom: -1px;
+    position: relative;
+    bottom: -1px;
   }
 }
 

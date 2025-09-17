@@ -1,4 +1,3 @@
-{% import "_includes/install_chart.njk" as charts %}
 {% import "packages/macros.njk" as pack %}
 
 {% if pkg.releases | length > 1 %}
@@ -7,9 +6,6 @@
   <h2>Version</h2>
 {% endif %}
 
-<div class="chart-container">
-  {{ charts.chart(pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates) }}
-</div>
 {% for version in pkg.releases %}
   <p>
     {{ pack.release(version) }}
@@ -17,14 +13,14 @@
 {% endfor %}
 
 {% if pkg.otherReleases and pkg.otherReleases | length > 0 %}
-<details class="other-releases">
-  <summary>Other releases</summary>
-  <ul>
-    {% for version in pkg.otherReleases %}
-      <li>
-        {{ pack.release(version) }}
-      </li>
-    {% endfor %}
-  </ul>
-</details>
+  <details class="other-releases">
+    <summary>Other releases</summary>
+    <ul>
+      {% for version in pkg.otherReleases %}
+        <li>
+          {{ pack.release(version) }}
+        </li>
+      {% endfor %}
+    </ul>
+  </details>
 {% endif %}
