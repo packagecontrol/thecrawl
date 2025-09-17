@@ -43,12 +43,12 @@
     stroke-width: 1;
   }
   .x-month-label {
-    fill: var(--foreground-3);
+    fill: var(--foreground-2);
     font-size: 12px;
     pointer-events: none;
   }
   .x-month-label-dimmed {
-    opacity: 0.6;
+    fill: var(--foreground-4);
   }
 
   /* weekly installs bars  */
@@ -64,10 +64,7 @@
     fill: var(--orange-2);
   }
 
-  /* upgrades lines and axis */
-  .tick-right {
-    fill: var(--blue-2);
-  }
+  /* upgrades lines */
   .upgrades-line {
     stroke: var(--blue-2);
     stroke-width: 1.4;
