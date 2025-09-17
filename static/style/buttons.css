@@ -33,7 +33,8 @@
   color: var(--foreground-2);
   white-space: nowrap;
   cursor: pointer;
-  transition: color 0.2s ease-in-out, outline .2s ease-in-out;
+  outline-color: transparent;
+  transition: color .2s ease-in-out, outline 2s ease-in-out;
 
   &:hover {
     background: var(--background-4);
