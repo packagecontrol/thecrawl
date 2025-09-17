@@ -1,5 +1,3 @@
-/* Note: the hover styles only work in Chrome */
-
 .chart-container {
   max-width: 800px;
   margin: 10px 0 18px;
@@ -131,7 +129,7 @@
     height: 10px;
     margin-right: 1ex;
   }
-  .color-removal {
+  .color-gross {
     opacity: .6;
   }
   .color-upgrade {

@@ -213,14 +213,15 @@
   </div>
 
   <div class="legend">
-    <div class="color color-install"></div>
-    {{ installed | grouping}} installations
-    {%- if avg_net %}
-      (average {{ avg_net | grouping}} per week)
+    <div class="color color-gross"></div>
+    Installations:
+    {%- if avg_inst %}
+      recent average {{ avg_inst | grouping }} per week,
     {%- endif %}
+    {{ installed | grouping }} in total
     <br>
-    <div class="color color-removal"></div>
-    Removals
+    <div class="color color-net"></div>
+    Installations minus removals
     <br>
     <div class="color color-upgrade"></div>
     Upgrades
