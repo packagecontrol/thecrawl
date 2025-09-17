@@ -3,6 +3,14 @@
 .chart-container {
   max-width: 800px;
   margin: 10px 0 18px;
+
+  @media (min-width: 1200px) {
+    margin: 0 0 0 26px;
+    padding: 26px 0 26px 26px;
+    border-left: 1px solid var(--background-4);
+    width: 100%;
+    float: right;
+  }
 }
 
 .install-chart {
