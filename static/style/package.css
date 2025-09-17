@@ -17,6 +17,17 @@
   font-weight: bold;
 }
 
+.download {
+  color: var(--foreground-3);
+  &:hover {
+    color: var(--orange-2);
+  }
+  svg {
+    position: relative;
+    bottom: -1px;
+  }
+}
+
 .requirement {
   color: var(--foreground-3);
 }

@@ -1,4 +1,5 @@
 {% import "_includes/install_chart.njk" as charts %}
+{% import "packages/macros.njk" as pack %}
 
 {% if pkg.releases | length > 1 %}
   <h2>Versions</h2>
@@ -9,16 +10,9 @@
 <div class="chart-container">
   {{ charts.chart(pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates) }}
 </div>
-{% for release in pkg.releases %}
-  <p><a class="release" href="{{ release.url }}">{{ release.version }}</a>
-  {% if release.sublime_text != "*" %}
-    <span class="requirement">({{ release.sublime_text }})</span>
-  {% endif %}
-  <br>
-  <human-date abbreviate-months always-months clickable datetime="{{ release.date }}">{{ release.date | date_time_format }}</human-date>
-  {% if release.platforms | length > 0 %}
-    — {{ release.platforms | join(', ') }}
-  {% endif %}
+{% for version in pkg.releases %}
+  <p>
+    {{ pack.release(version) }}
   </p>
 {% endfor %}
 
@@ -26,17 +20,9 @@
 <details class="other-releases">
   <summary>Other releases</summary>
   <ul>
-    {% for release in pkg.otherReleases %}
+    {% for version in pkg.otherReleases %}
       <li>
-        <a class="release" href="{{ release.url }}">{{ release.version }}</a>
-        {% if release.sublime_text != "*" %}
-          <span class="requirement">({{ release.sublime_text }})</span>
-        {% endif %}
-        <br>
-        <human-date abbreviate-months always-months clickable datetime="{{ release.date }}">{{ release.date | date_time_format }}</human-date>
-        {% if release.platforms | length > 0 %}
-          — {{ release.platforms | join(', ') }}
-        {% endif %}
+        {{ pack.release(version) }}
       </li>
     {% endfor %}
   </ul>
