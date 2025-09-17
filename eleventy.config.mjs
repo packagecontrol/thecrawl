@@ -70,8 +70,6 @@ function basePackage(pkg, stats, weekly_dates) {
   }
 
   // Remove duplicate platforms
-  const allPlatforms = releases.flatMap(release => release.platforms)
-  const uniquePlatforms = Array.from(new Set(allPlatforms))
   const total_installs = stats?.installs?.totals ?? 0
   const total_removals = stats?.removals?.totals ?? 0
   const net_installs = Math.max(0, total_installs - total_removals)
@@ -102,7 +100,7 @@ function basePackage(pkg, stats, weekly_dates) {
     releases: dedupedReleases,
     otherReleases,
     labels: pkg.labels,
-    platforms: uniquePlatforms,
+    platforms: util.dedupePlatforms(releases),
     weekly_installs: weekly_installs.slice(0, end),
     weekly_removals: weekly_removals.slice(0, end),
     weekly_upgrades: weekly_upgrades.slice(0, end),
@@ -141,6 +139,7 @@ export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy('assets')
   eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + util.gitHash : 'static' })
 
+  eleventyConfig.ignores.add('util')
   eleventyConfig.ignores.add('README.md')
 
   const inlineJsCache = new Map()

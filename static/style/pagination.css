@@ -8,20 +8,20 @@
   flex-wrap: wrap;
   justify-content: center;
   margin-top: 1.6rem;
-}
 
-.pagination-controls .button {
-  background: var(--background-3);
-  &:hover:not(:disabled) {
-    background: var(--background-4);
-  }
+  .button {
+    background: var(--background-3);
+    &:hover:not(:disabled) {
+      background: var(--background-4);
+    }
 
-  /* disabled because it's the current page */
-  &:disabled {
-    background: var(--orange-1);
-    color: var(--foreground-1);
-    border-color: var(--orange-1);
-    cursor: revert;
+    /* disabled because it's the current page */
+    &:disabled {
+      background: var(--orange-1);
+      color: var(--foreground-1);
+      border-color: var(--orange-1);
+      cursor: revert;
+    }
   }
 }
 

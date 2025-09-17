@@ -1,3 +1,41 @@
+@keyframes grow {
+  0%   {
+    opacity: 0;
+    width: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  100% {
+    opacity: 1;
+    width: 10rem;
+    margin: 4px;
+  }
+}
+
+@keyframes shrink {
+  0% {
+    opacity: 1;
+    width: 10rem;
+    margin: 4px;
+  }
+  100% {
+    opacity: 0;
+    width: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
+  }
+}
+
+@keyframes fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 input {
   background: var(--background-1);
   color: var(--foreground-1);
@@ -5,7 +43,7 @@ input {
   border-radius: 3px;
   padding: 8px;
   margin-bottom: 11px;
-  font-size: 1rem;
+  font-size: 1em;
   line-height: 1.6;
 }
 
@@ -17,7 +55,7 @@ select {
   border: 1px solid var(--background-3);
   border-radius: 3px;
   padding: 8px;
-  font-size: 1rem;
+  font-size: 1em;
   line-height: 1.6;
   cursor: pointer;
 }
@@ -29,7 +67,15 @@ select {
   background: var(--background-1);
   border-radius: 3px;
   border: 1px solid var(--background-3);
+  outline-color: transparent;
   transition: border .2s ease-in-out, outline .2s ease-in-out;
+  overflow: hidden;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  --animation-timing: .1s ease-in-out;
 
   &:has(input:focus) {
     border-color: var(--orange-1);
@@ -44,6 +90,7 @@ select {
     flex: 1;
     margin-bottom: 0;
     border: none;
+    line-height: 28px;
     &:focus {
       outline: none;
     }
@@ -58,6 +105,14 @@ select {
   .button {
     align-self: center;
     margin: 6px;
+    padding: 0;
+    gap: 0;
+    outline-color: transparent;
+
+    label,
+    select {
+      padding: 3px 8px;
+    }
 
     &:has(select:focus) {
       outline: 2px solid var(--orange-1);
@@ -66,12 +121,85 @@ select {
     @media (max-width: 600px) {
       flex-direction: column;
       align-items: flex-start;
-      gap: 0;
 
       label {
         font-size: 0.8em;
         line-height: 1;
+        width: 100%;
+        padding-bottom: 0;
       }
+      select {
+        padding-top: 0;
+      }
+    }
+  }
+}
+
+
+/* Compact header search: hide Sort By until focus, with animation */
+form.compact {
+  .search-controls {
+    margin-bottom: 0;
+
+    input {
+      line-height: 1;
+      width: 9em;
+      transition: width var(--animation-timing);
+    }
+
+    .button {
+      display: none;
+      animation: var(--animation-timing) forwards grow;
+      font-size: 13px;
+      margin: 4px;
+
+      label {
+        padding-right: 0;
+      }
+    }
+  }
+
+  &.has-attention {
+    .search-controls {
+      input {
+        width: 12em;
+      }
+
+      .button {
+        display: flex;
+      }
+    }
+  }
+
+  &.going-away .button {
+    display: flex;
+    animation: var(--animation-timing) forwards shrink;
+  }
+
+  padding: 0 var(--side-padding) 0 0;
+
+  @media (max-width: 50rem) {
+    display: none;
+
+    &.has-attention,
+    &.going-away {
+      display: flex;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      padding: 8px var(--side-padding);
+      background: var(--background-2);
+      align-items: center;
+
+      > * {
+        flex: 1;
+      }
+    }
+
+    &.going-away {
+      animation: var(--animation-timing) forwards fade;
     }
   }
 }

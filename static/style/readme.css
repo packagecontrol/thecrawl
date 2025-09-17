@@ -1,0 +1,27 @@
+.readme {
+  margin-top: 3.2rem;
+  padding: 1.6em;
+  border-radius: 6px;
+  background: var(--background-1);
+
+  &:empty {
+    display: none;
+  }
+
+  img, video {
+    max-width: 100% !important;
+    height: auto;
+  }
+
+  code {
+    background: var(--highlight);
+  }
+
+  pre {
+    border-radius: 6px;
+    background: var(--background-2);
+  }
+  pre code {
+    background: var(--background-2);
+  }
+}

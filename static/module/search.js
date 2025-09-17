@@ -43,7 +43,8 @@ export class Search {
     if (platform) {
       const platformValue = platform[1] || platform[2]
       queries.push({
-        queries: [platformValue],
+        combineWith: 'OR',
+        queries: [platformValue, 'any'],
         fields: ['platforms'],
       })
       // platform has been handled, remove this filter from the search string

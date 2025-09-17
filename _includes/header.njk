@@ -1,14 +1,16 @@
-<header>
-  <div class="inner">
-    <nav>
-      {% if page.url != "/" %}
-        <a href="/">Home</a>
-      {% endif %}
-      <a href="/about">About / FAQ</a>
-    </nav>
+{% import "util/macros.njk" as util %}
 
-    <h2><a href="/">Package Control <span class="hot">R</span></a></h2>
-    <p>The Sublime Text package directory, {{ [
+<header>
+
+  <div class="left-side">
+    {% set tag = 'h1' if page.url == '/' else 'p' %}
+    <{{ tag }} class="brand">
+      <a href="/">
+        Package Control <span class="hot">R</span>
+      </a>
+    </{{ tag }}>
+
+    <p class="tagline">The Sublime Text package directory, {{ [
         "re-imagined",
         "reassembled",
         "rebooted",
@@ -25,4 +27,22 @@
       ] | random
     }}.</p>
   </div>
+
+  <div class="right-side">
+    {% if isPackagePage %}
+      {{ util.form(collections.packages | length, false) }}
+    {% endif %}
+
+    <nav>
+      {% if isPackagePage %}
+        <a href="/#search-field">
+          {{ util.icon('search') }}
+          <span class="screenreader-only">Search</span>
+        </a>
+      {% endif %}
+
+      <a href="/about">About</a>
+    </nav>
+  </div>
+
 </header>

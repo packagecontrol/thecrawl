@@ -1,12 +1,17 @@
 header {
-  margin-bottom: 22px;
-  padding: 4px var(--side-padding);
+  display: flex;
+  position: relative;
+  margin: 0 auto 16px auto;
+  padding: 11px var(--side-padding) 0 var(--side-padding);
+  max-width: 92rem;
   color: var(--foreground-3);
 
-  .inner {
-    max-width: 92rem;
-    margin: 0 auto;
-    position: relative;
+  &:has(h1) {
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 479px) {
+    font-size: 13px;
   }
 
   * {
@@ -14,25 +19,63 @@ header {
     padding: 0;
   }
 
-  h2 + p {
-    margin-top: -6px;
+  .left-side {
+    max-width: 78%;
   }
 
-  h2 a {
+  .right-side {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+  }
+
+  .brand {
+    margin: 0;
+    padding: 0;
+    font-weight: bold;
+    font-size: 21px;
+    line-height: 26px;
     color: var(--foreground-2);
+
+    a {
+      color: inherit;
+    }
+
+    @media (min-width: 480px) {
+      font-size: 28px;
+      line-height: 38px;
+    }
+
+    + .tagline {
+      padding-top: 0;
+      margin-bottom: 0;
+      font-size: inherit;
+      line-height: 1.33;
+    }
+
+    h1& {
+      color: var(--foreground-1);
+
+      @media (min-width: 480px) {
+        font-size: 38px;
+        line-height: 52px;
+      }
+    }
   }
 
   nav {
-    float: right;
-    line-height: 1.33;
-    padding-top: 1.33rem;
-
-    * + * {
-      margin-left: 1.6em;
+    line-height: 47px;
+    @media (max-width: 479px) {
+      line-height: 31px;
     }
 
-    @media (max-width: 480px) {
-      [href="/"] {
+    > *:not(:last-child) {
+      margin-right: 1em;
+    }
+
+    [href="/#search-field"] {
+      @media (min-width: calc(50rem + 1px)) {
         display: none;
       }
     }

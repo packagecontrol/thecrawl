@@ -7,6 +7,8 @@ export class Pagination {
 
     this.totalPages = 0
     this.itemsPerPage = 24
+
+    this.id = 'pagination'
   }
 
   // calculate pagination and result the items of the current page
@@ -18,13 +20,18 @@ export class Pagination {
     return this.items.slice(startIndex, endIndex)
   }
 
+  clear() {
+    document.getElementById(this.id)?.remove()
+  }
+
   render() {
     if (this.totalPages < 2) {
       return
     }
 
     const pagination = document.createElement('div')
-    pagination.className = 'pagination'
+    pagination.id = this.id
+    pagination.className = this.id
 
     // info text
     const startItem = (this.currentPage - 1) * this.itemsPerPage + 1
@@ -77,8 +84,9 @@ export class Pagination {
 
     if (!isActive) {
       button.addEventListener('click', () => {
-        const input = document.forms.search.elements['q']
-        const sortSelect = document.forms.search.elements['sort-field']
+        const form = document.forms.search
+        const input = form.elements['q']
+        const sortSelect = form.elements['sort']
         const query = input.value.toLowerCase()
         const sortBy = sortSelect.value
 

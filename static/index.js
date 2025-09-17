@@ -1,6 +1,10 @@
 import { List } from './module/list.js'
 import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
 
+/**
+ * Handle search features on the index and package pages.
+ */
+
 // Fetches and returns the search data from the index
 async function fetchSearchData() {
   const res = await fetch('/search/index.json')
@@ -46,8 +50,11 @@ const handleInput = () => {
   if (query === '') {
     list.revertToNormal()
     // Update URL to remove search parameters
-    if (window.location.pathname !== '/' || window.location.search !== '') {
-      history.pushState({}, '', '/')
+    if (window.location.search !== '') {
+      const target = list.initialPath
+      const title = target === '/' ? 'Package Control R' : list.initialTitle
+      history.pushState({ title }, '', target)
+      document.title = title
     }
   }
   else {
@@ -57,7 +64,7 @@ const handleInput = () => {
 
 const form = document.forms.search
 const input = form.elements['q']
-const sortSelect = form.elements['sort-field']
+const sortSelect = form.elements['sort']
 const url_search = window.location.search
 const urlParams = new URLSearchParams(url_search)
 
@@ -89,7 +96,6 @@ input.form.onsubmit = (event) => {
 // Handle input changes (search as you type)
 input.addEventListener('input', () => {
   clearTimeout(debounceTimeout)
-
   debounceTimeout = setTimeout(() => {
     handleInput()
   }, 300) // .3 seconds
@@ -104,7 +110,12 @@ sortSelect.addEventListener('change', (event) => {
 })
 
 // Handle browser back/forward navigation
-window.addEventListener('popstate', () => {
+window.addEventListener('popstate', (event) => {
+  if (event.state && event.state.title) {
+    document.title = event.state.title
+  } else if (list && list.initialTitle) {
+    document.title = list.initialTitle
+  }
   const urlParams = new URLSearchParams(window.location.search)
   const query = urlParams.get('q') || ''
   const sortBy = urlParams.get('sort')
@@ -118,25 +129,61 @@ window.addEventListener('popstate', () => {
     const effectiveSortBy = sortBy || (query ? 'relevance' : 'name')
     sortSelect.value = effectiveSortBy
     list.goSearch(query, effectiveSortBy, page)
-  }
-  else {
+  } else if (window.location.pathname === '/') {
     list.revertToNormal()
+  } else {
+    history.go()
   }
 })
 
-// Add event delegation for label links
+// Add event delegation for search links
 document.addEventListener('click', (event) => {
+  // but only on the homepage ...
+  if (!document.documentElement.classList.contains('home')) {
+    return
+  }
+
+  // ... and only if you clicked an anchor with an href
   const target = event.target.closest('a')
-  if (target && target.href) {
-    const url = new URL(target.href, window.location.origin)
-    const labelQuery = url.searchParams.get('q')
-    if (labelQuery !== null) {
-      event.preventDefault()
-      event.stopPropagation()
-      input.value = labelQuery
-      sortSelect.value = 'relevance'
-      list.scrollUp()
-      list.goSearch(labelQuery.toLowerCase(), 'relevance', 1)
+  if (!target || !target.href) {
+    return
+  }
+
+  const url = new URL(target.href, window.location.origin)
+  const oldQuery = input.value
+  const urlParams = new URLSearchParams(window.location.search)
+
+  let newQuery = url.searchParams.get('q')
+
+  // ... and only if you clicked something that would generate a "q" query
+  if (newQuery === null) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (target.closest('form')) {
+    // the shortcuts in the form should provide an additional narrowing of search,
+    // not replace it
+    if (oldQuery.includes('label:') && newQuery.includes('label:')) {
+      newQuery = oldQuery.replace(/label:("[^"]+"|\S+)/, newQuery)
+    } else if (oldQuery.includes('platform:') && newQuery.includes('platform:')) {
+      newQuery = oldQuery.replace(/platform:("[^"]+"|\S+)/, newQuery)
+    } else if (oldQuery.includes('author:') && newQuery.includes('author:')) {
+      newQuery = oldQuery.replace(/author:("[^"]+"|\S+)/, newQuery)
+    } else {
+      newQuery = oldQuery + ' ' + newQuery
     }
   }
+
+  input.value = newQuery.trim()
+
+  const inputEvent = new Event('input', { bubbles: true })
+  const changeEvent = new Event('change', { bubbles: true })
+  input.dispatchEvent(inputEvent)
+  input.dispatchEvent(changeEvent)
+
+  list.scrollUp()
+  list.goSearch(newQuery.toLowerCase(), urlParams.get('sort') ?? 'relevance', 1)
 })

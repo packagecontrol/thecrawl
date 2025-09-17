@@ -19,7 +19,7 @@ export class Card {
     const install = this.clone.querySelector('ul.stats .installs')
     const warning = this.clone.querySelector('ul.stats .warning')
 
-    if (this.pkg.stars !== '0') {
+    if (this.pkg.stars > 0) {
       star.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub')
       star.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.stars))
     }
@@ -27,7 +27,7 @@ export class Card {
       star.remove()
     }
 
-    if (this.pkg.installed !== '0') {
+    if (this.pkg.installed > 0) {
       install.setAttribute('title', 'Installed ' + this.pkg.installed + (this.pkg.installed < 2 ? ' time' : ' times'))
       install.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.installed))
     }
@@ -83,11 +83,13 @@ export class Card {
   }
 
   platforms(parent) {
-    if (this.pkg.platforms.length < 1) {
+    let os = this.pkg.platforms
+
+    if (os.length < 1 || os.includes('any')) {
       return
     }
 
-    this.pkg.platforms.split(',').forEach((item) => {
+    os.split(',').forEach((item) => {
       parent.appendChild(this.button(item))
     })
   }
