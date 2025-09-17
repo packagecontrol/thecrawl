@@ -12,8 +12,8 @@ isPackagePage: true
 ---
 
 {% import "packages/macros.njk" as pack %}
+{% import "packages/install_chart.njk" as charts %}
 {% import "util/macros.njk" as util %}
-{% import "_includes/install_chart.njk" as charts %}
 
 <section name="package" data-list-target="hideme">
   <h1 data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
