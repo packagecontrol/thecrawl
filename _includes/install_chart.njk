@@ -213,13 +213,13 @@
   </div>
 
   <div class="legend">
-    <div class="color"></div>
+    <div class="color color-install"></div>
     {{ installed | grouping}} installations
     {%- if avg_net %}
       (average {{ avg_net | grouping}} per week)
     {%- endif %}
     <br>
-    <div class="color color-net"></div>
+    <div class="color color-removal"></div>
     Removals
     <br>
     <div class="color color-upgrade"></div>

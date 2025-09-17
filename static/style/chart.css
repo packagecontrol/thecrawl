@@ -129,11 +129,24 @@
     height: 10px;
     margin-right: 1ex;
   }
-  .color-net {
+  .color-removal {
     opacity: .6;
   }
   .color-upgrade {
     background: var(--blue-2);
     border-radius: 100%;
+  }
+}
+
+.chart-container:has(.color-install:hover) .install-chart,
+.chart-container:has(.color-removal:hover) .install-chart {
+  .bar {
+    fill: var(--orange-2);
+  }
+}
+.chart-container:has(.color-upgrade:hover) .install-chart {
+  .upgrades-line,
+  .upgrades-point {
+    opacity: 1;
   }
 }
