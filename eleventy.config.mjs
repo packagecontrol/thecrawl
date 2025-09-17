@@ -69,15 +69,11 @@ function basePackage(pkg, stat) {
     }
   }
 
-  const total_installs = stat?.installs?.totals ?? 0
-  const total_removals = stat?.removals?.totals ?? 0
-  const net_installs = Math.max(0, total_installs - total_removals)
-
   return {
     name: pkg.name,
     author: util.cleanAuthors(pkg.author) ?? [],
     stars: pkg.stars ?? 0,
-    installed: net_installs,
+    installed: stat?.installs?.totals ?? 0,
     created_at: pkg.created_at,
     last_modified: pkg.last_modified,
     archived_at: pkg.archived_at,
