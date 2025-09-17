@@ -51,6 +51,17 @@
     fill: var(--foreground-4);
   }
 
+  /* spacer between the bars */
+  .week-slice-bg {
+    fill: var(--background-2);
+  }
+  /* bars behind the weeks */
+  .week-slice-hit {
+    fill: var(--background-1);
+    opacity: 0;
+    transition: opacity .2s ease-in-out;
+  }
+
   /* weekly installs bars  */
   .bar {
     fill: var(--orange-1);
@@ -62,6 +73,9 @@
   .week:hover .bar,
   .bar:hover {
     fill: var(--orange-2);
+  }
+  .week:hover .week-slice-hit {
+    opacity: .3;
   }
 
   /* upgrades lines */
@@ -101,15 +115,6 @@
   .avg-line-net {
     stroke-width: 1;
     stroke-dasharray: 2 1;
-  }
-
-  /* spacer between the bars */
-  .week-slice-bg {
-    fill: var(--background-2);
-  }
-  /* bars behind the weeks */
-  .week-slice-hit {
-    fill: transparent;
   }
 }
 
