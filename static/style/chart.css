@@ -1,129 +1,110 @@
+/* Note: the hover styles only work in Chrome */
+
 .chart-container {
   max-width: 800px;
 }
+
 .install-chart {
   margin: 10px 0 18px;
-  transition: opacity 0.3s ease-in;
-}
 
-.install-chart svg {
-  width: 100%;
-  height: auto;
-  display: block;
-}
+  svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
 
-.install-chart .axis {
-  stroke: var(--background-4);
-  stroke-linecap: round;
-  stroke-width: 1;
-}
+  .axis {
+    stroke: var(--foreground-4);
+    stroke-linecap: round;
+    stroke-width: 1;
+  }
+  .tick {
+    fill: var(--foreground-2);
+    font-size: 12px;
+  }
+  .grid {
+    stroke: var(--background-3);
+    stroke-linecap: round;
+    stroke-width: 1;
+    pointer-events: none;
+  }
 
-.install-chart .x-month-tick {
-  stroke: var(--background-4);
-  stroke-linecap: round;
-  stroke-width: 1;
-}
+  /* x axis labels */
+  .x-month-tick {
+    stroke: var(--background-4);
+    stroke-linecap: round;
+    stroke-width: 1;
+  }
+  .x-month-label {
+    fill: var(--foreground-3);
+    font-size: 12px;
+    pointer-events: none;
+  }
+  .x-month-label-dimmed {
+    opacity: 0.6;
+  }
 
-.install-chart .x-month-label {
-  fill: var(--foreground-3);
-  font-size: 11px;
-  pointer-events: none;
-}
-.install-chart .x-month-label-dimmed {
-  opacity: 0.6;
-}
+  /* weekly installs bars  */
+  .bar {
+    fill: var(--orange-1);
+    transition: fill .2s ease-in-out;
+  }
+  .bar-remove {
+    opacity: .6;
+  }
+  .week:hover .bar,
+  .bar:hover {
+    fill: var(--orange-2);
+  }
 
-.install-chart .grid {
-  stroke: var(--background-3);
-  stroke-linecap: round;
-  stroke-width: 1;
-  pointer-events: none;
-}
-
-.install-chart .tick {
-  fill: var(--foreground-3);
-  font-size: 12px;
-}
-
-.install-chart .tick-right {
-  fill: var(--blue-1);
-  transition: opacity 0.1s ease-in;
-  opacity: 1;
-}
-
-.install-chart .bar-net {
-  transition: filter 0.1s ease-in;
-  fill: var(--orange-1);
-}
-.install-chart .bar-remove {
-  transition: filter 0.1s ease-in;
-  fill: var(--orange-2);
-}
-
-/* Fallback: highlight hovered rect */
-.install-chart .bar-remove:hover,
-.install-chart .bar-net:hover { filter: brightness(1.05); }
-
-/* Group highlight: when hovering one, highlight all of the same color */
-.install-chart:has(.bar-net:hover) .bar-net { filter: brightness(1.12); }
-.install-chart:has(.bar-remove:hover) .bar-remove { filter: brightness(1.22); }
-
-.install-chart .upgrades-line {
-  transition: opacity 0.1s ease-in;
-  opacity: 0.2;
-  stroke: var(--blue-1);
-  stroke-width: 2;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.install-chart .upgrades-point {
-  fill: var(--blue-2);
-}
-
-.install-chart .avg-line {
-  transition: opacity 0.1s ease-in;
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.install-chart .avg-line-inst {
-  stroke: var(--orange-2);
-  filter: brightness(0.8);
-  stroke-width: 1;
-  stroke-dasharray: 2 1;
-}
-
-.install-chart .avg-line-net {
-  stroke: var(--orange-1);
-  filter: brightness(1.3);
-  stroke-width: 1;
-  stroke-dasharray: 2 1;
-}
-
-.install-chart :hover {
+  /* upgrades lines and axis */
   .tick-right {
-    opacity: 1;
+    fill: var(--blue-2);
   }
   .upgrades-line {
-    opacity: 1;
+    stroke: var(--blue-2);
+    stroke-width: 1.4;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
+  .upgrades-point {
+    fill: var(--blue-2);
+  }
+  .upgrades-line,
+  .upgrades-point {
+    opacity: .6;
+    transition: opacity .2s ease-in-out;
+  }
+  &:has(.upgrades-axis:hover),
+  &:has(.upgrades-line:hover),
+  &:has(.upgrades-point:hover) {
+    .upgrades-line,
+    .upgrades-point {
+      opacity: 1;
+    }
+  }
+
+  /* averages */
   .avg-line {
-    opacity: 1;
+    stroke: var(--orange-2);
+    opacity: 0.6;
   }
-}
+  .avg-line-inst {
+    stroke-width: 1;
+    stroke-dasharray: 2 1;
+  }
+  .avg-line-net {
+    stroke-width: 1;
+    stroke-dasharray: 2 1;
+  }
 
-.install-chart .week-slice-bg {
-  fill: var(--background-2);
-  opacity: 0;
-}
-
-.install-chart .week-slice-hit {
-  fill: transparent;
-}
-
-.install-chart .week:hover .week-slice-bg {
-  opacity: 0.08;
-  filter: brightness(0.7);
+  /* spacer between the bars */
+  .week-slice-bg {
+    fill: var(--background-2);
+  }
+  /* bars behind the weeks */
+  .week-slice-hit {
+    fill: transparent;
+  }
 }

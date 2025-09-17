@@ -9,7 +9,7 @@
   {% set dim = {
     bar_w: 12,
     gap: 1,
-    upgrade_pt_r: 2.5,
+    upgrade_pt_r: 2,
     top: 10,
     bottom: 42,
     left: 50,
@@ -195,13 +195,15 @@
           {% endfor %}
         {% endif %}
 
-        {# axes legend #}
-        {{ multiline_text(['Weekly', 'Installs'], -6,              dim.chart_h + 24, anchor='end') }}
-        {{ multiline_text(['Weekly', 'Upgrades'], dim.chart_w + 6, dim.chart_h + 24) }}
-
-        {# left and right axis with its tick labels #}
+        {# left and right axis with its tick labels and multi-line legend #}
         {{ draw_axis_with_labels(l_axis, 0, dim, 'tick') }}
-        {{ draw_axis_with_labels(r_axis, dim.chart_w, dim, 'tick tick-right', 'start') }}
+        {{ multiline_text(['Weekly', 'Installs'], -6, dim.chart_h + 24, anchor='end') }}
+
+        <g class="upgrades-axis">
+          {{ draw_axis_with_labels(r_axis, dim.chart_w, dim, 'tick tick-right', 'start') }}
+          {{ multiline_text(['Weekly', 'Upgrades'], dim.chart_w + 6, dim.chart_h + 24) }}
+        </g>
+
         {# x-axis #}
         {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
       </g>
