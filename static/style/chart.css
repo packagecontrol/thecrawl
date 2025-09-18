@@ -85,6 +85,8 @@
     stroke-linejoin: round;
   }
   .upgrades-point {
+    stroke: var(--background-2);
+    stroke-width: 1;
     fill: var(--blue-2);
   }
   .upgrades-line,
