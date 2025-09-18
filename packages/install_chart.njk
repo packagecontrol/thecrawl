@@ -216,7 +216,7 @@
     <div class="color color-gross"></div>
     Installations:
     {%- if avg_inst %}
-      recent average {{ avg_inst | grouping }} per week,
+      recent average {{ avg_inst | round | grouping }} per week,
     {%- endif %}
     {{ installed | grouping }} in total
     <br>
