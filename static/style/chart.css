@@ -105,14 +105,11 @@
   .avg-line {
     stroke: var(--orange-2);
     opacity: 0.6;
-  }
-  .avg-line-inst {
     stroke-width: 1;
     stroke-dasharray: 2 1;
   }
   .avg-line-net {
-    stroke-width: 1;
-    stroke-dasharray: 2 1;
+    opacity: 1;
   }
 }
 
