@@ -1,7 +1,6 @@
 {
   "scripts": {
     "dev": "eleventy --serve",
-    "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest --watch"
   },
