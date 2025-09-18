@@ -12,6 +12,7 @@ isPackagePage: true
 ---
 
 {% import "packages/macros.njk" as pack %}
+{% import "packages/install_chart.njk" as charts %}
 {% import "util/macros.njk" as util %}
 
 <section name="package" data-list-target="hideme">
@@ -66,6 +67,10 @@ isPackagePage: true
       {%- endif %}.
     {% endif %}
   </p>
+
+  <div class="chart-container">
+    {{ charts.chart(pkg.installed, pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates) }}
+  </div>
 
   <ul class="stats">
     {{ pack.rip(pkg.removed) }}

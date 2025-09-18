@@ -1,4 +1,6 @@
-{% macro chart(installs=[], removals=[], upgrades=[], dates=[]) %}
+{% import "util/macros.njk" as util %}
+
+{% macro chart(installed = 0, installs=[], removals=[], upgrades=[], dates=[]) %}
   {% set count = installs | length %}
   {# pad chart width to a fixed 53 weeks to avoid width changes #}
   {% set padded_count = (count | at_least(53)) %}
@@ -9,12 +11,12 @@
   {% set dim = {
     bar_w: 12,
     gap: 1,
-    upgrade_pt_r: 2.5,
+    upgrade_pt_r: 2,
     top: 10,
     bottom: 42,
     left: 50,
     right: 60,
-    chart_h: 120
+    chart_h: 160
   } | dimensions(padded_count) %}
 
   {# compute axes for 5 ticks #}
@@ -24,15 +26,6 @@
   <div class="install-chart">
     <svg viewBox="0 0 {{ dim.svg_w }} {{ dim.svg_h }}" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Weekly installs">
       <g transform="translate({{ dim.left }}, {{ dim.top }})">
-        {# left and right axis with its tick labels #}
-        {{ draw_axis_with_labels(l_axis, 0, dim, 'tick') }}
-        {{ draw_axis_with_labels(r_axis, dim.chart_w, dim, 'tick tick-right', 'start') }}
-        {# axes legend #}
-        {{ multiline_text(['Weekly', 'Installs'], -6,              dim.chart_h + 24, anchor='end') }}
-        {{ multiline_text(['Weekly', 'Upgrades'], dim.chart_w + 6, dim.chart_h + 24) }}
-
-        {# x-axis #}
-        {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
         {# month change ticks over entire chart #}
         {% for i in range(0, padded_count) %}
           {% set day_offset = dates | monday_at(i) | day_offset_of_month_change %}
@@ -118,91 +111,122 @@
         {% endif %}
 
         {# upgrades overlay #}
-        {#
-          upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
+        {# Only show upgrades line and points when there is at least one upgrade #}
+        {% if (upgrades | sum) > 0 %}
+          {#
+            upgrades line path (smoothed cubic Bézier via Catmull–Rom approximation)
 
-          Basics:
-          - A straight polyline would use SVG 'L' commands between points: M x0 y0 L x1 y1 L x2 y2 …
-            That produces sharp corners. To smooth the line we switch to cubic Bézier segments ('C').
-            We start with a first point (M), and then continue with two control points and a segment
-            end-point (C).
-            Refer: https://svg-tutorial.com/editor/cubic-bezier
+            Basics:
+            - A straight polyline would use SVG 'L' commands between points: M x0 y0 L x1 y1 L x2 y2 …
+              That produces sharp corners. To smooth the line we switch to cubic Bézier segments ('C').
+              We start with a first point (M), and then continue with two control points and a segment
+              end-point (C).
+              Refer: https://svg-tutorial.com/editor/cubic-bezier
 
-          - For each curved segment from P1 to P2 we take four points P0, P1, P2, P3
-            (clamping at the ends) and compute the two control points as:
-              C1 = P1 + (P2 − P0) / 6
-              C2 = P2 − (P3 − P1) / 6
-            This is a common Catmull–Rom to Bézier conversion that yields a smooth line
-            passing through all data points.
-        #}
-        {% set d = '' %}
-        {% if count > 1 %}
-          {# start at second point because week[0] is the running week #}
-          {% set val1 = upgrades[1] %}
-          {% set y_start = r_axis.y_for(val1) %}
-          {% set x_start = 1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
-          {#               ^ shift one bar to the right #}
-          {% set d = 'M ' ~ x_start ~ ' ' ~ y_start %}
+            - For each curved segment from P1 to P2 we take four points P0, P1, P2, P3
+              (clamping at the ends) and compute the two control points as:
+                C1 = P1 + (P2 − P0) / 6
+                C2 = P2 − (P3 − P1) / 6
+              This is a common Catmull–Rom to Bézier conversion that yields a smooth line
+              passing through all data points.
+          #}
+          {% set d = '' %}
+          {% if count > 1 %}
+            {# start at second point because week[0] is the running week #}
+            {% set val1 = upgrades[1] %}
+            {% set y_start = r_axis.y_for(val1) %}
+            {% set x_start = 1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+            {#               ^ shift one bar to the right #}
+            {% set d = 'M ' ~ x_start ~ ' ' ~ y_start %}
 
-          {# build cubic segments, starting at i=1 to skip 0→1 #}
-          {% for i in range(1, count - 1) %}
-            {# indices p0, p1, p2, p3 (clamped) #}
-            {% set i0 = ((i - 1) | at_least(1)) %}
-            {% set i1 = i %}
-            {% set i2 = i + 1 %}
-            {% set i3 = ((i + 2) | at_most(count - 1)) %}
+            {# build cubic segments, starting at i=1 to skip 0→1 #}
+            {% for i in range(1, count - 1) %}
+              {# indices p0, p1, p2, p3 (clamped) #}
+              {% set i0 = ((i - 1) | at_least(1)) %}
+              {% set i1 = i %}
+              {% set i2 = i + 1 %}
+              {% set i3 = ((i + 2) | at_most(count - 1)) %}
 
-            {% set v0 = upgrades[i0] %}
-            {% set v1 = upgrades[i1] %}
-            {% set v2 = upgrades[i2] %}
-            {% set v3 = upgrades[i3] %}
+              {% set v0 = upgrades[i0] %}
+              {% set v1 = upgrades[i1] %}
+              {% set v2 = upgrades[i2] %}
+              {% set v3 = upgrades[i3] %}
 
-            {% set x0 = i0 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
-            {% set x1 = i1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
-            {% set x2 = i2 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
-            {% set x3 = i3 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+              {% set x0 = i0 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+              {% set x1 = i1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+              {% set x2 = i2 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+              {% set x3 = i3 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
 
-            {% set y0 = r_axis.y_for(v0) %}
-            {% set y1 = r_axis.y_for(v1) %}
-            {% set y2 = r_axis.y_for(v2) %}
-            {% set y3 = r_axis.y_for(v3) %}
+              {% set y0 = r_axis.y_for(v0) %}
+              {% set y1 = r_axis.y_for(v1) %}
+              {% set y2 = r_axis.y_for(v2) %}
+              {% set y3 = r_axis.y_for(v3) %}
 
-            {#
-              Catmull–Rom → Bézier control points
-              Intuition: Catmull–Rom defines the tangent at P1 as (P2−P0)/2 and at P2 as (P3−P1)/2
-              (with unit spacing). A cubic Bézier's tangents are 3·(C1−P1) at the start and
-              3·(P2−C2) at the end. T.i.:
-                3·(C1−P1) = (P2−P0)/2
-                   C1−P1  = (P2−P0)/6
-                       C1 = P1 + (P2−P0)/6
-              Likewise:
-                3·(P2−C2) = (P3−P1)/2
-                       C2 = P2 − (P3−P1)/6
-            #}
-            {% set c1x = x1 + (x2 - x0) / 6 %}
-            {% set c1y = y1 + (y2 - y0) / 6 %}
-            {% set c2x = x2 - (x3 - x1) / 6 %}
-            {% set c2y = y2 - (y3 - y1) / 6 %}
+              {#
+                Catmull–Rom → Bézier control points
+                Intuition: Catmull–Rom defines the tangent at P1 as (P2−P0)/2 and at P2 as (P3−P1)/2
+                (with unit spacing). A cubic Bézier's tangents are 3·(C1−P1) at the start and
+                3·(P2−C2) at the end. T.i.:
+                  3·(C1−P1) = (P2−P0)/2
+                     C1−P1  = (P2−P0)/6
+                         C1 = P1 + (P2−P0)/6
+                Likewise:
+                  3·(P2−C2) = (P3−P1)/2
+                         C2 = P2 − (P3−P1)/6
+              #}
+              {% set c1x = x1 + (x2 - x0) / 6 %}
+              {% set c1y = y1 + (y2 - y0) / 6 %}
+              {% set c2x = x2 - (x3 - x1) / 6 %}
+              {% set c2y = y2 - (y3 - y1) / 6 %}
 
-            {% set d = d ~ ' C ' ~ c1x ~ ' ' ~ c1y ~ ' ' ~ c2x ~ ' ' ~ c2y ~ ' ' ~ x2 ~ ' ' ~ y2 %}
+              {% set d = d ~ ' C ' ~ c1x ~ ' ' ~ c1y ~ ' ' ~ c2x ~ ' ' ~ c2y ~ ' ' ~ x2 ~ ' ' ~ y2 %}
+            {% endfor %}
+          {% endif %}
+          <path d="{{ d }}" class="upgrades-line" />
+
+          {# Points with tooltips #}
+          {% for val in upgrades %}
+            {% set i = loop.index0 %}
+            {% set y2 = r_axis.y_for(val) %}
+            {% set x2 = i * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+            {% set inst_i = installs[i] %}
+            {% set rem_i = removals[i] %}
+            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point">
+              <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
+            </circle>
           {% endfor %}
         {% endif %}
-        <path d="{{ d }}" class="upgrades-line" />
 
-        {# Points with tooltips #}
-        {% for val in upgrades %}
-          {% set i = loop.index0 %}
-          {% set y2 = r_axis.y_for(val) %}
-          {% set x2 = i * (dim.bar_w_gap) + (dim.bar_w / 2) %}
-          {% set inst_i = installs[i] %}
-          {% set rem_i = removals[i] %}
-          <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point">
-            <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
-          </circle>
-        {% endfor %}
+        {# left and right axis with its tick labels and multi-line legend #}
+        {{ draw_axis_with_labels(l_axis, 0, dim, 'tick') }}
+        {{ multiline_text(['Weekly', 'Installs'], -6, dim.chart_h + 24, anchor='end') }}
+
+        <g class="upgrades-axis">
+          {{ draw_axis_with_labels(r_axis, dim.chart_w, dim, 'tick tick-right', 'start') }}
+          {{ multiline_text(['Weekly', 'Upgrades'], dim.chart_w + 6, dim.chart_h + 24) }}
+        </g>
+
+        {# x-axis #}
+        {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
       </g>
     </svg>
   </div>
+
+  <div class="legend">
+    <div class="color color-gross"></div>
+    Installations:
+    {%- if avg_inst %}
+      recent average {{ avg_inst | round | grouping }} per week,
+    {%- endif %}
+    {{ installed | grouping }} in total
+    <br>
+    <div class="color color-net"></div>
+    Installations minus removals
+    <br>
+    <div class="color color-upgrade"></div>
+    Upgrades
+  </div>
+
   {% endif %}
 {% endmacro %}
 

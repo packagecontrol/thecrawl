@@ -22,10 +22,6 @@
   &:hover {
     color: var(--orange-2);
   }
-  svg {
-    position: relative;
-    bottom: -1px;
-  }
 }
 
 .requirement {
@@ -49,7 +45,6 @@ ul.stats {
 
   svg {
     margin-right: 1ex;
-    margin-bottom: -1px;
   }
 }
 
