@@ -147,4 +147,10 @@ human-date[clickable] {
 
 section {
   margin-bottom: 1.6rem;
+
+  &:has(ul.list) {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
