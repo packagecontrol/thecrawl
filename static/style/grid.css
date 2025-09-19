@@ -111,6 +111,13 @@
     justify-content: flex-start;
   }
 
+  .list & .stats {
+    @media (min-width: 480px) {
+      flex-direction: row-reverse;
+      gap: 1em;
+    }
+  }
+
   .list & .description {
     font-size: 12px;
     line-height: 1.33;
