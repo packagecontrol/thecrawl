@@ -32,17 +32,23 @@ export class Sort {
 
       case 'newest':
         return sortedPackages.sort((a, b) => {
-          return new Date(b.created_at) - new Date(a.created_at) // new to old
+          const A = parseInt(a.created_at) || 0
+          const B = parseInt(b.created_at) || 0
+          return B - A // High to low
         })
 
       case 'oldest':
         return sortedPackages.sort((a, b) => {
-          return new Date(a.created_at) - new Date(b.created_at) // old to new
+          const A = parseInt(a.created_at) || 0
+          const B = parseInt(b.created_at) || 0
+          return A - B // Low to high
         })
 
       case 'update':
         return sortedPackages.sort((a, b) => {
-          return new Date(b.last_modified) - new Date(a.last_modified) // new to old
+          const A = parseInt(a.last_modified) || 0
+          const B = parseInt(b.last_modified) || 0
+          return B - A // High to low
         })
 
       case 'author':

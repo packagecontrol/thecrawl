@@ -16,9 +16,6 @@ export class Card {
     this.authors(this.clone.querySelector('p.authors'))
     this.clone.querySelector('p.description').innerHTML = this.pkg.description
 
-    this.clone.querySelector('human-date').innerHTML = this.pkg.last_modified
-    this.clone.querySelector('human-date').setAttribute('datetime', this.pkg.last_modified)
-
     const star = this.clone.querySelector('ul.stats .stars')
     const install = this.clone.querySelector('ul.stats .installs')
     const warning = this.clone.querySelector('ul.stats .warning')
