@@ -117,6 +117,17 @@
     <ul class="stats">
       {{ rip(pkg.removed) }}
       {{ archived(pkg.archived_at) }}
+
+      {% if pkg.last_modified %}
+        <li title="Last updated on">
+          <span aria-hidden="true">{{ util.icon('pencil') }}</span>
+          <span class="screenreader-only">Updated</span>
+          <span class="counter">
+            <human-date abbreviate-months datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
+          </span>
+        </li>
+      {% endif %}
+
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
     </ul>
