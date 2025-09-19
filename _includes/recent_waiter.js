@@ -1,6 +1,9 @@
 ;(function () {
-  const RECENT_QUERY_PARAM = 'recent'
-  const RECENT_PER_PAGE = 9
+  const SECTIONS = [
+    { name: 'recent', queryParam: 'updated_after' },
+    { name: 'newest', queryParam: 'created_after' },
+  ]
+  const PER_PAGE = 9
 
   const template = `<div class="card">
     <h3> <a href="/packages//"> </a> </h3>
@@ -29,39 +32,40 @@
   const templateEl = document.createElement('template')
   templateEl.innerHTML = template
 
-  if (hasRecentQueryParam()) {
-    const section = document.querySelector('section[name="recent"]')
-    const list = section?.querySelector('ul.grid')
-    list.style.visibility = 'hidden'
-    renderRecentPlaceholders()
+  SECTIONS.forEach(({ name, queryParam }) => {
+    if (!hasQueryParam(queryParam)) return
 
-    const timer = setTimeout(() => {
-      list.style.visibility = 'revert'
-    }, 500)
-    document.addEventListener('search-data-ready', () => {
+    const section = document.querySelector(`section[name="${name}"]`)
+    const list = section?.querySelector('ul.grid')
+    if (!list) return
+
+    list.style.visibility = 'hidden'
+    renderPlaceholders(list)
+
+    const onReady = () => {
       list.style.visibility = 'revert'
       clearTimeout(timer)
-    })
-  }
+      document.removeEventListener('search-data-ready', onReady)
+    }
 
-  function hasRecentQueryParam() {
+    const timer = setTimeout(onReady, 500)
+    document.addEventListener('search-data-ready', onReady)
+  })
+
+  function hasQueryParam(param) {
     try {
       const url = new URL(window.location.href)
-      return url.searchParams.has(RECENT_QUERY_PARAM)
+      return url.searchParams.has(param)
     }
     catch {
       return false
     }
   }
 
-  function renderRecentPlaceholders() {
-    const section = document.querySelector('section[name="recent"]')
-    const list = section?.querySelector('ul.grid')
-    if (!list) return
-
+  function renderPlaceholders(list) {
     list.innerHTML = ''
 
-    for (let i = 0; i < RECENT_PER_PAGE; i++) {
+    for (let i = 0; i < PER_PAGE; i++) {
       const li = document.createElement('li')
       li.appendChild(templateEl.content.cloneNode(true))
       list.appendChild(li)

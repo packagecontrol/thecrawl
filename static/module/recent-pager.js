@@ -1,21 +1,28 @@
 import { Card } from './card.js'
 
-const RECENT_QUERY_PARAM = 'recent'
-const RECENT_PER_PAGE = 9
+const DEFAULT_PER_PAGE = 9
 
-// Handles client-side paging for the pre-rendered "Recently updated" section
+// Handles client-side paging for the pre-rendered sections on the home page
 class RecentPager {
-  constructor(items, section) {
+  constructor(items, section, options = {}) {
+    const {
+      perPage = DEFAULT_PER_PAGE,
+      queryParam,
+      timestampField,
+    } = options
+
     this.items = items
+
     this.section = section
     this.ul = section.querySelector('ul.grid')
     this.h2 = section.querySelector('h2')
-    this.perPage = RECENT_PER_PAGE
+    this.perPage = perPage
     this.page = 1
 
     this.controls = null
     this.monthIndicator = null
-    this.queryParam = RECENT_QUERY_PARAM
+    this.queryParam = queryParam
+    this.timestampValue = item => item ? Number(item[timestampField] || 0) : 0
 
     this.init()
   }
@@ -34,10 +41,10 @@ class RecentPager {
   // Ensure a semantic wrapper beside the H2 for controls
   ensureHeaderWrapper() {
     // If already wrapped, skip
-    if (this.section.querySelector('.recent-header')) return
+    if (this.section.querySelector('.pager-header')) return
 
     const header = document.createElement('div')
-    header.className = 'recent-header'
+    header.className = 'pager-header'
     header.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:1rem;'
 
     // Insert header before the H2, then move H2 inside
@@ -50,13 +57,13 @@ class RecentPager {
       return
     }
     // Remove existing controls if any
-    this.section.querySelectorAll('.recent-pagination').forEach(n => n.remove())
+    this.section.querySelectorAll('.pager-pagination').forEach(n => n.remove())
 
     // Ensure we have a flex header row: [H2] [controls]
     this.ensureHeaderWrapper()
 
     const container = document.createElement('div')
-    container.className = 'recent-pagination'
+    container.className = 'pager-pagination'
     container.style.cssText = 'display:flex; align-items:center; align-self:end; gap:0.5rem; font-size:1.3rem;'
 
     const controls = document.createElement('div')
@@ -106,7 +113,7 @@ class RecentPager {
     container.appendChild(controls)
 
     // place controls into header row, to the right of H2
-    const header = this.section.querySelector('.recent-header')
+    const header = this.section.querySelector('.pager-header')
     header.appendChild(container)
 
     this.controls = { first, prev, next }
@@ -148,7 +155,7 @@ class RecentPager {
 
     const numeric = Number(value)
     if (!Number.isNaN(numeric)) {
-      const index = this.items.findIndex(item => Number(item.last_modified || 0) <= numeric)
+      const index = this.items.findIndex(item => this.timestampValue(item) <= numeric)
       if (index !== -1) {
         const page = Math.floor(index / this.perPage) + 1
         return Math.min(total, Math.max(page, 1))
@@ -165,7 +172,7 @@ class RecentPager {
   pageTimestamp(page = this.page) {
     if (page <= 1) return null
     const item = this.items[this.pageStartIndex(page)]
-    return item && item.last_modified != null ? String(item.last_modified) : null
+    return String(this.timestampValue(item))
   }
 
   updateHistory() {
@@ -199,8 +206,8 @@ class RecentPager {
     const first = this.items[start]
     const last = this.items[end - 1]
 
-    const f = new Date(Number(first.last_modified) * 1000)
-    const l = new Date(Number(last.last_modified) * 1000)
+    const f = new Date(this.timestampValue(first) * 1000)
+    const l = new Date(this.timestampValue(last) * 1000)
 
     const fY = f.getUTCFullYear(), fM = f.getUTCMonth()
     const lY = l.getUTCFullYear(), lM = l.getUTCMonth()
@@ -279,15 +286,35 @@ class RecentPager {
   }
 }
 
-// Wait for search data to be ready, then create pager for recent section
+const pagerConfigs = [
+  {
+    section: 'recent',
+    options: {
+      queryParam: 'updated_after',
+      timestampField: 'last_modified',
+    },
+  },
+  {
+    section: 'newest',
+    options: {
+      queryParam: 'created_after',
+      timestampField: 'created_at',
+    },
+  },
+]
+
+// Wait for search data to be ready, then create pagers for the configured sections
 function initWithData(data) {
-  const section = document.querySelector('section[name="recent"]')
-  if (!section) return
+  pagerConfigs.forEach((config) => {
+    const section = document.querySelector(`section[name="${config.section}"]`)
+    if (!section) return
 
-  const items = [...data]
-    .sort((a, b) => (Number(b.last_modified || 0) - Number(a.last_modified || 0)))
+    const field = config.options.timestampField
+    const items = [...data]
+      .sort((a, b) => Number(b[field] || 0) - Number(a[field] || 0))
 
-  new RecentPager(items, section)
+    new RecentPager(items, section, config.options)
+  })
 }
 
 // Initialize immediately if data is already present (race-safe)
