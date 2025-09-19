@@ -15,6 +15,9 @@ build:
 lint:
 	npx eslint
 
+test:
+	npm test
+
 clean:
 	rm -rf _site/*
 
