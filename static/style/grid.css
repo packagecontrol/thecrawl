@@ -88,10 +88,10 @@
     margin: 0;
     line-height: 1.6;
     position: absolute;
-    top: 21px;
+    top: 22px;
     right: 1rem;
     gap: 0;
-    font-size: calc(1rem / 1.33);
+    font-size: 12px;
     background: inherit;
     color: var(--foreground-3);
     svg {
@@ -101,7 +101,7 @@
   }
 
   .labels {
-    font-size: calc(1rem / 1.33);
+    font-size: 12px;
     justify-content: flex-end;
     padding: 0;
     margin: 0;
@@ -109,6 +109,12 @@
 
   .list & .labels {
     justify-content: flex-start;
+  }
+
+  .list & .description {
+    font-size: 12px;
+    line-height: 1.33;
+    margin-top: -17px;
   }
 
   .button-group {

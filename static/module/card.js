@@ -13,7 +13,8 @@ export class Card {
   render() {
     this.clone.querySelector('a').innerHTML = this.pkg.name
     this.clone.querySelector('a').setAttribute('href', this.pkg.permalink)
-    this.authors(this.clone.querySelector('p'))
+    this.authors(this.clone.querySelector('p.authors'))
+    this.clone.querySelector('p.description').innerHTML = this.pkg.description
 
     const star = this.clone.querySelector('ul.stats .stars')
     const install = this.clone.querySelector('ul.stats .installs')
