@@ -66,7 +66,7 @@ class RecentPager {
     const first = document.createElement('button')
     first.className = 'button'
     first.textContent = '«'
-    first.setAttribute('aria-label', 'First page of recently-updated')
+    first.setAttribute('aria-label', 'First page')
     first.setAttribute('title', 'First')
     first.addEventListener('click', (e) => {
       e.preventDefault()
@@ -76,7 +76,7 @@ class RecentPager {
     const prev = document.createElement('button')
     prev.className = 'button'
     prev.textContent = '‹'
-    prev.setAttribute('aria-label', 'Previous recently-updated page')
+    prev.setAttribute('aria-label', 'Previous page')
     prev.setAttribute('title', 'Previous')
     prev.addEventListener('click', (e) => {
       e.preventDefault()
@@ -86,7 +86,7 @@ class RecentPager {
     const next = document.createElement('button')
     next.className = 'button'
     next.textContent = '›'
-    next.setAttribute('aria-label', 'Next recently-updated page')
+    next.setAttribute('aria-label', 'Next page')
     next.setAttribute('title', 'Next')
     next.addEventListener('click', (e) => {
       e.preventDefault()
