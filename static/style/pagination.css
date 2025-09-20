@@ -1,12 +1,10 @@
 .pagination {
-  text-align: center;
   margin: 3.2rem 0 1.6rem 0;
   color: var(--foreground-2);
 }
 
 .pagination-controls {
   flex-wrap: wrap;
-  justify-content: center;
   margin-top: 1.6rem;
 
   .button {
