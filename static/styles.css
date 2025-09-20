@@ -13,8 +13,9 @@
 html {
   height: 100%;
 
+  --max-content: 78rem;
   --side-padding: 1rem;
-  @media (min-width: 78rem) {
+  @media (min-width: var(--max-content)) {
     --side-padding: 1.6rem;
   }
 
@@ -35,7 +36,7 @@ body {
 }
 
 main {
-  max-width: 78rem;
+  max-width: var(--max-content);
   margin: 0 auto;
   padding: 0 var(--side-padding) 3.2rem var(--side-padding);
 

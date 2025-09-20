@@ -1,10 +1,11 @@
 .chart-container {
-  max-width: 800px;
-  margin: 10px 0 18px;
+  --spacing: calc(2 * var(--side-padding));
+  max-width: calc(var(--max-content) * 2/3 - var(--spacing));
+  margin: 10px 0 18px 0;
 
   @media (min-width: 1200px) {
-    margin: 0 0 0 26px;
-    padding: 26px 0 26px 26px;
+    margin: 0 0 0 var(--spacing);
+    padding: var(--spacing) 0 var(--spacing) var(--spacing);
     border-left: 1px solid var(--background-4);
     width: 100%;
     float: right;
