@@ -115,23 +115,21 @@ function compute_step(arr, target) {
        This is the smallest step that could cover the range with ~target ticks
        but it may be an awkward number (e.g. 37, 413, 9876).
     3) Normalize the rough step to a “nice” human-friendly step using a
-       1–2–5 sequence scaled by a power of 10. Concretely, we find the order of
-       magnitude of rough, then round it up to one of {1, 2, 5} × 10^k.
-       Examples: 37 → 50, 413 → 500, 9876 → 10000.
+       1–2–2.5–5 sequence scaled by a power of 10. Concretely, we find the
+       order of magnitude of rough, then round it up to one of
+       {1, 2, 2.5, 5} × 10^k. Examples: 37 → 50, 413 → 500, 9876 → 10000.
   */
   let maximum = Math.max(0, ...arr)
   let approximation = Math.ceil(maximum / target)
   let mag = magnitude(approximation)
-  let lead_number = Math.floor((approximation + mag - 1) / mag)
-  if (lead_number <= 1) {
-    return 1 * mag
-  } else if (lead_number <= 2) {
-    return 2 * mag
-  } else if (lead_number <= 5) {
-    return 5 * mag
-  } else {
-    return 10 * mag
+  let normalized = approximation / mag
+  const niceSteps = [1, 2, 2.5, 5, 10]
+  for (let nice of niceSteps) {
+    if (normalized <= nice) {
+      return nice * mag
+    }
   }
+  return 10 * mag
 }
 
 // magnitude: highest power of 10 <= n
@@ -289,7 +287,10 @@ if (import.meta.vitest) {
       [[50], 5, 10],
       [[51], 5, 20],
 
-      [[110], 5, 50],
+      [[106], 5, 25],
+      [[110], 5, 25],
+      [[125], 5, 25],
+      [[151], 5, 50],
       [[250], 5, 50],
       [[260], 5, 100],
       [[500], 5, 100],
@@ -301,7 +302,7 @@ if (import.meta.vitest) {
       [[25], 5, 5],
       [[26], 5, 10],
 
-      [[100], 4, 50],
+      [[100], 4, 25],
       [[100], 3, 50],
       [[1000], 5, 200],
     ])('compute_step(%j, %d) = %d', (arr, target, expected) => {
