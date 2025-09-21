@@ -5,7 +5,6 @@
   {# pad chart width to a fixed 53 weeks to avoid width changes #}
   {% set padded_count = (count | at_least(53)) %}
   {% set has_padding = padded_count > count %}
-  {% if count > 0 %}
 
   {# dimensions #}
   {% set dim = {
@@ -227,7 +226,6 @@
     Upgrades
   </div>
 
-  {% endif %}
 {% endmacro %}
 
 {% macro draw_axis_with_labels(axis, x_pos, dim, css_class='tick', text_anchor='end', offset=6) %}
