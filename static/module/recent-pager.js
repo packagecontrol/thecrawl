@@ -1,6 +1,60 @@
 import { Card } from './card.js'
 
 const DEFAULT_PER_PAGE = 9
+const stickyRegistry = []
+let stickyListenerAttached = false
+
+function ensureStickyListener() {
+  if (stickyListenerAttached || typeof window === 'undefined') return
+  const updateAll = () => {
+    stickyRegistry.forEach(entry => applySticky(entry.header, entry.section))
+  }
+  window.addEventListener('resize', updateAll)
+  window.addEventListener('orientationchange', updateAll)
+  stickyListenerAttached = true
+}
+
+function registerSticky(header, section) {
+  if (!header || header.dataset.stickyRegistered === 'true') return
+  header.dataset.stickyRegistered = 'true'
+  stickyRegistry.push({ header, section })
+  ensureStickyListener()
+  applySticky(header, section)
+}
+
+function applySticky(header, section) {
+  if (typeof window === 'undefined') return
+  if (!header || !section) return
+
+  const list = section.querySelector('ul.grid')
+  if (!list) return
+
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0
+  if (!viewportHeight) return
+
+  const listHeight = list.getBoundingClientRect().height
+  const shouldStick = listHeight > viewportHeight
+
+  if (shouldStick) {
+    header.style.position = 'sticky'
+    header.style.top = '0'
+    header.style.zIndex = '3'
+    header.style.background = 'var(--background-2)'
+    // header.style.padding = '0.5rem 0'
+    const headerHeight = Math.ceil(header.getBoundingClientRect().height || 0)
+    section.style.scrollMarginTop = `${headerHeight + 16}px`
+    section.dataset.stickyActive = 'true'
+  }
+  else {
+    header.style.position = ''
+    header.style.top = ''
+    header.style.zIndex = ''
+    header.style.background = ''
+    header.style.padding = ''
+    section.style.scrollMarginTop = ''
+    delete section.dataset.stickyActive
+  }
+}
 
 // Handles client-side paging for the pre-rendered sections on the home page
 class RecentPager {
@@ -54,6 +108,7 @@ class RecentPager {
     // Insert header before the H2, then move H2 inside
     this.section.insertBefore(header, this.h2)
     header.appendChild(this.h2)
+    registerSticky(header, this.section)
   }
 
   renderControls() {
@@ -140,6 +195,7 @@ class RecentPager {
     // place controls into header row, to the right of H2
     const header = this.section.querySelector('.pager-header')
     header.appendChild(container)
+    applySticky(header, this.section)
 
     this.controls = { first, prev, next }
     this.monthIndicator = month
@@ -308,6 +364,21 @@ class RecentPager {
 
     if (updateHistory) {
       this.updateHistory()
+    }
+
+    const header = this.section.querySelector('.pager-header')
+    applySticky(header, this.section)
+
+    if (this.section.dataset.stickyActive === 'true') {
+      const firstItem = this.ul.querySelector('li')
+      if (firstItem) {
+        const headerHeight = Math.ceil(header?.getBoundingClientRect()?.height || 0)
+        const rect = firstItem.getBoundingClientRect()
+        if (rect.top < headerHeight) {
+          firstItem.scrollIntoView({ block: 'start', behavior: 'auto' })
+          window.scrollBy({ top: -headerHeight, left: 0, behavior: 'auto' })
+        }
+      }
     }
   }
 }
