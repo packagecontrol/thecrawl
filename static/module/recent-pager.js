@@ -45,8 +45,12 @@ class RecentPager {
 
     const header = document.createElement('div')
     header.className = 'pager-header'
-    header.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:1rem;'
-
+    header.style.cssText = [
+      'display:flex;',
+      'align-items:center;',
+      'justify-content:space-between;',
+      'gap:1rem;',
+    ].join(' ')
     // Insert header before the H2, then move H2 inside
     this.section.insertBefore(header, this.h2)
     header.appendChild(this.h2)
@@ -64,46 +68,67 @@ class RecentPager {
 
     const container = document.createElement('div')
     container.className = 'pager-pagination'
-    container.style.cssText = 'display:flex; align-items:center; align-self:end; gap:0.5rem; font-size:1.3rem;'
+    container.style.cssText = [
+      'display:flex;',
+      'align-items:center;',
+      'align-self:end;',
+      'gap:1rem;',
+      'font-size:1.3rem;',
+      'position:relative;',
+      'top:4px;',
+    ].join(' ')
 
     const controls = document.createElement('div')
     controls.className = 'button-group'
-    controls.style.cssText = 'gap:0.2ex;font-size:24px'
+    controls.style.cssText = [
+      'gap:0.2ex;',
+      'font-size:24px;',
+    ].join(' ')
 
-    const first = document.createElement('button')
-    first.className = 'button'
-    first.textContent = '«'
-    first.setAttribute('aria-label', 'First page')
-    first.setAttribute('title', 'First')
-    first.addEventListener('click', (e) => {
-      e.preventDefault()
-      this.goto(1)
-    })
+    const createNavButton = (symbol, ariaLabel, title, onClick) => {
+      const button = document.createElement('button')
+      button.className = 'button'
+      button.setAttribute('aria-label', ariaLabel)
+      button.setAttribute('title', title)
+      button.style.cssText = [
+        'background: transparent;',
+      ].join(' ')
+      const span = document.createElement('span')
+      span.textContent = symbol
+      span.style.cssText = [
+        'position: relative;',
+        'top: -0.07em;',
+      ].join(' ')
+      button.appendChild(span)
+      button.addEventListener('mouseenter', () => {
+        if (!button.disabled) {
+          button.style.background = 'var(--background-4)'
+        }
+      })
+      button.addEventListener('mouseleave', () => {
+        button.style.background = 'transparent'
+      })
+      button.addEventListener('click', (e) => {
+        e.preventDefault()
+        onClick()
+      })
+      return button
+    }
 
-    const prev = document.createElement('button')
-    prev.className = 'button'
-    prev.textContent = '‹'
-    prev.setAttribute('aria-label', 'Previous page')
-    prev.setAttribute('title', 'Previous')
-    prev.addEventListener('click', (e) => {
-      e.preventDefault()
-      this.goto(this.page - 1)
-    })
-
-    const next = document.createElement('button')
-    next.className = 'button'
-    next.textContent = '›'
-    next.setAttribute('aria-label', 'Next page')
-    next.setAttribute('title', 'Next')
-    next.addEventListener('click', (e) => {
-      e.preventDefault()
-      this.goto(this.page + 1)
-    })
+    const first = createNavButton('«', 'First page', 'First', () => this.goto(1))
+    const prev = createNavButton('‹', 'Previous page', 'Previous', () => this.goto(this.page - 1))
+    const next = createNavButton('›', 'Next page', 'Next', () => this.goto(this.page + 1))
 
     // Month indicator text (to the left of navigation)
     const month = document.createElement('span')
     month.className = 'month-indicator'
-    month.style.cssText = 'margin-left:.5rem; color: var(--foreground-3); font-size: 14px; align-self:center;'
+    month.style.cssText = [
+      'margin-left:.5rem;',
+      'color: var(--foreground-3);',
+      'font-size: 14px;',
+      'align-self:center;',
+      'padding-bottom: 11px;',
+    ].join(' ')
     month.textContent = this.currentMonthLabel()
     container.appendChild(month)
 
@@ -252,6 +277,7 @@ class RecentPager {
     const { first, prev, next } = this.controls
     ;[first, prev, next].forEach((btn) => {
       btn.style.opacity = btn.disabled ? '0.4' : '1'
+      btn.style.cursor = btn.disabled ? 'default' : 'pointer'
     })
   }
 
