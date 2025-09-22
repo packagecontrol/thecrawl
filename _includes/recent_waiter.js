@@ -37,15 +37,19 @@
 
     const section = document.querySelector(`section[name="${name}"]`)
     const list = section?.querySelector('ul.grid')
-    if (!list) return
+    const h2 = section?.querySelector('h2')
+    if (!list || !h2) return
 
     list.style.visibility = 'hidden'
+    h2.style.visibility = 'hidden'
     renderPlaceholders(list)
 
     const onReady = () => {
       list.style.visibility = 'revert'
+      h2.style.visibility = 'revert'
       clearTimeout(timer)
       document.removeEventListener('search-data-ready', onReady)
+      setTimeout(() => document.dispatchEvent(new CustomEvent('pager-ready')))
     }
 
     const timer = setTimeout(onReady, 500)

@@ -1,59 +1,36 @@
 import { Card } from './card.js'
 
 const DEFAULT_PER_PAGE = 9
-const stickyRegistry = []
-let stickyListenerAttached = false
+const pagerRegistry = []
 
-function ensureStickyListener() {
-  if (stickyListenerAttached || typeof window === 'undefined') return
-  const updateAll = () => {
-    stickyRegistry.forEach(entry => applySticky(entry.header, entry.section))
-  }
-  window.addEventListener('resize', updateAll)
-  window.addEventListener('orientationchange', updateAll)
-  stickyListenerAttached = true
-}
-
-function registerSticky(header, section) {
-  if (!header || header.dataset.stickyRegistered === 'true') return
-  header.dataset.stickyRegistered = 'true'
-  stickyRegistry.push({ header, section })
-  ensureStickyListener()
-  applySticky(header, section)
-}
-
-function applySticky(header, section) {
-  if (typeof window === 'undefined') return
-  if (!header || !section) return
+function computeShouldStick(section, onChange) {
+  if (!section) return false
 
   const list = section.querySelector('ul.grid')
-  if (!list) return
-
-  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0
-  if (!viewportHeight) return
-
   const listHeight = list.getBoundingClientRect().height
-  const shouldStick = listHeight > viewportHeight
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0
+  const stick = listHeight > viewportHeight
 
-  if (shouldStick) {
-    header.style.position = 'sticky'
-    header.style.top = '0'
-    header.style.zIndex = '3'
-    header.style.background = 'var(--background-2)'
-    // header.style.padding = '0.5rem 0'
-    const headerHeight = Math.ceil(header.getBoundingClientRect().height || 0)
-    section.style.scrollMarginTop = `${headerHeight + 16}px`
-    section.dataset.stickyActive = 'true'
+  const prev = section.dataset.shouldStick === 'true'
+  if (prev != stick) {
+    section.dataset.shouldStick = stick ? 'true' : 'false'
+    if (onChange) onChange()
   }
-  else {
-    header.style.position = ''
-    header.style.top = ''
-    header.style.zIndex = ''
-    header.style.background = ''
-    header.style.padding = ''
-    section.style.scrollMarginTop = ''
-    delete section.dataset.stickyActive
-  }
+  return stick
+}
+
+function recomputeStickinesOfPagers() {
+  pagerRegistry.forEach(
+    pager => computeShouldStick(pager.section, () => pager.applyMobileHacks()))
+}
+
+window.addEventListener('resize', recomputeStickinesOfPagers)
+window.addEventListener('orientationchange', recomputeStickinesOfPagers)
+document.addEventListener('pager-ready', recomputeStickinesOfPagers)
+
+function registerPager(pager) {
+  pagerRegistry.push(pager)
+  pager.section.dataset.shouldStick ?? computeShouldStick(pager.section)
 }
 
 // Handles client-side paging for the pre-rendered sections on the home page
@@ -63,6 +40,7 @@ class RecentPager {
       perPage = DEFAULT_PER_PAGE,
       queryParam,
       timestampField,
+      shortHeading,
     } = options
 
     this.items = items
@@ -70,6 +48,8 @@ class RecentPager {
     this.section = section
     this.ul = section.querySelector('ul.grid')
     this.h2 = section.querySelector('h2')
+    this.headingOriginalText = this.h2 ? this.h2.textContent : ''
+    this.headingShortText = shortHeading
     this.perPage = perPage
     this.page = 1
 
@@ -78,6 +58,7 @@ class RecentPager {
     this.queryParam = queryParam
     this.timestampValue = item => item ? Number(item[timestampField] || 0) : 0
 
+    registerPager(this)
     this.init()
   }
 
@@ -108,7 +89,6 @@ class RecentPager {
     // Insert header before the H2, then move H2 inside
     this.section.insertBefore(header, this.h2)
     header.appendChild(this.h2)
-    registerSticky(header, this.section)
   }
 
   renderControls() {
@@ -195,12 +175,12 @@ class RecentPager {
     // place controls into header row, to the right of H2
     const header = this.section.querySelector('.pager-header')
     header.appendChild(container)
-    applySticky(header, this.section)
 
     this.controls = { first, prev, next }
     this.monthIndicator = month
     this.updateButtons()
     this.updateMonthIndicator()
+    this.applyMobileHacks()
   }
 
   syncFromUrl() {
@@ -337,6 +317,42 @@ class RecentPager {
     })
   }
 
+  updateHeadingText() {
+    if (!this.h2 || !this.headingShortText) return
+    const stickActive = this.section?.dataset.shouldStick === 'true'
+    const text = this.page > 1 && stickActive ? this.headingShortText : this.headingOriginalText
+    if (this.h2.textContent !== text) {
+      this.h2.textContent = text
+    }
+  }
+
+  applyMobileHacks() {
+    if (!this.section) return false
+
+    const header = this.section.querySelector('.pager-header')
+    if (!header) return false
+
+    const stick = this.section.dataset.shouldStick === 'true'
+    if (stick) {
+      header.style.position = 'sticky'
+      header.style.top = '0'
+      header.style.zIndex = '3'
+      header.style.background = 'var(--background-2)'
+      const headerHeight = Math.ceil(header.getBoundingClientRect().height || 0)
+      this.section.style.scrollMarginTop = `${headerHeight + 16}px`
+    }
+    else {
+      header.style.position = ''
+      header.style.top = ''
+      header.style.zIndex = ''
+      header.style.background = ''
+      header.style.padding = ''
+      this.section.style.scrollMarginTop = ''
+    }
+
+    this.updateHeadingText()
+  }
+
   goto(page, options = {}) {
     const { updateHistory = true } = options
     const total = this.totalPages()
@@ -361,17 +377,16 @@ class RecentPager {
     // update controls state
     this.updateButtons()
     this.updateMonthIndicator()
+    this.updateHeadingText()
 
     if (updateHistory) {
       this.updateHistory()
     }
 
-    const header = this.section.querySelector('.pager-header')
-    applySticky(header, this.section)
-
-    if (this.section.dataset.stickyActive === 'true') {
+    if (this.section.dataset.shouldStick === 'true') {
       const firstItem = this.ul.querySelector('li')
       if (firstItem) {
+        const header = this.section.querySelector('.pager-header')
         const headerHeight = Math.ceil(header?.getBoundingClientRect()?.height || 0)
         const rect = firstItem.getBoundingClientRect()
         if (rect.top < headerHeight) {
@@ -389,6 +404,7 @@ const pagerConfigs = [
     options: {
       queryParam: 'updated_after',
       timestampField: 'last_modified',
+      shortHeading: 'Updated',
     },
   },
   {
