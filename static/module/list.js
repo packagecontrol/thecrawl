@@ -19,6 +19,18 @@ export class List {
   initialPath = '/'
   initialTitle = document.title
 
+  sortTitleMap = {
+    installed: 'Installs',
+    stars: 'Stars',
+    newest: 'Newest',
+    oldest: 'Oldest',
+    update: 'Recent Updates',
+    name: 'Name (A-Z)',
+    'name-desc': 'Name (Z-A)',
+    author: 'Author (A-Z)',
+    'author-desc': 'Author (Z-A)',
+  }
+
   attr = 'data-list-target'
   section = document.querySelector(`[${this.attr}='section']`)
   heading = document.querySelector(`[${this.attr}='heading']`)
@@ -124,7 +136,13 @@ export class List {
     // Only push state if URL is actually changing
     if (window.location.search !== queryString_) {
       const target = '/' + queryString_
-      const title = hasQuery ? `Search — ${query}` : this.initialTitle
+      const sortTitle = this.sortTitleMap[sortBy] ?? sortBy
+      const title
+        = usingWildcard
+          ? `List by ${sortTitle}`
+          : hasQuery
+            ? `Search — ${query}`
+            : this.initialTitle
       history.pushState({ title }, '', target)
       document.title = title
     }
