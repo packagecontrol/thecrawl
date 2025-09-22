@@ -5,32 +5,20 @@
   ]
   const PER_PAGE = 9
 
-  const template = `<div class="card" style="height:6em;">
-    <h3> <a href="/packages//"> </a> </h3>
-    <p> </p>
-    <ul class="stats"> </ul>
-    <ul class="button-group labels">
-        <li>
-          <a class="button platform platform-" href="/">
-          </a>
-        </li>
-        <li>
-          <a class="button label" href="/">
-          </a>
-        </li>
-        <li>
-          <a class="button label" href="/">
-          </a>
-        </li>
-
-        <li>
-          <a class="button label" href="/">
-          </a>
-        </li>
-    </ul>
-  </div>`
+  const cardPlaceholder = `
+    <div class="card" style="height:6em;">
+      <h3></h3>
+      <p></p>
+      <ul class="button-group labels">
+          <li><a class="button platform platform-" href="/"></a></li>
+          <li><a class="button label" href="/"></a></li>
+          <li><a class="button label" href="/"></a></li>
+          <li><a class="button label" href="/"></a></li>
+      </ul>
+    </div>
+    `
   const templateEl = document.createElement('template')
-  templateEl.innerHTML = template
+  templateEl.innerHTML = cardPlaceholder.trim()
 
   SECTIONS.forEach(({ name, queryParam }) => {
     if (!hasQueryParam(queryParam)) return
