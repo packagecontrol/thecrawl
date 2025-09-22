@@ -57,9 +57,36 @@ export class Sort {
       case 'author-desc':
         return sortedPackages.sort((a, b) => b.author.toLowerCase().localeCompare(a.author.toLowerCase()))
 
+      case 'list-author':
+        return sortedPackages.sort((a, b) =>
+          this.compareAuthor(a.author.toLowerCase(), b.author.toLowerCase(), 'asc'))
+
+      case 'list-author-desc':
+        return sortedPackages.sort((a, b) =>
+          this.compareAuthor(a.author.toLowerCase(), b.author.toLowerCase(), 'desc'))
+
       case 'relevance':
       default:
         return sortedPackages // Return as-is for relevance or default
     }
+  }
+
+  // Special sorter; packages without authors go last in *both* directions
+  static compareAuthor(a, b, direction = 'asc') {
+    if (!a && !b) {
+      return 0
+    }
+    if (!a) {
+      return 1
+    }
+    if (!b) {
+      return -1
+    }
+
+    if (direction === 'desc') {
+      return b.localeCompare(a)
+    }
+
+    return a.localeCompare(b)
   }
 }

@@ -166,6 +166,9 @@ export class List {
     if (effectiveSort === 'relevance' && !this.search.stringSearch) {
       effectiveSort = 'installed'
     }
+    if (usingWildcard && effectiveSort.startsWith('author')) {
+      effectiveSort = 'list-' + effectiveSort
+    }
     const sortedResults = Sort.sort(searchResults, effectiveSort)
 
     this.setCounter(sortedResults.length)
