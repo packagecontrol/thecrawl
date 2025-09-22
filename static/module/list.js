@@ -102,10 +102,14 @@ export class List {
       throw new Error('minisearch is not initialized')
     }
 
+    const query = value.trim()
+    const hasQuery = query.length > 0
+    const usingWildcard = !hasQuery && sortBy !== 'relevance'
+
     // Update URL with search query, sort parameter, and page
     const params = new URLSearchParams()
-    if (value.length > 0) {
-      params.set('q', value)
+    if (hasQuery) {
+      params.set('q', query)
     }
     if (sortBy !== 'relevance') {
       params.set('sort', sortBy)
@@ -120,7 +124,7 @@ export class List {
     // Only push state if URL is actually changing
     if (window.location.search !== queryString_) {
       const target = '/' + queryString_
-      const title = value.length > 0 ? `Search — ${value}` : this.initialTitle
+      const title = hasQuery ? `Search — ${query}` : this.initialTitle
       history.pushState({ title }, '', target)
       document.title = title
     }
@@ -128,20 +132,23 @@ export class List {
     // clear previous results
     this.clear()
 
-    if (value.length < 1) {
-      // no search query - revert to static homepage
+    if (!hasQuery && !usingWildcard) {
+      // no search query and no alternate sort - revert to static homepage
       this.setCounter()
       this.revertToNormal()
       return
     }
 
-    const searchResults = this.search.search(value)
+    const searchResults = hasQuery
+      ? this.search.search(query)
+      : this.search.all()
 
     // when not searching for strings, sorting magically switches to install number
-    if (sortBy === 'relevance' && !this.search.stringSearch) {
-      sortBy = 'installed'
+    let effectiveSort = sortBy
+    if (effectiveSort === 'relevance' && !this.search.stringSearch) {
+      effectiveSort = 'installed'
     }
-    const sortedResults = Sort.sort(searchResults, sortBy)
+    const sortedResults = Sort.sort(searchResults, effectiveSort)
 
     this.setCounter(sortedResults.length)
 
@@ -151,8 +158,6 @@ export class List {
     // render results with pagination
     this.renderPage(sortedResults, page)
 
-    this.section.dispatchEvent(
-      new Event('search-is-ready', { bubbles: true }),
-    )
+    this.section.dispatchEvent(new Event('search-is-ready', { bubbles: true }))
   }
 }

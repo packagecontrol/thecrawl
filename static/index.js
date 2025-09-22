@@ -46,8 +46,9 @@ list.setMinisearch(minisrch)
 
 const handleInput = () => {
   const query = input.value.toLowerCase().trim()
+  const sortBy = sortSelect.value
 
-  if (query === '') {
+  if (query === '' && sortBy === 'relevance') {
     list.revertToNormal()
     // Update URL to remove search parameters
     if (window.location.search !== '') {
@@ -58,7 +59,7 @@ const handleInput = () => {
     }
   }
   else {
-    list.goSearch(query, sortSelect.value)
+    list.goSearch(query, sortBy)
   }
 }
 
