@@ -391,8 +391,12 @@ class RecentPager {
         const headerHeight = Math.ceil(header?.getBoundingClientRect()?.height || 0)
         const rect = firstItem.getBoundingClientRect()
         if (rect.top < headerHeight) {
-          firstItem.scrollIntoView({ block: 'start', behavior: 'auto' })
-          window.scrollBy({ top: -headerHeight, left: 0, behavior: 'auto' })
+          const scrollTop = window.scrollY
+            ?? window.pageYOffset
+            ?? document.documentElement.scrollTop
+            ?? 0
+          const target = Math.max(0, scrollTop + rect.top - headerHeight)
+          window.scrollTo({ top: target, behavior: 'smooth' })
         }
       }
     }
