@@ -3,6 +3,15 @@ import { Card } from './card.js'
 const DEFAULT_PER_PAGE = 9
 const pagerRegistry = []
 
+window.addEventListener('resize', recomputeStickinesOfPagers)
+window.addEventListener('orientationchange', recomputeStickinesOfPagers)
+document.addEventListener('pager-ready', recomputeStickinesOfPagers)
+
+function recomputeStickinesOfPagers() {
+  pagerRegistry.forEach(
+    pager => computeShouldStick(pager.section, () => pager.applyMobileHacks()))
+}
+
 function computeShouldStick(section, onChange) {
   if (!section) return false
 
@@ -17,20 +26,6 @@ function computeShouldStick(section, onChange) {
     if (onChange) onChange()
   }
   return stick
-}
-
-function recomputeStickinesOfPagers() {
-  pagerRegistry.forEach(
-    pager => computeShouldStick(pager.section, () => pager.applyMobileHacks()))
-}
-
-window.addEventListener('resize', recomputeStickinesOfPagers)
-window.addEventListener('orientationchange', recomputeStickinesOfPagers)
-document.addEventListener('pager-ready', recomputeStickinesOfPagers)
-
-function registerPager(pager) {
-  pagerRegistry.push(pager)
-  pager.section.dataset.shouldStick ?? computeShouldStick(pager.section)
 }
 
 // Handles client-side paging for the pre-rendered sections on the home page
@@ -58,7 +53,8 @@ class RecentPager {
     this.queryParam = queryParam
     this.timestampValue = item => item ? Number(item[timestampField] || 0) : 0
 
-    registerPager(this)
+    pagerRegistry.push(this)
+    section.dataset.shouldStick ?? computeShouldStick(section)
     this.init()
   }
 
