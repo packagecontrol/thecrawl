@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
@@ -8,5 +8,6 @@ export default defineConfig({
       'eleventy.filters.mjs',
       'eleventy.util.mjs',
     ],
+    exclude: [...configDefaults.exclude, '_site/**'],
   },
 })
