@@ -5,7 +5,7 @@
   ]
   const PER_PAGE = 9
 
-  const template = `<div class="card">
+  const template = `<div class="card" style="height:6em;">
     <h3> <a href="/packages//"> </a> </h3>
     <p> </p>
     <ul class="stats"> </ul>
@@ -49,7 +49,6 @@
       h2.style.visibility = 'revert'
       clearTimeout(timer)
       document.removeEventListener('search-data-ready', onReady)
-      setTimeout(() => document.dispatchEvent(new CustomEvent('pager-ready')))
     }
 
     const timer = setTimeout(onReady, 500)
