@@ -117,13 +117,13 @@ function compute_step(arr, target) {
     3) Normalize the rough step to a “nice” human-friendly step using a
        1–2–2.5–5 sequence scaled by a power of 10. Concretely, we find the
        order of magnitude of rough, then round it up to one of
-       {1, 2, 2.5, 5, 7.5} × 10^k. Examples: 37 → 50, 413 → 500, 9876 → 10000.
+       {1, 2, 2.5, 5} × 10^k. Examples: 37 → 50, 413 → 500, 9876 → 10000.
   */
   let maximum = Math.max(0, ...arr)
   let approximation = Math.ceil(maximum / target)
   let mag = magnitude(approximation)
   let normalized = approximation / mag
-  const niceSteps = [1, 2, 2.5, 5, 7.5, 10]
+  const niceSteps = [1, 2, 2.5, 5, 10]
   for (let nice of niceSteps) {
     if (normalized <= nice) {
       return nice * mag
@@ -281,10 +281,7 @@ if (import.meta.vitest) {
       [[11], 5, 5],
       // ...
       [[25], 5, 5],
-      [[26], 5, 7.5],
-      // ...
-      [[35], 5, 7.5],
-      [[36], 5, 10],
+      [[26], 5, 10],
       // ...
       [[50], 5, 10],
       [[51], 5, 20],
@@ -296,10 +293,7 @@ if (import.meta.vitest) {
       [[126], 5, 50],
       // ...
       [[250], 5, 50],
-      [[251], 5, 75],
-      // ...
-      [[375], 5, 75],
-      [[376], 5, 100],
+      [[251], 5, 100],
       // ...
       [[500], 5, 100],
       [[501], 5, 200],
@@ -311,10 +305,7 @@ if (import.meta.vitest) {
       [[1251], 5, 500],
       // ...
       [[2500], 5, 500],
-      [[2501], 5, 750],
-      // ...
-      [[3750], 5, 750],
-      [[3751], 5, 1000],
+      [[2501], 5, 1000],
 
       [[37], 5, 10],
       [[413], 5, 100],
