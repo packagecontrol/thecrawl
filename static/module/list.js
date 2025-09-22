@@ -7,7 +7,7 @@ import { Search } from './search.js'
  * Manage the search results section.
  *
  * On search:
- * - Swap all registed "hideme" elements with the "result" section, and back.
+ * - Swap all registered "hideme" elements with the "result" section, and back.
  * - Insert pagination if needed.
  * - Update the heading with the number of results.
  * - .. oh and don't forget to render the results themselves :)
