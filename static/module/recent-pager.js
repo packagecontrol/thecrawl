@@ -3,6 +3,106 @@ import { Card } from './card.js'
 const DEFAULT_PER_PAGE = 9
 const pagerRegistry = []
 
+const RECENT_PAGER_STYLES = `
+  .pager-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    &.is-sticky {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: var(--background-2);
+
+      h2 {
+        padding-top: 10px;
+      }
+    }
+
+    .pager-pagination {
+      display: flex;
+      align-items: center;
+      align-self: end;
+      gap: 1rem;
+      font-size: 1.3rem;
+      position: relative;
+      top: 4px;
+
+      @media (max-width: 479px) {
+        top: 1px;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 0.2ex;
+        font-size: 24px;
+      }
+
+      .button {
+        background: transparent;
+        cursor: pointer;
+
+        &:enabled:hover,
+        &:enabled:focus-visible {
+          background: var(--background-4);
+        }
+
+        &:disabled {
+          opacity: 0.4;
+          cursor: default;
+        }
+
+        .pager-nav-symbol {
+          display: inline-block;
+          position: relative;
+          top: -0.07em;
+        }
+      }
+
+      .month-indicator {
+        margin-left: 0.5rem;
+        color: var(--foreground-3);
+        font-size: 14px;
+        align-self: center;
+        padding-bottom: 10px;
+
+        @media (max-width: 479px) {
+          padding-bottom: 11px;
+        }
+      }
+    }
+  }
+`
+
+const HEADER_TEMPLATE_HTML = `
+  <div class="pager-header">
+    <slot class="h2-slot"></slot>
+    <div class="pager-pagination">
+      <span class="month-indicator"></span>
+      <div class="button-group">
+        <button type="button" class="button" data-control="first" aria-label="First page" title="First">
+          <span class="pager-nav-symbol">«</span>
+        </button>
+        <button type="button" class="button" data-control="prev" aria-label="Previous page" title="Previous">
+          <span class="pager-nav-symbol">‹</span>
+        </button>
+        <button type="button" class="button" data-control="next" aria-label="Next page" title="Next">
+          <span class="pager-nav-symbol">›</span>
+        </button>
+      </div>
+    </div>
+  </div>
+`
+
+const style = document.createElement('style')
+style.textContent = RECENT_PAGER_STYLES
+document.head.appendChild(style)
+
+const headerTemplate = document.createElement('template')
+headerTemplate.innerHTML = HEADER_TEMPLATE_HTML.trim()
+
 window.addEventListener('resize', recomputeStickinesOfPagers)
 window.addEventListener('orientationchange', recomputeStickinesOfPagers)
 document.addEventListener('pager-ready', recomputeStickinesOfPagers)
@@ -13,8 +113,8 @@ function recomputeStickinesOfPagers() {
 }
 
 function computeShouldStick(section, onChange) {
-  if (!section) return false
-
+  // Compute the "mobile layout" not on screen size but on the height
+  // of the 9 defaults cards compared to the window/client height.
   const list = section.querySelector('ul.grid')
   const listHeight = list.getBoundingClientRect().height
   const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0
@@ -69,111 +169,35 @@ class RecentPager {
     return Math.max(1, Math.ceil(this.items.length / this.perPage))
   }
 
-  // Ensure a semantic wrapper beside the H2 for controls
-  ensureHeaderWrapper() {
-    // If already wrapped, skip
-    if (this.section.querySelector('.pager-header')) return
-
-    const header = document.createElement('div')
-    header.className = 'pager-header'
-    header.style.cssText = [
-      'display:flex;',
-      'align-items:center;',
-      'justify-content:space-between;',
-      'gap:1rem;',
-    ].join(' ')
-    // Insert header before the H2, then move H2 inside
-    this.section.insertBefore(header, this.h2)
-    header.appendChild(this.h2)
-  }
-
   renderControls() {
-    if (this.totalPages() <= 1) {
-      return
-    }
-    // Remove existing controls if any
-    this.section.querySelectorAll('.pager-pagination').forEach(n => n.remove())
+    const header = headerTemplate.content.firstElementChild.cloneNode(true)
+    const slot = header.querySelector('slot.h2-slot')
+    const pagination = header.querySelector('.pager-pagination')
+    const month = pagination.querySelector('.month-indicator')
+    const first = pagination.querySelector('[data-control="first"]')
+    const prev = pagination.querySelector('[data-control="prev"]')
+    const next = pagination.querySelector('[data-control="next"]')
 
-    // Ensure we have a flex header row: [H2] [controls]
-    this.ensureHeaderWrapper()
+    this.section.insertBefore(header, this.h2)
+    slot.replaceWith(this.h2)
 
-    const container = document.createElement('div')
-    container.className = 'pager-pagination'
-    container.style.cssText = [
-      'display:flex;',
-      'align-items:center;',
-      'align-self:end;',
-      'gap:1rem;',
-      'font-size:1.3rem;',
-      'position:relative;',
-      'top:4px;',
-    ].join(' ')
-
-    const controls = document.createElement('div')
-    controls.className = 'button-group'
-    controls.style.cssText = [
-      'gap:0.2ex;',
-      'font-size:24px;',
-    ].join(' ')
-
-    const createNavButton = (symbol, ariaLabel, title, onClick) => {
-      const button = document.createElement('button')
-      button.className = 'button'
-      button.setAttribute('aria-label', ariaLabel)
-      button.setAttribute('title', title)
-      button.style.cssText = [
-        'background: transparent;',
-      ].join(' ')
-      const span = document.createElement('span')
-      span.textContent = symbol
-      span.style.cssText = [
-        'position: relative;',
-        'top: -0.07em;',
-      ].join(' ')
-      button.appendChild(span)
-      button.addEventListener('mouseenter', () => {
-        if (!button.disabled) {
-          button.style.background = 'var(--background-4)'
-        }
-      })
-      button.addEventListener('mouseleave', () => {
-        button.style.background = 'transparent'
-      })
-      button.addEventListener('click', (e) => {
-        e.preventDefault()
-        onClick()
-      })
-      return button
+    const bindControl = (button, handler) => {
+      if (!button.dataset.boundToPager) {
+        button.dataset.boundToPager = 'true'
+        button.addEventListener('click', (event) => {
+          event.preventDefault()
+          handler()
+        })
+      }
     }
 
-    const first = createNavButton('«', 'First page', 'First', () => this.goto(1))
-    const prev = createNavButton('‹', 'Previous page', 'Previous', () => this.goto(this.page - 1))
-    const next = createNavButton('›', 'Next page', 'Next', () => this.goto(this.page + 1))
-
-    // Month indicator text (to the left of navigation)
-    const month = document.createElement('span')
-    month.className = 'month-indicator'
-    month.style.cssText = [
-      'margin-left:.5rem;',
-      'color: var(--foreground-3);',
-      'font-size: 14px;',
-      'align-self:center;',
-      'padding-bottom: 11px;',
-    ].join(' ')
-    month.textContent = this.currentMonthLabel()
-    container.appendChild(month)
-
-    controls.appendChild(first)
-    controls.appendChild(prev)
-    controls.appendChild(next)
-    container.appendChild(controls)
-
-    // place controls into header row, to the right of H2
-    const header = this.section.querySelector('.pager-header')
-    header.appendChild(container)
+    bindControl(first, () => this.goto(1))
+    bindControl(prev, () => this.goto(this.page - 1))
+    bindControl(next, () => this.goto(this.page + 1))
 
     this.controls = { first, prev, next }
     this.monthIndicator = month
+
     this.updateButtons()
     this.updateMonthIndicator()
     this.applyMobileHacks()
@@ -287,7 +311,6 @@ class RecentPager {
   }
 
   updateMonthIndicator() {
-    if (!this.monthIndicator) return
     // Only show from page 2 onwards
     if (this.page > 1) {
       this.monthIndicator.style.display = ''
@@ -304,17 +327,10 @@ class RecentPager {
     this.controls.first.disabled = atStart
     this.controls.prev.disabled = atStart
     this.controls.next.disabled = this.page >= total
-
-    // Visual cue for disabled state
-    const { first, prev, next } = this.controls
-    ;[first, prev, next].forEach((btn) => {
-      btn.style.opacity = btn.disabled ? '0.4' : '1'
-      btn.style.cursor = btn.disabled ? 'default' : 'pointer'
-    })
   }
 
   updateHeadingText() {
-    if (!this.h2 || !this.headingShortText) return
+    if (!this.headingShortText) return
     const stickActive = this.section?.dataset.shouldStick === 'true'
     const text = this.page > 1 && stickActive ? this.headingShortText : this.headingOriginalText
     if (this.h2.textContent !== text) {
@@ -323,26 +339,15 @@ class RecentPager {
   }
 
   applyMobileHacks() {
-    if (!this.section) return false
-
     const header = this.section.querySelector('.pager-header')
-    if (!header) return false
-
     const stick = this.section.dataset.shouldStick === 'true'
     if (stick) {
-      header.style.position = 'sticky'
-      header.style.top = '0'
-      header.style.zIndex = '3'
-      header.style.background = 'var(--background-2)'
+      header.classList.add('is-sticky')
       const headerHeight = Math.ceil(header.getBoundingClientRect().height || 0)
       this.section.style.scrollMarginTop = `${headerHeight + 16}px`
     }
     else {
-      header.style.position = ''
-      header.style.top = ''
-      header.style.zIndex = ''
-      header.style.background = ''
-      header.style.padding = ''
+      header.classList.remove('is-sticky')
       this.section.style.scrollMarginTop = ''
     }
 
