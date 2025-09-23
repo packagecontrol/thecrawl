@@ -132,18 +132,21 @@ export class List {
 
     const queryString = params.toString()
     const queryString_ = queryString ? '?' + queryString : ''
+    const target = queryString_ ? '/' + queryString_ : this.initialPath
+    const currentPath = `${window.location.pathname}${window.location.search}`
+    const sortTitle = this.sortTitleMap[sortBy] ?? sortBy
+    const title
+      = usingWildcard
+        ? `List by ${sortTitle}`
+        : hasQuery
+          ? `Search — ${query}`
+          : this.initialTitle
 
-    // Only push state if URL is actually changing
-    if (window.location.search !== queryString_) {
-      const target = '/' + queryString_
-      const sortTitle = this.sortTitleMap[sortBy] ?? sortBy
-      const title
-        = usingWildcard
-          ? `List by ${sortTitle}`
-          : hasQuery
-            ? `Search — ${query}`
-            : this.initialTitle
+    if (currentPath !== target) {
       history.pushState({ title }, '', target)
+    }
+
+    if (document.title !== title) {
       document.title = title
     }
 

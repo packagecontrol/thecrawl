@@ -48,19 +48,7 @@ const handleInput = () => {
   const query = input.value.toLowerCase().trim()
   const sortBy = sortSelect.value
 
-  if (query === '' && sortBy === 'relevance') {
-    list.revertToNormal()
-    // Update URL to remove search parameters
-    if (window.location.search !== '') {
-      const target = list.initialPath
-      const title = target === '/' ? 'Package Control R' : list.initialTitle
-      history.pushState({ title }, '', target)
-      document.title = title
-    }
-  }
-  else {
-    list.goSearch(query, sortBy)
-  }
+  list.goSearch(query, sortBy)
 }
 
 const form = document.forms.search
