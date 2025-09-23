@@ -9,21 +9,12 @@ export class Search {
 
   // process the search query string and return results
   search(value) {
-    const queries = processQueryString(value)
-    this.stringSearch = queries.some((query) => {
-      if (!Array.isArray(query.fields)) {
-        return false
-      }
-
-      const fields = query.fields
-      return fields.includes('name')
-        && fields.includes('description')
-        && fields.includes('author')
-    })
+    const query = processQueryString(value)
+    this.stringSearch = query.hasFreeText
 
     // search and then map results so we can easily use them for output
     const results = this.minisearch.search({
-      queries,
+      queries: query.queries,
       combineWith: 'AND',
     })
 
@@ -48,6 +39,8 @@ export class Search {
 
 export function processQueryString(rawValue = '') {
   const queries = []
+  let hasFreeText = false
+
   let value = typeof rawValue === 'string' ? rawValue : String(rawValue ?? '')
 
   const extractFilter = (regex, buildQuery) => {
@@ -95,7 +88,8 @@ export function processQueryString(rawValue = '') {
       queries: trimmed.split(/\s+/),
       fields: ['name', 'description', 'author'],
     })
+    hasFreeText = true
   }
 
-  return queries
+  return { queries, hasFreeText }
 }

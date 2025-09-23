@@ -4,13 +4,21 @@ import { processQueryString, Search } from './search.js'
 
 describe('processQueryString', () => {
   it('returns an empty array for blank input', () => {
-    expect(processQueryString('')).toEqual([])
-    expect(processQueryString()).toEqual([])
+    expect(processQueryString('').queries).toEqual([])
+    expect(processQueryString().queries).toEqual([])
+  })
+
+  it('marks queries that have free text in it', () => {
+    const query = 'web component'
+    expect(processQueryString(query).hasFreeText).toBeTruthy()
+
+    const query2 = 'label:web'
+    expect(processQueryString(query2).hasFreeText).toBeFalsy()
   })
 
   it('extracts individual filters and free text in order', () => {
     const query = 'react author:dan label:"starter kit" platform:web'
-    expect(processQueryString(query)).toEqual([
+    expect(processQueryString(query).queries).toEqual([
       {
         queries: ['dan'],
         fields: ['author'],
@@ -32,7 +40,7 @@ describe('processQueryString', () => {
   })
 
   it('supports quoted values for each filter', () => {
-    expect(processQueryString('author:"Ada Lovelace" label:"data viz" platform:"desktop"')).toEqual([
+    expect(processQueryString('author:"Ada Lovelace" label:"data viz" platform:"desktop"').queries).toEqual([
       {
         queries: ['Ada Lovelace'],
         fields: ['author'],
@@ -50,7 +58,7 @@ describe('processQueryString', () => {
   })
 
   it('handles multiple filters of the same type and remaining free text', () => {
-    expect(processQueryString('label:Ada web label:Love component')).toEqual([
+    expect(processQueryString('label:Ada web label:Love component').queries).toEqual([
       {
         queries: ['Ada'],
         fields: ['labels'],
