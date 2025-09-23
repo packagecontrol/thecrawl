@@ -48,6 +48,23 @@ describe('processQueryString', () => {
       },
     ])
   })
+
+  it('handles multiple filters of the same type and remaining free text', () => {
+    expect(processQueryString('label:Ada web label:Love component')).toEqual([
+      {
+        queries: ['Ada'],
+        fields: ['labels'],
+      },
+      {
+        queries: ['Love'],
+        fields: ['labels'],
+      },
+      {
+        queries: ['web', 'component'],
+        fields: ['name', 'description', 'author'],
+      },
+    ])
+  })
 })
 
 describe('Search.search', () => {

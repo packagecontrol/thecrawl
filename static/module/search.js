@@ -50,50 +50,46 @@ export function processQueryString(rawValue = '') {
   const queries = []
   let value = typeof rawValue === 'string' ? rawValue : String(rawValue ?? '')
 
-  // first handle the author, label, and platform filters
-  // these have the form of type:value, or type:"value"
+  const extractFilter = (regex, buildQuery) => {
+    const matches = []
+    let match
+    while ((match = regex.exec(value)) !== null) {
+      matches.push(match)
+    }
+    regex.lastIndex = 0
 
-  // handle author filter
-  const author = value.match(/author:"([^"]+)"|author:([^\s]+)/i)
-  if (author) {
-    const authorValue = author[1] || author[2]
-    queries.push({
-      queries: [authorValue],
-      fields: ['author'],
+    matches.forEach((currentMatch) => {
+      const [, quoted, unquoted] = currentMatch
+      const filterValue = quoted || unquoted
+      if (!filterValue) {
+        return
+      }
+
+      queries.push(buildQuery(filterValue))
+      value = value.replace(currentMatch[0], ' ')
     })
-    // author has been handled, remove this filter from the search string
-    value = value.replace(author[0], '')
   }
 
-  // handle label filter
-  const label = value.match(/label:"([^"]+)"|label:([^\s]+)/i)
-  if (label) {
-    const labelValue = label[1] || label[2]
-    queries.push({
-      queries: [labelValue],
-      fields: ['labels'],
-    })
-    // label has been handled, remove this filter from the search string
-    value = value.replace(label[0], '')
-  }
+  extractFilter(/author:"([^"]+)"|author:([^\s]+)/gi, authorValue => ({
+    queries: [authorValue],
+    fields: ['author'],
+  }))
 
-  // handle platform filter
-  const platform = value.match(/platform:"([^"]+)"|platform:([^\s]+)/i)
-  if (platform) {
-    const platformValue = platform[1] || platform[2]
-    queries.push({
-      combineWith: 'OR',
-      queries: [platformValue, 'any'],
-      fields: ['platforms'],
-    })
-    // platform has been handled, remove this filter from the search string
-    value = value.replace(platform[0], '')
-  }
+  extractFilter(/label:"([^"]+)"|label:([^\s]+)/gi, labelValue => ({
+    queries: [labelValue],
+    fields: ['labels'],
+  }))
 
-  // if a value remains, add a free text search query across name, author and description
-  if (value.trim().length > 0) {
+  extractFilter(/platform:"([^"]+)"|platform:([^\s]+)/gi, platformValue => ({
+    combineWith: 'OR',
+    queries: [platformValue, 'any'],
+    fields: ['platforms'],
+  }))
+
+  const trimmed = value.trim()
+  if (trimmed.length > 0) {
     queries.push({
-      queries: value.trim().split(' '),
+      queries: trimmed.split(/\s+/),
       fields: ['name', 'description', 'author'],
     })
   }
