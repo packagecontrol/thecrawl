@@ -91,12 +91,7 @@ input.addEventListener('input', () => {
 })
 
 // Handle sort dropdown changes
-sortSelect.addEventListener('change', (event) => {
-  const query = input.value.toLowerCase()
-  const sortBy = event.target.value
-
-  list.goSearch(query, sortBy)
-})
+sortSelect.addEventListener('change', handleInput)
 
 // Handle browser back/forward navigation
 window.addEventListener('popstate', (event) => {
