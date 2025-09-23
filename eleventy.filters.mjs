@@ -115,23 +115,21 @@ function compute_step(arr, target) {
        This is the smallest step that could cover the range with ~target ticks
        but it may be an awkward number (e.g. 37, 413, 9876).
     3) Normalize the rough step to a “nice” human-friendly step using a
-       1–2–5 sequence scaled by a power of 10. Concretely, we find the order of
-       magnitude of rough, then round it up to one of {1, 2, 5} × 10^k.
-       Examples: 37 → 50, 413 → 500, 9876 → 10000.
+       1–2–2.5–5 sequence scaled by a power of 10. Concretely, we find the
+       order of magnitude of rough, then round it up to one of
+       {1, 2, 2.5, 5} × 10^k. Examples: 37 → 50, 413 → 500, 9876 → 10000.
   */
   let maximum = Math.max(0, ...arr)
   let approximation = Math.ceil(maximum / target)
   let mag = magnitude(approximation)
-  let lead_number = Math.floor((approximation + mag - 1) / mag)
-  if (lead_number <= 1) {
-    return 1 * mag
-  } else if (lead_number <= 2) {
-    return 2 * mag
-  } else if (lead_number <= 5) {
-    return 5 * mag
-  } else {
-    return 10 * mag
+  let normalized = approximation / mag
+  const niceSteps = [1, 2, 2.5, 5, 10]
+  for (let nice of niceSteps) {
+    if (normalized <= nice) {
+      return nice * mag
+    }
   }
+  return 10 * mag
 }
 
 // magnitude: highest power of 10 <= n
@@ -276,32 +274,44 @@ if (import.meta.vitest) {
       [[2], 5, 1],
       [[3], 5, 1],
       [[4], 5, 1],
-
       [[5], 5, 1],
       [[6], 5, 2],
-
+      // ...
       [[10], 5, 2],
       [[11], 5, 5],
-
+      // ...
       [[25], 5, 5],
       [[26], 5, 10],
-
+      // ...
       [[50], 5, 10],
       [[51], 5, 20],
-
-      [[110], 5, 50],
+      // ...
+      [[100], 5, 20],
+      [[101], 5, 25],
+      // ...
+      [[125], 5, 25],
+      [[126], 5, 50],
+      // ...
       [[250], 5, 50],
-      [[260], 5, 100],
+      [[251], 5, 100],
+      // ...
       [[500], 5, 100],
-      [[510], 5, 200],
+      [[501], 5, 200],
+      // ...
+      [[1000], 5, 200],
+      [[1001], 5, 250],
+      // ...
+      [[1250], 5, 250],
+      [[1251], 5, 500],
+      // ...
+      [[2500], 5, 500],
+      [[2501], 5, 1000],
 
       [[37], 5, 10],
       [[413], 5, 100],
       [[9876], 5, 2000],
-      [[25], 5, 5],
-      [[26], 5, 10],
 
-      [[100], 4, 50],
+      [[100], 4, 25],
       [[100], 3, 50],
       [[1000], 5, 200],
     ])('compute_step(%j, %d) = %d', (arr, target, expected) => {
