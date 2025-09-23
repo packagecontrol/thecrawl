@@ -19,7 +19,7 @@ export class Card {
     const install = this.clone.querySelector('ul.stats .installs')
     const warning = this.clone.querySelector('ul.stats .warning')
 
-    if (this.pkg.stars > 0) {
+    if (this.pkg.stars > 0 && !this.pkg.doa) {
       star.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub')
       star.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.stars))
     }
@@ -27,7 +27,7 @@ export class Card {
       star.remove()
     }
 
-    if (this.pkg.installed > 0) {
+    if (this.pkg.installed > 0 && !this.pkg.doa) {
       install.setAttribute('title', 'Installed ' + this.pkg.installed + (this.pkg.installed < 2 ? ' time' : ' times'))
       install.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.installed))
     }
