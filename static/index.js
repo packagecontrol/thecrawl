@@ -98,12 +98,7 @@ input.form.onsubmit = (event) => {
 sortSelect.addEventListener('change', handleInput)
 
 // Handle browser back/forward navigation
-window.addEventListener('popstate', (event) => {
-  if (event.state && event.state.title) {
-    document.title = event.state.title
-  } else if (list && list.initialTitle) {
-    document.title = list.initialTitle
-  }
+window.addEventListener('popstate', () => {
   const urlParams = new URLSearchParams(window.location.search)
   const query = urlParams.get('q') || ''
   const sortBy = urlParams.get('sort')
