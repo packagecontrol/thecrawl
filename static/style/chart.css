@@ -56,9 +56,8 @@
   }
   /* bars behind the weeks */
   .week-slice-hit {
-    fill: var(--background-1);
+    fill: var(--background-2);
     opacity: 0;
-    transition: opacity .2s ease-in-out;
   }
 
   /* weekly installs bars  */
@@ -72,9 +71,6 @@
   .week:hover .bar,
   .bar:hover {
     fill: var(--orange-2);
-  }
-  .week:hover .week-slice-hit {
-    opacity: .3;
   }
 
   /* upgrades lines */
@@ -104,7 +100,7 @@
 
   /* averages */
   .avg-line {
-    stroke: var(--orange-2);
+    stroke: var(--orange-3);
     opacity: 0.6;
     stroke-width: 1;
     stroke-dasharray: 2 1;
@@ -139,7 +135,7 @@
 .chart-container:has(.color-install:hover) .install-chart,
 .chart-container:has(.color-removal:hover) .install-chart {
   .bar {
-    fill: var(--orange-2);
+    fill: var(--orange-3);
   }
 }
 .chart-container:has(.color-upgrade:hover) .install-chart {
