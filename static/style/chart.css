@@ -12,6 +12,12 @@
   }
 }
 
+section:has(.chart-container)::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
 .install-chart {
   svg {
     width: 100%;
