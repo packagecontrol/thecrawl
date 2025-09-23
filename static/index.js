@@ -54,22 +54,25 @@ const handleInput = () => {
 const form = document.forms.search
 const input = form.elements['q']
 const sortSelect = form.elements['sort']
-const url_search = window.location.search
-const urlParams = new URLSearchParams(url_search)
 
 // Handle initial page load
-const query = urlParams.get('q') || ''
-const sortBy = urlParams.get('sort')
-const page = parseInt(urlParams.get('page')) || 1
+;(function init() {
+  const url_search = window.location.search
+  const urlParams = new URLSearchParams(url_search)
+  const query = urlParams.get('q') || ''
+  const sortBy = urlParams.get('sort')
+  const page = parseInt(urlParams.get('page')) || 1
 
-input.value = query
+  input.value = query
 
-// Only show search results if there's a query or explicit sort parameter
-if (query || sortBy || urlParams.has('page')) {
-  const effectiveSortBy = sortBy ?? 'relevance'
-  sortSelect.value = effectiveSortBy
-  list.goSearch(query.toLowerCase(), effectiveSortBy, page)
-}
+  // Only show search results if there's a query or explicit sort parameter
+  if (query || sortBy || urlParams.has('page')) {
+    const effectiveSortBy = sortBy ?? 'relevance'
+    sortSelect.value = effectiveSortBy
+    list.goSearch(query.toLowerCase(), effectiveSortBy, page)
+  }
+})()
+
 
 let debounceTimeout
 
