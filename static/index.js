@@ -107,20 +107,18 @@ window.addEventListener('popstate', (event) => {
   const urlParams = new URLSearchParams(window.location.search)
   const query = urlParams.get('q') || ''
   const sortBy = urlParams.get('sort')
+  const effectiveSortBy = sortBy || 'relevance'
   const page = parseInt(urlParams.get('page')) || 1
 
   // Update form elements to reflect URL state
   input.value = query
+  sortSelect.value = effectiveSortBy
 
   // Handle navigation
   if (query || sortBy || urlParams.has('page')) {
-    const effectiveSortBy = sortBy || (query ? 'relevance' : 'name')
-    sortSelect.value = effectiveSortBy
     list.goSearch(query, effectiveSortBy, page)
-  } else if (window.location.pathname === '/') {
-    list.revertToNormal()
   } else {
-    history.go()
+    list.revertToNormal()
   }
 })
 
