@@ -87,7 +87,7 @@ export class Pagination {
         const form = document.forms.search
         const input = form.elements['q']
         const sortSelect = form.elements['sort']
-        const query = input.value.toLowerCase()
+        const query = input.value
         const sortBy = sortSelect.value
 
         // trigger search with new page and scroll to the top of results

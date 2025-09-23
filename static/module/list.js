@@ -114,7 +114,7 @@ export class List {
       throw new Error('minisearch is not initialized')
     }
 
-    const query = value.trim()
+    const query = value.toLowerCase().trim()
     const hasQuery = query.length > 0
     const usingWildcard = !hasQuery && sortBy !== 'relevance'
 

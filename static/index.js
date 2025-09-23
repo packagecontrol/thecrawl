@@ -61,12 +61,12 @@ const sortSelect = form.elements['sort']
   if (query || sortBy || urlParams.has('page')) {
     const effectiveSortBy = sortBy ?? 'relevance'
     sortSelect.value = effectiveSortBy
-    list.goSearch(query.toLowerCase(), effectiveSortBy, page)
+    list.goSearch(query, effectiveSortBy, page)
   }
 })()
 
 const handleInput = () => {
-  const query = input.value.toLowerCase().trim()
+  const query = input.value
   const sortBy = sortSelect.value
   list.goSearch(query, sortBy)
 }
@@ -106,7 +106,6 @@ window.addEventListener('popstate', (event) => {
   }
   const urlParams = new URLSearchParams(window.location.search)
   const query = urlParams.get('q') || ''
-  const normalizedQuery = query.toLowerCase()
   const sortBy = urlParams.get('sort')
   const effectiveSortBy = sortBy ?? 'relevance'
   const page = parseInt(urlParams.get('page')) || 1
@@ -115,7 +114,7 @@ window.addEventListener('popstate', (event) => {
   input.value = query
   sortSelect.value = effectiveSortBy
 
-  list.goSearch(normalizedQuery, effectiveSortBy, page)
+  list.goSearch(query, effectiveSortBy, page)
 })
 
 // Add event delegation for search links
@@ -167,5 +166,5 @@ document.addEventListener('click', (event) => {
   input.dispatchEvent(changeEvent)
 
   list.scrollUp()
-  list.goSearch(newQuery.toLowerCase(), urlParams.get('sort') ?? 'relevance', 1)
+  list.goSearch(newQuery, urlParams.get('sort') ?? 'relevance', 1)
 })
