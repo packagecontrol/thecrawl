@@ -90,17 +90,15 @@
     stroke-width: 1;
     fill: var(--blue-2);
   }
-  .upgrades-line,
-  .upgrades-point {
-    opacity: .6;
-    transition: opacity .2s ease-in-out;
+  .upgrades-line {
+    opacity: 1;
+    transition: stroke-width .2s ease-in-out;
   }
   &:has(.upgrades-axis:hover),
   &:has(.upgrades-line:hover),
   &:has(.upgrades-point:hover) {
-    .upgrades-line,
-    .upgrades-point {
-      opacity: 1;
+    .upgrades-line {
+      stroke-width: 2;
     }
   }
 
@@ -145,8 +143,7 @@
   }
 }
 .chart-container:has(.color-upgrade:hover) .install-chart {
-  .upgrades-line,
-  .upgrades-point {
-    opacity: 1;
+  .upgrades-line {
+    stroke-width: 2;
   }
 }
