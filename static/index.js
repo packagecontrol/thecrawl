@@ -41,15 +41,7 @@ const minisrch = new minisearch({
 minisrch.addAll(data)
 
 const list = new List()
-
 list.setMinisearch(minisrch)
-
-const handleInput = () => {
-  const query = input.value.toLowerCase().trim()
-  const sortBy = sortSelect.value
-
-  list.goSearch(query, sortBy)
-}
 
 const form = document.forms.search
 const input = form.elements['q']
@@ -73,8 +65,21 @@ const sortSelect = form.elements['sort']
   }
 })()
 
+const handleInput = () => {
+  const query = input.value.toLowerCase().trim()
+  const sortBy = sortSelect.value
+  list.goSearch(query, sortBy)
+}
 
 let debounceTimeout
+
+// Handle input changes (search as you type)
+input.addEventListener('input', () => {
+  clearTimeout(debounceTimeout)
+  debounceTimeout = setTimeout(() => {
+    handleInput()
+  }, 300) // .3 seconds
+})
 
 // Handle form submission
 input.form.onsubmit = (event) => {
@@ -84,14 +89,6 @@ input.form.onsubmit = (event) => {
 
   handleInput()
 }
-
-// Handle input changes (search as you type)
-input.addEventListener('input', () => {
-  clearTimeout(debounceTimeout)
-  debounceTimeout = setTimeout(() => {
-    handleInput()
-  }, 300) // .3 seconds
-})
 
 // Handle sort dropdown changes
 sortSelect.addEventListener('change', handleInput)
