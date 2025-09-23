@@ -70,17 +70,20 @@ export function processQueryString(rawValue = '') {
     })
   }
 
-  extractFilter(/author:"([^"]+)"|author:([^\s]+)/gi, authorValue => ({
+  const regexFor = field =>
+    new RegExp(`${field}:"([^"]+)"|${field}:([^\\s]+)`, 'gi')
+
+  extractFilter(regexFor('author'), authorValue => ({
     queries: [authorValue],
     fields: ['author'],
   }))
 
-  extractFilter(/label:"([^"]+)"|label:([^\s]+)/gi, labelValue => ({
+  extractFilter(regexFor('label'), labelValue => ({
     queries: [labelValue],
     fields: ['labels'],
   }))
 
-  extractFilter(/platform:"([^"]+)"|platform:([^\s]+)/gi, platformValue => ({
+  extractFilter(regexFor('platform'), platformValue => ({
     combineWith: 'OR',
     queries: [platformValue, 'any'],
     fields: ['platforms'],
