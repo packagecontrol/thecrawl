@@ -149,7 +149,8 @@ section {
   margin-bottom: 1.6rem;
 
   &:has(ul.list) {
-    max-width: 800px;
+    max-width: calc(var(--max-content) * 2/3);
+    margin-left: auto;
     margin-right: auto;
   }
 }

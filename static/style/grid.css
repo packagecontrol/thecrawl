@@ -119,9 +119,8 @@
   }
 
   .list & .description {
-    font-size: 12px;
-    line-height: 1.33;
-    margin-top: -17px;
+    font-size: 1rem;
+    padding-top: 8px;
   }
 
   .button-group {

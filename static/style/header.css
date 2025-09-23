@@ -3,11 +3,11 @@ header {
   position: relative;
   margin: 0 auto 16px auto;
   padding: 11px var(--side-padding) 0 var(--side-padding);
-  max-width: 92rem;
+  max-width: var(--max-content);
   color: var(--foreground-3);
 
   &:has(h1) {
-    margin-bottom: 40px;
+    margin-bottom: 56px;
   }
 
   @media (max-width: 479px) {
