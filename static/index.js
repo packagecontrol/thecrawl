@@ -76,9 +76,13 @@ let debounceTimeout
 // Handle input changes (search as you type)
 input.addEventListener('input', () => {
   clearTimeout(debounceTimeout)
-  debounceTimeout = setTimeout(() => {
+  if (input.value.trim() == '') {
     handleInput()
-  }, 300) // .3 seconds
+  } else {
+    debounceTimeout = setTimeout(() => {
+      handleInput()
+    }, 300) // .3 seconds
+  }
 })
 
 // Handle form submission
