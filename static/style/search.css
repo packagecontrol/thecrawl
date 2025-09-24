@@ -144,6 +144,8 @@ select {
 
 /* Compact header search: hide Sort By until focus, with animation */
 form.compact {
+  margin: 0;
+
   .search-controls {
     margin-bottom: 0;
 
