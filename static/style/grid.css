@@ -127,6 +127,7 @@
   .list & .description {
     font-size: 1rem;
     padding-top: 8px;
+    max-width: calc(var(--max-line) * 5/6);
   }
 
   .button-group {
