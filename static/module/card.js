@@ -16,25 +16,7 @@ export class Card {
     this.authors(this.clone.querySelector('p.authors'))
     this.clone.querySelector('p.description').innerHTML = this.pkg.description
 
-    const star = this.clone.querySelector('ul.stats .stars')
-    const install = this.clone.querySelector('ul.stats .installs')
     const warning = this.clone.querySelector('ul.stats .warning')
-
-    if (this.pkg.stars > 0 && !this.pkg.doa) {
-      star.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub')
-      star.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.stars))
-    }
-    else {
-      star.remove()
-    }
-
-    if (this.pkg.installed > 0 && !this.pkg.doa) {
-      install.setAttribute('title', 'Installed ' + this.pkg.installed + (this.pkg.installed < 2 ? ' time' : ' times'))
-      install.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.installed))
-    }
-    else {
-      install.remove()
-    }
 
     if (this.pkg.archived_at) {
       const date = new Date(Number(this.pkg.archived_at) * 1000)
@@ -60,8 +42,36 @@ export class Card {
     labels.innerHTML = ''
     this.platforms(labels)
     this.labels(labels)
+    this.stats()
 
     return this.clone
+  }
+
+  stats() {
+    const star = this.clone.querySelector('ul.stats .stars')
+    const install = this.clone.querySelector('ul.stats .installs')
+
+    if (this.pkg.removed || this.pkg.doa) {
+      star.remove()
+      install.remove()
+      return
+    }
+
+    if (this.pkg.stars > 0) {
+      star.setAttribute('title', this.pkg.stars + (this.pkg.stars < 2 ? ' star' : ' stars') + ' on GitHub')
+      star.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.stars))
+    }
+    else {
+      star.remove()
+    }
+
+    if (this.pkg.installed > 0) {
+      install.setAttribute('title', 'Installed ' + this.pkg.installed + (this.pkg.installed < 2 ? ' time' : ' times'))
+      install.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.installed))
+    }
+    else {
+      install.remove()
+    }
   }
 
   authors(parent) {
