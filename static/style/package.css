@@ -11,6 +11,10 @@
   &::after {
     content: "”";
   }
+
+  &:empty {
+    display: none;
+  }
 }
 
 .release {
