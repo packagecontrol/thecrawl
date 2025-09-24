@@ -22,6 +22,12 @@
 .list {
   display: flex;
   flex-direction: column;
+
+  section:has(&) {
+    max-width: var(--max-line);
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 .card {
