@@ -7,7 +7,7 @@ import { Search } from './search.js'
  * Manage the search results section.
  *
  * On search:
- * - Swap all registed "hideme" elements with the "result" section, and back.
+ * - Swap all registered "hideme" elements with the "result" section, and back.
  * - Insert pagination if needed.
  * - Update the heading with the number of results.
  * - .. oh and don't forget to render the results themselves :)
@@ -18,6 +18,18 @@ export class List {
   pagination = null
   initialPath = '/'
   initialTitle = document.title
+
+  sortTitleMap = {
+    installed: 'Installs',
+    stars: 'Stars',
+    newest: 'Newest',
+    oldest: 'Oldest',
+    update: 'Recent Updates',
+    name: 'Name (A-Z)',
+    'name-desc': 'Name (Z-A)',
+    author: 'Author (A-Z)',
+    'author-desc': 'Author (Z-A)',
+  }
 
   attr = 'data-list-target'
   section = document.querySelector(`[${this.attr}='section']`)
@@ -102,10 +114,14 @@ export class List {
       throw new Error('minisearch is not initialized')
     }
 
+    const query = value.toLowerCase().trim()
+    const hasQuery = query.length > 0
+    const usingWildcard = !hasQuery && sortBy !== 'relevance'
+
     // Update URL with search query, sort parameter, and page
     const params = new URLSearchParams()
-    if (value.length > 0) {
-      params.set('q', value)
+    if (hasQuery) {
+      params.set('q', query)
     }
     if (sortBy !== 'relevance') {
       params.set('sort', sortBy)
@@ -116,32 +132,47 @@ export class List {
 
     const queryString = params.toString()
     const queryString_ = queryString ? '?' + queryString : ''
+    const target = queryString_ ? '/' + queryString_ : this.initialPath
+    const currentPath = `${window.location.pathname}${window.location.search}`
+    const sortTitle = this.sortTitleMap[sortBy] ?? sortBy
+    const title
+      = usingWildcard
+        ? `List by ${sortTitle}`
+        : hasQuery
+          ? `Search — ${query}`
+          : this.initialTitle
 
-    // Only push state if URL is actually changing
-    if (window.location.search !== queryString_) {
-      const target = '/' + queryString_
-      const title = value.length > 0 ? `Search — ${value}` : this.initialTitle
+    if (currentPath !== target) {
       history.pushState({ title }, '', target)
+    }
+
+    if (document.title !== title) {
       document.title = title
     }
 
     // clear previous results
     this.clear()
 
-    if (value.length < 1) {
-      // no search query - revert to static homepage
+    if (!hasQuery && !usingWildcard) {
+      // no search query and no alternate sort - revert to static homepage
       this.setCounter()
       this.revertToNormal()
       return
     }
 
-    const searchResults = this.search.search(value)
+    const searchResults = hasQuery
+      ? this.search.search(query)
+      : this.search.all()
 
     // when not searching for strings, sorting magically switches to install number
-    if (sortBy === 'relevance' && !this.search.stringSearch) {
-      sortBy = 'installed'
+    let effectiveSort = sortBy
+    if (effectiveSort === 'relevance' && !this.search.stringSearch) {
+      effectiveSort = 'installed'
     }
-    const sortedResults = Sort.sort(searchResults, sortBy)
+    if (usingWildcard && effectiveSort.startsWith('author')) {
+      effectiveSort = 'list-' + effectiveSort
+    }
+    const sortedResults = Sort.sort(searchResults, effectiveSort)
 
     this.setCounter(sortedResults.length)
 
@@ -151,8 +182,6 @@ export class List {
     // render results with pagination
     this.renderPage(sortedResults, page)
 
-    this.section.dispatchEvent(
-      new Event('search-is-ready', { bubbles: true }),
-    )
+    this.section.dispatchEvent(new Event('search-is-ready', { bubbles: true }))
   }
 }

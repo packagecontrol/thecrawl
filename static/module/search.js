@@ -73,4 +73,14 @@ export class Search {
       score,
     }))
   }
+
+  // return all indexed packages using minisearch's wildcard query
+  all() {
+    this.stringSearch = false
+    const wildcard = this.minisearch.constructor?.wildcard
+    if (!wildcard) {
+      throw new Error('minisearch wildcard symbol is unavailable')
+    }
+    return this.minisearch.search(wildcard)
+  }
 }

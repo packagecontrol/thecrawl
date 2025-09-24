@@ -41,48 +41,47 @@ const minisrch = new minisearch({
 minisrch.addAll(data)
 
 const list = new List()
-
 list.setMinisearch(minisrch)
-
-const handleInput = () => {
-  const query = input.value.toLowerCase().trim()
-
-  if (query === '') {
-    list.revertToNormal()
-    // Update URL to remove search parameters
-    if (window.location.search !== '') {
-      const target = list.initialPath
-      const title = target === '/' ? 'Package Control R' : list.initialTitle
-      history.pushState({ title }, '', target)
-      document.title = title
-    }
-  }
-  else {
-    list.goSearch(query, sortSelect.value)
-  }
-}
 
 const form = document.forms.search
 const input = form.elements['q']
 const sortSelect = form.elements['sort']
-const url_search = window.location.search
-const urlParams = new URLSearchParams(url_search)
+
+const syncFromUrl = () => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const query = urlParams.get('q') || ''
+  const sortBy = urlParams.get('sort')
+  const page = parseInt(urlParams.get('page')) || 1
+  const effectiveSortBy = sortBy ?? 'relevance'
+
+  input.value = query
+  sortSelect.value = effectiveSortBy
+
+  list.goSearch(query, effectiveSortBy, page)
+}
 
 // Handle initial page load
-const query = urlParams.get('q') || ''
-const sortBy = urlParams.get('sort')
-const page = parseInt(urlParams.get('page')) || 1
+syncFromUrl()
 
-input.value = query
-
-// Only show search results if there's a query or explicit sort parameter
-if (query || sortBy || urlParams.has('page')) {
-  const effectiveSortBy = sortBy ?? 'relevance'
-  sortSelect.value = effectiveSortBy
-  list.goSearch(query.toLowerCase(), effectiveSortBy, page)
+const handleInput = () => {
+  const query = input.value
+  const sortBy = sortSelect.value
+  list.goSearch(query, sortBy)
 }
 
 let debounceTimeout
+
+// Handle input changes (search as you type)
+input.addEventListener('input', () => {
+  clearTimeout(debounceTimeout)
+  if (input.value.trim() == '') {
+    handleInput()
+  } else {
+    debounceTimeout = setTimeout(() => {
+      handleInput()
+    }, 300) // .3 seconds
+  }
+})
 
 // Handle form submission
 input.form.onsubmit = (event) => {
@@ -93,48 +92,11 @@ input.form.onsubmit = (event) => {
   handleInput()
 }
 
-// Handle input changes (search as you type)
-input.addEventListener('input', () => {
-  clearTimeout(debounceTimeout)
-  debounceTimeout = setTimeout(() => {
-    handleInput()
-  }, 300) // .3 seconds
-})
-
 // Handle sort dropdown changes
-sortSelect.addEventListener('change', (event) => {
-  const query = input.value.toLowerCase()
-  const sortBy = event.target.value
-
-  list.goSearch(query, sortBy)
-})
+sortSelect.addEventListener('change', handleInput)
 
 // Handle browser back/forward navigation
-window.addEventListener('popstate', (event) => {
-  if (event.state && event.state.title) {
-    document.title = event.state.title
-  } else if (list && list.initialTitle) {
-    document.title = list.initialTitle
-  }
-  const urlParams = new URLSearchParams(window.location.search)
-  const query = urlParams.get('q') || ''
-  const sortBy = urlParams.get('sort')
-  const page = parseInt(urlParams.get('page')) || 1
-
-  // Update form elements to reflect URL state
-  input.value = query
-
-  // Handle navigation
-  if (query || sortBy || urlParams.has('page')) {
-    const effectiveSortBy = sortBy || (query ? 'relevance' : 'name')
-    sortSelect.value = effectiveSortBy
-    list.goSearch(query, effectiveSortBy, page)
-  } else if (window.location.pathname === '/') {
-    list.revertToNormal()
-  } else {
-    history.go()
-  }
-})
+window.addEventListener('popstate', syncFromUrl)
 
 // Add event delegation for search links
 document.addEventListener('click', (event) => {
@@ -186,5 +148,5 @@ document.addEventListener('click', (event) => {
   input.dispatchEvent(changeEvent)
 
   list.scrollUp()
-  list.goSearch(newQuery.toLowerCase(), urlParams.get('sort') ?? 'relevance', 1)
+  list.goSearch(newQuery, urlParams.get('sort') ?? 'relevance', 1)
 })
