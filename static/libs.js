@@ -32,14 +32,12 @@ const form = document.forms.search
 const input = form.elements['lib']
 const handleInput = () => {
   const query = input.value.toLowerCase().trim()
-  const counter = document.querySelector('h1')
-  const heading = document.querySelector('section h2')
+  const heading = document.querySelector('[data-list-target="heading"]')
 
   if (query === '') {
     cards.forEach((card) => {
       card.closest('li').style.display = null
     })
-    counter.innerText = counter.dataset.all + ' Libraries'
     heading.innerText = 'List'
     return
   }
@@ -53,12 +51,11 @@ const handleInput = () => {
       card.closest('li').style.display = null
     }
     if (names.length === 1) {
-      counter.innerText = '1 Library'
+      heading.innerText = '1 Result'
     }
     else {
-      counter.innerText = names.length + ' Libraries'
+      heading.innerText = names.length + ' Results'
     }
-    heading.innerText = 'Results'
   })
 }
 
