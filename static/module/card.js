@@ -1,9 +1,11 @@
 export class Card {
   pkg = {}
   clone
+  compact = false
 
-  constructor(data) {
+  constructor(data, compact = null) {
     this.pkg = data
+    this.compact = compact === 'compact'
 
     const template = document.querySelector('template#package-card')
     this.clone = template.content.cloneNode(true)
@@ -14,7 +16,13 @@ export class Card {
     this.clone.querySelector('a').innerHTML = this.pkg.name
     this.clone.querySelector('a').setAttribute('href', this.pkg.permalink)
     this.authors(this.clone.querySelector('p.authors'))
-    this.clone.querySelector('p.description').innerHTML = this.pkg.description
+
+    const descr_el = this.clone.querySelector('p.description')
+    if (this.compact) {
+      descr_el.remove()
+    } else {
+      descr_el.innerHTML = this.pkg.description
+    }
 
     const warning = this.clone.querySelector('ul.stats .warning')
 

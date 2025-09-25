@@ -356,7 +356,7 @@ class RecentPager {
 
     slice.forEach((pkg) => {
       const li = document.createElement('li')
-      li.appendChild((new Card(pkg)).render())
+      li.appendChild((new Card(pkg, 'compact')).render())
       this.ul.appendChild(li)
     })
 
