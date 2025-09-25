@@ -61,7 +61,7 @@ def main():
             })
 
             current_total = metrics.get(source_key, 0)
-            prev_total = prev_metrics.get(source_key, current_total)
+            prev_total = prev_metrics.get(source_key, 0)
             delta = max(0, current_total - prev_total)
             if delta > 0:
                 print(f'"{pkg}" {target_key} +{delta}')
