@@ -174,3 +174,75 @@ async def test_drop_packagecontrolio_as_homepage(
 
     await main_(registry, workspace, None, 100)
     assert workspace == expected
+
+
+@pytest.mark.asyncio
+async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "PreReleaseOnly",
+                "details": "https://github.com/example/pre-release-only",
+                "releases": [
+                    {
+                        "sublime_text": "*",
+                        "tags": True
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}, "dependencies": []}
+
+    github_info = {
+        "metadata": {
+            "id": "R_prereleaseonly",
+            "name": "PreReleaseOnly",
+            "description": "Fixture package with prerelease tag only",
+            "homepage": "https://github.com/example/pre-release-only",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/pre-release-only/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01 00:00:00"
+        },
+        "tags": [
+            {
+                "name": "v0.0.1-beta",
+                "sha": "abc123",
+                "date": "2024-05-10 12:00:00",
+                "url": "https://codeload.github.com/example/pre-release-only/zip/v0.0.1-beta"
+            }
+        ],
+        "branches": [
+            {
+                "name": "main",
+                "version": "2024.05.10.12.00.00",
+                "sha": "def456",
+                "date": "2024-05-10 12:00:00",
+                "url": "https://codeload.github.com/example/pre-release-only/zip/main"
+            }
+        ]
+    }
+
+    set_now("2024-05-11 00:00:00")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("PreReleaseOnly")
+    assert package is not None
+
+    releases = package.get("releases", [])
+    assert len(releases) == 1
+
+    release = releases[0]
+    assert release["version"] == "0.0.1-beta"
+    assert release["url"].endswith("v0.0.1-beta")
+    assert release["date"] == "2024-05-10 12:00:00"

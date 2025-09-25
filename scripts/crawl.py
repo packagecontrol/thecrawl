@@ -400,7 +400,7 @@ async def crawl_package(
                             r |= {"version": version_string}
                             break
 
-                if "version" in r:
+                if "version" in r or prerelease_pushed:
                     continue
 
                 if tag_prefix:
