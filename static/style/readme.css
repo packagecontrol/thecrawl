@@ -4,14 +4,6 @@
   border-radius: 6px;
   background: var(--background-1);
 
-  h1,
-  h2,
-  h3,
-  p,
-  li {
-    max-width: var(--max-line);
-  }
-
   &:empty {
     display: none;
   }
