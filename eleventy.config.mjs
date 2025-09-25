@@ -120,6 +120,7 @@ export default function (eleventyConfig) {
 
   eleventyConfig.ignores.add('util')
   eleventyConfig.ignores.add('README.md')
+  eleventyConfig.ignores.add('**/*.test.js')
 
   const inlineJsCache = new Map()
   eleventyConfig.addAsyncShortcode('inline_js', async (relPath) => {

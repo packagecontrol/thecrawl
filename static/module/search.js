@@ -9,60 +9,12 @@ export class Search {
 
   // process the search query string and return results
   search(value) {
-    const queries = []
-
-    // first handle the author, label, and platform filters
-    // these have the form of type:value, or type:"value"
-
-    // handle author filter
-    const author = value.match(/author:"([^"]+)"|author:([^\s]+)/i)
-    if (author) {
-      const authorValue = author[1] || author[2]
-      queries.push({
-        queries: [authorValue],
-        fields: ['author'],
-      })
-      // author has been handled, remove this filter from the search string
-      value = value.replace(author[0], '')
-    }
-
-    // handle label filter
-    const label = value.match(/label:"([^"]+)"|label:([^\s]+)/i)
-    if (label) {
-      const labelValue = label[1] || label[2]
-      queries.push({
-        queries: [labelValue],
-        fields: ['labels'],
-      })
-      // label has been handled, remove this filter from the search string
-      value = value.replace(label[0], '')
-    }
-
-    // handle platform filter
-    const platform = value.match(/platform:"([^"]+)"|platform:([^\s]+)/i)
-    if (platform) {
-      const platformValue = platform[1] || platform[2]
-      queries.push({
-        combineWith: 'OR',
-        queries: [platformValue, 'any'],
-        fields: ['platforms'],
-      })
-      // platform has been handled, remove this filter from the search string
-      value = value.replace(platform[0], '')
-    }
-
-    // if a value remains, add a free text search query across name, author and discription
-    this.stringSearch = value.trim().length > 0
-    if (this.stringSearch) {
-      queries.push({
-        queries: value.trim().split(' '),
-        fields: ['name', 'description', 'author'],
-      })
-    }
+    const query = processQueryString(value)
+    this.stringSearch = query.hasFreeText
 
     // search and then map results so we can easily use them for output
     const results = this.minisearch.search({
-      queries,
+      queries: query.queries,
       combineWith: 'AND',
     })
 
@@ -83,4 +35,61 @@ export class Search {
     }
     return this.minisearch.search(wildcard)
   }
+}
+
+export function processQueryString(rawValue = '') {
+  const queries = []
+  let hasFreeText = false
+
+  let value = typeof rawValue === 'string' ? rawValue : String(rawValue ?? '')
+
+  const extractFilter = (regex, buildQuery) => {
+    const matches = []
+    let match
+    while ((match = regex.exec(value)) !== null) {
+      matches.push(match)
+    }
+    regex.lastIndex = 0
+
+    matches.forEach((currentMatch) => {
+      const [, quoted, unquoted] = currentMatch
+      const filterValue = quoted || unquoted
+      if (!filterValue) {
+        return
+      }
+
+      queries.push(buildQuery(filterValue))
+      value = value.replace(currentMatch[0], ' ')
+    })
+  }
+
+  const regexFor = field =>
+    new RegExp(`${field}:"([^"]+)"|${field}:([^\\s]+)`, 'gi')
+
+  extractFilter(regexFor('author'), authorValue => ({
+    queries: [authorValue],
+    fields: ['author'],
+  }))
+
+  extractFilter(regexFor('label'), labelValue => ({
+    queries: [labelValue],
+    fields: ['labels'],
+  }))
+
+  extractFilter(regexFor('platform'), platformValue => ({
+    combineWith: 'OR',
+    queries: [platformValue, 'any'],
+    fields: ['platforms'],
+  }))
+
+  const trimmed = value.trim()
+  if (trimmed.length > 0) {
+    queries.push({
+      queries: trimmed.split(/\s+/),
+      fields: ['name', 'description', 'author'],
+    })
+    hasFreeText = true
+  }
+
+  return { queries, hasFreeText }
 }
