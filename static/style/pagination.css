@@ -18,9 +18,9 @@
     /* disabled because it's the current page */
     &:disabled {
       background: var(--orange-1);
-      color: var(--foreground-1);
+      color: var(--white);
       border-color: var(--orange-1);
-      cursor: revert;
+      opacity: 1;
     }
   }
 }

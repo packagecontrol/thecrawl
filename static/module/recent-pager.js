@@ -42,16 +42,10 @@ const RECENT_PAGER_STYLES = `
 
       .button {
         background: transparent;
-        cursor: pointer;
 
         &:enabled:hover,
         &:enabled:focus-visible {
           background: var(--background-4);
-        }
-
-        &:disabled {
-          opacity: 0.4;
-          cursor: default;
         }
 
         .pager-nav-symbol {
