@@ -37,7 +37,7 @@ export function cleanAuthors(author) {
  * Convert links for the raw readme data to one for the file blob.
  */
 export function getReadmeUrl(readme) {
-  if (typeof readme_url !== 'string') {
+  if (typeof readme !== 'string') {
     return null
   }
 
@@ -89,6 +89,30 @@ export function isoWeekString(dateStr) {
 // Inline tests (Vitest)
 if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest
+
+  describe('getReadmeUrl', () => {
+    it('returns null when readme is missing', () => {
+      expect(getReadmeUrl(null)).toBeNull()
+    })
+
+    it('maps GitHub raw URLs to blob URLs', () => {
+      expect(
+        getReadmeUrl('https://raw.githubusercontent.com/agrc/AmdButler/master/README.md'),
+      ).toBe('https://github.com/agrc/AmdButler/blob/master/README.md')
+    })
+
+    it('maps GitLab raw URLs to blob URLs', () => {
+      expect(
+        getReadmeUrl('https://gitlab.com/patopest/Sublime-Text-Cuelang-Syntax/-/raw/master/README.md'),
+      ).toBe('https://gitlab.com/patopest/Sublime-Text-Cuelang-Syntax/-/blob/master/README.md')
+    })
+
+    it('maps Bitbucket raw URLs to src URLs', () => {
+      expect(
+        getReadmeUrl('https://bitbucket.org/JeisonJHA/sublime-delphi-language/raw/master/README.md'),
+      ).toBe('https://bitbucket.org/JeisonJHA/sublime-delphi-language/src/master/README.md')
+    })
+  })
 
   describe('utcifyISODateString', () => {
     it.each([

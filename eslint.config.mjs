@@ -28,6 +28,7 @@ export default defineConfig([
     rules: {
       '@stylistic/brace-style': 'off',
       '@stylistic/quote-props': 'off',
+      'no-undef': ['error', { typeof: true }],
     },
   },
   globalIgnores([
