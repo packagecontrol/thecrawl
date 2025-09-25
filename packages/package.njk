@@ -85,7 +85,7 @@ isPackagePage: true
     {# once a package is removed none of the links or the readme are still reliable #}
     <h2>Links</h2>
     <ul class="button-group links">
-      {% if not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
+      {% if pkg.homepage and not "packagecontrol.io" in pkg.homepage | lower and pkg.details != pkg.homepage %}
       <li>
         <a class="button" href="{{ pkg.homepage }}">{{ util.icon('home') }} <span>Website</span></a>
       </li>
