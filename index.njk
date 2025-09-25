@@ -29,5 +29,7 @@ date: Last Modified
     {% endfor %}
   </ul>
 </section>
+{% inline_js 'static/recent_waiter.js' %}
+<script src="{{ '/static/module/recent-pager.js' | bust }}" type="module" async></script>
 
 {% include "search_section.njk" %}
