@@ -5,31 +5,49 @@
  */
 
 (function () {
-  const q = new URLSearchParams(location.search).get('q')
-  if (!q) {
+  const params = new URLSearchParams(location.search)
+  const q = params.get('q')
+  const isListing = !q && params.has('sort')
+  if (!q && !isListing) {
     return
   };
 
-  document.title = `Search — ${q}`
+  const root = document.documentElement
+  root.classList.add('initializing')
+  document.title = q ? `Search — ${q}` : 'Listing'
 
-  const setContent = () => {
+  const resolveHeading = () => {
+    return document.querySelector('[data-list-target="heading"]')
+  }
+
+  const onDOMContentLoaded = () => {
     // set temporary content that will be replaced after search completes
-    document.querySelector('[name=q]').value = q
+    if (q) {
+      document.querySelector('[name=q]').value = q
+    }
   }
 
   const timer = window.setTimeout(() => {
-    // if loading takes long reveal h1 to explain the state to the user
-    document.querySelector('h1').style.visibility = 'revert'
+    // we're waiting too long
+    const heading = resolveHeading()
+    if (heading) {
+      heading.style.visibility = 'revert'
+    }
   }, 600)
 
-  window.addEventListener('DOMContentLoaded', setContent)
-
-  const root = document.documentElement
-  root.classList.add('initializing')
-  root.addEventListener('search-is-ready', () => {
+  const onSearchReady = () => {
     // we're done initializing, return back to normal
     root.classList.remove('initializing')
-    window.removeEventListener('DOMContentLoaded', setContent)
+    const heading = resolveHeading()
+    if (heading) {
+      heading.style.visibility = ''
+    }
+
+    window.removeEventListener('DOMContentLoaded', onDOMContentLoaded)
     window.clearTimeout(timer)
-  })
+    root.removeEventListener('search-is-ready', onSearchReady)
+  }
+
+  window.addEventListener('DOMContentLoaded', onDOMContentLoaded)
+  root.addEventListener('search-is-ready', onSearchReady)
 })()
