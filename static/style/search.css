@@ -36,6 +36,12 @@
   }
 }
 
+form[name='search'] {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: calc(var(--max-content) * 2/3);
+}
+
 input {
   background: var(--background-1);
   color: var(--foreground-1);
@@ -138,6 +144,8 @@ select {
 
 /* Compact header search: hide Sort By until focus, with animation */
 form.compact {
+  margin: 0;
+
   .search-controls {
     margin-bottom: 0;
 

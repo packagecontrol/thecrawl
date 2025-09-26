@@ -1,6 +1,6 @@
 .readme {
   margin-top: 3.2rem;
-  padding: 1.6em;
+  padding: var(--side-padding) calc(var(--side-padding) * 2);
   border-radius: 6px;
   background: var(--background-1);
 

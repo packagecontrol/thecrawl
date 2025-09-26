@@ -15,10 +15,6 @@ const RECENT_PAGER_STYLES = `
       top: 0;
       z-index: 3;
       background: var(--background-2);
-
-      h2 {
-        padding-top: 10px;
-      }
     }
 
     .pager-pagination {
@@ -28,11 +24,7 @@ const RECENT_PAGER_STYLES = `
       gap: 1rem;
       font-size: 1.3rem;
       position: relative;
-      top: 4px;
-
-      @media (max-width: 479px) {
-        top: 1px;
-      }
+      top: 2px;
 
       .button-group {
         display: flex;
@@ -42,16 +34,10 @@ const RECENT_PAGER_STYLES = `
 
       .button {
         background: transparent;
-        cursor: pointer;
 
         &:enabled:hover,
         &:enabled:focus-visible {
           background: var(--background-4);
-        }
-
-        &:disabled {
-          opacity: 0.4;
-          cursor: default;
         }
 
         .pager-nav-symbol {
@@ -343,7 +329,7 @@ class RecentPager {
     if (stick) {
       header.classList.add('is-sticky')
       const headerHeight = Math.ceil(header.getBoundingClientRect().height || 0)
-      this.section.style.scrollMarginTop = `${headerHeight + 16}px`
+      this.section.style.scrollMarginTop = `${headerHeight}px`
     }
     else {
       header.classList.remove('is-sticky')
@@ -370,7 +356,7 @@ class RecentPager {
 
     slice.forEach((pkg) => {
       const li = document.createElement('li')
-      li.appendChild((new Card(pkg)).render())
+      li.appendChild((new Card(pkg, 'compact')).render())
       this.ul.appendChild(li)
     })
 

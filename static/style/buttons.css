@@ -44,6 +44,11 @@
   &:focus {
     outline: 2px solid var(--orange-1);
   }
+
+  &:disabled {
+    opacity: .4;
+    cursor: revert;
+  }
 }
 
 span.button {

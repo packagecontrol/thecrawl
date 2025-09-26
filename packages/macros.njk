@@ -100,11 +100,19 @@
         {{ pkg.name }}
       </a>
     </h3>
-    <p>by
+
+    <p class="authors">by
     {% for author in pkg.author -%}
       {% set q = 'author:"' ~ author ~ '"' %}
       <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
-    {%- endfor %}</p>
+    {%- endfor %}
+    </p>
+
+    {% if pkg.description %}
+      <p class="description">
+        {{ pkg.description }}
+      </p>
+    {% endif %}
 
     <ul class="stats">
       {{ rip(pkg.removed) }}

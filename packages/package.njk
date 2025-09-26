@@ -116,7 +116,7 @@ isPackagePage: true
   {% endif %}
 </section>
 
-{% if pkg.readme %}
+{% if pkg.readme and not pkg.removed %}
   <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
   <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="hideme"></section>
   <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>

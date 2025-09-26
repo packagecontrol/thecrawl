@@ -14,6 +14,7 @@ html {
   height: 100%;
 
   --max-content: 78rem;
+  --max-line: 52rem; /* limit paragraph line length for readability at 2/3 of 78 */
   --side-padding: 1rem;
   @media (min-width: var(--max-content)) {
     --side-padding: 1.6rem;
@@ -41,8 +42,7 @@ main {
   padding: 0 var(--side-padding) 3.2rem var(--side-padding);
 
   html.about-faq & {
-    /* limit paragraph length for readability */
-    max-width: 48rem;
+    max-width: var(--max-line);
   }
 
 }
@@ -147,4 +147,12 @@ human-date[clickable] {
 
 section {
   margin-bottom: 1.6rem;
+
+  &[data-list-target] {
+    padding-top: 16px;
+    > h2:first-child,
+    .pager-header > h2 {
+      padding-top: 0;
+    }
+  }
 }

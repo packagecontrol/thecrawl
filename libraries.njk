@@ -20,8 +20,8 @@ date: Last Modified
       {{ author }}{{ ", " if not loop.last }}
     {%- endfor %}</p>
 
-    <p>
-      {{ pkg.description }}
+    <p class="description">
+      {{- pkg.description -}}
     </p>
 
     <ul class="button-group labels">
@@ -44,20 +44,17 @@ date: Last Modified
   </div>
 {% endmacro %}
 
-<h1 data-all="{{ collections.libraries | length }}">
-  {{ collections.libraries | length }}
-  Libaries
-</h1>
-
 <form name="search">
+  <h1>Libaries</h1>
+
   <div class="search-controls">
     <label for="search-field" class="screenreader-only">Search</label>
-    <input type="search" autocomplete="off" name="lib" id="search-field" placeholder="Search libraries …">
+    <input type="search" autocomplete="off" name="lib" id="search-field" placeholder="Search {{ collections.libraries | length }} libraries …">
   </div>
 </form>
 
-<section name="newest">
-  <h2>List</h2>
+<section name="libraries">
+  <h2 data-list-target="heading">List</h2>
   <ul class="list">
     {% for item in collections.libraries %}
       <li>
