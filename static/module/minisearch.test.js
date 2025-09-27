@@ -33,6 +33,34 @@ describe('GitSavvy search', () => {
       platforms: ['linux'],
       labels: ['color'],
     },
+    {
+      name: 'LocalisationHelper',
+      description: 'Handles localisation workflows',
+      author: 'Locale Co',
+      platforms: ['linux'],
+      labels: ['localisation'],
+    },
+    {
+      name: 'LocalizationHelper',
+      description: 'Handles localization workflows',
+      author: 'Locale Co',
+      platforms: ['linux'],
+      labels: ['localization'],
+    },
+    {
+      name: 'InternationalisationSuite',
+      description: 'Supports internationalisation efforts',
+      author: 'Global Co',
+      platforms: ['linux'],
+      labels: ['internationalisation'],
+    },
+    {
+      name: 'InternationalizationSuite',
+      description: 'Supports internationalization efforts',
+      author: 'Global Co',
+      platforms: ['linux'],
+      labels: ['internationalization'],
+    },
   ]
 
   let minisrch
@@ -69,5 +97,25 @@ describe('GitSavvy search', () => {
     const names = results.map(entry => entry.name)
     expect(names).toContain('ColourHelper')
     expect(names).toContain('ColorHelper')
+  })
+
+  it.each([
+    { query: 'localisation' },
+    { query: 'localization' },
+  ])('returns both LocalisationHelper and LocalizationHelper for $query', ({ query }) => {
+    const results = minisrch.search(query)
+    const names = results.map(entry => entry.name)
+    expect(names).toContain('LocalisationHelper')
+    expect(names).toContain('LocalizationHelper')
+  })
+
+  it.each([
+    { query: 'internationalisation' },
+    { query: 'internationalization' },
+  ])('returns both InternationalisationSuite and InternationalizationSuite for $query', ({ query }) => {
+    const results = minisrch.search(query)
+    const names = results.map(entry => entry.name)
+    expect(names).toContain('InternationalisationSuite')
+    expect(names).toContain('InternationalizationSuite')
   })
 })

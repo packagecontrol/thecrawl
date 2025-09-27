@@ -1,5 +1,7 @@
 const VARIANT_REPLACEMENTS = [
   [/colou/g, 'colo'], // colour => color
+  [/localis/g, 'localiz'], // localisation => localization
+  [/internationalis/g, 'internationaliz'], // internationalisation => internationalization
 ]
 
 function normalizeToken(token) {
