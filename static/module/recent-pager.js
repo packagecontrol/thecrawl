@@ -270,10 +270,19 @@ class RecentPager {
     if (start >= end) return ''
 
     const first = this.items[start]
-    const last = this.items[end - 1]
+    const firstTimestamp = this.timestampValue(first)
+    if (!firstTimestamp) return ''
 
-    const f = new Date(this.timestampValue(first) * 1000)
-    const l = new Date(this.timestampValue(last) * 1000)
+    let lastTimestamp = 0
+    // The current page could end with items without a valid
+    // timestamp, walk backwards to find the last complete item.
+    for (let idx = end - 1; idx >= start; idx--) {
+      lastTimestamp = this.timestampValue(this.items[idx])
+      if (lastTimestamp) break
+    }
+
+    const f = new Date(firstTimestamp * 1000)
+    const l = new Date(lastTimestamp * 1000)
 
     const fY = f.getUTCFullYear(), fM = f.getUTCMonth()
     const lY = l.getUTCFullYear(), lM = l.getUTCMonth()
@@ -297,13 +306,12 @@ class RecentPager {
 
   updateMonthIndicator() {
     // Only show from page 2 onwards
+    let label = ''
     if (this.page > 1) {
-      this.monthIndicator.style.display = ''
-      this.monthIndicator.textContent = this.currentMonthLabel()
+      label = this.currentMonthLabel()
     }
-    else {
-      this.monthIndicator.style.display = 'none'
-    }
+    this.monthIndicator.style.display = label ? '' : 'none'
+    this.monthIndicator.textContent = label
   }
 
   updateButtons() {
