@@ -1,9 +1,6 @@
 import { List } from './module/list.js'
-import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
-
-/**
- * Handle search features on the index and package pages.
- */
+import MiniSearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
+import { createMinisearch } from './module/minisearch.js'
 
 // Fetches and returns the search data from the index
 async function fetchSearchData() {
@@ -11,34 +8,13 @@ async function fetchSearchData() {
   if (!res.ok) throw new Error('Failed to fetch search data')
   return await res.json()
 }
+
 const data = await fetchSearchData()
-const minisrch = new minisearch({
-  idField: 'name',
-  // search in these fields
-  fields: ['name', 'description', 'author', 'platforms', 'labels'],
-  // return all fields from the index
-  storeFields: [
-    'name',
-    'description',
-    'author',
-    'stars',
-    'installed',
-    'created_at',
-    'last_modified',
-    'archived_at',
-    'removed',
-    'doa',
-    'platforms',
-    'labels',
-    'permalink',
-  ],
-  searchOptions: {
-    boost: { author: 2 },
-    fuzzy: 0.2,
-    prefix: true,
-  },
-})
-minisrch.addAll(data)
+const minisrch = createMinisearch(MiniSearch, data)
+
+/**
+ * Handle search features on the index and package pages.
+ */
 
 // Expose data for other modules and announce readiness
 window.__SEARCH_DATA__ = data
