@@ -211,16 +211,15 @@ class RecentPager {
    *  @returns {number} */
   pageForTimestamp(timestamp) {
     if (!timestamp) return 1
-    const value = String(timestamp)
     const total = this.totalPages()
 
     for (let page = 1; page <= total; page++) {
-      if (this.pageTimestamp(page) === value) {
+      if (this.pageTimestamp(page) === timestamp) {
         return page
       }
     }
 
-    const numeric = Number(value)
+    const numeric = Number(timestamp)
     if (!Number.isNaN(numeric)) {
       const index = this.items.findIndex(item => this.timestampValue(item) <= numeric)
       if (index !== -1) {
