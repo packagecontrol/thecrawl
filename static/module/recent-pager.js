@@ -199,13 +199,8 @@ class RecentPager {
   }
 
   timestampFromUrl() {
-    try {
-      const url = new URL(window.location.href)
-      return url.searchParams.get(this.queryParam)
-    }
-    catch {
-      return null
-    }
+    const url = new URL(window.location.href)
+    return url.searchParams.get(this.queryParam)
   }
 
   pageForTimestamp(timestamp) {
@@ -242,17 +237,8 @@ class RecentPager {
   }
 
   updateHistory() {
-    if (!window.history || typeof window.history.replaceState !== 'function') return
-
     const timestamp = this.pageTimestamp()
-    let url
-    try {
-      url = new URL(window.location.href)
-    }
-    catch {
-      return
-    }
-
+    const url = new URL(window.location.href)
     if (timestamp) {
       url.searchParams.set(this.queryParam, timestamp)
     }
