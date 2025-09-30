@@ -114,6 +114,7 @@ function computeShouldStick(section, onChange) {
 }
 
 // Handles client-side paging for the pre-rendered sections on the home page
+/** @template T */
 class RecentPager {
   constructor(items, section, options = {}) {
     const {
@@ -123,6 +124,7 @@ class RecentPager {
       shortHeading,
     } = options
 
+    /** @type {T[]} */
     this.items = items
 
     this.section = section
@@ -136,6 +138,7 @@ class RecentPager {
     this.controls = null
     this.monthIndicator = null
     this.queryParam = queryParam
+    /** @type {(item: T | null | undefined) => number} */
     this.timestampValue = item => item ? Number(item[timestampField] || 0) : 0
 
     pagerRegistry.push(this)
@@ -198,11 +201,14 @@ class RecentPager {
     this.updateHistory()
   }
 
+  /** @returns {string | null} */
   timestampFromUrl() {
     const url = new URL(window.location.href)
     return url.searchParams.get(this.queryParam)
   }
 
+  /** @param {string | null} timestamp
+   *  @returns {number} */
   pageForTimestamp(timestamp) {
     if (!timestamp) return 1
     const value = String(timestamp)
@@ -226,10 +232,14 @@ class RecentPager {
     return 1
   }
 
+  /** @param {number} page
+   *  @returns {number} */
   pageStartIndex(page) {
     return Math.max(0, (page - 1) * this.perPage)
   }
 
+  /** @param {number} [page]
+   *  @returns {string | null} */
   pageTimestamp(page = this.page) {
     if (page <= 1) return null
     const item = this.items[this.pageStartIndex(page)]
