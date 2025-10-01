@@ -24,7 +24,8 @@
   flex-direction: column;
 }
 
-section:has(.list) {
+section:has(.list),
+section[name="labels"] {
   max-width: var(--max-line);
   margin-left: auto;
   margin-right: auto;
@@ -32,11 +33,8 @@ section:has(.list) {
 
 section[name="labels"] .button-group {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 
-  @media (max-width: 78rem) {
-    grid-template-columns: repeat(3, 1fr);
-  }
   @media (max-width: 52rem) {
     grid-template-columns: repeat(2, 1fr);
   }
