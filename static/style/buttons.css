@@ -54,6 +54,9 @@
     font-size: 14px;
     color: var(--foreground-4);
   }
+  &:has(.count) {
+    align-items: baseline;
+  }
 }
 
 span.button {
