@@ -50,9 +50,15 @@ main {
 a {
   color: var(--orange-2);
   text-decoration: none;
+  border-radius: 3px;
+  transition: color .1s ease-in-out, outline .1s ease-in-out;
 
   &:hover {
     text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid var(--orange-1);
   }
 }
 
