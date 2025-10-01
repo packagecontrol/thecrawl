@@ -47,7 +47,7 @@
   }
 
   &:has(h3 a:hover),
-  &:has(h3 a:focus) {
+  &:has(:focus) {
     outline: 2px solid var(--orange-1);
   }
 
