@@ -37,8 +37,8 @@ isPackagePage: true
   <p>
     By
     {% for author in pkg.author -%}
-      {% set q = 'author:"' ~ author ~ '"' %}
-      <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
+      {% set q = pack.searchQueryFor('author', author) %}
+      <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
     {%- endfor %}
 
     {% if pkg.removed %}

@@ -1,5 +1,17 @@
 {% import "util/macros.njk" as util %}
 
+{% macro searchQueryFor(field, raw) -%}
+  {%- set value = (raw | default('')) | trim -%}
+  {%- if value -%}
+    {%- set encoded = value | urlencode -%}
+    {%- if ' ' in value -%}
+      {{- field ~ ':"' ~ encoded ~ '"' -}}
+    {%- else -%}
+      {{- field ~ ':' ~ encoded -}}
+    {%- endif -%}
+  {%- endif -%}
+{%- endmacro %}
+
 {% macro release(version) %}
   {% if version.web %}
     <a class="release" href="{{ version.web }}">{{ version.version }}</a>
@@ -33,18 +45,18 @@
   {% if platforms | length > 0 or  labels | length > 0 %}
     <ul class="button-group labels">
       {% for platform in platforms %}
-        {% set q = 'platform:"' ~ platform ~ '"' %}
+        {% set q = searchQueryFor('platform', platform) %}
         <li>
-          <a class="button platform platform-{{ platform }}" href="/?q={{ q | urlencode }}">
+          <a class="button platform platform-{{ platform }}" href="/?q={{ q }}">
             {{ platform }}
           </a>
         </li>
       {% endfor %}
 
       {% for label in labels %}
-        {% set q = 'label:"' ~ label ~ '"' %}
+        {% set q = searchQueryFor('label', label) %}
         <li>
-          <a class="button label" href="/?q={{ q | urlencode }}">
+          <a class="button label" href="/?q={{ q }}">
             {{ label }}
           </a>
         </li>
@@ -103,8 +115,8 @@
 
     <p class="authors">by
     {% for author in pkg.author -%}
-      {% set q = 'author:"' ~ author ~ '"' %}
-      <a href="/?q={{ q | urlencode }}">{{ author }}</a>{{ ", " if not loop.last }}
+      {% set q = searchQueryFor('author', author) %}
+      <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
     {%- endfor %}
     </p>
 
