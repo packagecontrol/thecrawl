@@ -225,6 +225,28 @@ export default function (eleventyConfig) {
     }).slice(0, 9)
   })
 
+  eleventyConfig.addCollection('labels', () => {
+    const labels = {}
+
+    all_packages.filter(pkg => !pkg.removed).map((pkg) => {
+      if (!pkg.labels) {
+        return
+      }
+
+      pkg.labels.forEach((label) => {
+        if (labels[label]) {
+          labels[label]++
+        } else {
+          labels[label] = 1
+        }
+      })
+    })
+
+    return Object.entries(labels)
+      .sort((a, b) => b[1] - a[1])
+      .map(([key, count]) => ({ key, count }))
+  })
+
   eleventyConfig.addCollection('libraries', () => {
     const libraries = JSON.parse(fs.readFileSync('libraries.json', 'utf8'))
     return libraries.libraries.map(lib => ({
