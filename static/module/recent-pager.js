@@ -114,6 +114,7 @@ function computeShouldStick(section, onChange) {
 }
 
 // Handles client-side paging for the pre-rendered sections on the home page
+/** @template T */
 class RecentPager {
   constructor(items, section, options = {}) {
     const {
@@ -123,6 +124,7 @@ class RecentPager {
       shortHeading,
     } = options
 
+    /** @type {T[]} */
     this.items = items
 
     this.section = section
@@ -136,6 +138,7 @@ class RecentPager {
     this.controls = null
     this.monthIndicator = null
     this.queryParam = queryParam
+    /** @type {(item: T | null | undefined) => number} */
     this.timestampValue = item => item ? Number(item[timestampField] || 0) : 0
 
     pagerRegistry.push(this)
@@ -198,28 +201,25 @@ class RecentPager {
     this.updateHistory()
   }
 
+  /** @returns {string | null} */
   timestampFromUrl() {
-    try {
-      const url = new URL(window.location.href)
-      return url.searchParams.get(this.queryParam)
-    }
-    catch {
-      return null
-    }
+    const url = new URL(window.location.href)
+    return url.searchParams.get(this.queryParam)
   }
 
+  /** @param {string | null} timestamp
+   *  @returns {number} */
   pageForTimestamp(timestamp) {
     if (!timestamp) return 1
-    const value = String(timestamp)
     const total = this.totalPages()
 
     for (let page = 1; page <= total; page++) {
-      if (this.pageTimestamp(page) === value) {
+      if (this.pageTimestamp(page) === timestamp) {
         return page
       }
     }
 
-    const numeric = Number(value)
+    const numeric = Number(timestamp)
     if (!Number.isNaN(numeric)) {
       const index = this.items.findIndex(item => this.timestampValue(item) <= numeric)
       if (index !== -1) {
@@ -231,10 +231,14 @@ class RecentPager {
     return 1
   }
 
+  /** @param {number} page
+   *  @returns {number} */
   pageStartIndex(page) {
     return Math.max(0, (page - 1) * this.perPage)
   }
 
+  /** @param {number} [page]
+   *  @returns {string | null} */
   pageTimestamp(page = this.page) {
     if (page <= 1) return null
     const item = this.items[this.pageStartIndex(page)]
@@ -242,17 +246,8 @@ class RecentPager {
   }
 
   updateHistory() {
-    if (!window.history || typeof window.history.replaceState !== 'function') return
-
     const timestamp = this.pageTimestamp()
-    let url
-    try {
-      url = new URL(window.location.href)
-    }
-    catch {
-      return
-    }
-
+    const url = new URL(window.location.href)
     if (timestamp) {
       url.searchParams.set(this.queryParam, timestamp)
     }
@@ -270,10 +265,19 @@ class RecentPager {
     if (start >= end) return ''
 
     const first = this.items[start]
-    const last = this.items[end - 1]
+    const firstTimestamp = this.timestampValue(first)
+    if (!firstTimestamp) return ''
 
-    const f = new Date(this.timestampValue(first) * 1000)
-    const l = new Date(this.timestampValue(last) * 1000)
+    let lastTimestamp = 0
+    // The current page could end with items without a valid
+    // timestamp, walk backwards to find the last complete item.
+    for (let idx = end - 1; idx >= start; idx--) {
+      lastTimestamp = this.timestampValue(this.items[idx])
+      if (lastTimestamp) break
+    }
+
+    const f = new Date(firstTimestamp * 1000)
+    const l = new Date(lastTimestamp * 1000)
 
     const fY = f.getUTCFullYear(), fM = f.getUTCMonth()
     const lY = l.getUTCFullYear(), lM = l.getUTCMonth()
@@ -297,13 +301,12 @@ class RecentPager {
 
   updateMonthIndicator() {
     // Only show from page 2 onwards
+    let label = ''
     if (this.page > 1) {
-      this.monthIndicator.style.display = ''
-      this.monthIndicator.textContent = this.currentMonthLabel()
+      label = this.currentMonthLabel()
     }
-    else {
-      this.monthIndicator.style.display = 'none'
-    }
+    this.monthIndicator.style.display = label ? '' : 'none'
+    this.monthIndicator.textContent = label
   }
 
   updateButtons() {
