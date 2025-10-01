@@ -92,8 +92,8 @@ export class Card {
     const list = this.pkg.author.split(',')
     list.forEach((name, iter) => {
       const a = document.createElement('a')
-      a.setAttribute('href', '/?q=' + encodeURI('author:"' + name.trim() + '"'))
-      a.innerHTML = name
+      a.setAttribute('href', searchQueryFor('author', name))
+      a.innerText = name
       parent.appendChild(a)
       if (iter + 1 < list.length) {
         parent.appendChild(document.createTextNode(', '))
@@ -129,11 +129,11 @@ export class Card {
 
     if (name.startsWith('linux') || name.startsWith('macos') || name.startsWith('windows')) {
       a.classList.add('button', 'platform', 'platform-' + name)
-      a.setAttribute('href', '/?q=' + encodeURI('platform:"' + name + '"'))
+      a.setAttribute('href', searchQueryFor('platform', name))
     }
     else {
       a.classList.add('button', 'label')
-      a.setAttribute('href', '/?q=' + encodeURI('label:"' + name + '"'))
+      a.setAttribute('href', searchQueryFor('label', name))
     }
 
     a.innerText = name
@@ -146,4 +146,14 @@ export class Card {
     const value = new Date(date)
     return (new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })).format(value)
   }
+}
+
+const searchQueryFor = (field, rawValue) => {
+  const value = String(rawValue ?? '').trim()
+  if (!value) return '/?q='
+
+  const encoded = encodeURIComponent(value)
+  const needsQuotes = /\s/.test(value)
+  const filter = needsQuotes ? `${field}:"${encoded}"` : `${field}:${encoded}`
+  return '/?q=' + filter
 }
