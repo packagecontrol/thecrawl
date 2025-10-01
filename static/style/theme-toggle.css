@@ -11,6 +11,11 @@
   align-items: center;
   margin: 0 auto;
   position: relative;
+  transition: outline .1s ease-in-out;
+
+  &:focus {
+    outline: 2px solid var(--orange-1);
+  }
 
   .icon {
     width: 20px;
@@ -25,6 +30,10 @@
     margin: 0 2px;
     transition: transform .2s ease-in-out;
     will-change: transform;
+
+    svg {
+      margin-top: -2px;
+    }
   }
 
   span {
