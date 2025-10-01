@@ -19,7 +19,7 @@ date: Last Modified
     {% for item in collections.labels %}
       <li>
         {% set q = 'label:"' ~ item.key ~ '"' %}
-        <a data-label-name="{{ item.key }}" class="button label" href="/?q={{ q | urlencode }}">
+        <a data-name="{{ item.key }}" class="button label" href="/?q={{ q | urlencode }}">
           {{ item.key }}
           <span class="count">{{ item.count }}</span>
         </a>

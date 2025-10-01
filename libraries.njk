@@ -6,9 +6,9 @@ date: Last Modified
 
 {% macro lib(pkg) %}
   <div class="card"
-    data-lib-name="{{ pkg.name | escape }}"
-    data-lib-author="{{ pkg.author | escape }}"
-    data-lib-description="{{ pkg.description | escape }}">
+    data-name="{{ pkg.name | escape }}"
+    data-author="{{ pkg.author | escape }}"
+    data-description="{{ pkg.description | escape }}">
 
     <h3>
       <a href="{{ pkg.homepage }}">
