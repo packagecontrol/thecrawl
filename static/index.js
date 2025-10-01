@@ -106,16 +106,35 @@ document.addEventListener('click', (event) => {
   event.stopPropagation()
 
   if (target.closest('form')) {
-    // the shortcuts in the form should provide an additional narrowing of search,
-    // not replace it
-    if (oldQuery.includes('label:') && newQuery.includes('label:')) {
-      newQuery = oldQuery.replace(/label:("[^"]+"|\S+)/, newQuery)
-    } else if (oldQuery.includes('platform:') && newQuery.includes('platform:')) {
-      newQuery = oldQuery.replace(/platform:("[^"]+"|\S+)/, newQuery)
-    } else if (oldQuery.includes('author:') && newQuery.includes('author:')) {
-      newQuery = oldQuery.replace(/author:("[^"]+"|\S+)/, newQuery)
-    } else {
-      newQuery = oldQuery + ' ' + newQuery
+    // the shortcuts in the form act as filters, toggling off when clicked twice
+    const clickedQuery = newQuery
+    const applyToggle = (type) => {
+      if (!clickedQuery.includes(`${type}:`)) {
+        return false
+      }
+
+      const tokenRegex = new RegExp(`${type}:("[^"]+"|\\S+)`)
+      const newTokenMatch = clickedQuery.match(tokenRegex)
+      if (!newTokenMatch) {
+        return false
+      }
+
+      const newToken = newTokenMatch[0]
+      const oldTokenMatch = oldQuery.match(tokenRegex)
+
+      if (oldTokenMatch && oldTokenMatch[0] === newToken) {
+        newQuery = oldQuery.replace(tokenRegex, '').replace(/\s{2,}/g, ' ').trim()
+      } else if (oldTokenMatch) {
+        newQuery = oldQuery.replace(tokenRegex, newToken)
+      } else {
+        newQuery = `${oldQuery} ${newToken}`.trim()
+      }
+
+      return true
+    }
+
+    if (!applyToggle('label') && !applyToggle('platform') && !applyToggle('author')) {
+      newQuery = `${oldQuery} ${clickedQuery}`.trim()
     }
   }
 
