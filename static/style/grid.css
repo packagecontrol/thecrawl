@@ -37,7 +37,7 @@
   padding: 1rem;
   position: relative;
   outline: 2px solid transparent;
-  transition: outline .3s ease-in-out;
+  transition: outline .1s ease-in-out;
   overflow: hidden;
 
   .grid & {
@@ -49,7 +49,6 @@
   &:has(h3 a:hover),
   &:has(h3 a:focus) {
     outline: 2px solid var(--orange-1);
-    transition: outline .2s ease-in-out;
   }
 
   h3 {

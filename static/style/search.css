@@ -74,7 +74,7 @@ select {
   border-radius: 3px;
   border: 1px solid var(--background-3);
   outline-color: transparent;
-  transition: border .2s ease-in-out, outline .2s ease-in-out;
+  transition: border .1s ease-in-out, outline .1s ease-in-out;
   overflow: hidden;
 
   * {
