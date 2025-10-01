@@ -228,7 +228,7 @@ export default function (eleventyConfig) {
   eleventyConfig.addCollection('labels', () => {
     const labels = {}
 
-    all_packages.filter(pkg => !pkg.removed).map((pkg) => {
+    all_packages.map((pkg) => {
       if (!pkg.labels) {
         return
       }
