@@ -3,7 +3,7 @@ import json
 import os
 import sys
 from datetime import date
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 DEFAULT_OUTPUT_FILE = "stats.json"
 DEFAULT_URL = "https://stats.sublimetext.io/all-totals"
@@ -87,7 +87,8 @@ def accumulate(value: int, container: dict, key: str, wanted_length: int):
 
 
 def fetch_totals(url: str) -> dict:
-    with urlopen(url) as resp:
+    request = Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urlopen(request) as resp:
         return json.load(resp)
 
 
