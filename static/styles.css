@@ -52,12 +52,13 @@ a {
   text-decoration: none;
   border-radius: 3px;
   transition: color .1s ease-in-out, outline .1s ease-in-out;
+  outline-color: transparent;
 
   &:hover {
     text-decoration: underline;
   }
 
-  &:focus {
+  &:focus-visible {
     outline: 2px solid var(--orange-1);
   }
 }
@@ -71,7 +72,7 @@ svg {
   p > &,
   span > &,
   a > & {
-    /* alignment of icons in text is just slighty off */
+    /* alignment of icons in text is just slightly off */
     position: relative;
     bottom: -1px;
   }
