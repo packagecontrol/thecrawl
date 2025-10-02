@@ -18,6 +18,8 @@ export class List {
   pagination = null
   initialPath = '/'
   initialTitle = document.title
+  mainContentAnchor = document.getElementById('main-content')
+  activeMainContentAnchor = null
 
   sortTitleMap = {
     installed: 'Installs',
@@ -67,10 +69,12 @@ export class List {
     })
 
     this.section.style.display = 'none'
+    this.restoreMainContentAnchor()
   }
 
   // clear any pagination ui and previous results
   clear() {
+    this.clearActiveMainContentTarget()
     this.pagination?.clear()
     Array.from(this.list.children).forEach((card) => {
       card.remove()
@@ -84,9 +88,13 @@ export class List {
     this.pagination = new Pagination(this, items, page, this.section)
 
     // Render items for current page
-    this.pagination.calculate().forEach((pkg) => {
+    this.pagination.calculate().forEach((pkg, index) => {
       const li = document.createElement('li')
-      li.appendChild((new Card(pkg)).render())
+      const fragment = (new Card(pkg)).render()
+      if (index === 0) {
+        this.assignMainContentTarget(fragment)
+      }
+      li.appendChild(fragment)
       this.list.appendChild(li)
     })
 
@@ -107,6 +115,38 @@ export class List {
 
   setMinisearch(minisearch) {
     this.search = new Search(minisearch)
+  }
+
+  clearActiveMainContentTarget() {
+    if (!this.activeMainContentAnchor) {
+      return
+    }
+
+    this.activeMainContentAnchor.removeAttribute('id')
+    this.activeMainContentAnchor = null
+  }
+
+  assignMainContentTarget(fragment) {
+    const anchor = fragment.querySelector('h3 a')
+    if (!anchor) {
+      return
+    }
+
+    if (this.mainContentAnchor?.id === 'main-content') {
+      this.mainContentAnchor.removeAttribute('id')
+    }
+
+    this.clearActiveMainContentTarget()
+    anchor.setAttribute('id', 'main-content')
+    this.activeMainContentAnchor = anchor
+  }
+
+  restoreMainContentAnchor() {
+    this.clearActiveMainContentTarget()
+
+    if (this.mainContentAnchor && this.mainContentAnchor.id !== 'main-content') {
+      this.mainContentAnchor.setAttribute('id', 'main-content')
+    }
   }
 
   goSearch(value, sortBy = 'relevance', page = 1) {
