@@ -4,6 +4,8 @@ layout: layout.njk
 date: Last Modified
 ---
 
+{% import "packages/macros.njk" as pack %}
+
 <form name="search">
   <h1>Labels</h1>
 
@@ -18,8 +20,8 @@ date: Last Modified
   <ul class="button-group">
     {% for item in collections.labels %}
       <li>
-        {% set q = 'label:"' ~ item.key ~ '"' %}
-        <a data-name="{{ item.key }}" class="button label" href="/?q={{ q | urlencode }}">
+        {% set q = pack.searchQueryFor('label', item.key) %}
+        <a data-name="{{ item.key }}" class="button label" href="/?q={{ q }}">
           {{ item.key }}
           <span class="count">{{ item.count }}</span>
         </a>
