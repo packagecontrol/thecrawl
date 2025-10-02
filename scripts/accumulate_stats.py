@@ -10,7 +10,7 @@ DEFAULT_URL = "https://stats.sublimetext.io/all-totals"
 
 # Retention limits
 HISTORY_DAYS = 30
-HISTORY_WEEKS = 52
+HISTORY_WEEKS = 53
 HISTORY_YEARS = 3
 
 PREV_TOTALS_FILE = "prev_totals.json"
