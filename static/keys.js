@@ -1,9 +1,18 @@
-document.querySelector('.skip-link').addEventListener('click', (e) => {
-  const target = document.querySelector(e.target.getAttribute('href'))
-  if (target) {
-    e.preventDefault()
+document.querySelectorAll('.skip-link').forEach((skipLink) => {
+  skipLink.addEventListener('click', (event) => {
+    const targetSelector = event.currentTarget.getAttribute('href')
+    if (!targetSelector) {
+      return
+    }
+
+    const target = document.querySelector(targetSelector)
+    if (!target) {
+      return
+    }
+
+    event.preventDefault()
     target.focus({ preventScroll: true })
-  }
+  })
 })
 
 document.addEventListener('keydown', (event) => {
