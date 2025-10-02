@@ -243,7 +243,7 @@ export default function (eleventyConfig) {
     })
 
     return Object.entries(labels)
-      .sort()
+      .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([key, count]) => ({ key, count }))
   })
 
