@@ -209,10 +209,6 @@ def maintenance(registry: Registry, workspace: Workspace) -> None:
     for name in packages.keys() - current_package_names:
         packages[name].setdefault("removed", now_string)
 
-    try:
-        packages["RAML Syntax Highlighter"].setdefault("archived_at", "2024-01-21 12:00:00")
-    except KeyError:
-        pass
 
 async def crawl(
     session: aiohttp.ClientSession,
