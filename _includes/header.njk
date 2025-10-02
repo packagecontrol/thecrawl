@@ -1,7 +1,9 @@
 {% import "util/macros.njk" as util %}
 
 <header>
+  {% if not isPackagePage %}
   <a href="#main-content" class="skip-link">Skip to main content</a>
+  {% endif %}
 
   <div class="left-side">
     {% set tag = 'h1' if page.url == '/' else 'p' %}
