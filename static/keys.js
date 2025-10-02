@@ -1,3 +1,11 @@
+document.querySelector('.skip-link').addEventListener('click', (e) => {
+  const target = document.querySelector(e.target.getAttribute('href'))
+  if (target) {
+    e.preventDefault()
+    target.focus({ preventScroll: true })
+  }
+})
+
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
     return
