@@ -71,10 +71,13 @@ export class SimpleSearch {
     // Handle input changes (search as you type)
     this.input.addEventListener('input', () => {
       clearTimeout(debounceTimeout)
-
-      debounceTimeout = setTimeout(() => {
+      if (this.input.value.trim() == '') {
         this.handleInput()
-      }, 300) // .3 seconds
+      } else {
+        debounceTimeout = setTimeout(() => {
+          this.handleInput()
+        }, 300) // .3 seconds
+      }
     })
   }
 }
