@@ -7,8 +7,8 @@
 (function () {
   const params = new URLSearchParams(location.search)
   const q = params.get('q')
-  const isListing = !q && params.has('sort')
-  if (!q && !isListing) {
+  const sort = params.get('sort')
+  if (!q && !sort) {
     return
   };
 
@@ -22,8 +22,15 @@
 
   const onDOMContentLoaded = () => {
     // set temporary content that will be replaced after search completes
+    const form = document.forms.search
+    form.style.visibility = 'revert'
     if (q) {
-      document.querySelector('[name=q]').value = q
+      const input = form.elements['q']
+      input.value = q
+    }
+    if (sort) {
+      const select = form.elements['sort']
+      select.value = sort
     }
   }
 

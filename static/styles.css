@@ -23,7 +23,8 @@ html {
   /* while initializing search, hide package listings */
   &.initializing {
     [data-list-target='hideme'],
-    [data-list-target='section'] {
+    [data-list-target='section'],
+    form[name='search'] {
       visibility: hidden;
     }
   }
