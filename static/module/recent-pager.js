@@ -15,6 +15,11 @@ const RECENT_PAGER_STYLES = `
       top: 0;
       z-index: 3;
       background: var(--background-2);
+      margin-left: calc(var(--side-padding) * -1);
+      margin-right: calc(var(--side-padding) * -1);
+      padding-left: var(--side-padding);
+      padding-right: var(--side-padding);
+      margin-bottom: 2px;  /* room for the 2px card outline */
     }
 
     .pager-pagination {
