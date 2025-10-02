@@ -87,7 +87,7 @@ document.addEventListener('click', (event) => {
 
   // ... and only if you clicked an anchor with an href
   const target = event.target.closest('a')
-  if (!target || !target.href) {
+  if (!target || !target.href || target.classList.contains('skip-link')) {
     return
   }
 
