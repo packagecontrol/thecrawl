@@ -4,14 +4,14 @@ layout: layout.njk
 date: Last Modified
 ---
 
-{% macro lib(pkg) %}
+{% macro lib(pkg, index=1) %}
   <div class="card"
     data-lib-name="{{ pkg.name | escape }}"
     data-lib-author="{{ pkg.author | escape }}"
     data-lib-description="{{ pkg.description | escape }}">
 
     <h3>
-      <a href="{{ pkg.homepage }}">
+      <a {{ "id=main-content" if index == 0 }} href="{{ pkg.homepage }}">
         {{ pkg.name }}
       </a>
     </h3>
@@ -58,7 +58,7 @@ date: Last Modified
   <ul class="list">
     {% for item in collections.libraries %}
       <li>
-        {{ lib(item) }}
+        {{ lib(item, loop.index0) }}
       </li>
     {% endfor %}
   </ul>

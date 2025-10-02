@@ -39,24 +39,36 @@ const handleInput = () => {
       card.closest('li').style.display = null
     })
     heading.innerText = 'List'
-    return
   }
-
-  const names = search.search(query).map(result => result.name)
-  cards.forEach((card) => {
-    if (names.indexOf(card.dataset.libName) < 0) {
-      card.closest('li').style.display = 'none'
+  else {
+    const names = search.search(query).map(result => result.name)
+    cards.forEach((card) => {
+      if (names.indexOf(card.dataset.libName) < 0) {
+        card.closest('li').style.display = 'none'
+      }
+      else {
+        card.closest('li').style.display = null
+      }
+      if (names.length === 1) {
+        heading.innerText = '1 Result'
+      }
+      else {
+        heading.innerText = names.length + ' Results'
+      }
+    })
+  }
+  document.getElementById('main-content')?.removeAttribute('id')
+  const firstVisibleCard = Array.from(cards).find((card) => {
+    const container = card.closest('li')
+    if (!container) {
+      return false
     }
-    else {
-      card.closest('li').style.display = null
-    }
-    if (names.length === 1) {
-      heading.innerText = '1 Result'
-    }
-    else {
-      heading.innerText = names.length + ' Results'
-    }
+    return container.style.display !== 'none'
   })
+  const mainAnchor = firstVisibleCard?.querySelector('h3 a')
+  if (mainAnchor) {
+    mainAnchor.setAttribute('id', 'main-content')
+  }
 }
 
 let debounceTimeout
