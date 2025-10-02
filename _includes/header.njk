@@ -1,6 +1,18 @@
 {% import "util/macros.njk" as util %}
 
 <header>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <script>
+    ;(function(){
+      document.querySelector('.skip-link').addEventListener('click', (e) => {
+        const target = document.querySelector(e.target.getAttribute('href'))
+        if (target) {
+          e.preventDefault()
+          target.focus({ preventScroll: true })
+        }
+      })
+    })()
+  </script>
 
   <div class="left-side">
     {% set tag = 'h1' if page.url == '/' else 'p' %}
