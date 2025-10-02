@@ -72,7 +72,7 @@ svg {
   p > &,
   span > &,
   a > & {
-    /* alignment of icons in text is just slighty off */
+    /* alignment of icons in text is just slightly off */
     position: relative;
     bottom: -1px;
   }
