@@ -105,11 +105,11 @@
   {% endif %}
 {% endmacro %}
 
-{% macro card(pkg) %}
+{% macro card(pkg, index=1) %}
   <div class="card">
     <h3>
-      <a href="/packages/{{ pkg.name | urlencode }}/">
-        {{ pkg.name }}
+      <a {{ "id=main-content" if index == 0 }} href="/packages/{{ pkg.name | urlencode }}/">
+        {{- pkg.name -}}
       </a>
     </h3>
 

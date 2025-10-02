@@ -48,6 +48,26 @@ main {
 
 }
 
+.skip-link {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: var(--background-1);
+  color: var(--foreground-1);
+  border-radius: 0.25rem;
+
+  /* hide by default */
+  transform: translateY(-200%);
+  transition: none;
+  z-index: 1000;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+
 a {
   color: var(--orange-2);
   text-decoration: none;

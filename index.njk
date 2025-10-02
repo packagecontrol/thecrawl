@@ -13,7 +13,7 @@ date: Last Modified
   <ul class="grid">
     {% for pkg in collections.newest_packages %}
       <li>
-        {{ pack.card(pkg) }}
+        {{ pack.card(pkg, loop.index0) }}
       </li>
     {% endfor %}
   </ul>
