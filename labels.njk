@@ -17,7 +17,7 @@ date: Last Modified
 
 <section name="labels">
   <h2 data-list-target="heading">List</h2>
-  <ul class="button-group">
+  <ul class="grid">
     {% for item in collections.labels %}
       <li>
         {% set q = pack.searchQueryFor('label', item.key) %}

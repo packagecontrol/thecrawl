@@ -31,19 +31,10 @@ section[name="labels"] {
   margin-right: auto;
 }
 
-section[name="labels"] .button-group {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-
-  @media (max-width: 52rem) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (max-width: 479px) {
-    grid-template-columns: repeat(1, 1fr);
-  }
-
-  > * {
-    display: flex;
+section[name="labels"] .grid {
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  li a {
+    flex: none;
   }
 }
 
