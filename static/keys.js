@@ -44,7 +44,7 @@ document.addEventListener('keydown', (event) => {
   }
 })
 
-const isVisibleCard = (card) => {
+function isVisibleCard(card) {
   if (!card || card.closest('template')) {
     return false
   }
@@ -58,7 +58,7 @@ const isVisibleCard = (card) => {
   return style.visibility !== 'hidden' && style.display !== 'none'
 }
 
-const focusCardHeading = (card) => {
+function focusCardHeading(card) {
   if (!card) {
     return false
   }
@@ -70,4 +70,66 @@ const focusCardHeading = (card) => {
 
   anchor.focus()
   return document.activeElement === anchor
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') {
+    return
+  }
+
+  const active = document.activeElement
+  const pagerSection = findPagerSection(active)
+  if (!pagerSection) {
+    return
+  }
+
+  const currentCard = active?.closest('.card')
+  const cards = visibleCardsInSection(pagerSection)
+  const index = Math.max(0, cards.indexOf(currentCard))
+
+  const control = event.key === 'ArrowRight' ? 'next' : 'prev'
+  if (clickPagerControl(pagerSection, control, index)) {
+    event.preventDefault()
+  }
+})
+
+function findPagerSection(element) {
+  return element?.closest('section[name="newest"], section[name="recent"]') ?? null
+}
+
+function clickPagerControl(section, control, desiredIndex) {
+  if (!section) {
+    return false
+  }
+
+  const button = section.querySelector(`.pager-pagination [data-control="${control}"]`)
+  if (!button || button.disabled) {
+    return false
+  }
+
+  button.click()
+  focusStoredCardInSection(section, desiredIndex)
+  return true
+}
+
+function focusStoredCardInSection(section, desiredIndex) {
+  if (!section) {
+    return
+  }
+
+  const cards = visibleCardsInSection(section)
+  if (!cards.length) {
+    return
+  }
+
+  const index = Math.min(desiredIndex, cards.length - 1)
+  focusCardHeading(cards[index])
+}
+
+function visibleCardsInSection(section) {
+  if (!section) {
+    return []
+  }
+
+  return Array.from(section.querySelectorAll('.card')).filter(isVisibleCard)
 }
