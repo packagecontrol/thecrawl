@@ -57,6 +57,13 @@
   &:has(.count) {
     align-items: baseline;
   }
+
+  &.label-more,
+  &.label-more:hover {
+    padding-left: 0;
+    padding-right: 0;
+    background: none;
+  }
 }
 
 span.button {
