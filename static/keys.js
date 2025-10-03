@@ -198,10 +198,9 @@ function handleGridNavigation(event, currentCard, directions) {
         event.preventDefault()
       }
     }
-    return
   }
 
-  if (directions.isArrowRight) {
+  else if (directions.isArrowRight) {
     const rowCards = grid.rows[position.row] ?? []
     if (position.column < rowCards.length - 1) {
       const nextCard = rowCards[position.column + 1]
@@ -214,10 +213,9 @@ function handleGridNavigation(event, currentCard, directions) {
         event.preventDefault()
       }
     }
-    return
   }
 
-  if (directions.isArrowLeft) {
+  else if (directions.isArrowLeft) {
     const rowCards = grid.rows[position.row] ?? []
     if (position.column > 0) {
       const prevCard = rowCards[position.column - 1]
@@ -230,29 +228,28 @@ function handleGridNavigation(event, currentCard, directions) {
         event.preventDefault()
       }
     }
-    return
   }
 
-  if (directions.isArrowDown) {
+  else if (directions.isArrowDown) {
     const nextRow = grid.rows[position.row + 1]
-    if (nextRow && nextRow.length) {
-      const columnIndex = Math.min(position.column, nextRow.length - 1)
-      const target = nextRow[columnIndex]
-      if (target && focusCardHeading(target)) {
-        event.preventDefault()
-      }
+    // If another row exists in the same section, move down within that row.
+    if (nextRow?.length) {
+      focusCardInRow(nextRow, position.column, event)
       return
     }
 
+    // No lower row in this section; bail if the card was outside a pager section.
     if (!pagerSection) {
       return
     }
 
+    // Try to enter the first row of the next section (newest → recent).
     const siblingSection = findSiblingSection(pagerSection, 'next')
     if (!siblingSection) {
       return
     }
 
+    // Target the first available row in that section.
     const siblingCards = visibleCardsInSection(siblingSection)
     if (!siblingCards.length) {
       return
@@ -260,38 +257,32 @@ function handleGridNavigation(event, currentCard, directions) {
 
     const siblingGrid = buildCardGrid(siblingCards)
     const targetRow = siblingGrid.rows[0]
-    if (!targetRow || !targetRow.length) {
-      return
+    if (targetRow?.length) {
+      // Align with the same column index if possible.
+      focusCardInRow(targetRow, position.column, event)
     }
-
-    const columnIndex = Math.min(position.column, targetRow.length - 1)
-    const target = targetRow[columnIndex]
-    if (target && focusCardHeading(target)) {
-      event.preventDefault()
-    }
-    return
   }
 
-  if (directions.isArrowUp) {
+  else if (directions.isArrowUp) {
     const previousRow = grid.rows[position.row - 1]
-    if (previousRow && previousRow.length) {
-      const columnIndex = Math.min(position.column, previousRow.length - 1)
-      const target = previousRow[columnIndex]
-      if (target && focusCardHeading(target)) {
-        event.preventDefault()
-      }
+    // If a row exists above in the same section, move up there.
+    if (previousRow?.length) {
+      focusCardInRow(previousRow, position.column, event)
       return
     }
 
+    // No higher row in this section; stop if outside a pager section.
     if (!pagerSection) {
       return
     }
 
+    // Move into the last row of the previous section (recent → newest).
     const siblingSection = findSiblingSection(pagerSection, 'prev')
     if (!siblingSection) {
       return
     }
 
+    // Target the last available row in that section.
     const siblingCards = visibleCardsInSection(siblingSection)
     if (!siblingCards.length) {
       return
@@ -299,16 +290,27 @@ function handleGridNavigation(event, currentCard, directions) {
 
     const siblingGrid = buildCardGrid(siblingCards)
     const targetRow = siblingGrid.rows[siblingGrid.rows.length - 1]
-    if (!targetRow || !targetRow.length) {
-      return
-    }
-
-    const columnIndex = Math.min(position.column, targetRow.length - 1)
-    const target = targetRow[columnIndex]
-    if (target && focusCardHeading(target)) {
-      event.preventDefault()
+    if (targetRow?.length) {
+      // Align with the same column index if possible.
+      focusCardInRow(targetRow, position.column, event)
     }
   }
+}
+
+/**
+ * @param {HTMLElement[]} row - Ordered cards for a single visual row.
+ * @param {number} preferredColumn - Column index to align with when possible.
+ * @param {KeyboardEvent} [event] - Optional originating event.
+ * @returns {boolean} Whether focus was moved to a card in the row.
+ */
+function focusCardInRow(row, preferredColumn, event) {
+  const columnIndex = Math.min(preferredColumn, row.length - 1)
+  const target = row[columnIndex]
+  if (target && focusCardHeading(target)) {
+    event?.preventDefault()
+    return true
+  }
+  return false
 }
 
 function buildCardGrid(cards) {
