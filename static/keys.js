@@ -298,7 +298,20 @@ function handleGridNavigation(event, currentCard, directions) {
 }
 
 /**
- * @param {HTMLElement[]} row - Ordered cards for a single visual row.
+ * @typedef {HTMLElement} Card - Card element within grids.
+ * @typedef {{ row: number, column: number }} GridPosition
+ *   - Visual card coordinates.
+ * @typedef {Map<Card, GridPosition>} CardPositions
+ *   - Card-to-position lookup map.
+ * @typedef {{
+ *   rows: Card[][],
+ *   positions: CardPositions,
+ *   maxColumns: number,
+ * }} GridMetadata - Snapshot of the grid layout.
+ */
+
+/**
+ * @param {Card[]} row - Ordered cards for a single visual row.
  * @param {number} preferredColumn - Column index to align with when possible.
  * @param {KeyboardEvent} [event] - Optional originating event.
  * @returns {boolean} Whether focus was moved to a card in the row.
@@ -313,8 +326,14 @@ function focusCardInRow(row, preferredColumn, event) {
   return false
 }
 
+/**
+ * @param {Card[]} cards - Visible cards in order of appearance.
+ * @returns {GridMetadata} Grid metadata for navigating cards.
+ */
 function buildCardGrid(cards) {
+  /** @type {Card[][]} */
   const rows = []
+  /** @type {CardPositions} */
   const positions = new Map()
   const rowTolerance = 8
   let currentRowTop = null
