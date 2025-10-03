@@ -391,8 +391,19 @@ function findSiblingSection(section, direction, sections = ['newest', 'recent'])
   return document.querySelector(`section[name="${siblingName}"]`)
 }
 
-function findPagerSection(element) {
-  return element?.closest('section[name="newest"], section[name="recent"]') ?? null
+/**
+ * Find the pager section, the `element` is part of
+ *
+ * @param {Element|null} element - Starting element for lookup.
+ * @param {string[]} [sectionNames=['newest', 'recent']] - Acceptable sections.
+ * @returns {Element|null} Enclosing pager section, if found.
+ */
+function findPagerSection(element, sectionNames = ['newest', 'recent']) {
+  const selector = sectionNames
+    .map(name => `section[name="${name}"]`)
+    .join(', ')
+
+  return element?.closest(selector)
 }
 
 function clickPagerControl(section, control, desiredIndex) {
