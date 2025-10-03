@@ -297,6 +297,8 @@ function handleGridNavigation(event, currentCard, directions) {
   }
 }
 
+const HOMEPAGE_SECTIONS = ['newest', 'recent']
+
 /**
  * @typedef {HTMLElement} Card - Card element within grids.
  * @typedef {{ row: number, column: number }} GridPosition
@@ -371,7 +373,7 @@ function getAllVisibleCards() {
  * @param {string[]} [sections=['newest', 'recent']] - Pager sections, ordered.
  * @returns {Element|null} Matching sibling section or null when absent.
  */
-function findSiblingSection(section, direction, sections = ['newest', 'recent']) {
+function findSiblingSection(section, direction, sections = HOMEPAGE_SECTIONS) {
   if (!section) {
     return null
   }
@@ -398,7 +400,7 @@ function findSiblingSection(section, direction, sections = ['newest', 'recent'])
  * @param {string[]} [sectionNames=['newest', 'recent']] - Acceptable sections.
  * @returns {Element|null} Enclosing pager section, if found.
  */
-function findPagerSection(element, sectionNames = ['newest', 'recent']) {
+function findPagerSection(element, sectionNames = HOMEPAGE_SECTIONS) {
   const selector = sectionNames
     .map(name => `section[name="${name}"]`)
     .join(', ')
