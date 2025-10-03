@@ -408,6 +408,14 @@ function findPagerSection(element, sectionNames = HOMEPAGE_SECTIONS) {
   return element?.closest(selector)
 }
 
+/**
+ * Click a section pager control and restore focus to the matching card.
+ *
+ * @param {Element|null} section - Pager container where controls live.
+ * @param {'next'|'prev'} control - Which control button to activate.
+ * @param {number} desiredIndex - Target card index to restore focus.
+ * @returns {boolean} True when the control was clicked.
+ */
 function clickPagerControl(section, control, desiredIndex) {
   if (!section) {
     return false
@@ -423,6 +431,12 @@ function clickPagerControl(section, control, desiredIndex) {
   return true
 }
 
+/**
+ * Focus the nth card, given by `desiredIndex`, within a section.
+ *
+ * @param {Element|null} section - Section with cards to restore focus in.
+ * @param {number} desiredIndex - Desired card index to receive focus.
+ */
 function focusStoredCardInSection(section, desiredIndex) {
   if (!section) {
     return
@@ -437,6 +451,12 @@ function focusStoredCardInSection(section, desiredIndex) {
   focusCardHeading(cards[index])
 }
 
+/**
+ * Collect all visible cards within a section.
+ *
+ * @param {Element|null} section - Section to gather visible cards from.
+ * @returns {Card[]} Visible cards inside the section.
+ */
 function visibleCardsInSection(section) {
   if (!section) {
     return []
