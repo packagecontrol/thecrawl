@@ -365,20 +365,25 @@ function getAllVisibleCards() {
   return Array.from(document.querySelectorAll('.card')).filter(isVisibleCard)
 }
 
-function findSiblingSection(section, direction) {
+/**
+ * @param {Element|null} section - Current pager section, if any.
+ * @param {'next'|'prev'} direction - Which neighbor to look for.
+ * @param {string[]} [sections=['newest', 'recent']] - Pager sections, ordered.
+ * @returns {Element|null} Matching sibling section or null when absent.
+ */
+function findSiblingSection(section, direction, sections = ['newest', 'recent']) {
   if (!section) {
     return null
   }
 
-  const order = ['newest', 'recent']
   const currentName = section.getAttribute('name')
-  const currentIndex = order.indexOf(currentName)
+  const currentIndex = sections.indexOf(currentName)
   if (currentIndex === -1) {
     return null
   }
 
   const offset = direction === 'next' ? 1 : -1
-  const siblingName = order[currentIndex + offset]
+  const siblingName = sections[currentIndex + offset]
   if (!siblingName) {
     return null
   }
