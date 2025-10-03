@@ -16,7 +16,11 @@ document.querySelectorAll('.skip-link').forEach((skipLink) => {
 })
 
 document.addEventListener('keydown', (event) => {
-  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+  const key = event.key
+  const lower = key.toLowerCase()
+  const isNext = key === 'ArrowDown' || lower === 'j'
+  const isPrev = key === 'ArrowUp' || lower === 'k'
+  if (!isNext && !isPrev) {
     return
   }
 
@@ -32,7 +36,7 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  const direction = event.key === 'ArrowDown' ? 1 : -1
+  const direction = isNext ? 1 : -1
   const nextCard = visibleCards[index + direction]
   if (!nextCard) {
     return
@@ -73,7 +77,11 @@ function focusCardHeading(card) {
 }
 
 document.addEventListener('keydown', (event) => {
-  if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') {
+  const key = event.key
+  const lower = key.toLowerCase()
+  const isNext = key === 'ArrowRight' || lower === 'n'
+  const isPrev = key === 'ArrowLeft' || lower === 'p'
+  if (!isNext && !isPrev) {
     return
   }
 
@@ -87,7 +95,7 @@ document.addEventListener('keydown', (event) => {
   const cards = visibleCardsInSection(pagerSection)
   const index = Math.max(0, cards.indexOf(currentCard))
 
-  const control = event.key === 'ArrowRight' ? 'next' : 'prev'
+  const control = isNext ? 'next' : 'prev'
   if (clickPagerControl(pagerSection, control, index)) {
     event.preventDefault()
   }
