@@ -139,6 +139,14 @@ document.addEventListener('keydown', (event) => {
 // Helpers
 //
 
+/**
+ * Check if a card is actually visible.
+ * This is esp. needed for `SimpleSearch` which just hides (and not removes)
+ * cards during search.
+ *
+ * @param {Element|null} card - Candidate card element.
+ * @returns {boolean} True when the card is visible for navigation.
+ */
 function isVisibleCard(card) {
   if (!card || card.closest('template')) {
     return false
@@ -153,6 +161,13 @@ function isVisibleCard(card) {
   return style.visibility !== 'hidden' && style.display !== 'none'
 }
 
+/**
+ * Focus the card heading anchor if available.
+ * In practice that is the package name that links to the details page.
+ *
+ * @param {Element|null} card - Card whose heading should receive focus.
+ * @returns {boolean} True when the heading anchor was focused.
+ */
 function focusCardHeading(card) {
   if (!card) {
     return false
@@ -167,6 +182,13 @@ function focusCardHeading(card) {
   return document.activeElement === anchor
 }
 
+/**
+ * Step through cards in document order.
+ *
+ * @param {Element|null} currentCard - The card currently focused.
+ * @param {number} direction - Positive or negative step count.
+ * @returns {boolean} True when focus moved to another card.
+ */
 function handleSequentialNavigation(currentCard, direction) {
   const visibleCards = getAllVisibleCards()
   const index = visibleCards.indexOf(currentCard)
@@ -182,6 +204,18 @@ function handleSequentialNavigation(currentCard, direction) {
   return focusCardHeading(nextCard)
 }
 
+/**
+ * Navigate within the visual card grid using arrow keys.
+ *
+ * @param {KeyboardEvent} event - The originating keydown event.
+ * @param {Element} currentCard - Currently focused card element.
+ * @param {{
+ *   isArrowDown: boolean,
+ *   isArrowUp: boolean,
+ *   isArrowRight: boolean,
+ *   isArrowLeft: boolean,
+ * }} directions - Flags describing which arrow was pressed.
+ */
 function handleGridNavigation(event, currentCard, directions) {
   const pagerSection = findPagerSection(currentCard)
   const cards = pagerSection ? visibleCardsInSection(pagerSection) : getAllVisibleCards()
@@ -202,11 +236,13 @@ function handleGridNavigation(event, currentCard, directions) {
 
   else if (directions.isArrowRight) {
     const rowCards = grid.rows[position.row] ?? []
+    // Move right within this row when another card is available...
     if (position.column < rowCards.length - 1) {
       const nextCard = rowCards[position.column + 1]
       if (nextCard && focusCardHeading(nextCard)) {
         event.preventDefault()
       }
+    // ... or flip to the next page.
     } else if (grid.maxColumns > 1 && pagerSection) {
       const desiredIndex = position.row * grid.maxColumns
       if (clickPagerControl(pagerSection, 'next', desiredIndex)) {
@@ -217,11 +253,13 @@ function handleGridNavigation(event, currentCard, directions) {
 
   else if (directions.isArrowLeft) {
     const rowCards = grid.rows[position.row] ?? []
+    // Move left within this row when a previous card exists...
     if (position.column > 0) {
       const prevCard = rowCards[position.column - 1]
       if (prevCard && focusCardHeading(prevCard)) {
         event.preventDefault()
       }
+    // ... or flip to the previous page.
     } else if (grid.maxColumns > 1 && pagerSection) {
       const desiredIndex = position.row * grid.maxColumns + Math.max(grid.maxColumns - 1, 0)
       if (clickPagerControl(pagerSection, 'prev', desiredIndex)) {
