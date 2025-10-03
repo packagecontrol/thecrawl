@@ -169,3 +169,21 @@ document.addEventListener('keydown', (event) => {
     target.select()
   }
 })
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter') {
+    return
+  }
+
+  const target = event.target
+  if (!(target instanceof HTMLInputElement) || target.id !== 'search-field') {
+    return
+  }
+
+  const card = Array.from(document.querySelectorAll('.card')).find(isVisibleCard)
+  if (!card) {
+    return
+  }
+
+  focusCardHeading(card)
+})
