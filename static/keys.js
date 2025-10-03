@@ -141,3 +141,31 @@ function visibleCardsInSection(section) {
 
   return Array.from(section.querySelectorAll('.card')).filter(isVisibleCard)
 }
+
+document.addEventListener('keydown', (event) => {
+  const lower = event.key.toLowerCase()
+  if (lower !== 's') {
+    return
+  }
+
+  const active = document.activeElement
+  const isTyping = active && (
+    active.tagName === 'INPUT'
+    || active.tagName === 'TEXTAREA'
+    || active.isContentEditable
+  )
+  if (isTyping) {
+    return
+  }
+
+  const target = document.querySelector('#search-field')
+  if (!target) {
+    return
+  }
+
+  event.preventDefault()
+  target.focus({ preventScroll: false })
+  if (typeof target.select === 'function') {
+    target.select()
+  }
+})
