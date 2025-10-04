@@ -375,8 +375,7 @@ function buildCardGrid(cards) {
   const rows = []
   /** @type {CardPositions} */
   const positions = new Map()
-  const rowTolerance = 8
-  let currentRowTop = null
+  let previousLeft = null
 
   for (const card of cards) {
     const rect = card.getBoundingClientRect()
@@ -384,8 +383,8 @@ function buildCardGrid(cards) {
       continue
     }
 
-    if (currentRowTop === null || Math.abs(rect.top - currentRowTop) > rowTolerance) {
-      currentRowTop = rect.top
+    // A new visual row starts once the layout wraps back toward the left edge.
+    if (previousLeft === null || rect.left <= previousLeft) {
       rows.push([])
     }
 
@@ -395,6 +394,7 @@ function buildCardGrid(cards) {
 
     row.push(card)
     positions.set(card, { row: rowIndex, column: columnIndex })
+    previousLeft = rect.left
   }
 
   const maxColumns = rows.reduce((max, row) => Math.max(max, row.length), 0)
