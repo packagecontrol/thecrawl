@@ -64,6 +64,9 @@
     padding-right: 0;
     background: none;
   }
+  &.label-more:hover {
+    color: var(--orange-2);
+  }
 }
 
 span.button {
