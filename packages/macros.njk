@@ -56,9 +56,15 @@
       {% for label in labels %}
         {% set q = searchQueryFor('label', label) %}
         <li>
-          <a class="button label" href="/?q={{ q }}">
-            {{ label }}
-          </a>
+          {% if label == '…' %}
+            <a class="button label-more" href="/labels" title="More labels">
+              {{ label }}
+            </a>
+          {% else %}
+            <a class="button label" href="/?q={{ q }}">
+              {{ label }}
+            </a>
+          {% endif %}
         </li>
       {%- endfor %}
     </ul>

@@ -49,6 +49,21 @@
     opacity: .4;
     cursor: revert;
   }
+
+  .count {
+    font-size: 14px;
+    color: var(--foreground-4);
+  }
+  &:has(.count) {
+    align-items: baseline;
+  }
+
+  &.label-more,
+  &.label-more:hover {
+    padding-left: 0;
+    padding-right: 0;
+    background: none;
+  }
 }
 
 span.button {

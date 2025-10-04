@@ -1,0 +1,33 @@
+---
+title: Labels in Package Control R
+layout: layout.njk
+date: Last Modified
+---
+
+{% import "packages/macros.njk" as pack %}
+
+<form name="search">
+  <h1>Labels</h1>
+
+  <div class="search-controls">
+    <label for="search-field" class="screenreader-only">Search</label>
+    <input type="search" autocomplete="off" name="lib" id="search-field" placeholder="Search {{ collections.labels | length }} labels…">
+  </div>
+</form>
+
+<section name="labels">
+  <h2 data-list-target="heading">List</h2>
+  <ul class="grid">
+    {% for item in collections.labels %}
+      <li>
+        {% set q = pack.searchQueryFor('label', item.key) %}
+        <a data-name="{{ item.key }}" class="button label" href="/?q={{ q }}">
+          {{ item.key }}
+          <span class="count">{{ item.count }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<script src="{{ '/static/labels.js' | bust }}" type="module" async></script>
