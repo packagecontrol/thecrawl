@@ -24,10 +24,27 @@
     <a href="https://github.com/packagecontrol/thecrawl/tree/gh-pages">This website on GitHub</a>
   </nav>
 
-  <button id="theme-toggle" aria-label="Toggle color scheme">
-    <div class="icon">
-      <span class="light" aria-label="light">{{ util.icon('sun') }}</span>
-      <span class="dark" aria-label="dark">{{ util.icon('moon') }}</span>
-    </div>
-  </button>
+  <ul class="button-group toggles">
+    <li>
+      <label for="theme-toggle">Theme</label>
+      <button class="toggle" id="theme-toggle" aria-label="Toggle color scheme">
+        <div class="icon">
+          <span class="light" aria-label="light">{{ util.icon('sun') }}</span>
+          <span class="dark" aria-label="dark">{{ util.icon('moon') }}</span>
+        </div>
+      </button>
+    </li>
+    <li>
+      <label for="keys-toggle">Keyboard shortcuts</label>
+      <button class="toggle" id="keys-toggle" aria-label="Toggle keyboard shortcuts">
+        <div class="icon">
+          <span class="light" aria-label="on">{{ util.icon('check') }}</span>
+          <span class="dark" aria-label="off">{{ util.icon('no') }}</span>
+        </div>
+      </button>
+      <br>
+      <small>Shortcuts for ↓/n ↑/p and s</small>
+    </li>
+  </ul>
+
 </footer>

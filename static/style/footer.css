@@ -13,4 +13,20 @@ footer {
       margin-left: 1ex;
     }
   }
+
+  .button-group.toggles {
+    justify-content: center;
+    text-align: left;
+    color: var(--foreground-3);
+
+    button.toggle {
+      margin: 0;
+    }
+
+    small {
+      display: block;
+      margin-top: -1.6rem;
+      color: var(--foreground-4);
+    }
+  }
 }

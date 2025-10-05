@@ -1,4 +1,4 @@
-#theme-toggle {
+button.toggle {
   appearance: none;
   all: unset;
   width: 52px;
