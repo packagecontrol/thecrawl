@@ -39,9 +39,7 @@
     <div class="search-controls">
 
       <label for="search-field" class="screenreader-only">Search</label>
-      <input type="search" autocomplete="off" name="q" id="search-field" placeholder="{{ 'Search ' ~ count ~ ' packages' if verbose else 'Search' }}…">
-
-      <div class="keybinding-hint">Press <span class="key">/</span> to search</div>
+      <input type="search" autocomplete="off" name="q" id="search-field" placeholder="{{ 'Press / to search ' ~ count ~ ' packages' if verbose else 'Search' }}…">
 
       <div class="button">
         <label for="sort-field">Sort by</label>

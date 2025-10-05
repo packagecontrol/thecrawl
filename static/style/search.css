@@ -141,27 +141,6 @@ select {
   }
 }
 
-.keybinding-hint {
-  display: none;
-  align-items: center;
-  margin-right: 1ex;
-  color: var(--foreground-4);
-  pointer-events: none;
-  .key {
-    display: inline-block;
-    padding: 0 .6ex;
-    border-radius: 3px;
-    border: 1px solid currentcolor;
-    margin: 0 .6ex;
-  }
-
-  @media (min-width: 600px) {
-    input:placeholder-shown + & {
-      display: flex;
-    }
-  }
-}
-
 /* Compact header search: hide Sort By until focus, with animation */
 form.compact {
   margin: 0;
