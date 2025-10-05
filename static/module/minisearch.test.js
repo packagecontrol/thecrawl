@@ -1,7 +1,7 @@
 import MiniSearch from 'minisearch'
 import { beforeAll, describe, expect, it } from 'vitest'
 
-import { createMinisearch } from './minisearch.js'
+import { createMinisearch, customTokenizer } from './minisearch.js'
 
 describe('GitSavvy search', () => {
   const data = [
@@ -61,6 +61,13 @@ describe('GitSavvy search', () => {
       platforms: ['linux'],
       labels: ['internationalization'],
     },
+    {
+      name: '中文工具',
+      description: 'Chinese tooling',
+      author: '汉语',
+      platforms: ['linux'],
+      labels: ['国际化'],
+    },
   ]
 
   let minisrch
@@ -117,5 +124,16 @@ describe('GitSavvy search', () => {
     const names = results.map(entry => entry.name)
     expect(names).toContain('InternationalisationSuite')
     expect(names).toContain('InternationalizationSuite')
+  })
+
+  it('tokenizes Unicode terms such as Chinese characters', () => {
+    const tokens = customTokenizer('中文 test')
+    expect(tokens).toEqual(expect.arrayContaining(['中文']))
+  })
+
+  it('returns Chinese packages when searching with Chinese characters', () => {
+    const results = minisrch.search('中文')
+    const names = results.map(entry => entry.name)
+    expect(names).toContain('中文工具')
   })
 })
