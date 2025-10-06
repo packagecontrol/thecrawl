@@ -24,4 +24,14 @@
   pre code {
     background: var(--background-2);
   }
+
+  kbd {
+    display: inline-block;
+    border: 1px solid #eaeaea;
+    border-radius: 6px;
+    line-height: 1.2rem;
+    padding: 0px 3px;
+    box-shadow: inset 0px -1px 0px #adadad;
+    background: #fdfdfd;
+  }
 }
