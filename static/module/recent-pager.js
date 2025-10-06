@@ -10,6 +10,10 @@ const RECENT_PAGER_STYLES = `
     justify-content: space-between;
     gap: 1rem;
 
+    > h2 {
+      padding-top: 0;
+    }
+
     &.is-sticky {
       position: sticky;
       top: 0;
@@ -20,6 +24,15 @@ const RECENT_PAGER_STYLES = `
       padding-left: var(--side-padding);
       padding-right: var(--side-padding);
       margin-bottom: 2px;  /* room for the 2px card outline */
+
+      > h2 {
+        padding-top: 4px;
+        margin-bottom: 8px;  /* 2px up (10 is the default for our h2) */
+      }
+
+      & .pager-pagination {
+        top: 4px;           /* 2px down */
+      }
     }
 
     .pager-pagination {

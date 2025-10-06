@@ -158,8 +158,7 @@ section {
 
   &[data-list-target] {
     padding-top: 16px;
-    > h2:first-child,
-    .pager-header > h2 {
+    > h2:first-child {
       padding-top: 0;
     }
   }
