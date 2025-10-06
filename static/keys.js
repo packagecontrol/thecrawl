@@ -15,7 +15,13 @@ document.querySelectorAll('.skip-link').forEach((skipLink) => {
     }
 
     event.preventDefault()
-    target.focus({ preventScroll: true })
+    const rect = target.getBoundingClientRect()
+    const withinViewport = rect.top >= 0
+      && rect.left >= 0
+      && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+      && rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+
+    target.focus(withinViewport ? { preventScroll: true } : undefined)
   })
 })
 
