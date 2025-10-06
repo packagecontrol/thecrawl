@@ -64,10 +64,10 @@ export class List {
 
   // hide search results and reveal other sections
   revertToNormal() {
+    this.clear()
     this.hideme.forEach((section) => {
       section.style.display = null
     })
-
     this.section.style.display = 'none'
     this.restoreMainContentAnchor()
   }
@@ -179,9 +179,6 @@ export class List {
     if (document.title !== title) {
       document.title = title
     }
-
-    // clear previous results
-    this.clear()
 
     if (!hasQuery && !usingWildcard) {
       // no search query and no alternate sort - revert to static homepage
