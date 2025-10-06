@@ -260,7 +260,7 @@ function handleGridNavigation(event, currentCard, directions) {
         event.preventDefault()
       }
     // ... or flip to the next page.
-    } else if (grid.maxColumns > 1 && pagerSection) {
+    } else if (pagerSection) {
       const desiredIndex = position.row * grid.maxColumns
       if (clickPagerControl(pagerSection, 'next', desiredIndex)) {
         event.preventDefault()
@@ -277,7 +277,7 @@ function handleGridNavigation(event, currentCard, directions) {
         event.preventDefault()
       }
     // ... or flip to the previous page.
-    } else if (grid.maxColumns > 1 && pagerSection) {
+    } else if (pagerSection) {
       const desiredIndex = position.row * grid.maxColumns + Math.max(grid.maxColumns - 1, 0)
       if (clickPagerControl(pagerSection, 'prev', desiredIndex)) {
         event.preventDefault()
