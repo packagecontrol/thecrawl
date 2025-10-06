@@ -182,4 +182,8 @@ section {
       padding-top: 0;
     }
   }
+
+  &[name="package"] [id="main-content"]:focus-visible {
+    outline: none;
+  }
 }
