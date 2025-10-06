@@ -43,14 +43,15 @@ export class SimpleSearch {
 
     // Always mark the fist visible card as start of the main content
     document.getElementById('main-content')?.removeAttribute('id')
-    const firstVisibleCard = Array.from(this.cards).find((card) => {
-      const container = card.closest('li')
-      if (!container) {
-        return false
-      }
-      return container.style.display !== 'none'
-    })
-    const mainAnchor = firstVisibleCard?.querySelector('h3 a')
+    const firstVisibleCard = Array.from(this.cards)
+      .map(card => card.closest('li'))
+      .find((container) => {
+        if (!container) {
+          return false
+        }
+        return container.style.display !== 'none'
+      })
+    const mainAnchor = firstVisibleCard?.querySelector('a')
     if (mainAnchor) {
       mainAnchor.setAttribute('id', 'main-content')
     }

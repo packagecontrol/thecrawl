@@ -1,3 +1,6 @@
+// Compatible selector for the labels and libraries sub pages
+const CARD_SELECTOR = '.card, [data-list-target="heading"] + ul li'
+
 // Enable each skip link to focus its target without scrolling.
 document.querySelectorAll('.skip-link').forEach((skipLink) => {
   skipLink.addEventListener('click', (event) => {
@@ -24,7 +27,7 @@ document.addEventListener('keydown', (event) => {
   }
 
   const active = document.activeElement
-  const currentCard = active?.closest('.card')
+  const currentCard = findNavigableCard(active)
   if (!currentCard) {
     return
   }
@@ -51,7 +54,7 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  const currentCard = active?.closest('.card')
+  const currentCard = findNavigableCard(active)
   const cards = visibleCardsInSection(pagerSection)
   const index = Math.max(0, cards.indexOf(currentCard))
 
@@ -73,7 +76,7 @@ document.addEventListener('keydown', (event) => {
   }
 
   const active = document.activeElement
-  const currentCard = active?.closest('.card')
+  const currentCard = findNavigableCard(active)
 
   if (!currentCard) {
     return
@@ -127,7 +130,7 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  const card = Array.from(document.querySelectorAll('.card')).find(isVisibleCard)
+  const card = Array.from(document.querySelectorAll(CARD_SELECTOR)).find(isVisibleCard)
   if (!card) {
     return
   }
@@ -173,13 +176,27 @@ function focusCardHeading(card) {
     return false
   }
 
-  const anchor = card.querySelector('h3 a')
+  const anchor = card.querySelector('a')
   if (!anchor) {
     return false
   }
 
   anchor.focus()
   return document.activeElement === anchor
+}
+
+/**
+ * Resolve the element representing a navigable card for keyboard handlers.
+ *
+ * @param {Element|null} element - Starting point for the lookup.
+ * @returns {Element|null} Matching card container or null.
+ */
+function findNavigableCard(element) {
+  if (!(element instanceof Element)) {
+    return null
+  }
+
+  return element.closest(CARD_SELECTOR)
 }
 
 /**
@@ -402,7 +419,7 @@ function buildCardGrid(cards) {
 }
 
 function getAllVisibleCards() {
-  return Array.from(document.querySelectorAll('.card')).filter(isVisibleCard)
+  return Array.from(document.querySelectorAll(CARD_SELECTOR)).filter(isVisibleCard)
 }
 
 /**
@@ -500,5 +517,5 @@ function visibleCardsInSection(section) {
     return []
   }
 
-  return Array.from(section.querySelectorAll('.card')).filter(isVisibleCard)
+  return Array.from(section.querySelectorAll(CARD_SELECTOR)).filter(isVisibleCard)
 }

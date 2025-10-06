@@ -21,7 +21,7 @@ date: Last Modified
     {% for item in collections.labels %}
       <li>
         {% set q = pack.searchQueryFor('label', item.key) %}
-        <a data-name="{{ item.key }}" class="button label" href="/?q={{ q }}">
+        <a {{ "id=main-content" if loop.index0 == 0 }} data-name="{{ item.key }}" class="button label" href="/?q={{ q }}">
           {{ item.key }}
           <span class="count">{{ item.count }}</span>
         </a>
