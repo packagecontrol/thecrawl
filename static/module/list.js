@@ -74,7 +74,6 @@ export class List {
 
   // clear any pagination ui and previous results
   clear() {
-    this.clearActiveMainContentTarget()
     this.pagination?.clear()
     Array.from(this.list.children).forEach((card) => {
       card.remove()
@@ -117,15 +116,6 @@ export class List {
     this.search = new Search(minisearch)
   }
 
-  clearActiveMainContentTarget() {
-    if (!this.activeMainContentAnchor) {
-      return
-    }
-
-    this.activeMainContentAnchor.removeAttribute('id')
-    this.activeMainContentAnchor = null
-  }
-
   assignMainContentTarget(fragment) {
     const anchor = fragment.querySelector('h3 a')
     if (!anchor) {
@@ -144,7 +134,8 @@ export class List {
   }
 
   restoreMainContentAnchor() {
-    this.clearActiveMainContentTarget()
+    this.activeMainContentAnchor?.removeAttribute('id')
+    this.activeMainContentAnchor = null
     this.restorableMainContent?.setAttribute('id', 'main-content')
   }
 
