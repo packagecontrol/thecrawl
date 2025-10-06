@@ -18,7 +18,7 @@ export class List {
   pagination = null
   initialPath = '/'
   initialTitle = document.title
-  mainContentAnchor = document.getElementById('main-content')
+  restorableMainContent = document.getElementById('main-content')
   activeMainContentAnchor = null
 
   sortTitleMap = {
@@ -132,21 +132,20 @@ export class List {
       return
     }
 
-    if (this.mainContentAnchor?.id === 'main-content') {
-      this.mainContentAnchor.removeAttribute('id')
+    const current = document.getElementById('main-content')
+    if (current && current !== anchor) {
+      this.restorableMainContent = current
+      current.removeAttribute('id')
     }
 
-    this.clearActiveMainContentTarget()
+    this.activeMainContentAnchor?.removeAttribute('id')
     anchor.setAttribute('id', 'main-content')
     this.activeMainContentAnchor = anchor
   }
 
   restoreMainContentAnchor() {
     this.clearActiveMainContentTarget()
-
-    if (this.mainContentAnchor && this.mainContentAnchor.id !== 'main-content') {
-      this.mainContentAnchor.setAttribute('id', 'main-content')
-    }
+    this.restorableMainContent?.setAttribute('id', 'main-content')
   }
 
   goSearch(value, sortBy = 'relevance', page = 1) {
