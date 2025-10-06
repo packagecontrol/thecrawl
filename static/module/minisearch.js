@@ -4,6 +4,14 @@ const VARIANT_REPLACEMENTS = [
   [/internationalis/g, 'internationaliz'], // internationalisation => internationalization
 ]
 
+let SPLIT_TOKEN_REGEX
+try {
+  SPLIT_TOKEN_REGEX = new RegExp('[^\\p{L}\\p{N}]+', 'u')
+} catch {
+  // Fallback to ASCII-only splitting when Unicode property escapes are unavailable.
+  SPLIT_TOKEN_REGEX = /[^a-z0-9]+/i
+}
+
 function normalizeToken(token) {
   for (const [pattern, replacement] of VARIANT_REPLACEMENTS) {
     token = token.replace(pattern, replacement)
@@ -13,12 +21,15 @@ function normalizeToken(token) {
 
 export function customTokenizer(str) {
   return str
-    .split(/[^a-z0-9]+/i)
+    .split(SPLIT_TOKEN_REGEX)
     .flatMap((token) => {
+      if (!token) {
+        return []
+      }
       return token
         .replace(/([a-z])([A-Z])/g, '$1 $2')
         .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-        .split(/[^a-z0-9]+/i)
+        .split(SPLIT_TOKEN_REGEX)
         .concat(token)
     })
     .map(normalizeToken)
