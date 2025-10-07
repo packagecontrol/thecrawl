@@ -18,6 +18,8 @@ export class List {
   pagination = null
   initialPath = '/'
   initialTitle = document.title
+  restorableMainContent = document.getElementById('main-content')
+  activeMainContentAnchor = null
 
   sortTitleMap = {
     installed: 'Installs',
@@ -62,11 +64,12 @@ export class List {
 
   // hide search results and reveal other sections
   revertToNormal() {
+    this.clear()
     this.hideme.forEach((section) => {
       section.style.display = null
     })
-
     this.section.style.display = 'none'
+    this.restoreMainContentAnchor()
   }
 
   // clear any pagination ui and previous results
@@ -84,9 +87,13 @@ export class List {
     this.pagination = new Pagination(this, items, page, this.section)
 
     // Render items for current page
-    this.pagination.calculate().forEach((pkg) => {
+    this.pagination.calculate().forEach((pkg, index) => {
       const li = document.createElement('li')
-      li.appendChild((new Card(pkg)).render())
+      const fragment = (new Card(pkg)).render()
+      if (index === 0) {
+        this.assignMainContentTarget(fragment)
+      }
+      li.appendChild(fragment)
       this.list.appendChild(li)
     })
 
@@ -107,6 +114,29 @@ export class List {
 
   setMinisearch(minisearch) {
     this.search = new Search(minisearch)
+  }
+
+  assignMainContentTarget(fragment) {
+    const anchor = fragment.querySelector('h3 a')
+    if (!anchor) {
+      return
+    }
+
+    const current = document.getElementById('main-content')
+    if (current && current !== anchor) {
+      this.restorableMainContent = current
+      current.removeAttribute('id')
+    }
+
+    this.activeMainContentAnchor?.removeAttribute('id')
+    anchor.setAttribute('id', 'main-content')
+    this.activeMainContentAnchor = anchor
+  }
+
+  restoreMainContentAnchor() {
+    this.activeMainContentAnchor?.removeAttribute('id')
+    this.activeMainContentAnchor = null
+    this.restorableMainContent?.setAttribute('id', 'main-content')
   }
 
   goSearch(value, sortBy = 'relevance', page = 1) {
@@ -149,9 +179,6 @@ export class List {
     if (document.title !== title) {
       document.title = title
     }
-
-    // clear previous results
-    this.clear()
 
     if (!hasQuery && !usingWildcard) {
       // no search query and no alternate sort - revert to static homepage

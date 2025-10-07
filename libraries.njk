@@ -4,14 +4,14 @@ layout: layout.njk
 date: Last Modified
 ---
 
-{% macro lib(pkg) %}
+{% macro lib(pkg, mark_as_main=false) %}
   <div class="card"
     data-name="{{ pkg.name | escape }}"
     data-author="{{ pkg.author | escape }}"
     data-description="{{ pkg.description | escape }}">
 
     <h3>
-      <a href="{{ pkg.homepage }}">
+      <a {{ "id=main-content" if mark_as_main }} href="{{ pkg.homepage }}">
         {{ pkg.name }}
       </a>
     </h3>
@@ -45,7 +45,7 @@ date: Last Modified
 {% endmacro %}
 
 <form name="search">
-  <h1>Libaries</h1>
+  <h1>Libraries</h1>
 
   <div class="search-controls">
     <label for="search-field" class="screenreader-only">Search</label>
@@ -58,7 +58,7 @@ date: Last Modified
   <ul class="list">
     {% for item in collections.libraries %}
       <li>
-        {{ lib(item) }}
+        {{ lib(item, loop.index0 == 0) }}
       </li>
     {% endfor %}
   </ul>

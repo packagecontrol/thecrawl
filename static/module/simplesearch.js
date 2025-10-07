@@ -20,26 +20,41 @@ export class SimpleSearch {
         card.closest('li').style.display = null
       })
       this.heading.innerText = 'List'
-      return
-    }
-
-    const results = this.search.search(query).map(result => result.name)
-
-    if (results.length === 1) {
-      this.heading.innerText = '1 Result'
     }
     else {
-      this.heading.innerText = results.length + ' Results'
-    }
+      const results = this.search.search(query).map(result => result.name)
 
-    this.cards.forEach((card) => {
-      if (results.indexOf(card.dataset.name) < 0) {
-        card.closest('li').style.display = 'none'
+      if (results.length === 1) {
+        this.heading.innerText = '1 Result'
       }
       else {
-        card.closest('li').style.display = null
+        this.heading.innerText = results.length + ' Results'
       }
-    })
+
+      this.cards.forEach((card) => {
+        if (results.indexOf(card.dataset.name) < 0) {
+          card.closest('li').style.display = 'none'
+        }
+        else {
+          card.closest('li').style.display = null
+        }
+      })
+    }
+
+    // Always mark the fist visible card as start of the main content
+    document.getElementById('main-content')?.removeAttribute('id')
+    const firstVisibleCard = Array.from(this.cards)
+      .map(card => card.closest('li'))
+      .find((container) => {
+        if (!container) {
+          return false
+        }
+        return container.style.display !== 'none'
+      })
+    const mainAnchor = firstVisibleCard?.querySelector('a')
+    if (mainAnchor) {
+      mainAnchor.setAttribute('id', 'main-content')
+    }
   }
 
   init() {
@@ -57,10 +72,13 @@ export class SimpleSearch {
     // Handle input changes (search as you type)
     this.input.addEventListener('input', () => {
       clearTimeout(debounceTimeout)
-
-      debounceTimeout = setTimeout(() => {
+      if (this.input.value.trim() == '') {
         this.handleInput()
-      }, 300) // .3 seconds
+      } else {
+        debounceTimeout = setTimeout(() => {
+          this.handleInput()
+        }, 300) // .3 seconds
+      }
     })
   }
 }

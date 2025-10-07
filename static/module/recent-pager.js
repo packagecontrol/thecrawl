@@ -140,6 +140,7 @@ class RecentPager {
       queryParam,
       timestampField,
       shortHeading,
+      manageMainContent = false,
     } = options
 
     /** @type {T[]} */
@@ -152,6 +153,7 @@ class RecentPager {
     this.headingShortText = shortHeading
     this.perPage = perPage
     this.page = 1
+    this.manageMainContent = manageMainContent
 
     this.controls = null
     this.monthIndicator = null
@@ -207,6 +209,7 @@ class RecentPager {
     this.updateButtons()
     this.updateMonthIndicator()
     this.applyMobileHacks()
+    this.updateMainContentMarker()
   }
 
   syncFromUrl() {
@@ -381,6 +384,8 @@ class RecentPager {
       this.ul.appendChild(li)
     })
 
+    this.updateMainContentMarker()
+
     // update controls state
     this.updateButtons()
     this.updateMonthIndicator()
@@ -407,6 +412,26 @@ class RecentPager {
       }
     }
   }
+
+  updateMainContentMarker() {
+    if (!this.manageMainContent) {
+      return
+    }
+
+    const firstLink = this.ul?.querySelector('li:first-of-type h3 > a')
+      ?? this.ul?.querySelector('li:first-of-type a')
+    if (!firstLink) {
+      return
+    }
+
+    if (firstLink.id !== 'main-content') {
+      const current = document.getElementById('main-content')
+      if (current && current !== firstLink) {
+        current.removeAttribute('id')
+      }
+      firstLink.setAttribute('id', 'main-content')
+    }
+  }
 }
 
 const pagerConfigs = [
@@ -423,6 +448,7 @@ const pagerConfigs = [
     options: {
       queryParam: 'created_after',
       timestampField: 'created_at',
+      manageMainContent: true,
     },
   },
 ]

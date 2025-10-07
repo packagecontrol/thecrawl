@@ -64,6 +64,25 @@ a {
   }
 }
 
+.skip-link {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: var(--background-1);
+  color: var(--foreground-1);
+  border-radius: 0.25rem;
+
+  /* hide by default */
+  transform: translateY(-200%);
+  transition: none;
+  z-index: 1000;
+
+  &:focus-visible {
+    transform: translateY(0);
+  }
+}
+
 summary {
   cursor: pointer;
 }
@@ -161,5 +180,9 @@ section {
     > h2:first-child {
       padding-top: 0;
     }
+  }
+
+  &[name="package"] [id="main-content"]:focus-visible {
+    outline: none;
   }
 }

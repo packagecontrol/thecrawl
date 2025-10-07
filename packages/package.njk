@@ -16,7 +16,7 @@ isPackagePage: true
 {% import "util/macros.njk" as util %}
 
 <section name="package" data-list-target="hideme">
-  <h1 data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
+  <h1 id="main-content" tabindex="-1" data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
 
   {% if pkg.description %}
     <p class="description">{{ pkg.description }}</p>
