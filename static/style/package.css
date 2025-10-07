@@ -1,3 +1,49 @@
+.package-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 13px;
+  position: relative;
+
+  > h1 {
+    margin: 0;
+  }
+
+  .copy-install {
+    gap: 0;
+    padding: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    background: none;
+
+    &:hover {
+      color: var(--foreground-1);
+    }
+
+    svg {
+      margin: 0;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .copy-feedback {
+    background: var(--background-3);
+    color: var(--foreground-1);
+    padding: 6px 10px;
+    border-radius: 4px;
+    box-shadow: 0 3px 5px -7px rgba(0, 0, 0, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease-in-out, transform .15s ease-in-out;
+    z-index: 10;
+
+    &.is-visible {
+      opacity: 1;
+    }
+  }
+}
+
 .description {
   font-size: 21px;
   line-height: 26px;
