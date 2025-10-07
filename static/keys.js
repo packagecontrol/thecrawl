@@ -96,10 +96,10 @@ document.addEventListener('keydown', (event) => {
   })
 })
 
-// Focus the search field when s is pressed outside editable inputs.
+// Focus the search field when s or / is pressed outside editable inputs.
 document.addEventListener('keydown', (event) => {
   const lower = event.key.toLowerCase()
-  if (lower !== 's') {
+  if (lower !== 's' && lower !== '/') {
     return
   }
 
