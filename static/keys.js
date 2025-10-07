@@ -1,5 +1,5 @@
-// Compatible selector for the labels and libraries sub pages
-const CARD_SELECTOR = '.card, [data-list-target="heading"] + ul li'
+// Compatible selector for the labels sub page
+const CARD_SELECTOR = '.card, section[name="labels"] ul li'
 
 // Enable each skip link to focus its target without scrolling.
 document.querySelectorAll('.skip-link').forEach((skipLink) => {
