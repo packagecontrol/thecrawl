@@ -150,8 +150,18 @@ human-date[clickable] {
 
 .clipboard-wrapper {
   position: relative;
+  .active {
+    display: none;
+    color: var(--green-2);
+  }
   &.copied pre {
-    background: var(--background-4);
+    background: var(--highlight);
+  }
+  &.copied .passive {
+    display: none;
+  }
+  &.copied .active {
+    display: block;
   }
   pre {
     transition: background .1s ease-out;

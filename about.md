@@ -56,17 +56,19 @@ You are very much invited to make the switch and come along for the ride!
   document.querySelectorAll('pre').forEach(codeblock => {
     const wrapper = document.createElement('div');
     wrapper.classList.add('clipboard-wrapper');
-    const button = document.createElement('button');
-    button.innerText = 'Copy';
-    button.classList.add('button');
-    button.onclick = (event) => {
+
+    const template = document.querySelector('template#clipboard-button')
+    const button = template.content.cloneNode(true)
+    console.log('load', button)
+    button.querySelector('button').onclick = (event) => {
+      console.log('click')
       event.preventDefault();
       event.stopPropagation();
       navigator.clipboard.writeText(codeblock.innerText.trim());
       wrapper.classList.add('copied');
       window.setTimeout(() => {
         wrapper.classList.remove('copied');
-      }, 200);
+      }, 500);
     }
     codeblock.insertAdjacentElement('beforebegin', wrapper);
     wrapper.appendChild(codeblock);
