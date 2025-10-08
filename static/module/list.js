@@ -20,6 +20,7 @@ export class List {
   initialTitle = document.title
   restorableMainContent = document.getElementById('main-content')
   activeMainContentAnchor = null
+  filterStateUpdater = null
 
   sortTitleMap = {
     installed: 'Installs',
@@ -116,6 +117,10 @@ export class List {
     this.search = new Search(minisearch)
   }
 
+  setFilterStateUpdater(callback) {
+    this.filterStateUpdater = callback
+  }
+
   assignMainContentTarget(fragment) {
     const anchor = fragment.querySelector('h3 a')
     if (!anchor) {
@@ -143,6 +148,8 @@ export class List {
     if (!this.search) {
       throw new Error('minisearch is not initialized')
     }
+
+    this.filterStateUpdater?.(value)
 
     const query = value.toLowerCase().trim()
     const hasQuery = query.length > 0

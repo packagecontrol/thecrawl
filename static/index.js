@@ -27,6 +27,74 @@ const form = document.forms.search
 const input = form.elements['q']
 const sortSelect = form.elements['sort']
 
+/**
+ * @typedef {Object} FilterButtonDescriptor
+ * @property {HTMLAnchorElement} element The original filter button element.
+ * @property {string} type The token prefix (e.g. label, platform, author).
+ * @property {string} token Full token string extracted from the button href.
+ */
+
+/**
+ * All filter buttons that can toggle search tokens, converted to metadata objects.
+ * @type {FilterButtonDescriptor[]}
+ */
+const filterButtons = Array
+  .from(form.querySelectorAll('.button-group.labels a.button[href*="?q="]'))
+  .map(parseFilterButton)
+  .filter(Boolean)
+
+/**
+ * Extract token metadata from a filter button anchor.
+ * @param {HTMLAnchorElement} element
+ * @returns {FilterButtonDescriptor | null}
+ */
+function parseFilterButton(element) {
+  const url = new URL(element.href, window.location.origin)
+  const token = url.searchParams.get('q')
+  if (!token) {
+    return null
+  }
+  const delimiterIndex = token.indexOf(':')
+  if (delimiterIndex === -1) {
+    return null
+  }
+  const type = token.slice(0, delimiterIndex)
+  if (!type) {
+    return null
+  }
+
+  return { element, type, token }
+}
+
+const updateFilterButtonStates = (query) => {
+  if (!filterButtons.length) {
+    return
+  }
+
+  const normalizedQuery = query.trim()
+  const tokenCache = new Map()
+
+  const getActiveTokens = (type) => {
+    if (!tokenCache.has(type)) {
+      const regex = new RegExp(`${type}:("[^"]+"|\\S+)`, 'g')
+      const matches = normalizedQuery.match(regex) ?? []
+      tokenCache.set(type, new Set(matches))
+    }
+    return tokenCache.get(type)
+  }
+
+  for (const { element, type, token } of filterButtons) {
+    const activeTokens = getActiveTokens(type)
+    if (activeTokens.has(token)) {
+      element.classList.add('is-active')
+    } else {
+      element.classList.remove('is-active')
+    }
+  }
+}
+
+list.setFilterStateUpdater(updateFilterButtonStates)
+
 const syncFromUrl = () => {
   const urlParams = new URLSearchParams(window.location.search)
   const query = urlParams.get('q') || ''
@@ -106,16 +174,35 @@ document.addEventListener('click', (event) => {
   event.stopPropagation()
 
   if (target.closest('form')) {
-    // the shortcuts in the form should provide an additional narrowing of search,
-    // not replace it
-    if (oldQuery.includes('label:') && newQuery.includes('label:')) {
-      newQuery = oldQuery.replace(/label:("[^"]+"|\S+)/, newQuery)
-    } else if (oldQuery.includes('platform:') && newQuery.includes('platform:')) {
-      newQuery = oldQuery.replace(/platform:("[^"]+"|\S+)/, newQuery)
-    } else if (oldQuery.includes('author:') && newQuery.includes('author:')) {
-      newQuery = oldQuery.replace(/author:("[^"]+"|\S+)/, newQuery)
-    } else {
-      newQuery = oldQuery + ' ' + newQuery
+    // the shortcuts in the form act as filters, toggling off when clicked twice
+    const clickedQuery = newQuery
+    const applyToggle = (type) => {
+      if (!clickedQuery.includes(`${type}:`)) {
+        return false
+      }
+
+      const tokenRegex = new RegExp(`${type}:("[^"]+"|\\S+)`)
+      const newTokenMatch = clickedQuery.match(tokenRegex)
+      if (!newTokenMatch) {
+        return false
+      }
+
+      const newToken = newTokenMatch[0]
+      const oldTokenMatch = oldQuery.match(tokenRegex)
+
+      if (oldTokenMatch && oldTokenMatch[0] === newToken) {
+        newQuery = oldQuery.replace(tokenRegex, '').replace(/\s{2,}/g, ' ').trim()
+      } else if (oldTokenMatch) {
+        newQuery = oldQuery.replace(tokenRegex, newToken)
+      } else {
+        newQuery = `${oldQuery} ${newToken}`.trim()
+      }
+
+      return true
+    }
+
+    if (!applyToggle('label') && !applyToggle('platform') && !applyToggle('author')) {
+      newQuery = `${oldQuery} ${clickedQuery}`.trim()
     }
   }
 
