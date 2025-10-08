@@ -39,6 +39,7 @@ jobs:
         with:
           path: ./wrk
           key: wrk-cache-${{ github.run_id }}
+          fail-on-cache-miss: true
           restore-keys: |
             wrk-cache-
 
@@ -126,6 +127,7 @@ jobs:
         with:
           path: ./wrk
           key: stats-cache-${{ github.run_id }}
+          fail-on-cache-miss: true
           restore-keys: |
             stats-cache-
 
