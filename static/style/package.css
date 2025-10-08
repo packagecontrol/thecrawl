@@ -61,6 +61,19 @@ ul.stats {
       &:hover {
         background: var(--blue-2);
       }
+      &.is-active {
+        background: var(--blue-2);
+        outline: 2px solid var(--blue-2);
+        --platform-active-surface: hsl(from var(--blue-1) h calc(s * 1.2) calc(l * 0.9));
+        background: var(--platform-active-surface);
+        outline: 2px solid var(--platform-active-surface);
+      }
+      &.is-active:hover {
+        background: hsl(from var(--platform-active-surface) h s calc(l * 0.85));
+        :root[data-theme='dark'] & {
+          background: hsl(from var(--platform-active-surface) h s calc(l * 1.2));
+        }
+      }
     }
     &.platform-windows,
     &.platform-windows-x32,
@@ -68,6 +81,19 @@ ul.stats {
       background: var(--orange-1);
       &:hover {
         background: var(--orange-2);
+      }
+      &.is-active {
+        background: var(--orange-2);
+        outline: 2px solid var(--orange-2);
+        --platform-active-surface: hsl(from var(--orange-1) h calc(s * 1.2) calc(l * 0.9));
+        background: var(--platform-active-surface);
+        outline: 2px solid var(--platform-active-surface);
+      }
+      &.is-active:hover {
+        background: hsl(from var(--platform-active-surface) h s calc(l * 0.85));
+        :root[data-theme='dark'] & {
+          background: hsl(from var(--platform-active-surface) h s calc(l * 1.2));
+        }
       }
     }
     &.platform-linux,
@@ -77,6 +103,19 @@ ul.stats {
       background: var(--green-1);
       &:hover {
         background: var(--green-2);
+      }
+      &.is-active {
+        background: var(--green-2);
+        outline: 2px solid var(--green-2);
+        --platform-active-surface: hsl(from var(--green-1) h calc(s * 1.2) calc(l * 0.9));
+        background: var(--platform-active-surface);
+        outline: 2px solid var(--platform-active-surface);
+      }
+      &.is-active:hover {
+        background: hsl(from var(--platform-active-surface) h s calc(l * 0.85));
+        :root[data-theme='dark'] & {
+          background: hsl(from var(--platform-active-surface) h calc(s * 0.9) calc(l * 1.1));
+        }
       }
     }
   }
