@@ -123,7 +123,9 @@ def ingest_restore_if_needed(wd: str):
     for src in restore_files:
         dest = os.path.join(wd, os.path.basename(src))
         shutil.copy2(src, dest)
+        print(f"Ingested {os.path.basename(src)}")
 
+    print(f"Write {hasher.hexdigest()} marker")
     # Touch the marker file to note that the backup was ingested
     with open(marker_path, "w", encoding="utf-8") as marker:
         marker.write("")
