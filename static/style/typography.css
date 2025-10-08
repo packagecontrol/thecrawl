@@ -15,7 +15,8 @@
   background-position-y: 26px !important;
 }*/
 
-code {
+code,
+kbd {
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.94em;
 }
