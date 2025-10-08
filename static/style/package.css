@@ -37,6 +37,12 @@
     pointer-events: none;
     transition: opacity .15s ease-in-out, transform .15s ease-in-out;
     z-index: 10;
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: calc(100% + 12px);
+    transform: translateY(-50%);
+    width: max-content;
+    max-width: max(8rem, calc(34vw - var(--side-padding)));
 
     &.is-visible {
       opacity: 1;
