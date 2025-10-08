@@ -1,6 +1,8 @@
 import argparse
+import hashlib
 import json
 import os
+import shutil
 import sys
 from datetime import date
 from urllib.request import Request, urlopen
@@ -24,6 +26,7 @@ def main():
     args.output = os.path.normpath(os.path.join(wd, args.output))
 
     prev_path = os.path.join(wd, PREV_TOTALS_FILE)
+    ingest_restore_if_needed(wd)
     prev_totals = load_json(prev_path) or {}
 
     try:
@@ -90,6 +93,40 @@ def fetch_totals(url: str) -> dict:
     request = Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urlopen(request) as resp:
         return json.load(resp)
+
+
+def ingest_restore_if_needed(wd: str):
+    restore_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "restore"))
+    if not os.path.isdir(restore_dir):
+        return
+
+    restore_files = [
+        os.path.join(restore_dir, name)
+        for name in os.listdir(restore_dir)
+        if os.path.isfile(os.path.join(restore_dir, name))
+    ]
+
+    if not restore_files:
+        return
+
+    hasher = hashlib.sha256()
+    for path in sorted(restore_files):
+        hasher.update(os.path.basename(path).encode("utf-8"))
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                hasher.update(chunk)
+
+    marker_path = os.path.join(wd, f"ingested_{hasher.hexdigest()}")
+    if os.path.exists(marker_path):
+        return
+
+    for src in restore_files:
+        dest = os.path.join(wd, os.path.basename(src))
+        shutil.copy2(src, dest)
+
+    # Touch the marker file to note that the backup was ingested
+    with open(marker_path, "w", encoding="utf-8") as marker:
+        marker.write("")
 
 
 def load_json(path: str) -> dict | None:
