@@ -42,14 +42,17 @@ def main():
     week_label = f"{today.isocalendar().year}-W{today.isocalendar().week:02d}"
     year_label = str(today.year)
 
-    for label, key, keep in [
-        (day_label, "__daily_dates", HISTORY_DAYS),
-        (week_label, "__weekly_dates", HISTORY_WEEKS),
-        (year_label, "__yearly_dates", HISTORY_YEARS),
+    did_rollover = set()
+    for period, label, keep in [
+        ("daily", day_label, HISTORY_DAYS),
+        ("weekly", week_label, HISTORY_WEEKS),
+        ("yearly", year_label, HISTORY_YEARS),
     ]:
+        key = f"__{period}_dates"
         dates = output_data.setdefault(key, [])
         if not dates or dates[0] != label:
-            dates.insert(0, label)
+            dates = [label] + dates
+            did_rollover.add(period)
         output_data[key] = dates[:keep]
 
     for pkg, metrics in current_totals.items():
@@ -70,16 +73,18 @@ def main():
                 print(f'"{pkg}" {target_key} +{delta}')
 
             container["totals"] = current_total
-            accumulate(delta, container, "daily", len(output_data["__daily_dates"]))
-            accumulate(delta, container, "weekly", len(output_data["__weekly_dates"]))
-            accumulate(delta, container, "yearly", len(output_data["__yearly_dates"]))
+            accumulate(delta, container, "daily", len(output_data["__daily_dates"]), did_rollover)
+            accumulate(delta, container, "weekly", len(output_data["__weekly_dates"]), did_rollover)
+            accumulate(delta, container, "yearly", len(output_data["__yearly_dates"]), did_rollover)
 
     save_json(args.output, output_data, pretty=args.pretty)
     save_json(prev_path, current_totals)
 
 
-def accumulate(value: int, container: dict, key: str, wanted_length: int):
+def accumulate(value: int, container: dict, key: str, wanted_length: int, rollovers: set[str]):
     dates = container.get(key, [])
+    if key in rollovers:
+        dates = [0] + dates
     # Maybe left pad data
     dates = [0] * (wanted_length - len(dates)) + dates
     # Trim to the wanted length
