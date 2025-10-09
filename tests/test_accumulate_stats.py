@@ -22,7 +22,9 @@ def test_initial_run_with_pristine_prev_totals(tmp_path, monkeypatch):
         "--wd",
         str(tmp_path),
         "--url",
-        "https://example.invalid/all-totals"
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
     ])
 
     accumulate_stats.main()
@@ -68,7 +70,9 @@ def test_second_run_same_day_accumulates(tmp_path, monkeypatch):
         "--wd",
         str(tmp_path),
         "--url",
-        "https://example.invalid/all-totals"
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
     ])
     accumulate_stats.main()
 
@@ -80,7 +84,9 @@ def test_second_run_same_day_accumulates(tmp_path, monkeypatch):
         "--wd",
         str(tmp_path),
         "--url",
-        "https://example.invalid/all-totals"
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
     ])
     accumulate_stats.main()
 
@@ -117,7 +123,9 @@ def test_third_run_next_day_rolls_window(tmp_path, monkeypatch):
         "--wd",
         str(tmp_path),
         "--url",
-        "https://example.invalid/all-totals"
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
     ])
     accumulate_stats.main()
 
@@ -131,7 +139,9 @@ def test_third_run_next_day_rolls_window(tmp_path, monkeypatch):
         "--wd",
         str(tmp_path),
         "--url",
-        "https://example.invalid/all-totals"
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
     ])
     accumulate_stats.main()
 

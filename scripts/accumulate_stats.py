@@ -9,6 +9,7 @@ from urllib.request import Request, urlopen
 
 DEFAULT_OUTPUT_FILE = "stats.json"
 DEFAULT_URL = "https://stats.sublimetext.io/all-totals"
+DEFAULT_RESTORE_DIR = "./restore-stats"
 
 # Retention limits
 HISTORY_DAYS = 30
@@ -26,7 +27,8 @@ def main():
     args.output = os.path.normpath(os.path.join(wd, args.output))
 
     prev_path = os.path.join(wd, PREV_TOTALS_FILE)
-    ingest_restore_if_needed(wd)
+    restore_root = os.path.abspath(args.restore_from)
+    ingest_restore_if_needed(wd, restore_root)
     prev_totals = load_json(prev_path) or {}
 
     try:
@@ -100,8 +102,8 @@ def fetch_totals(url: str) -> dict:
         return json.load(resp)
 
 
-def ingest_restore_if_needed(wd: str):
-    restore_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "restore"))
+def ingest_restore_if_needed(wd: str, restore_dir: str):
+    restore_dir = os.path.abspath(restore_dir)
     if not os.path.isdir(restore_dir):
         return
 
@@ -172,6 +174,12 @@ def parse_args():
         type=str,
         default=DEFAULT_URL,
         help=f"Stats URL (default: {DEFAULT_URL}).",
+    )
+    parser.add_argument(
+        "--restore-from",
+        type=str,
+        default=DEFAULT_RESTORE_DIR,
+        help=f"Directory to ingest initial data from (default: {DEFAULT_RESTORE_DIR}).",
     )
     parser.add_argument(
         "--pretty",
