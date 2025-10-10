@@ -30,6 +30,7 @@ def main():
     restore_root = os.path.abspath(args.restore_from)
     ingest_restore_if_needed(wd, restore_root)
     prev_totals = load_json(prev_path) or {}
+    is_pristine = not prev_totals
 
     try:
         current_totals = fetch_totals(args.url)
@@ -69,7 +70,8 @@ def main():
             })
 
             current_total = metrics.get(source_key, 0)
-            prev_total = prev_metrics.get(source_key, 0)
+            baseline = current_total if is_pristine else 0
+            prev_total = prev_metrics.get(source_key, baseline)
             delta = max(0, current_total - prev_total)
             if delta > 0:
                 print(f'"{pkg}" {target_key} +{delta}')

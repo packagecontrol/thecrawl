@@ -44,9 +44,9 @@ def test_initial_run_with_pristine_prev_totals(tmp_path, monkeypatch):
 
     installs = stats["RSpec"]["installs"]
     assert installs["totals"] == 2
-    assert installs["daily"] == [2]
-    assert installs["weekly"] == [2]
-    assert installs["yearly"] == [2]
+    assert installs["daily"] == [0]
+    assert installs["weekly"] == [0]
+    assert installs["yearly"] == [0]
 
     upgrades = stats["RSpec"]["upgrades"]
     assert upgrades["totals"] == 0
@@ -99,11 +99,60 @@ def test_second_run_same_day_accumulates(tmp_path, monkeypatch):
 
     installs = stats["RSpec"]["installs"]
     assert installs["totals"] == 5
-    assert installs["daily"] == [5]
-    assert installs["weekly"] == [5]
-    assert installs["yearly"] == [5]
+    assert installs["daily"] == [3]
+    assert installs["weekly"] == [3]
+    assert installs["yearly"] == [3]
 
     assert prev == {"RSpec": {"install": 5, "upgrade": 0, "remove": 0}}
+
+
+def test_new_package_after_initial_run_gets_delta(tmp_path, monkeypatch):
+    monkeypatch.setattr(accumulate_stats, "date", _FixedDate)
+
+    # Pristine run seeds baseline totals without recording deltas
+    monkeypatch.setattr(accumulate_stats, "fetch_totals", lambda url: {
+        "RSpec": {"install": 2, "upgrade": 0, "remove": 0}
+    })
+    monkeypatch.setattr(sys, "argv", [
+        "accumulate-stats",
+        "--wd",
+        str(tmp_path),
+        "--url",
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
+    ])
+    accumulate_stats.main()
+
+    # Subsequent run introduces a new package that should record its first delta
+    def _fetch_with_new_package(url):
+        return {
+            "RSpec": {"install": 5, "upgrade": 0, "remove": 0},
+            "NewPkg": {"install": 4, "upgrade": 0, "remove": 0},
+        }
+
+    monkeypatch.setattr(accumulate_stats, "fetch_totals", _fetch_with_new_package)
+    monkeypatch.setattr(sys, "argv", [
+        "accumulate-stats",
+        "--wd",
+        str(tmp_path),
+        "--url",
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
+    ])
+    accumulate_stats.main()
+
+    stats = json.loads((tmp_path / "stats.json").read_text())
+    new_pkg = stats["NewPkg"]["installs"]
+    assert new_pkg["daily"] == [4]
+    assert new_pkg["weekly"] == [4]
+    assert new_pkg["yearly"] == [4]
+
+    existing_pkg = stats["RSpec"]["installs"]
+    assert existing_pkg["daily"] == [3]
+    assert existing_pkg["weekly"] == [3]
+    assert existing_pkg["yearly"] == [3]
 
 
 class _NextDay(date):
@@ -154,8 +203,8 @@ def test_third_run_next_day_rolls_window(tmp_path, monkeypatch):
 
     installs = stats["RSpec"]["installs"]
     assert installs["totals"] == 9
-    assert installs["daily"] == [4, 5]
-    assert installs["weekly"] == [4, 5]
-    assert installs["yearly"][0] == 9
+    assert installs["daily"] == [4, 0]
+    assert installs["weekly"] == [4, 0]
+    assert installs["yearly"] == [4]
 
     assert prev == {"RSpec": {"install": 9, "upgrade": 0, "remove": 0}}
