@@ -322,3 +322,103 @@ def test_missing_days_are_filled_with_zeros(tmp_path, monkeypatch):
     assert stats["__daily_dates"] == expected_dates
     assert installs["daily"] == expected_daily
     assert len(installs["daily"]) == history_days
+
+
+def test_new_package_arrays_are_zero_padded(tmp_path, monkeypatch):
+    monkeypatch.setattr(accumulate_stats, "date", _FixedDate)
+
+    daily_dates = ["2024-05-12", "2024-05-11", "2024-05-10"]
+    weekly_dates = ["2024-W19", "2024-W18"]
+    yearly_dates = ["2024", "2023"]
+
+    stats_data = {
+        "__daily_dates": daily_dates,
+        "__weekly_dates": weekly_dates,
+        "__yearly_dates": yearly_dates,
+        "RSpec": {
+            "installs": {
+                "daily": [4, 3, 2],
+                "weekly": [7, 6],
+                "yearly": [13, 0],
+                "totals": 13,
+            }
+        },
+    }
+
+    prev_totals = {"RSpec": {"install": 13, "upgrade": 0, "remove": 0}}
+
+    (tmp_path / "stats.json").write_text(json.dumps(stats_data))
+    (tmp_path / accumulate_stats.PREV_TOTALS_FILE).write_text(json.dumps(prev_totals))
+
+    monkeypatch.setattr(accumulate_stats, "fetch_totals", lambda url: {
+        "RSpec": {"install": 15, "upgrade": 0, "remove": 0},
+        "NewPkg": {"install": 5, "upgrade": 0, "remove": 0},
+    })
+    monkeypatch.setattr(sys, "argv", [
+        "accumulate-stats",
+        "--wd",
+        str(tmp_path),
+        "--url",
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
+    ])
+
+    accumulate_stats.main()
+
+    stats = json.loads((tmp_path / "stats.json").read_text())
+    new_pkg = stats["NewPkg"]["installs"]
+
+    assert len(new_pkg["daily"]) == len(stats["__daily_dates"])
+    assert len(new_pkg["weekly"]) == len(stats["__weekly_dates"])
+    assert len(new_pkg["yearly"]) == len(stats["__yearly_dates"])
+
+    assert new_pkg["daily"] == [5, 0, 0]
+    assert new_pkg["weekly"] == [5, 0]
+    assert new_pkg["yearly"] == [5, 0]
+
+
+def test_partial_history_package_keeps_recent_entries(tmp_path, monkeypatch):
+    monkeypatch.setattr(accumulate_stats, "date", _NextDay)
+
+    daily_dates = ["2024-05-12", "2024-05-11", "2024-05-10", "2024-05-09"]
+
+    stats_data = {
+        "__daily_dates": daily_dates,
+        "__weekly_dates": ["2024-W19"],
+        "__yearly_dates": ["2024"],
+        "PartialPkg": {
+            "installs": {
+                "daily": [2, 1],  # Only two data points recorded so far
+                                  # Note that this state *should* be impossible to
+                                  # reach under normal circumstances since we
+                                  # right pad on each iteration.
+                "weekly": [3],
+                "yearly": [3],
+                "totals": 3,
+            }
+        },
+    }
+    prev_totals = {"PartialPkg": {"install": 3}}
+
+    (tmp_path / "stats.json").write_text(json.dumps(stats_data))
+    (tmp_path / accumulate_stats.PREV_TOTALS_FILE).write_text(json.dumps(prev_totals))
+
+    monkeypatch.setattr(accumulate_stats, "fetch_totals", lambda url: {
+        "PartialPkg": {"install": 5, "upgrade": 0, "remove": 0},
+    })
+    monkeypatch.setattr(sys, "argv", [
+        "accumulate-stats",
+        "--wd",
+        str(tmp_path),
+        "--url",
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
+    ])
+
+    accumulate_stats.main()
+
+    stats = json.loads((tmp_path / "stats.json").read_text())
+    installs = stats["PartialPkg"]["installs"]["daily"]
+    assert installs == [2, 2, 1, 0, 0]

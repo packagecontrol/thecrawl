@@ -106,8 +106,8 @@ def accumulate(value: int, container: dict, key: str, wanted_length: int, rollov
     dates = container.get(key, [])
     if rollovers:
         dates = [0] * rollovers + dates
-    # Maybe left pad data
-    dates = [0] * (wanted_length - len(dates)) + dates
+    # Maybe right pad data
+    dates = dates + [0] * (wanted_length - len(dates))
     # Trim to the wanted length
     dates = dates[:wanted_length]
     # Accumulate the value
