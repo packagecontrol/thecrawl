@@ -97,3 +97,35 @@ Finally produces compressed output for either
 [st4](https://github.com/packagecontrol/thecrawl/releases/tag/the-channel) or 
 [st3](https://github.com/packagecontrol/thecrawl/releases/tag/the-st3-channel) only.   
 
+
+### `accumulate_stats.py`
+
+`scripts/accumulate_stats.py` turns the raw install totals from https://stats.sublimetext.io into rolling daily, weekly, and yearly deltas that we publish alongside the crawler output.
+
+```bash
+uv run -m scripts.accumulate_stats --wd ./wrk
+```
+
+The command above reuses the same layout as [CI](https://github.com/packagecontrol/thecrawl/blob/main/.github/workflows/crawl.yml) (`wrk/stats.json`, `wrk/prev_totals.json`). Use `--pretty` for readable JSON or `--url` to point at a different totals endpoint.
+
+- Successful runs upload `wrk/stats.json` to the `crawler-status` release and keep a 30-day `stats-backup` artifact with the full working directory.
+
+### Restoring from a backup
+
+- Download a `stats-backup` artifact from the workflow run (or copy a saved local `wrk/` snapshot) and extract it into `restore-stats/` at the repo root.
+- On the next execution, the script detects files in `restore-stats/`, hashes their contents, and copies them into the working directory exactly once (it drops a marker named `ingested_<hash>` to avoid double imports).
+- You can choose another directory via `--restore-from <path>` if you want to stage the backup elsewhere.
+- Try this locally first, then commit and push to actually replace/update/restore the GitHub action cache
+
+## Tests
+
+We use `pytest`. Execute everything via uv so dependencies come from `pyproject.toml`/`uv.lock`:
+
+```bash
+uv run pytest
+```
+
+Helpful variations:
+
+- `uv run --with pytest-xdist pytest -f` keeps a continuous loop (`-f/--looponfail`) that reruns on each change.
+- And [PyTest](https://packages.sublimetext.io/packages/PyTest/) of course, 😏.
