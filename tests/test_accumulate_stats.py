@@ -264,3 +264,61 @@ def test_daily_rollover_trims_oldest_entry(tmp_path, monkeypatch):
     assert stats["__daily_dates"] == expected_dates
     assert installs["daily"] == expected_daily
     assert len(installs["daily"]) == history_days
+
+
+def test_missing_days_are_filled_with_zeros(tmp_path, monkeypatch):
+    # Simulate having last run on 2024-05-10 and resuming on 2024-05-13
+    monkeypatch.setattr(accumulate_stats, "date", _NextDay)
+
+    history_days = accumulate_stats.HISTORY_DAYS
+    base_day = date(2024, 5, 10)
+    existing_dates = [
+        (base_day - timedelta(days=offset)).isoformat()
+        for offset in range(history_days)
+    ]
+    seed_daily_counts = list(range(1, history_days + 1))
+
+    stats_data = {
+        "__daily_dates": existing_dates,
+        "__weekly_dates": ["2024-W19"],
+        "__yearly_dates": ["2024"],
+        "RSpec": {
+            "installs": {
+                "daily": seed_daily_counts.copy(),
+                "weekly": [sum(seed_daily_counts)],
+                "yearly": [sum(seed_daily_counts)],
+                "totals": 100,
+            }
+        },
+    }
+    prev_totals = {"RSpec": {"install": 100, "upgrade": 0, "remove": 0}}
+
+    (tmp_path / "stats.json").write_text(json.dumps(stats_data))
+    (tmp_path / accumulate_stats.PREV_TOTALS_FILE).write_text(json.dumps(prev_totals))
+
+    monkeypatch.setattr(accumulate_stats, "fetch_totals", lambda url: {
+        "RSpec": {"install": 115, "upgrade": 0, "remove": 0}
+    })
+    monkeypatch.setattr(sys, "argv", [
+        "accumulate-stats",
+        "--wd",
+        str(tmp_path),
+        "--url",
+        "https://example.invalid/all-totals",
+        "--restore-from",
+        str(tmp_path / "missing-restore"),
+    ])
+
+    accumulate_stats.main()
+
+    stats = json.loads((tmp_path / "stats.json").read_text())
+    installs = stats["RSpec"]["installs"]
+
+    expected_dates = ["2024-05-13", "2024-05-12", "2024-05-11"] + existing_dates
+    expected_dates = expected_dates[:history_days]
+    expected_daily = [15, 0, 0] + seed_daily_counts
+    expected_daily = expected_daily[:history_days]
+
+    assert stats["__daily_dates"] == expected_dates
+    assert installs["daily"] == expected_daily
+    assert len(installs["daily"]) == history_days

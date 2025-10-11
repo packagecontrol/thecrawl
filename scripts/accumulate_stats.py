@@ -4,7 +4,8 @@ import json
 import os
 import shutil
 import sys
-from datetime import date
+from datetime import date, timedelta
+from itertools import count, takewhile
 from urllib.request import Request, urlopen
 
 DEFAULT_OUTPUT_FILE = "stats.json"
@@ -41,21 +42,37 @@ def main():
     output_data = load_json(args.output) or {}
 
     today = date.today()
-    day_label = today.isoformat()
-    week_label = f"{today.isocalendar().year}-W{today.isocalendar().week:02d}"
-    year_label = str(today.year)
+    # Days backwards (today, yesterday, day before, …)
+    day_labels = (
+        (today - timedelta(days=i)).isoformat()
+        for i in count()
+    )
+    # Weeks backwards (this week, last week, week before, …)
+    week_labels = (
+        f"{iso.year}-W{iso.week:02d}"
+        for i in count()
+        if (iso := (today - timedelta(weeks=i)).isocalendar())
+    )
+    # Years backwards (this year, last year, …)
+    year_labels = (
+        str(today.year - i)
+        for i in count()
+    )
 
-    did_rollover = set()
-    for period, label, keep in [
-        ("daily", day_label, HISTORY_DAYS),
-        ("weekly", week_label, HISTORY_WEEKS),
-        ("yearly", year_label, HISTORY_YEARS),
+    rollovers = {}
+    for period, labels, keep in [
+        ("daily", day_labels, HISTORY_DAYS),
+        ("weekly", week_labels, HISTORY_WEEKS),
+        ("yearly", year_labels, HISTORY_YEARS),
     ]:
         key = f"__{period}_dates"
-        dates = output_data.setdefault(key, [])
-        if not dates or dates[0] != label:
-            dates = [label] + dates
-            did_rollover.add(period)
+        dates = output_data.get(key, [])
+        if not dates:
+            new_dates = [next(labels)]
+        else:
+            new_dates = list(takewhile(lambda label: label != dates[0], labels))
+        rollovers[period] = len(new_dates)
+        dates = new_dates + dates
         output_data[key] = dates[:keep]
 
     for pkg, metrics in current_totals.items():
@@ -77,18 +94,18 @@ def main():
                 print(f'"{pkg}" {target_key} +{delta}')
 
             container["totals"] = current_total
-            accumulate(delta, container, "daily", len(output_data["__daily_dates"]), did_rollover)
-            accumulate(delta, container, "weekly", len(output_data["__weekly_dates"]), did_rollover)
-            accumulate(delta, container, "yearly", len(output_data["__yearly_dates"]), did_rollover)
+            accumulate(delta, container, "daily", len(output_data["__daily_dates"]), rollovers["daily"])
+            accumulate(delta, container, "weekly", len(output_data["__weekly_dates"]), rollovers["weekly"])
+            accumulate(delta, container, "yearly", len(output_data["__yearly_dates"]), rollovers["yearly"])
 
     save_json(args.output, output_data, pretty=args.pretty)
     save_json(prev_path, current_totals)
 
 
-def accumulate(value: int, container: dict, key: str, wanted_length: int, rollovers: set[str]):
+def accumulate(value: int, container: dict, key: str, wanted_length: int, rollovers: int):
     dates = container.get(key, [])
-    if key in rollovers:
-        dates = [0] + dates
+    if rollovers:
+        dates = [0] * rollovers + dates
     # Maybe left pad data
     dates = [0] * (wanted_length - len(dates)) + dates
     # Trim to the wanted length
