@@ -28,6 +28,7 @@
   --blue-2: hsl(198 88% 51%);
   --green-1: hsl(80 70% 49%);
   --green-2: hsl(80 67% 47%);
+  --green-3: hsl(80 65% 43%);
 }
 
 :root[data-theme='dark'] {
