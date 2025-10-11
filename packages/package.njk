@@ -6,7 +6,7 @@ pagination:
   size: 1
   alias: pkg
 eleventyComputed:
-  title: "{{ pkg.name }}"
+  title: "{{ pkg.name | safe }}"
   description: "{{ pkg.description | default('') }}"
 isPackagePage: true
 ---
