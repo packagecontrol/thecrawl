@@ -18,16 +18,19 @@ isPackagePage: true
 <section name="package" data-list-target="hideme">
   <div class="package-title">
     <h1 id="main-content" tabindex="-1" data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
-    <button
-      type="button"
-      class="button copy-install"
-      data-copy-install
-      data-package-name="{{ pkg.name | escape }}"
-      title="Copy install command for Sublime Text to the clipboard"
-      aria-label="Copy install command for Sublime Text to the clipboard"
-    >
-      {{ util.icon('copy') }}
-    </button>
+
+    {% if not pkg.removed %}
+      <button
+        type="button"
+        class="button copy-install"
+        data-copy-install
+        data-package-name="{{ pkg.name | escape }}"
+        title="Copy install command for Sublime Text to the clipboard"
+        aria-label="Copy install command for Sublime Text to the clipboard"
+      >
+        {{ util.icon('copy') }}
+      </button>
+    {% endif %}
   </div>
 
   {% if pkg.description %}
@@ -128,49 +131,9 @@ isPackagePage: true
   {% endif %}
 </section>
 
-<script type="module">
-  const copyButton = document.querySelector('[data-copy-install]');
-
-  if (copyButton) {
-    const packageName = copyButton.dataset.packageName;
-    const packagesArgument = JSON.stringify([packageName]);
-    const command = `sublime.run_command("install_packages", {"packages": ${packagesArgument}})`;
-
-    let hideTimer = null;
-    const feedback = document.createElement('div');
-    feedback.className = 'copy-feedback';
-    feedback.setAttribute('role', 'status');
-    feedback.setAttribute('aria-live', 'polite');
-    feedback.setAttribute('aria-hidden', 'true');
-    copyButton.parentElement.appendChild(feedback);
-
-    const showFeedback = message => {
-      window.clearTimeout(hideTimer);
-      feedback.textContent = message;
-      feedback.classList.add('is-visible');
-      feedback.setAttribute('aria-hidden', 'false');
-      hideTimer = window.setTimeout(() => {
-        feedback.classList.remove('is-visible');
-        feedback.setAttribute('aria-hidden', 'true');
-      }, 2400);
-    };
-
-    async function handleCopy() {
-      copyButton.disabled = true;
-      try {
-        await navigator.clipboard.writeText(command);
-        showFeedback('Copied! Paste into the Sublime Text console to install.');
-      } catch (error) {
-        console.error('Failed to copy install command', error);
-        showFeedback('Copy failed! 😒');
-      } finally {
-        copyButton.disabled = false;
-      }
-    }
-
-    copyButton.addEventListener('click', handleCopy);
-  }
-</script>
+{% if not pkg.removed %}
+  <script src="{{ '/static/package.js' | bust }}" type="module" async></script>
+{% endif %}
 
 {% if pkg.readme and not pkg.removed %}
   <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
