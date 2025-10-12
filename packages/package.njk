@@ -19,17 +19,17 @@ isPackagePage: true
   <div class="package-title">
     <h1 id="main-content" tabindex="-1" data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
 
-    {% if not pkg.removed %}
-      <button
-        class="button clipboard-button"
-        title="Copy install command for Sublime Text to the clipboard"
-        aria-label="Copy install command for Sublime Text to the clipboard"
-        >
-        <span class="icon">{{ util.icon('copy') }}</span>
-        <span class="icon check">{{ util.icon('check') }}</span>
-        <span class="screenreader-only">Copy</span>
-      </button>
-    {% endif %}
+  {% if not pkg.removed %}
+    <button
+      class="button clipboard-button"
+      title="Copy install command for Sublime Text to the clipboard"
+      aria-label="Copy install command for Sublime Text to the clipboard"
+      >
+      <span class="icon">{{ util.icon('copy') }}</span>
+      <span class="icon check">{{ util.icon('check') }}</span>
+      <span>Install command</span>
+    </button>
+  {% endif %}
   </div>
 
   {% if pkg.description %}
