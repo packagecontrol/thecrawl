@@ -15,8 +15,7 @@ document.querySelectorAll('pre').forEach((codeblock) => {
     navigator.clipboard.writeText(codeblock.innerText.trim())
     wrapper.classList.add('copied')
 
-    toast.near(event.target.closest('button'))
-    toast.pop()
+    toast.pop(event.target.closest('button'))
 
     window.setTimeout(() => {
       wrapper.classList.remove('copied')
