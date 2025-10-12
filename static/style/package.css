@@ -10,7 +10,6 @@
   .clipboard-button {
     display: inline-flex;
     font-size: 14px;
-    color: var(--foreground-4);
   }
 }
 
