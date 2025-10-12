@@ -20,6 +20,7 @@ export class Toast {
         + target_rect.width
         - toast_rect.width,
       ) + 'px'
+
       this.element.style.top = Math.max(margin,
         target_rect.top
         - toast_rect.height,
