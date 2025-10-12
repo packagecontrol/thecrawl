@@ -21,14 +21,13 @@ isPackagePage: true
 
     {% if not pkg.removed %}
       <button
-        type="button"
-        class="button copy-install"
-        data-copy-install
-        data-package-name="{{ pkg.name | escape }}"
+        class="button clipboard-button"
         title="Copy install command for Sublime Text to the clipboard"
         aria-label="Copy install command for Sublime Text to the clipboard"
-      >
-        {{ util.icon('copy') }}
+        >
+        <span class="icon">{{ util.icon('copy') }}</span>
+        <span class="icon check">{{ util.icon('check') }}</span>
+        <span class="screenreader-only">Copy</span>
       </button>
     {% endif %}
   </div>
