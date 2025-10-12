@@ -150,19 +150,7 @@ human-date[clickable] {
 
 .clipboard-wrapper {
   position: relative;
-  .active {
-    display: none;
-    color: var(--green-3);
-  }
-  &.copied pre {
-    background: var(--highlight);
-  }
-  &.copied .passive {
-    display: none;
-  }
-  &.copied .active {
-    display: block;
-  }
+
   pre {
     transition: background .1s ease-out;
     padding-right: 6em;
@@ -178,6 +166,22 @@ human-date[clickable] {
     &:hover {
       background: transparent;
       color: var(--orange-1);
+    }
+  }
+
+  .check {
+    display: none;
+    color: var(--green-3);
+  }
+  &.copied {
+    pre {
+      background: var(--highlight);
+    }
+    .icon {
+      display: none;
+    }
+    .check {
+      display: block;
     }
   }
 }
