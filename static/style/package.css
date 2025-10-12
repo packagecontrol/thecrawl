@@ -1,30 +1,10 @@
 .package-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 13px;
-  position: relative;
-
-  > h1 {
-    margin: 0;
+  h1 {
+    display: inline-block;
+    margin-right: 1rem;
   }
-
-  .copy-install {
-    gap: 0;
-    padding: 4px;
-    line-height: 1;
-    flex-shrink: 0;
-    background: none;
-
-    &:hover {
-      color: var(--foreground-1);
-    }
-
-    svg {
-      margin: 0;
-      width: 20px;
-      height: 20px;
-    }
+  .clipboard-button {
+    display: inline-flex;
   }
 }
 

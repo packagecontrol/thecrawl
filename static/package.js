@@ -1,41 +1,33 @@
-const copyButton = document.querySelector('[data-copy-install]')
+import { Toast } from './module/toast.js'
 
-if (copyButton) {
-  const packageName = copyButton.dataset.packageName
+const button = document.querySelector('.clipboard-button')
+
+if (button) {
+  const packageName = button.dataset.packageName
   const packagesArgument = JSON.stringify([packageName])
   const command = `sublime.run_command("install_packages", {"packages": ${packagesArgument}})`
 
-  let hideTimer = null
-  const feedback = document.createElement('div')
-  feedback.className = 'copy-feedback'
-  feedback.setAttribute('role', 'status')
-  feedback.setAttribute('aria-live', 'polite')
-  feedback.setAttribute('aria-hidden', 'true')
-  copyButton.parentElement.appendChild(feedback)
-
-  const showFeedback = (message) => {
-    window.clearTimeout(hideTimer)
-    feedback.textContent = message
-    feedback.classList.add('is-visible')
-    feedback.setAttribute('aria-hidden', 'false')
-    hideTimer = window.setTimeout(() => {
-      feedback.classList.remove('is-visible')
-      feedback.setAttribute('aria-hidden', 'true')
-    }, 2400)
-  }
+  const toast = new Toast('Copied! Paste into the Sublime Text console to install.')
+  const bad_toast = new Toast('Copy failed! 😒')
 
   async function handleCopy() {
-    copyButton.disabled = true
+    button.disabled = true
+
+    button.classList.add('copied')
+    window.setTimeout(() => {
+      button.classList.remove('copied')
+    }, 500)
+
     try {
       await navigator.clipboard.writeText(command)
-      showFeedback('Copied! Paste into the Sublime Text console to install.')
+      toast.pop(button)
     } catch (error) {
       console.error('Failed to copy install command', error)
-      showFeedback('Copy failed! 😒')
+      bad_toast.pop(button)
     } finally {
-      copyButton.disabled = false
+      button.disabled = false
     }
   }
 
-  copyButton.addEventListener('click', handleCopy)
+  button.addEventListener('click', handleCopy)
 }
