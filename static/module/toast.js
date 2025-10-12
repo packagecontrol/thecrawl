@@ -32,6 +32,6 @@ export class Toast {
     window.clearTimeout(this.timer)
     this.timer = window.setTimeout(() => {
       this.element.setAttribute('aria-hidden', 'true')
-    }, 2000)
+    }, 2400)
   }
 }
