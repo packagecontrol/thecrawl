@@ -14,8 +14,10 @@ document.querySelectorAll('pre').forEach((codeblock) => {
   const toast = new Toast('Copied!')
   const bad_toast = new Toast('Copy failed! 😒')
 
+  let waiting = false
+
   async function handleCopy(target) {
-    target.disabled = true
+    waiting = true
     try {
       await navigator.clipboard.writeText(codeblock.innerText.trim())
       toast.pop(target)
@@ -23,13 +25,17 @@ document.querySelectorAll('pre').forEach((codeblock) => {
       console.error('Failed to copy install command', error)
       bad_toast.pop(target)
     } finally {
-      target.disabled = false
+      waiting = false
     }
   }
 
   button_el.addEventListener('click', (event) => {
     event.preventDefault()
     event.stopPropagation()
+
+    if (waiting) {
+      return
+    }
 
     wrapper.classList.add('copied')
     button_el.classList.add('copied')

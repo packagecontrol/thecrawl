@@ -10,13 +10,10 @@ if (button) {
   const toast = new Toast('Copied! Paste into the Sublime Text console to install.')
   const bad_toast = new Toast('Copy failed! 😒')
 
-  async function handleCopy() {
-    button.disabled = true
+  let waiting = false
 
-    button.classList.add('copied')
-    window.setTimeout(() => {
-      button.classList.remove('copied')
-    }, 500)
+  async function handleCopy() {
+    waiting = true
 
     try {
       await navigator.clipboard.writeText(command)
@@ -25,9 +22,23 @@ if (button) {
       console.error('Failed to copy install command', error)
       bad_toast.pop(button)
     } finally {
-      button.disabled = false
+      waiting = false
     }
   }
 
-  button.addEventListener('click', handleCopy)
+  button.addEventListener('click', (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (waiting) {
+      return
+    }
+
+    button.classList.add('copied')
+    window.setTimeout(() => {
+      button.classList.remove('copied')
+    }, 500)
+
+    handleCopy()
+  })
 }
