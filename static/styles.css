@@ -156,27 +156,34 @@ human-date[clickable] {
     padding-right: 6em;
     word-break: break-word;
   }
-  button {
+
+  .clipboard-button {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    margin: 0;
-    padding: 0;
-    background: transparent;
-    &:hover {
-      background: transparent;
-      color: var(--orange-1);
+  }
+
+  &.copied {
+    pre {
+      background: var(--highlight);
     }
+  }
+}
+.clipboard-button {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  &:hover {
+    background: transparent;
+    color: var(--orange-1);
   }
 
   .check {
     display: none;
     color: var(--green-3);
   }
+
   &.copied {
-    pre {
-      background: var(--highlight);
-    }
     .icon {
       display: none;
     }
