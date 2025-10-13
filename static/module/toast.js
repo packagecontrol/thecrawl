@@ -9,7 +9,7 @@ export class Toast {
     this.timer = null
   }
 
-  pop(target) {
+  showNear(target, preference = 'auto') {
     if (!target) {
       return
     }
@@ -29,12 +29,13 @@ export class Toast {
     const toast_rect = this.element.getBoundingClientRect()
     const availableRight = viewportWidth - margin - target_rect.right
     const fitsEast = availableRight >= toast_rect.width
+    const preferNorth = preference === 'N'
 
     let left
     let top
     let placedNorth = false
 
-    if (fitsEast) {
+    if (!preferNorth && fitsEast) {
       left = target_rect.right + margin
       const maxLeft = viewportWidth - margin - toast_rect.width
       if (left > maxLeft) left = maxLeft

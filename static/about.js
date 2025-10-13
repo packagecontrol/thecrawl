@@ -20,10 +20,10 @@ document.querySelectorAll('pre').forEach((codeblock) => {
     waiting = true
     try {
       await navigator.clipboard.writeText(codeblock.innerText.trim())
-      toast.pop(target)
+      toast.showNear(target, 'N')
     } catch (error) {
       console.error('Failed to copy install command', error)
-      bad_toast.pop(target)
+      bad_toast.showNear(target, 'N')
     } finally {
       waiting = false
     }
