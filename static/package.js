@@ -37,7 +37,7 @@ if (button) {
     button.classList.add('copied')
     window.setTimeout(() => {
       button.classList.remove('copied')
-    }, 500)
+    }, 350)
 
     handleCopy()
   })

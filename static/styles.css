@@ -201,10 +201,10 @@ human-date[clickable] {
   color: var(--foreground-1);
   padding: 6px 10px;
   border-radius: 3px;
-  box-shadow: 1px 1px 3px rgb(0 0 0 / .3);
   opacity: 0;
   pointer-events: none;
-  transition: opacity .1s ease-in-out, transform .1s ease-in-out;
+  transition: opacity .01s ease-in-out, transform .1s ease-in-out;
+  transform: translateY(-.1rem);
   z-index: 10;
   position: fixed;
   top: 0;
@@ -216,7 +216,6 @@ human-date[clickable] {
   }
   &[aria-hidden="false"] {
     opacity: 1;
-    transform: translateY(-.33rem);
   }
 }
 
