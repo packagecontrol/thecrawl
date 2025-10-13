@@ -173,7 +173,6 @@ human-date[clickable] {
   margin: 0;
   padding: 0;
   background: transparent;
-  color: var(--foreground-4);
 
   &:hover {
     background: transparent;
