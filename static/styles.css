@@ -4,6 +4,7 @@
 @import url('style/header.css');
 @import url('style/footer.css');
 @import url('style/grid.css');
+@import url('style/messages.css');
 @import url('style/package.css');
 @import url('style/pagination.css');
 @import url('style/search.css');
@@ -64,24 +65,6 @@ a {
   }
 }
 
-.skip-link {
-  position: absolute;
-  top: 0.8rem;
-  left: 0.5rem;
-  padding: 0.6rem 1rem;
-  background: var(--background-1);
-  color: var(--foreground-1);
-  border-radius: 0.25rem;
-
-  /* hide by default */
-  transform: translateY(-200%);
-  transition: none;
-  z-index: 1000;
-
-  &:focus-visible {
-    transform: translateY(0);
-  }
-}
 
 summary {
   cursor: pointer;
@@ -192,31 +175,6 @@ human-date[clickable] {
     .check {
       display: block;
     }
-  }
-}
-
-.toast {
-  box-sizing: border-box;
-  background: var(--background-3);
-  color: var(--foreground-1);
-  padding: 6px 10px;
-  border-radius: 3px;
-  box-shadow: 1px 1px 3px rgb(0 0 0 / .3);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .1s ease-in-out, transform .1s ease-in-out;
-  z-index: 10;
-  position: fixed;
-  top: 0;
-  left: 0;
-  max-width: calc(100vw - 1rem);
-
-  &[aria-hidden="true"] {
-    visibility: hidden;
-  }
-  &[aria-hidden="false"] {
-    opacity: 1;
-    transform: translateY(-.33rem);
   }
 }
 

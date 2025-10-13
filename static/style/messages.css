@@ -1,0 +1,42 @@
+.message {
+  box-sizing: border-box;
+  position: absolute;
+  top: 0.8rem;
+  left: 0.5rem;
+  padding: 6px 10px;
+  max-width: calc(100vw - 1rem);
+  border-radius: 3px;
+  background: var(--background-1);
+  color: var(--foreground-1);
+  box-shadow: 1px 1px 3px rgb(0 0 0 / .3);
+  z-index: 10;
+}
+
+.skip-link {
+  border-radius: 0.25rem;
+  transition: none;
+
+  /* hide by default */
+  transform: translateY(-100vh);
+
+  &:focus-visible {
+    transform: translateY(0);
+    outline: none;
+  }
+}
+
+.toast {
+  position: fixed;
+  background: var(--background-3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .1s ease-in-out, transform .1s ease-in-out;
+
+  &[aria-hidden="true"] {
+    visibility: hidden;
+  }
+  &[aria-hidden="false"] {
+    opacity: 1;
+    transform: translateY(-.33rem);
+  }
+}
