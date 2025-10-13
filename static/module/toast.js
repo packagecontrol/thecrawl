@@ -50,7 +50,7 @@ export class Toast {
       if (left < margin) left = margin
       if (left > maxLeft) left = maxLeft
 
-      top = target_rect.top - toast_rect.height - margin
+      top = target_rect.top - toast_rect.height - margin + 4
       placedNorth = true
       if (top < margin) {
         top = Math.min(target_rect.bottom + margin, viewportHeight - margin - toast_rect.height)
