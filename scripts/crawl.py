@@ -7,7 +7,6 @@ from datetime import datetime, timedelta, timezone
 import json
 import os
 import sys
-from pathlib import Path
 from typing import Iterable, Literal, NotRequired, Required, TypedDict
 
 
@@ -209,22 +208,6 @@ def maintenance(registry: Registry, workspace: Workspace) -> None:
     packages = workspace["packages"]
     for name in packages.keys() - current_package_names:
         packages[name].setdefault("removed", now_string)
-
-    packages_info_path = (
-        Path(__file__).resolve().parent.parent / "restore" / "packages_info.json"
-    )
-    packages_info: dict[str, dict[str, str]] = {}
-    if packages_info_path.exists():
-        with packages_info_path.open(encoding="utf-8") as info_file:
-            packages_info = json.load(info_file)
-    ingested_first_seen = 0
-    for name, package in packages.items():
-        first_seen = packages_info.get(name, {}).get("first_seen")
-        if not first_seen:
-            continue
-        package["first_seen"] = first_seen
-        ingested_first_seen += 1
-    print(f"Ingested first_seen for {ingested_first_seen} packages.")
 
 
 async def crawl(
