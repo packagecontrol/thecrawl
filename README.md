@@ -97,6 +97,7 @@ Finally produces compressed output for either
 [st4](https://github.com/packagecontrol/thecrawl/releases/tag/the-channel) or 
 [st3](https://github.com/packagecontrol/thecrawl/releases/tag/the-st3-channel) only.   
 
+---
 
 ### `accumulate_stats.py`
 
