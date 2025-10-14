@@ -74,6 +74,7 @@ function basePackage(pkg, stat) {
     author: util.cleanAuthors(pkg.author) ?? [],
     stars: pkg.stars ?? 0,
     installed: stat?.installs?.totals ?? 0,
+    first_seen: pkg.first_seen,
     created_at: pkg.created_at,
     last_modified: pkg.last_modified,
     archived_at: pkg.archived_at,
@@ -221,7 +222,7 @@ export default function (eleventyConfig) {
     return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
       ...basePackage(pkg, stats[pkg.name]),
     })).sort((a, b) => {
-      return new Date(b.created_at ?? '1970-01-01 00:00:00') - new Date(a.created_at ?? '1970-01-01 00:00:00')
+      return new Date(b.first_seen ?? '1970-01-01 00:00:00') - new Date(a.first_seen ?? '1970-01-01 00:00:00')
     }).slice(0, 9)
   })
 

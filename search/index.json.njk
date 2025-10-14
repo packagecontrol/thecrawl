@@ -10,6 +10,7 @@ permalink: "/search/index.json"
     "author": "{{ pkg.author | join(', ') }}",
     "stars": "{{ pkg.stars }}",
     "installed": "{{ pkg.installed }}",
+    "first_seen": "{{ pkg.first_seen | timestamp }}",
     "created_at": "{{ pkg.created_at | timestamp }}",
     "last_modified": "{{ pkg.last_modified | timestamp }}",
     {%- if pkg.doa -%}

@@ -446,8 +446,8 @@ const pagerConfigs = [
   {
     section: 'newest',
     options: {
-      queryParam: 'created_after',
-      timestampField: 'created_at',
+      queryParam: 'seen_after',
+      timestampField: 'first_seen',
       manageMainContent: true,
     },
   },
