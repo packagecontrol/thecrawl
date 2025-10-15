@@ -42,7 +42,7 @@ document.querySelectorAll('pre').forEach((codeblock) => {
     window.setTimeout(() => {
       wrapper.classList.remove('copied')
       button_el.classList.remove('copied')
-    }, 500)
+    }, 350)
 
     handleCopy(event.target.closest('button'))
   })
