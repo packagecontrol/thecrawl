@@ -5,7 +5,7 @@
 
   h1 {
     display: inline;
-    margin-right: 0.2rem;
+    margin-right: 0.3rem;
     padding-top: 0;
     margin-bottom: 0;
 
@@ -17,7 +17,7 @@
     display: inline-flex;
     font-size: 14px;
     position: relative;
-    top: -0.8rem;  /* vertical-align: super; isn't sufficient :-( */
+    top: -12px;  /* vertical-align: super; isn't sufficient :-( */
   }
 }
 
