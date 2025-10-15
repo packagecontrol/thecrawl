@@ -196,7 +196,7 @@ human-date[clickable] {
   }
 }
 
-.toast {
+.inline-message {
   box-sizing: border-box;
   background: var(--background-3);
   color: var(--foreground-1);

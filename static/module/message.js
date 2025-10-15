@@ -1,8 +1,8 @@
-export class Toast {
+export class Message {
   constructor(text) {
-    const toast_temp = document.querySelector('template#toast')
+    const toast_temp = document.querySelector('template#message')
     const instance = toast_temp.content.cloneNode(true)
-    this.element = instance.querySelector('.toast')
+    this.element = instance.querySelector('div')
     this.element.innerText = text
     document.body.appendChild(this.element)
 
