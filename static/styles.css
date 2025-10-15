@@ -68,10 +68,11 @@ a {
   position: absolute;
   top: 0.8rem;
   left: 0.5rem;
-  padding: 0.6rem 1rem;
+  padding: 6px 10px;
   background: var(--background-1);
   color: var(--foreground-1);
-  border-radius: 0.25rem;
+  border-radius: 6px;
+  border: 2px solid var(--orange-1);
 
   /* hide by default */
   transform: translateY(-200%);
@@ -80,6 +81,7 @@ a {
 
   &:focus-visible {
     transform: translateY(0);
+    outline: none;
   }
 }
 
