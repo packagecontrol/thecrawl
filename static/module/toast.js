@@ -60,8 +60,13 @@ export class Toast {
 
     this.element.style.left = left + 'px'
     this.element.style.top = top + 'px'
-    this.element.style.boxShadow = placedNorth ? '1px 1px 3px rgb(0 0 0 / 0.3)' : ''
     this.element.style.visibility = ''
+
+    if (placedNorth) {
+      this.element.classList.add('placed-north')
+    } else {
+      this.element.classList.remove('placed-north')
+    }
 
     window.clearTimeout(this.timer)
     this.timer = window.setTimeout(() => {

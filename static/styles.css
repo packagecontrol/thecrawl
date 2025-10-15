@@ -218,6 +218,10 @@ human-date[clickable] {
   &[aria-hidden="false"] {
     opacity: 1;
   }
+
+  &.placed-north {
+    box-shadow: 1px 1px 3px rgb(0 0 0 / .3);
+  }
 }
 
 section {
