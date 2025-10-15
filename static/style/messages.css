@@ -30,7 +30,6 @@
 }
 
 .inline-message {
-  position: fixed;
   background: var(--background-3);
   opacity: 0;
   pointer-events: none;

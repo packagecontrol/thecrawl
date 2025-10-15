@@ -57,8 +57,8 @@ export class Message {
       this.element.classList.remove('placed-north')
     }
 
-    this.element.style.left = left + 'px'
-    this.element.style.top = top + 'px'
+    this.element.style.left = left + window.scrollX + 'px'
+    this.element.style.top = top + window.scrollY + 'px'
     this.element.setAttribute('aria-hidden', 'false')
 
     window.clearTimeout(this.timer)
