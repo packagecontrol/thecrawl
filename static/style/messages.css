@@ -10,6 +10,10 @@
   color: var(--foreground-1);
   box-shadow: 1px 1px 3px rgb(0 0 0 / .3);
   z-index: 10;
+
+  @media (min-width: 480px) {
+    white-space: nowrap;
+  }
 }
 
 .skip-link {
@@ -30,13 +34,19 @@
   background: var(--background-3);
   opacity: 0;
   pointer-events: none;
-  transition: opacity .1s ease-in-out, transform .1s ease-in-out;
+  transition: opacity .1s ease-in-out;
 
   &[aria-hidden="true"] {
     visibility: hidden;
   }
   &[aria-hidden="false"] {
     opacity: 1;
-    transform: translateY(-.33rem);
+  }
+
+  &.placed-north {
+    transition: opacity .1s ease-in-out, transform .1s ease-in-out;
+    &[aria-hidden="false"] {
+      transform: translateY(-.33rem);
+    }
   }
 }

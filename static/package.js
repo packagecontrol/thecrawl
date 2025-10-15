@@ -17,10 +17,10 @@ if (button) {
 
     try {
       await navigator.clipboard.writeText(command)
-      toast.pop(button)
+      toast.showNear(button)
     } catch (error) {
       console.error('Failed to copy install command', error)
-      bad_toast.pop(button)
+      bad_toast.showNear(button)
     } finally {
       waiting = false
     }
