@@ -1,4 +1,4 @@
-import { Toast } from './module/toast.js'
+import { Message } from './module/message.js'
 
 document.querySelectorAll('pre').forEach((codeblock) => {
   const wrapper = document.createElement('div')
@@ -11,8 +11,8 @@ document.querySelectorAll('pre').forEach((codeblock) => {
   button_el.setAttribute('aria-label', description)
   button_el.setAttribute('title', description)
 
-  const toast = new Toast('Copied!')
-  const bad_toast = new Toast('Copy failed! 😒')
+  const good_news = new Message('Copied!')
+  const bad_news = new Message('Copy failed! 😒')
 
   let waiting = false
 
@@ -20,10 +20,10 @@ document.querySelectorAll('pre').forEach((codeblock) => {
     waiting = true
     try {
       await navigator.clipboard.writeText(codeblock.innerText.trim())
-      toast.showNear(target)
+      good_news.showNear(target)
     } catch (error) {
       console.error('Failed to copy install command', error)
-      bad_toast.showNear(target)
+      bad_news.showNear(target)
     } finally {
       waiting = false
     }

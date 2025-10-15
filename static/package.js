@@ -1,4 +1,4 @@
-import { Toast } from './module/toast.js'
+import { Message } from './module/message.js'
 
 const button = document.querySelector('.clipboard-button')
 
@@ -7,8 +7,8 @@ if (button) {
   const packagesArgument = JSON.stringify([packageName])
   const command = `sublime.run_command("install_packages", {"packages": ${packagesArgument}})`
 
-  const toast = new Toast('Copied! Paste into the Sublime Text console to install.')
-  const bad_toast = new Toast('Copy failed! 😒')
+  const good_news = new Message('Copied! Paste into the Sublime Text console to install.')
+  const bad_news = new Message('Copy failed! 😒')
 
   let waiting = false
 
@@ -17,10 +17,10 @@ if (button) {
 
     try {
       await navigator.clipboard.writeText(command)
-      toast.showNear(button)
+      good_news.showNear(button)
     } catch (error) {
       console.error('Failed to copy install command', error)
-      bad_toast.showNear(button)
+      bad_news.showNear(button)
     } finally {
       waiting = false
     }
