@@ -9,7 +9,8 @@
   --background-1: hsl(0 0% 100%); /* white */
   --background-2: hsl(0 0% 94%);  /* ..    */
   --background-3: hsl(0 0% 90%);  /* ..    */
-  --background-4: hsl(0 0% 87%);  /* grey  */
+  --background-4: hsl(0 0% 87%);  /* ..    */
+  --background-5: hsl(0 0% 83%);  /* grey  */
 
   --highlight: hsl(0 0% 87% / 0.3); /* inline code */
 
@@ -26,6 +27,7 @@
   --orange-3: hsl(32 90% 45%);
   --blue-1: hsl(198 97% 54%);
   --blue-2: hsl(198 88% 51%);
+  --blue-3: hsl(198 84% 46%);
   --green-1: hsl(80 70% 49%);
   --green-2: hsl(80 67% 47%);
   --green-3: hsl(80 65% 43%);

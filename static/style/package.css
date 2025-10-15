@@ -85,17 +85,11 @@ ul.stats {
         background: var(--blue-2);
       }
       &.is-active {
-        background: var(--blue-2);
-        outline: 2px solid var(--blue-2);
-        --platform-active-surface: hsl(from var(--blue-1) h calc(s * 1.2) calc(l * 0.9));
-        background: var(--platform-active-surface);
-        outline: 2px solid var(--platform-active-surface);
+        background: var(--blue-1);
+        box-shadow: inset 2px 2px 3px var(--blue-3);
       }
       &.is-active:hover {
-        background: hsl(from var(--platform-active-surface) h s calc(l * 0.85));
-        :root[data-theme='dark'] & {
-          background: hsl(from var(--platform-active-surface) h s calc(l * 1.2));
-        }
+        background: var(--blue-2);
       }
     }
     &.platform-windows,
@@ -106,17 +100,11 @@ ul.stats {
         background: var(--orange-2);
       }
       &.is-active {
-        background: var(--orange-2);
-        outline: 2px solid var(--orange-2);
-        --platform-active-surface: hsl(from var(--orange-1) h calc(s * 1.2) calc(l * 0.9));
-        background: var(--platform-active-surface);
-        outline: 2px solid var(--platform-active-surface);
+        background: var(--orange-1);
+        box-shadow: inset 2px 2px 3px var(--orange-3);
       }
       &.is-active:hover {
-        background: hsl(from var(--platform-active-surface) h s calc(l * 0.85));
-        :root[data-theme='dark'] & {
-          background: hsl(from var(--platform-active-surface) h s calc(l * 1.2));
-        }
+        background: var(--orange-2);
       }
     }
     &.platform-linux,
@@ -128,17 +116,11 @@ ul.stats {
         background: var(--green-2);
       }
       &.is-active {
-        background: var(--green-2);
-        outline: 2px solid var(--green-2);
-        --platform-active-surface: hsl(from var(--green-1) h calc(s * 1.2) calc(l * 0.9));
-        background: var(--platform-active-surface);
-        outline: 2px solid var(--platform-active-surface);
+        background: var(--green-1);
+        box-shadow: inset 2px 2px 3px var(--green-3);
       }
       &.is-active:hover {
-        background: hsl(from var(--platform-active-surface) h s calc(l * 0.85));
-        :root[data-theme='dark'] & {
-          background: hsl(from var(--platform-active-surface) h calc(s * 0.9) calc(l * 1.1));
-        }
+        background: var(--green-2);
       }
     }
   }
