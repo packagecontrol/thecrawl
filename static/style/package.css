@@ -1,15 +1,20 @@
 .package-title {
   padding-top: 13px;
   margin-bottom: 13px;
+  display: inline-table;
   h1 {
-    display: inline-block;
-    margin-right: 1.6rem;
+    display: inline;
     padding-top: 0;
     margin-bottom: 0;
+    &::after {
+      content: "\00A0\00A0"; /* 2x non-breaking space after heading text */
+    }
   }
   .clipboard-button {
     display: inline-flex;
     font-size: 14px;
+    position: relative;
+    top: -14px;
   }
 }
 
