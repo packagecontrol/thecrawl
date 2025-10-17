@@ -56,9 +56,6 @@
       }
     }
   }
-  &.is-active:hover {
-    background: var(--background-4);
-  }
 
   &:focus-visible {
     outline: 2px solid var(--orange-1);
