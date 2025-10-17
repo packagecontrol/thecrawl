@@ -46,6 +46,7 @@ function createMinisearchInstance(MiniSearch) {
       'author',
       'stars',
       'installed',
+      'first_seen',
       'created_at',
       'last_modified',
       'archived_at',

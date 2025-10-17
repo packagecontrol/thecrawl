@@ -32,15 +32,15 @@ export class Sort {
 
       case 'newest':
         return sortedPackages.sort((a, b) => {
-          const A = parseInt(a.created_at) || 0
-          const B = parseInt(b.created_at) || 0
+          const A = parseInt(a.first_seen) || 0
+          const B = parseInt(b.first_seen) || 0
           return B - A // High to low
         })
 
       case 'oldest':
         return sortedPackages.sort((a, b) => {
-          const A = parseInt(a.created_at) || 0
-          const B = parseInt(b.created_at) || 0
+          const A = parseInt(a.first_seen) || 0
+          const B = parseInt(b.first_seen) || 0
           return A - B // Low to high
         })
 
