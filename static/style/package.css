@@ -86,9 +86,14 @@ ul.stats {
       }
       &.is-active {
         background: var(--blue-2);
-        box-shadow: inset 2px 2px 3px var(--blue-3);
         &:hover {
           background: var(--blue-1);
+        }
+        :root[data-theme='dark'] & {
+          background: var(--blue-1);
+          &:hover {
+            background: var(--blue-2);
+          }
         }
       }
     }
@@ -101,9 +106,14 @@ ul.stats {
       }
       &.is-active {
         background: var(--orange-2);
-        box-shadow: inset 2px 2px 3px var(--orange-3);
         &:hover {
           background: var(--orange-1);
+        }
+        :root[data-theme='dark'] & {
+          background: var(--orange-1);
+          &:hover {
+            background: var(--orange-2);
+          }
         }
       }
     }
@@ -117,9 +127,14 @@ ul.stats {
       }
       &.is-active {
         background: var(--green-2);
-        box-shadow: inset 2px 2px 3px var(--green-3);
         &:hover {
           background: var(--green-1);
+        }
+        :root[data-theme='dark'] & {
+          background: var(--green-1);
+          &:hover {
+            background: var(--green-2);
+          }
         }
       }
     }
