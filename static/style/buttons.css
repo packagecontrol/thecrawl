@@ -42,8 +42,11 @@
   }
 
   &.is-active {
-    background: var(--background-3);
+    background: var(--background-4);
     box-shadow: inset 2px 2px 2px var(--background-5);
+    &.is-active:hover {
+      background: var(--background-3);
+    }
   }
   &.is-active:hover {
     background: var(--background-4);
