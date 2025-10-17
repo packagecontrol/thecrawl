@@ -52,24 +52,4 @@ You are very much invited to make the switch and come along for the ride!
 - Q: How do I even use this?
   - A: Find a package you like using the search feature on the [homepage](/), then paste the name into the "Install Package" command in Sublime Text. See also the [documentation](https://docs.sublimetext.io/guide/package-control/usage.html).
 
-<script type="module">
-  document.querySelectorAll('pre').forEach(codeblock => {
-    const wrapper = document.createElement('div');
-    wrapper.classList.add('clipboard-wrapper');
-    const button = document.createElement('button');
-    button.innerText = 'Copy';
-    button.classList.add('button');
-    button.onclick = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      navigator.clipboard.writeText(codeblock.innerText.trim());
-      wrapper.classList.add('copied');
-      window.setTimeout(() => {
-        wrapper.classList.remove('copied');
-      }, 200);
-    }
-    codeblock.insertAdjacentElement('beforebegin', wrapper);
-    wrapper.appendChild(codeblock);
-    wrapper.appendChild(button)
-  });
-</script>
+<script src="{{ '/static/about.js' | bust }}" type="module" async></script>

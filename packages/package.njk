@@ -16,7 +16,20 @@ isPackagePage: true
 {% import "util/macros.njk" as util %}
 
 <section name="package" data-list-target="hideme">
-  <h1 id="main-content" tabindex="-1" data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
+  <div class="package-title">
+    <h1 id="main-content" tabindex="-1" data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
+
+    {% if not pkg.removed %}
+      <button
+        class="button clipboard-button"
+        title="Copy install command for Sublime Text to the clipboard"
+        aria-label="Copy install command for Sublime Text to the clipboard"
+        >
+        <span class="icon">{{ util.icon('copy') }}</span>
+        <span class="icon check">{{ util.icon('check') }}</span>
+      </button>
+    {% endif %}
+  </div>
 
   {% if pkg.description %}
     <p class="description">{{ pkg.description }}</p>
@@ -115,6 +128,10 @@ isPackagePage: true
     {% include "./_releases.njk" %}
   {% endif %}
 </section>
+
+{% if not pkg.removed %}
+  <script src="{{ '/static/package.js' | bust }}" type="module" async></script>
+{% endif %}
 
 {% if pkg.readme and not pkg.removed %}
   <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">

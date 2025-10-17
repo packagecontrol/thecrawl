@@ -1,3 +1,26 @@
+.package-title {
+  padding-top: 13px;
+  margin-bottom: 13px;
+  display: inline-table;
+
+  h1 {
+    display: inline;
+    margin-right: 0.3rem;
+    padding-top: 0;
+    margin-bottom: 0;
+
+    &::after {
+      content: "\00A0"; /* non-breaking space after heading text */
+    }
+  }
+  .clipboard-button {
+    display: inline-flex;
+    font-size: 14px;
+    position: relative;
+    top: -12px;  /* vertical-align: super; isn't sufficient :-( */
+  }
+}
+
 .description {
   font-size: 21px;
   line-height: 26px;

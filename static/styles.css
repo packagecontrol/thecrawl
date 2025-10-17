@@ -68,10 +68,11 @@ a {
   position: absolute;
   top: 0.8rem;
   left: 0.5rem;
-  padding: 0.6rem 1rem;
+  padding: 6px 10px;
   background: var(--background-1);
   color: var(--foreground-1);
-  border-radius: 0.25rem;
+  border-radius: 6px;
+  border: 2px solid var(--orange-1);
 
   /* hide by default */
   transform: translateY(-200%);
@@ -80,6 +81,7 @@ a {
 
   &:focus-visible {
     transform: translateY(0);
+    outline: none;
   }
 }
 
@@ -150,25 +152,75 @@ human-date[clickable] {
 
 .clipboard-wrapper {
   position: relative;
-  &.copied pre {
-    background: var(--background-4);
-  }
+
   pre {
     transition: background .1s ease-out;
     padding-right: 6em;
     word-break: break-word;
   }
-  button {
+
+  .clipboard-button {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    margin: 0;
-    padding: 0;
-    background: transparent;
-    &:hover {
-      background: transparent;
-      color: var(--orange-1);
+  }
+
+  &.copied {
+    pre {
+      background: var(--highlight);
     }
+  }
+}
+.clipboard-button {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+
+  &:hover {
+    background: transparent;
+    color: var(--foreground-1);
+  }
+
+  .check {
+    display: none;
+    color: var(--green-3);
+  }
+
+  &.copied {
+    .icon {
+      display: none;
+    }
+    .check {
+      display: block;
+    }
+  }
+}
+
+.inline-message {
+  box-sizing: border-box;
+  background: var(--background-3);
+  color: var(--foreground-1);
+  padding: 6px 10px;
+  border-radius: 3px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-.1rem);
+  z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: calc(100vw - 1rem);
+
+  &[aria-hidden="true"] {
+    visibility: hidden;
+  }
+  &[aria-hidden="false"] {
+    opacity: 1;
+  }
+
+  &.placed-north {
+    transition: opacity .1s ease-in-out;
+    box-shadow: 1px 1px 3px rgb(0 0 0 / .3);
   }
 }
 
