@@ -22,6 +22,7 @@ isPackagePage: true
     {% if not pkg.removed %}
       <button
         class="button clipboard-button"
+        data-package-name="{{ pkg.name }}"
         title="Copy install command for Sublime Text to the clipboard"
         aria-label="Copy install command for Sublime Text to the clipboard"
         >
