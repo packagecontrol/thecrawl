@@ -88,6 +88,9 @@ section:has(.chart-container)::after {
     stroke-linecap: round;
     stroke-linejoin: round;
   }
+  .upgrades-line-dashed {
+    stroke-dasharray: 1 4;
+  }
   .upgrades-point {
     stroke: var(--background-2);
     stroke-width: 1;

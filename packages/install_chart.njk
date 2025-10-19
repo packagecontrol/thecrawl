@@ -131,7 +131,7 @@
           #}
           {% set d = '' %}
           {% if count > 1 %}
-            {# start at second point because week[0] is the running week #}
+            {# draw solid line from first full week onwards #}
             {% set val1 = upgrades[1] %}
             {% set y_start = r_axis.y_for(val1) %}
             {% set x_start = 1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
@@ -182,6 +182,13 @@
             {% endfor %}
           {% endif %}
           <path d="{{ d }}" class="upgrades-line" />
+          {% if count > 1 %}
+            {% set x_week0 = dim.bar_w / 2 %}
+            {% set y_week0 = r_axis.y_for(upgrades[0]) %}
+            {% set x_week1 = 1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+            {% set y_week1 = r_axis.y_for(upgrades[1]) %}
+            {{ line(x_week0, y_week0, x_week1, y_week1, 'upgrades-line upgrades-line-dashed') }}
+          {% endif %}
 
           {# Points with tooltips #}
           {% for val in upgrades %}
