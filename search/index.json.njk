@@ -16,7 +16,7 @@ permalink: "/search/index.json"
     {%- if pkg.doa -%}
       "doa": true,
     {%- elif pkg.removed -%}
-      "removed": true,
+      "removed": "{{ pkg.removed | timestamp }}",
     {%- elif pkg.archived_at -%}
       "archived_at": "{{ pkg.archived_at | timestamp }}",
     {%- endif %}
