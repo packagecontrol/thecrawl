@@ -101,6 +101,14 @@ section:has(.chart-container)::after {
     stroke: var(--white);
     stroke-width: 1;
   }
+  .release-callout {
+    stroke: var(--foreground-3);
+    stroke-width: 1;
+  }
+  .release-label {
+    fill: var(--foreground-3);
+    font-size: 10px;
+  }
   .upgrades-line {
     opacity: 1;
     transition: stroke-width .2s ease-in-out;
