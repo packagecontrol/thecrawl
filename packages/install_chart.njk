@@ -1,6 +1,6 @@
 {% import "util/macros.njk" as util %}
 
-{% macro chart(installed = 0, installs=[], removals=[], upgrades=[], dates=[]) %}
+{% macro chart(installed = 0, installs=[], removals=[], upgrades=[], dates=[], releases=[]) %}
   {% set count = installs | length %}
   {# pad chart width to a fixed 53 weeks to avoid width changes #}
   {% set padded_count = (count | at_least(53)) %}
@@ -214,6 +214,27 @@
 
         {# x-axis #}
         {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
+
+        {% if releases and (releases | length) > 0 %}
+          {% set latest_release = releases | first %}
+          {% if latest_release.date %}
+            {% set release_index = dates | iso_week_index(latest_release.date) %}
+            {% if release_index is not none and release_index < padded_count %}
+              {% set release_has_stats = release_index < count and release_index < (upgrades | length) %}
+              {% set release_title = 'Latest release ' ~ (latest_release.version | default('unknown', true)) ~ ' on ' ~ (latest_release.date | date_time_format) %}
+              {% set release_x = release_index * (dim.bar_w_gap) + (dim.bar_w / 2) %}
+              {% if release_has_stats %}
+                {% set release_val = upgrades[release_index] | default(0, true) %}
+                {% set release_y = r_axis.y_for(release_val) %}
+              {% else %}
+                {% set release_y = (y_avg_net is defined and y_avg_net is not none) and y_avg_net or l_axis.y_for(0) %}
+              {% endif %}
+              <circle cx="{{ release_x }}" cy="{{ release_y }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point release-point">
+                <title>{{ release_title }}</title>
+              </circle>
+            {% endif %}
+          {% endif %}
+        {% endif %}
       </g>
     </svg>
   </div>
