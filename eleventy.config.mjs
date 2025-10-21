@@ -115,9 +115,13 @@ function normalizedLib(pkg) {
 
 export default function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
+  const prodOrigin = 'https://packages.sublimetext.io'
+  const devOrigin = process.env.DEV_ORIGIN || 'http://localhost:8080'
+  const siteOrigin = isProd ? prodOrigin : devOrigin
 
   eleventyConfig.addPassthroughCopy('assets')
   eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + util.gitHash : 'static' })
+  eleventyConfig.addPassthroughCopy('_headers')
 
   eleventyConfig.ignores.add('util')
   eleventyConfig.ignores.add('README.md')
@@ -226,6 +230,20 @@ export default function (eleventyConfig) {
     }).slice(0, 9)
   })
 
+  eleventyConfig.addCollection('newest_packages_feed', () => {
+    return all_packages
+      .filter(pkg => !pkg.removed && pkg.first_seen)
+      .map(pkg => ({
+        ...basePackage(pkg, stats[pkg.name]),
+        description: pkg.description ?? '',
+        guid: pkg.id ?? pkg.name,
+      }))
+      .sort((a, b) => {
+        return new Date(b.first_seen ?? '1970-01-01 00:00:00') - new Date(a.first_seen ?? '1970-01-01 00:00:00')
+      })
+      .slice(0, 25)
+  })
+
   eleventyConfig.addCollection('labels', () => {
     const labels = {}
 
@@ -262,6 +280,11 @@ export default function (eleventyConfig) {
       formatted: now.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
       year: now.getFullYear(),
     }
+  })
+  eleventyConfig.addGlobalData('site', {
+    origin: siteOrigin,
+    prodOrigin,
+    devOrigin,
   })
 
   // Register all named exports from external module as filters
