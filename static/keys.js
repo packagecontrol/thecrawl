@@ -119,6 +119,17 @@ document.addEventListener('keydown', (event) => {
   }
 
   event.preventDefault()
+
+  // Expand compact header search (if present) and sync ARIA.
+  const toggle = document.querySelector('.search-toggle')
+  if (toggle) {
+    toggle.setAttribute('aria-expanded', 'true')
+  }
+  const form = document.forms.search
+  if (form) {
+    form.setAttribute('data-expanded', 'true')
+  }
+
   target.focus({ preventScroll: false })
   if (typeof target.select === 'function') {
     target.select()
