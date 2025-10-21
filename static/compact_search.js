@@ -70,3 +70,10 @@ if (toggle) {
     input.focus()
   }
 }
+
+// Allow other scripts to request expansion without focusing the input.
+window.addEventListener('search:expand', () => {
+  stopAnimations()
+  form.setAttribute('data-expanded', 'true')
+  if (toggle) toggle.setAttribute('aria-expanded', 'true')
+})

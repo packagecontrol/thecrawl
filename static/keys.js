@@ -17,7 +17,7 @@ document.querySelectorAll('.skip-link').forEach((skipLink) => {
     event.preventDefault()
     // If skipping to the compact search field, expand it first.
     if (targetSelector === '#search-field') {
-      maybeExpandSearchIcon()
+      window.dispatchEvent(new CustomEvent('search:expand'))
     }
 
     const rect = target.getBoundingClientRect()
@@ -124,7 +124,7 @@ document.addEventListener('keydown', (event) => {
   }
 
   event.preventDefault()
-  maybeExpandSearchIcon()
+  window.dispatchEvent(new CustomEvent('search:expand'))
 
   target.focus({ preventScroll: false })
   if (typeof target.select === 'function') {
@@ -154,22 +154,6 @@ document.addEventListener('keydown', (event) => {
 //
 // Helpers
 //
-
-/**
- * Expand the compact header search UI only visible on small screens.
- * Keeps toggle ARIA in sync with the visual state.
- */
-function maybeExpandSearchIcon() {
-  const form = document.forms.search
-  if (form) {
-    form.setAttribute('data-expanded', 'true')
-  }
-
-  const toggle = document.querySelector('.search-toggle')
-  if (toggle) {
-    toggle.setAttribute('aria-expanded', 'true')
-  }
-}
 
 /**
  * Check if a card is actually visible.
