@@ -74,7 +74,7 @@ header {
       margin-right: 1em;
     }
 
-    [href="/#search-field"] {
+    .search-toggle {
       @media (min-width: calc(50rem + 1px)) {
         display: none;
       }
