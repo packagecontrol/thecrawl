@@ -18,7 +18,7 @@ eleventyAllowMissingExtension: true
       <author>{{ pkg.author | join(', ') }}</author>
       <description>{{ pkg.description | default('') | escape }}</description>
       <pubDate>{{ pkg.first_seen }}</pubDate>
-      <link>{{ site.origin }}/packages/{{ pkg.name | urlencode }}/</link>
+      <link>{{ site.origin }}/packages/{{ pkg.name | urlencode }}</link>
       <guid>{{ pkg.guid }}</guid>
     </item>
 {% endfor %}

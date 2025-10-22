@@ -296,6 +296,19 @@ export default function (eleventyConfig) {
     devOrigin,
   })
 
+  // Default permalink: output files with their extension (e.g., /page.html)
+  // Can be overridden per-template (e.g., RSS feed or JSON endpoints)
+  eleventyConfig.addGlobalData('permalink', () => {
+    return data => `${data.page.filePathStem}.${data.page.outputFileExtension}`
+  })
+
+  // Remove .html from computed page.url to create extensionless URLs
+  eleventyConfig.addUrlTransform((page) => {
+    if (page.url && page.url.endsWith('.html')) {
+      return page.url.slice(0, -1 * '.html'.length)
+    }
+  })
+
   // Register all named exports from external module as filters
   for (const [name, fn] of Object.entries(filters)) {
     eleventyConfig.addFilter(name, fn)

@@ -22,7 +22,7 @@ permalink: "/search/index.json"
     {%- endif %}
     "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
     "labels": "{{ pkg.labels | default([]) | join(",") }}",
-    "permalink": "/packages/{{ pkg.name | urlencode }}/"
+    "permalink": "/packages/{{ pkg.name | urlencode }}"
   }{{ "," if not loop.last }}
 {%- endfor %}
 ]
