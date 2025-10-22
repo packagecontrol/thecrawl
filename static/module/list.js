@@ -41,7 +41,7 @@ export class List {
   hideme = document.querySelectorAll(`[${this.attr}='hideme']`)
 
   constructor() {
-    this.initialPath = window.location.pathname
+    this.initialPath = `${window.location.pathname}${window.location.search}`
   }
 
   setCounter(count = null) {
