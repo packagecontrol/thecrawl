@@ -165,6 +165,7 @@ function mondayOfIsoWeek(isoWeekStr) {
 }
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
+const MS_PER_WEEK = MS_PER_DAY * 7
 
 // given a Monday date, return the day offset (0..6) of where the
 // next month starts if within that week or -1.
@@ -179,6 +180,24 @@ export function day_offset_of_month_change(monday) {
 
   // is the 1st of next month inside this week?
   return diff < 7 ? diff : -1
+}
+
+// given a list of ISO week strings (newest first) return the index of a target ISO week.
+// if the week is newer than the data (i.e. outside range) returns null.
+export function iso_week_index(dates, dateInput) {
+  if (!dateInput || !Array.isArray(dates) || dates.length === 0) return null
+  const isoWeekStr = util.isoWeekString(dateInput)
+  if (!isoWeekStr) return null
+
+  const direct = dates.indexOf(isoWeekStr)
+  if (direct !== -1) return direct
+
+  const anchor = mondayOfIsoWeek(dates[0])
+  const target = mondayOfIsoWeek(isoWeekStr)
+  if (!anchor || !target) return null
+
+  const diff = Math.round((anchor - target) / MS_PER_WEEK)
+  return diff >= 0 ? diff : null
 }
 
 const shortMonthFormatter = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' })
