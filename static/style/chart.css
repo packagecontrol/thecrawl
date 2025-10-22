@@ -9,6 +9,7 @@
   --release-point-stroke-color: hsl(7deg 91.82% 41.44%);
   --avg-line-color: var(--orange-3);
   --install-legend-color: var(--orange-1);
+  --upgrade-hit-stroke-width: 12px;
 
   --spacing: calc(2 * var(--side-padding));
   max-width: calc(var(--max-content) * 2/3 - var(--spacing));
@@ -105,6 +106,19 @@ section:has(.chart-container)::after {
   }
 
   /* upgrades lines */
+  /* Wide invisible hit areas to make line/points easier to hover */
+  .upgrades-line-hit {
+    stroke: transparent;
+    stroke-width: var(--upgrade-hit-stroke-width);
+    fill: none;
+    pointer-events: stroke;
+  }
+  .upgrades-point-hit,
+  .release-point-hit {
+    fill: transparent;
+    stroke: none;
+    pointer-events: all;
+  }
   .upgrades-line {
     stroke: var(--upgrade-line-color);
     stroke-width: 1.8px;
@@ -119,11 +133,13 @@ section:has(.chart-container)::after {
     stroke: var(--upgrade-point-stroke-color);
     stroke-width: 0.6px;
     fill: var(--upgrade-point-fill-color);
+    pointer-events: none; /* tooltip is on the hit circle */
   }
   .release-point {
     fill: var(--release-point-fill-color);
     stroke: var(--release-point-stroke-color);
     stroke-width: 1;
+    pointer-events: none; /* tooltip is on the hit circle */
   }
   .release-callout {
     stroke: var(--foreground-3);
@@ -139,7 +155,9 @@ section:has(.chart-container)::after {
   }
   &:has(.upgrades-axis:hover),
   &:has(.upgrades-line:hover),
-  &:has(.upgrades-point:hover) {
+  &:has(.upgrades-point:hover),
+  &:has(.upgrades-line-hit:hover),
+  &:has(.upgrades-point-hit:hover) {
     .upgrades-line {
       stroke-width: 2.8px;
     }
