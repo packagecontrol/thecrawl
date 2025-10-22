@@ -95,21 +95,24 @@ const updateFilterButtonStates = (query) => {
 
 list.setFilterStateUpdater(updateFilterButtonStates)
 
-const syncFromUrl = () => {
+const syncFromUrl = ({ initialPageLoad = false }) => {
   const urlParams = new URLSearchParams(window.location.search)
   const query = urlParams.get('q') || ''
   const sortBy = urlParams.get('sort')
   const page = parseInt(urlParams.get('page')) || 1
   const effectiveSortBy = sortBy ?? 'relevance'
 
+  if (initialPageLoad && !query && !sortBy) {
+    return
+  }
+
   input.value = query
   sortSelect.value = effectiveSortBy
-
   list.goSearch(query, effectiveSortBy, page)
 }
 
 // Handle initial page load
-syncFromUrl()
+syncFromUrl({ initialPageLoad: true })
 
 const handleInput = () => {
   const query = input.value
