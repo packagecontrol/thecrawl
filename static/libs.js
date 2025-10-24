@@ -5,20 +5,29 @@ import { SimpleSearch } from './module/simplesearch.js'
  * Simplified search features on the library listing page.
  */
 
-const data = []
 const cards = document.querySelectorAll('[data-name]')
-cards.forEach((card) => {
-  data.push({
+const data = Array.from(cards, (card) => {
+  // Map class names like "platform-linux" back to plain platform identifiers
+  let platforms = new Set((function* () {
+    for (const el of card.querySelectorAll('.platform')) {
+      for (const cls of el.classList) {
+        if (cls.startsWith('platform-')) yield cls.slice('platform-'.length)
+      }
+    }
+  })())
+
+  return {
     name: card.dataset.name,
     author: card.dataset.author,
     description: card.dataset.description,
-  })
+    platforms: Array.from(platforms),
+  }
 })
 
 const minisrch = new minisearch({
   idField: 'name',
-  fields: ['name', 'author', 'description'],
-  storeFields: ['name'],
+  fields: ['name', 'author', 'description', 'platforms'],
+  storeFields: ['name', 'author', 'platforms'],
   searchOptions: {
     boost: { author: 2 },
     fuzzy: 0.2,
@@ -33,10 +42,7 @@ const search = new SimpleSearch(
   document.getElementById('search-field'),
   {
     titlePrefix: 'Libraries',
-    filters: {
-      label: false,
-      platform: false,
-    },
+    filters: { label: false },
   },
 )
 search.init()
