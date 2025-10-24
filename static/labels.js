@@ -142,7 +142,11 @@ const sortListItems = (value) => {
 
 const updateSortParam = (value) => {
   const params = new URLSearchParams(window.location.search)
-  params.set('sort', value)
+  if (value === 'usage') {
+    params.set('sort', 'usage')
+  } else {
+    params.delete('sort')
+  }
 
   const queryString = params.toString()
   const target = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname
