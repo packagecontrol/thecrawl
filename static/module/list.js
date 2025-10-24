@@ -16,7 +16,10 @@ import { Search } from './search.js'
 export class List {
   search = null
   pagination = null
+  // We freeze the current URL in `revertPath` if not `revertLocked` when
+  // we transition to the search results page; see `goSearch`.
   revertPath = '/'
+  revertLocked = false
   initialTitle = document.title
   restorableMainContent = document.getElementById('main-content')
   activeMainContentAnchor = null
@@ -79,6 +82,8 @@ export class List {
     })
     this.section.style.display = 'none'
     this.restoreMainContentAnchor()
+    // allow capturing a new revertPath on the next search activation
+    this.revertLocked = false
   }
 
   // clear any pagination ui and previous results
@@ -178,6 +183,7 @@ export class List {
     const queryString = params.toString()
     const queryString_ = queryString ? '?' + queryString : ''
     const target = queryString_ ? '/' + queryString_ : this.revertPath
+    const isReverting = target === this.revertPath
     const currentPath = `${window.location.pathname}${window.location.search}`
     const sortTitle = this.sortTitleMap[sortBy] ?? sortBy
     const title
@@ -187,6 +193,21 @@ export class List {
           ? `Search — ${query}`
           : this.initialTitle
 
+    // If we are transitioning from a non-search state into an active search,
+    // freeze the current URL as the revert target.
+    if (!isReverting && !this.revertLocked) {
+      const currentParams = new URLSearchParams(window.location.search)
+      const onSearchPage = (
+        currentParams.has('q')
+        || currentParams.has('sort')
+        || currentParams.has('page')
+      )
+      if (!onSearchPage) {
+        this.revertPath = `${window.location.pathname}${window.location.search}`
+      }
+      this.revertLocked = true
+    }
+
     if (currentPath !== target) {
       history.pushState({ title }, '', target)
     }
@@ -195,8 +216,7 @@ export class List {
       document.title = title
     }
 
-    if (!hasQuery && !usingWildcard) {
-      // no search query and no alternate sort - revert to static homepage
+    if (isReverting) {
       this.setCounter()
       this.revertToNormal()
       return
