@@ -125,7 +125,12 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "created_at": data.get("created_at")[:19].replace('T', ' '),
         "archived_at":
             archived_at[:19].replace('T', ' ')
-            if (archived_at := data.get("archived_at"))
+            if (
+                data.get("archived", False)
+                and (archived_at := data.get("archived_at"))
+                # That must be a bug on codebergs side
+                and not archived_at.startswith("1970-01-01T")
+            )
             else None
         ,
     })
