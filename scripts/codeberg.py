@@ -27,6 +27,9 @@ class RepoMetadata(TypedDict, total=False):
     issues: Url
     donate: Url
     default_branch: str
+    stars: int
+    created_at: IsoTimestamp
+    archived_at: IsoTimestamp | None
 
 
 class TagInfo(TypedDict):
@@ -114,6 +117,17 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "issues": f"https://codeberg.org/{owner}/{repo}/issues",
         "donate": None,  # Not available via API
         "default_branch": default_branch,
+        "stars":
+            data.get("stars_count")
+            or data.get("stargazers_count")
+            or data.get("watchers_count")
+        ,
+        "created_at": data.get("created_at")[:19].replace('T', ' '),
+        "archived_at":
+            archived_at[:19].replace('T', ' ')
+            if (archived_at := data.get("archived_at"))
+            else None
+        ,
     })
 
 

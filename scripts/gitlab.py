@@ -26,6 +26,9 @@ class RepoMetadata(TypedDict, total=False):
     issues: Url
     donate: Url
     default_branch: str
+    stars: int
+    created_at: IsoTimestamp
+    archived_at: IsoTimestamp | None
 
 
 class TagInfo(TypedDict):
@@ -91,7 +94,7 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
     data = await fetch_json(session, url)
     default_branch = data.get("default_branch", "master")
     readme_url = await find_readme_url(session, owner, repo, default_branch)
-    return drop_falsy({
+    meta = drop_falsy({
         "id": str(data.get("id")),
         "name": data.get("name"),
         "description": data.get("description"),
@@ -101,7 +104,11 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "issues": data.get("web_url") + "/-/issues" if data.get("web_url") else None,
         "donate": None,  # Not available
         "default_branch": default_branch,
+        "stars": data.get("star_count"),
+        "created_at": data.get("created_at")[:19].replace('T', ' '),
+        "archived_at": None,  # GitLab exposes only a boolean 'archived'
     })
+    return meta
 
 
 async def find_readme_url(session, owner, repo, branch) -> Url | None:

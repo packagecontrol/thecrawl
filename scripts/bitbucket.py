@@ -27,6 +27,9 @@ class RepoMetadata(TypedDict, total=False):
     issues: Url
     donate: Url
     default_branch: str
+    stars: int
+    created_at: IsoTimestamp
+    archived_at: IsoTimestamp | None
 
 
 class TagInfo(TypedDict):
@@ -84,6 +87,15 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
     data = await fetch_json(session, url)
     default_branch = data.get("mainbranch", {}).get("name", "master")
     readme_url = await find_readme_url(session, owner, repo, default_branch)
+    # Watchers count as proxy for stars in Bitbucket
+    watchers_url = data.get("links", {}).get("watchers", {}).get("href")
+    stars = None
+    if watchers_url:
+        try:
+            watchers_data = await fetch_json(session, watchers_url)
+            stars = watchers_data.get("size")
+        except aiohttp.ClientResponseError:
+            stars = None
     return drop_falsy({
         "id": data.get("uuid"),
         "name": data.get("name"),
@@ -97,6 +109,10 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "issues": data.get("links", {}).get("issues", {}).get("href"),
         "donate": None,  # Not available
         "default_branch": default_branch,
+        "stars": stars,
+        "created_at": data.get("created_on")[:19].replace('T', ' '),
+        #                               ^^ funny, isn't it?
+        "archived_at": None,  # Not available
     })
 
 
