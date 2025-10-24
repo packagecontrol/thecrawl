@@ -52,9 +52,9 @@
 
     window.removeEventListener('DOMContentLoaded', onDOMContentLoaded)
     window.clearTimeout(timer)
-    root.removeEventListener('search-is-ready', onSearchReady)
+    window.removeEventListener('search:done', onSearchReady)
   }
 
   window.addEventListener('DOMContentLoaded', onDOMContentLoaded)
-  root.addEventListener('search-is-ready', onSearchReady)
+  window.addEventListener('search:done', onSearchReady)
 })()

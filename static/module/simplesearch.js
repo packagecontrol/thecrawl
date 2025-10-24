@@ -97,7 +97,7 @@ export class SimpleSearch {
       container.style.display = visibleItems.has(card.dataset.name) ? null : 'none'
     })
 
-    this.dispatchSearchReady()
+    this.dispatchSearchDone()
   }
 
   revertToNormal() {
@@ -166,8 +166,7 @@ export class SimpleSearch {
     }
   }
 
-  dispatchSearchReady() {
-    const target = this.heading?.closest('section') ?? this.input?.form ?? document
-    target.dispatchEvent(new Event('search-is-ready', { bubbles: true }))
+  dispatchSearchDone() {
+    window.dispatchEvent(new Event('search:done'))
   }
 }

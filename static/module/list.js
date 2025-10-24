@@ -216,6 +216,6 @@ export class List {
     // render results with pagination
     this.renderPage(sortedResults, page)
 
-    this.section.dispatchEvent(new Event('search-is-ready', { bubbles: true }))
+    window.dispatchEvent(new Event('search:done'))
   }
 }

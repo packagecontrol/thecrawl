@@ -18,7 +18,7 @@ const minisrch = createMinisearch(MiniSearch, data)
 
 // Expose data for other modules and announce readiness
 window.__SEARCH_DATA__ = data
-document.dispatchEvent(new CustomEvent('search-data-ready', { detail: { data } }))
+window.dispatchEvent(new CustomEvent('search:index-loaded', { detail: { data } }))
 
 const list = new List()
 list.setMinisearch(minisrch)
