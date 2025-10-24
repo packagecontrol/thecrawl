@@ -75,6 +75,8 @@ export class SimpleSearch {
     if (updateHistory) {
       this.updateUrl(normalizedQuery)
     }
+
+    this.dispatchSearchDone()
   }
 
   renderSearch(query) {
@@ -96,8 +98,6 @@ export class SimpleSearch {
       }
       container.style.display = visibleItems.has(card.dataset.name) ? null : 'none'
     })
-
-    this.dispatchSearchDone()
   }
 
   revertToNormal() {

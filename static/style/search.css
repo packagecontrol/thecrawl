@@ -68,7 +68,7 @@ select {
 
 .search-controls {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   margin-bottom: 11px;
   background: var(--background-1);
   border-radius: 3px;
@@ -137,6 +137,53 @@ select {
       select {
         padding-top: 0;
       }
+    }
+  }
+
+  .sort-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem 0 0.5rem;
+    border-left: 1px solid var(--background-3);
+    margin-left: 0.5rem;
+
+    button {
+      background: none;
+      border: none;
+      color: var(--foreground-3);
+      font: inherit;
+      padding: 0;
+      cursor: pointer;
+      transition: color .1s ease-in-out;
+
+      &:hover {
+        color: var(--foreground-2);
+        text-decoration: none;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--orange-1);
+        outline-offset: 2px;
+      }
+
+      &.is-active {
+        color: var(--foreground-1);
+        font-weight: 600;
+      }
+    }
+
+    .sort-toggle-separator {
+      color: var(--foreground-4);
+      font-size: 0.9em;
+    }
+  }
+
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+
+    .sort-toggle {
+      gap: 0.75rem;
     }
   }
 }

@@ -12,6 +12,15 @@ date: Last Modified
   <div class="search-controls">
     <label for="search-field" class="screenreader-only">Search</label>
     <input type="search" autocomplete="off" name="q" id="search-field" placeholder="Search {{ collections.labels | length }} labels…">
+    <div class="sort-toggle" data-sort-controls role="group" aria-label="Sort labels">
+      <button type="button" data-sort-option="name" class="is-active" aria-pressed="true">
+        By Name
+      </button>
+      <span class="sort-toggle-separator" aria-hidden="true">|</span>
+      <button type="button" data-sort-option="usage" aria-pressed="false">
+        By Popularity
+      </button>
+    </div>
   </div>
 </form>
 
@@ -21,7 +30,7 @@ date: Last Modified
     {% for item in collections.labels %}
       <li>
         {% set q = pack.searchQueryFor('label', item.key) %}
-        <a {{ "id=main-content" if loop.index0 == 0 }} data-name="{{ item.key }}" class="button label" href="/?q={{ q }}">
+        <a {{ "id=main-content" if loop.index0 == 0 }} data-name="{{ item.key }}" data-usage="{{ item.count }}" class="button label" href="/?q={{ q }}">
           {{ item.key }}
           <span class="count">{{ item.count }}</span>
         </a>
