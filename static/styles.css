@@ -237,3 +237,7 @@ section {
     outline: none;
   }
 }
+
+.section-heading-link {
+  color: inherit;
+}

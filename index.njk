@@ -9,7 +9,9 @@ date: Last Modified
 {{ util.form(collections.packages | length, true) }}
 
 <section name="newest" data-list-target="hideme">
-  <h2>Newest</h2>
+  <h2>
+    <a href="/?sort=newest" class="section-heading-link">Newest</a>
+  </h2>
   <ul class="grid">
     {% for pkg in collections.newest_packages %}
       <li>
@@ -20,7 +22,9 @@ date: Last Modified
 </section>
 
 <section name="recent" data-list-target="hideme">
-  <h2>Recently updated</h2>
+  <h2>
+    <a href="/?sort=update" class="section-heading-link">Recently updated</a>
+  </h2>
   <ul class="grid">
     {% for pkg in collections.updated_packages %}
       <li>

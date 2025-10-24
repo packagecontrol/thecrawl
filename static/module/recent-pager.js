@@ -149,7 +149,8 @@ class RecentPager {
     this.section = section
     this.ul = section.querySelector('ul.grid')
     this.h2 = section.querySelector('h2')
-    this.headingOriginalText = this.h2 ? this.h2.textContent : ''
+    this.headingElement = this.h2?.querySelector('a') ?? this.h2
+    this.headingOriginalText = this.headingElement ? this.headingElement.textContent.trim() : ''
     this.headingShortText = shortHeading
     this.perPage = perPage
     this.page = 1
@@ -339,11 +340,11 @@ class RecentPager {
   }
 
   updateHeadingText() {
-    if (!this.headingShortText) return
+    if (!this.headingShortText || !this.headingElement) return
     const stickActive = this.section?.dataset.shouldStick === 'true'
     const text = this.page > 1 && stickActive ? this.headingShortText : this.headingOriginalText
-    if (this.h2.textContent !== text) {
-      this.h2.textContent = text
+    if (this.headingElement.textContent !== text) {
+      this.headingElement.textContent = text
     }
   }
 
