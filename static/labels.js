@@ -27,6 +27,13 @@ const search = new SimpleSearch(
   minisrch,
   cards,
   document.getElementById('search-field'),
-  { titlePrefix: 'Labels' },
+  {
+    titlePrefix: 'Labels',
+    filters: {
+      author: false,
+      label: false,
+      platform: false,
+    },
+  },
 )
 search.init()

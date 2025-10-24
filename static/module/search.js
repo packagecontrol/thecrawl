@@ -1,15 +1,25 @@
 export class Search {
   minisearch = null
+  options = {
+    filters: {
+      author: true,
+      label: true,
+      platform: true,
+    },
+  }
+
   stringSearch = false // is there a string search, not just filtering?
 
   // pass this a prepared minisearch instance: https://github.com/lucaong/minisearch
-  constructor(minisearch = []) {
+  constructor(minisearch, options = {}, processor = processQueryString) {
     this.minisearch = minisearch
+    this.process = processor
+    this.options = { ...this.options, ...options }
   }
 
   // process the search query string and return results
   search(value) {
-    const query = processQueryString(value)
+    const query = this.process(value, this.options.filters)
     this.stringSearch = query.hasFreeText
 
     // search and then map results so we can easily use them for output
@@ -37,7 +47,7 @@ export class Search {
   }
 }
 
-export function processQueryString(rawValue = '') {
+export function processQueryString(rawValue = '', filterFlags = {}) {
   const queries = []
   let hasFreeText = false
 
@@ -63,24 +73,37 @@ export function processQueryString(rawValue = '') {
     })
   }
 
+  const filters = {
+    author: true,
+    label: true,
+    platform: true,
+    ...filterFlags,
+  }
+
   const regexFor = field =>
     new RegExp(`${field}:"([^"]+)"|${field}:([^\\s]+)`, 'gi')
 
-  extractFilter(regexFor('author'), authorValue => ({
-    queries: [authorValue],
-    fields: ['author'],
-  }))
+  if (filters.author) {
+    extractFilter(regexFor('author'), authorValue => ({
+      queries: [authorValue],
+      fields: ['author'],
+    }))
+  }
 
-  extractFilter(regexFor('label'), labelValue => ({
-    queries: [labelValue],
-    fields: ['labels'],
-  }))
+  if (filters.label) {
+    extractFilter(regexFor('label'), labelValue => ({
+      queries: [labelValue],
+      fields: ['labels'],
+    }))
+  }
 
-  extractFilter(regexFor('platform'), platformValue => ({
-    combineWith: 'OR',
-    queries: [platformValue, 'any'],
-    fields: ['platforms'],
-  }))
+  if (filters.platform) {
+    extractFilter(regexFor('platform'), platformValue => ({
+      combineWith: 'OR',
+      queries: [platformValue, 'any'],
+      fields: ['platforms'],
+    }))
+  }
 
   const trimmed = value.trim()
   if (trimmed.length > 0) {

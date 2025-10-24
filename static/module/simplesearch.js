@@ -10,8 +10,8 @@ export class SimpleSearch {
   titlePrefix = null
   debounceTimeout = null
 
-  constructor(minisearch, cards, input, { titlePrefix = null } = {}) {
-    this.search = new Search(minisearch)
+  constructor(minisearch, cards, input, { titlePrefix = null, filters = {} } = {}) {
+    this.search = new Search(minisearch, { filters })
     this.input = input
     this.cards = cards
     this.paramKey = this.input?.name || 'q'

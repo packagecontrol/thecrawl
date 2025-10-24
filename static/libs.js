@@ -31,6 +31,12 @@ const search = new SimpleSearch(
   minisrch,
   cards,
   document.getElementById('search-field'),
-  { titlePrefix: 'Libraries' },
+  {
+    titlePrefix: 'Libraries',
+    filters: {
+      label: false,
+      platform: false,
+    },
+  },
 )
 search.init()
