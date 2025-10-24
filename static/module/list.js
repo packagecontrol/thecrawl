@@ -16,7 +16,7 @@ import { Search } from './search.js'
 export class List {
   search = null
   pagination = null
-  initialPath = '/'
+  revertPath = '/'
   initialTitle = document.title
   restorableMainContent = document.getElementById('main-content')
   activeMainContentAnchor = null
@@ -41,7 +41,15 @@ export class List {
   hideme = document.querySelectorAll(`[${this.attr}='hideme']`)
 
   constructor() {
-    this.initialPath = `${window.location.pathname}${window.location.search}`
+    const initialParams = new URLSearchParams(window.location.search)
+    initialParams.delete('q')
+    initialParams.delete('sort')
+    initialParams.delete('page')
+
+    const serializedParams = initialParams.toString()
+    this.revertPath = serializedParams
+      ? `${window.location.pathname}?${serializedParams}`
+      : window.location.pathname
   }
 
   setCounter(count = null) {
@@ -169,7 +177,7 @@ export class List {
 
     const queryString = params.toString()
     const queryString_ = queryString ? '?' + queryString : ''
-    const target = queryString_ ? '/' + queryString_ : this.initialPath
+    const target = queryString_ ? '/' + queryString_ : this.revertPath
     const currentPath = `${window.location.pathname}${window.location.search}`
     const sortTitle = this.sortTitleMap[sortBy] ?? sortBy
     const title
