@@ -27,5 +27,10 @@ const minisrch = new minisearch({
 })
 minisrch.addAll(data)
 
-const search = new SimpleSearch(minisrch, cards, document.getElementById('search-field'))
+const search = new SimpleSearch(
+  minisrch,
+  cards,
+  document.getElementById('search-field'),
+  { titlePrefix: 'Libraries' },
+)
 search.init()

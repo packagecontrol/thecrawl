@@ -6,13 +6,16 @@ export class SimpleSearch {
   heading = document.querySelector('[data-list-target="heading"]')
   cards = []
   paramKey = 'q'
+  initialTitle = document.title
+  titlePrefix = null
   debounceTimeout = null
 
-  constructor(minisearch, cards, input) {
+  constructor(minisearch, cards, input, { titlePrefix = null } = {}) {
     this.search = new Search(minisearch)
     this.input = input
     this.cards = cards
     this.paramKey = this.input?.name || 'q'
+    this.titlePrefix = titlePrefix
   }
 
   init() {
@@ -67,6 +70,7 @@ export class SimpleSearch {
     }
 
     this.updateMainContentAnchor()
+    this.updateTitle(normalizedQuery)
 
     if (updateHistory) {
       this.updateUrl(normalizedQuery)
@@ -147,5 +151,16 @@ export class SimpleSearch {
     const queryFromUrl = params.get(this.paramKey) ?? ''
 
     this.applySearch(queryFromUrl, { updateHistory: false, updateInput: true })
+  }
+
+  updateTitle(query) {
+    if (!this.titlePrefix) {
+      return
+    }
+    if (query) {
+      document.title = `${this.titlePrefix} — ${query}`
+    } else {
+      document.title = this.initialTitle
+    }
   }
 }
