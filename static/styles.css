@@ -24,6 +24,8 @@ html {
   &.initializing {
     [data-list-target='hideme'],
     [data-list-target='section'],
+    section[name="libraries"],
+    section[name="labels"],
     form[name='search'] {
       visibility: hidden;
     }

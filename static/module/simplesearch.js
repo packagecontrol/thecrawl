@@ -96,6 +96,8 @@ export class SimpleSearch {
       }
       container.style.display = visibleItems.has(card.dataset.name) ? null : 'none'
     })
+
+    this.dispatchSearchReady()
   }
 
   revertToNormal() {
@@ -162,5 +164,10 @@ export class SimpleSearch {
     } else {
       document.title = this.initialTitle
     }
+  }
+
+  dispatchSearchReady() {
+    const target = this.heading?.closest('section') ?? this.input?.form ?? document
+    target.dispatchEvent(new Event('search-is-ready', { bubbles: true }))
   }
 }
