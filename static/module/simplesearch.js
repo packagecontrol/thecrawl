@@ -9,13 +9,15 @@ export class SimpleSearch {
   initialTitle = document.title
   titlePrefix = null
   debounceTimeout = null
+  cardFilter = null
 
-  constructor(minisearch, cards, input, { titlePrefix = null, filters = {} } = {}) {
+  constructor(minisearch, cards, input, { titlePrefix = null, filters = {}, cardFilter = null } = {}) {
     this.search = new Search(minisearch, { filters })
     this.input = input
     this.cards = cards
     this.paramKey = this.input?.name || 'q'
     this.titlePrefix = titlePrefix
+    this.cardFilter = cardFilter
   }
 
   init() {
@@ -96,7 +98,9 @@ export class SimpleSearch {
       if (!container) {
         return
       }
-      container.style.display = visibleItems.has(card.dataset.name) ? null : 'none'
+      const hiddenBySearch = !visibleItems.has(card.dataset.name)
+      const hiddenByFilter = Boolean(this.cardFilter?.(card))
+      container.style.display = (hiddenBySearch || hiddenByFilter) ? 'none' : null
     })
   }
 
@@ -104,7 +108,8 @@ export class SimpleSearch {
     this.cards.forEach((card) => {
       const container = card.closest('li')
       if (container) {
-        container.style.display = null
+        const hiddenByFilter = Boolean(this.cardFilter?.(card))
+        container.style.display = hiddenByFilter ? 'none' : null
       }
     })
     if (this.heading) {

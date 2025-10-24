@@ -8,6 +8,21 @@ import { SimpleSearch } from './module/simplesearch.js'
 const list = document.querySelector('section[name="labels"] ul')
 const data = []
 const cards = document.querySelectorAll('section ul .label')
+const searchInput = document.getElementById('search-field')
+const usageToggle = document.querySelector('[data-omit-single]')
+const urlParams = new URLSearchParams(window.location.search)
+const initialQuery = urlParams.get('q') ?? ''
+let manualOmitChoice = false
+let omitSingles = initialQuery.trim() === ''
+
+const cardFilter = (card) => {
+  if (!omitSingles) {
+    return false
+  }
+  const usage = Number(card.dataset.usage ?? 0)
+  return usage <= 1
+}
+
 cards.forEach((card) => {
   data.push({
     name: card.dataset.name,
@@ -27,7 +42,7 @@ minisrch.addAll(data)
 const search = new SimpleSearch(
   minisrch,
   cards,
-  document.getElementById('search-field'),
+  searchInput,
   {
     titlePrefix: 'Labels',
     filters: {
@@ -35,8 +50,58 @@ const search = new SimpleSearch(
       label: false,
       platform: false,
     },
+    cardFilter,
   },
 )
+
+const updateUsageToggleUI = () => {
+  if (!usageToggle) {
+    return
+  }
+  usageToggle.classList.toggle('is-active', omitSingles)
+  usageToggle.setAttribute('aria-pressed', String(omitSingles))
+}
+
+const updateOmitState = (value, { manual = false, triggerSearch = false } = {}) => {
+  if (!manual && manualOmitChoice) {
+    return false
+  }
+
+  const normalized = Boolean(value)
+  if (omitSingles === normalized) {
+    return false
+  }
+
+  omitSingles = normalized
+  if (manual) {
+    manualOmitChoice = true
+  }
+  updateUsageToggleUI()
+
+  if (triggerSearch) {
+    search.applySearch(searchInput?.value ?? '', { updateHistory: false, updateInput: false })
+  }
+
+  return true
+}
+
+updateUsageToggleUI()
+
+if (searchInput) {
+  searchInput.addEventListener('input', () => {
+    updateOmitState(searchInput.value.trim() === '')
+  })
+}
+
+window.addEventListener('popstate', () => {
+  const queryParam = new URLSearchParams(window.location.search).get('q') ?? ''
+  updateOmitState(queryParam.trim() === '')
+})
+
+usageToggle?.addEventListener('click', (event) => {
+  event.preventDefault()
+  updateOmitState(!omitSingles, { manual: true, triggerSearch: true })
+})
 
 const sortControls = document.querySelector('[data-sort-controls]')
 const sortButtons = sortControls ? Array.from(sortControls.querySelectorAll('[data-sort-option]')) : []
