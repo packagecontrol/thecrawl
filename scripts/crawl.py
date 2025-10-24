@@ -14,6 +14,7 @@ from .bitbucket import fetch_bitbucket_info
 from .generate_registry import Registry, PackageEntry as PackageEntryV1
 from .github import fetch_github_info, rate_limit_info, strip_possible_prefix, QueryScope
 from .gitlab import fetch_gitlab_info
+from .codeberg import fetch_codeberg_info
 from .utils import parse_version, resolve_url, update_url
 import traceback
 
@@ -340,6 +341,8 @@ async def crawl_package(
                 info = await fetch_bitbucket_info(session, url, scopes)
             case "gitlab":
                 info = await fetch_gitlab_info(session, url, scopes)
+            case "codeberg":
+                info = await fetch_codeberg_info(session, url, scopes)
             case _:
                 err(f"Backend for {url} not implemented yet")
                 continue
@@ -558,6 +561,8 @@ def which_hub(url: str) -> str:
         return "gitlab"
     if "bitbucket.org" in url:
         return "bitbucket"
+    if "codeberg.org" in url:
+        return "codeberg"
     return "unknown"
 
 
