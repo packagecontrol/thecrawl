@@ -147,6 +147,10 @@ h2 {
 human-date[clickable] {
   border-bottom: 1px dotted var(--foreground-4);
   cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--orange-1);
+  }
 }
 
 .clipboard-wrapper {
