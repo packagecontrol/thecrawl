@@ -26,7 +26,7 @@ export class Search {
     const results = this.minisearch.search({
       queries: query.queries,
       combineWith: 'AND',
-    })
+    }).filter(query.filter)
 
     // omit minisearch result internals
     // eslint-disable-next-line no-unused-vars
@@ -49,11 +49,12 @@ export class Search {
 
 export function processQueryString(rawValue = '', filterFlags = {}) {
   const queries = []
+  const exactMatches = []
   let hasFreeText = false
 
   let value = typeof rawValue === 'string' ? rawValue : String(rawValue ?? '')
 
-  const extractFilter = (regex, buildQuery) => {
+  const extractFilter = (field, regex, buildQuery = () => {}) => {
     const matches = []
     let match
     while ((match = regex.exec(value)) !== null) {
@@ -68,7 +69,11 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
         return
       }
 
-      queries.push(buildQuery(filterValue))
+      queries.push({ fields: [field], queries: [filterValue], ...buildQuery(filterValue) })
+      if (quoted) {
+        exactMatches.push({ field, value: filterValue })
+      }
+
       value = value.replace(currentMatch[0], ' ')
     })
   }
@@ -84,24 +89,17 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
     new RegExp(`${field}:"([^"]+)"|${field}:([^\\s]+)`, 'gi')
 
   if (filters.author) {
-    extractFilter(regexFor('author'), authorValue => ({
-      queries: [authorValue],
-      fields: ['author'],
-    }))
+    extractFilter('author', regexFor('author'))
   }
 
   if (filters.label) {
-    extractFilter(regexFor('label'), labelValue => ({
-      queries: [labelValue],
-      fields: ['labels'],
-    }))
+    extractFilter('labels', regexFor('label'))
   }
 
   if (filters.platform) {
-    extractFilter(regexFor('platform'), platformValue => ({
+    extractFilter('platforms', regexFor('platform'), platformValue => ({
       combineWith: 'OR',
       queries: [platformValue, 'any'],
-      fields: ['platforms'],
     }))
   }
 
@@ -114,5 +112,16 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
     hasFreeText = true
   }
 
-  return { queries, hasFreeText }
+  const filter = result => exactMatches.every(({ field, value: expected }) => {
+    let value = result[field]
+    // All the fields we support are actually ","-joined in the index.
+    // See index.json.njk
+    if (Array.isArray(value)) {
+      value = value.join(',')
+    }
+    const expectedL = expected.toLowerCase()
+    return value.toLowerCase().split(',').map(x => x.trim()).includes(expectedL)
+  })
+
+  return { queries, hasFreeText, filter }
 }

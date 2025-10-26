@@ -3,12 +3,8 @@
 {% macro searchQueryFor(field, raw) -%}
   {%- set value = (raw | default('')) | trim -%}
   {%- if value -%}
-    {%- set encoded = value | urlencode -%}
-    {%- if ' ' in value -%}
-      {{- field ~ ':"' ~ encoded ~ '"' -}}
-    {%- else -%}
-      {{- field ~ ':' ~ encoded -}}
-    {%- endif -%}
+    {%- set raw_filter = field ~ ':"' ~ value ~ '"' -%}
+    {{- raw_filter | urlencode -}}
   {%- endif -%}
 {%- endmacro %}
 

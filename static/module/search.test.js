@@ -1,5 +1,7 @@
+import MiniSearch from 'minisearch'
 import { describe, expect, it, vi } from 'vitest'
 
+import { createMinisearch } from './minisearch.js'
 import { processQueryString, Search } from './search.js'
 import * as searchModule from './search.js'
 
@@ -89,6 +91,39 @@ describe('processQueryString', () => {
     ])
     expect(result.hasFreeText).toBe(true)
   })
+
+  it('returns a filter function that enforces exact quoted matches', () => {
+    const result = processQueryString('label:"color" author:"Palette" platform:"windows"')
+
+    const passes = {
+      labels: ['color'],
+      author: 'Palette',
+      platforms: ['windows'],
+    }
+
+    const failsLabel = {
+      labels: ['color system'],
+      author: 'Palette',
+      platforms: ['windows'],
+    }
+
+    const failsAuthor = {
+      labels: ['color'],
+      author: 'Palette Systems',
+      platforms: ['windows'],
+    }
+
+    const failsPlatform = {
+      labels: ['color'],
+      author: 'Palette',
+      platforms: ['windows server'],
+    }
+
+    expect(result.filter(passes)).toBe(true)
+    expect(result.filter(failsLabel)).toBe(false)
+    expect(result.filter(failsAuthor)).toBe(false)
+    expect(result.filter(failsPlatform)).toBe(false)
+  })
 })
 
 describe('Search.search', () => {
@@ -153,5 +188,74 @@ describe('Search.search', () => {
 
     expect(processor).toHaveBeenCalledWith('label:web platform:web', customFilters)
     processor.mockRestore()
+  })
+
+  describe('Enslosed terms in "" finds exact matches', () => {
+    const packages = [
+      {
+        name: 'ColorPalette',
+        description: 'Color utilities',
+        author: 'Palette',
+        platforms: ['windows'],
+        labels: ['color'],
+      },
+      {
+        name: 'ColorSystem',
+        description: 'Color system tooling',
+        author: 'Palette Systems',
+        platforms: ['windows server'],
+        labels: ['color system'],
+      },
+    ]
+
+    const createSearchInstance = () => new Search(createMinisearch(MiniSearch, packages))
+
+    it('returns partial matches when using label:color', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:color')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).toContain('ColorSystem')
+    })
+
+    it('returns the exact label match when using label:"color"', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:"color"')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).not.toContain('ColorSystem')
+    })
+
+    it('returns partial matches when using author:Palette', () => {
+      const search = createSearchInstance()
+      const results = search.search('author:Palette')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).toContain('ColorSystem')
+    })
+
+    it('returns the exact author match when using author:"Palette"', () => {
+      const search = createSearchInstance()
+      const results = search.search('author:"Palette"')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).not.toContain('ColorSystem')
+    })
+
+    it('returns partial matches when using platform:windows', () => {
+      const search = createSearchInstance()
+      const results = search.search('platform:windows')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).toContain('ColorSystem')
+    })
+
+    it('returns the exact platform match when using platform:"windows"', () => {
+      const search = createSearchInstance()
+      const results = search.search('platform:"windows"')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).not.toContain('ColorSystem')
+    })
   })
 })

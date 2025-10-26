@@ -152,8 +152,6 @@ const searchQueryFor = (field, rawValue) => {
   const value = String(rawValue ?? '').trim()
   if (!value) return '/?q='
 
-  const encoded = encodeURIComponent(value)
-  const needsQuotes = /\s/.test(value)
-  const filter = needsQuotes ? `${field}:"${encoded}"` : `${field}:${encoded}`
-  return '/?q=' + filter
+  const filter = `${field}:"${value}"`
+  return '/?q=' + encodeURIComponent(filter)
 }
