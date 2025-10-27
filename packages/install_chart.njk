@@ -12,7 +12,7 @@
     gap: 1,
     upgrade_pt_r: 2,
     upgrade_pt_hit_r: 8,
-    top: 12,
+    top: 14,
     bottom: 42,
     left: 50,
     right: 60,
@@ -281,14 +281,14 @@
               {% if clipped %}
                 {% set line_start_y = (line_end_y + max_line_length) | at_most(line_start_y) %}
               {% endif %}
-              {% if line_end_y < line_start_y %}
-                <line x1="{{ release_x }}" y1="{{ line_start_y }}" x2="{{ release_x }}" y2="{{ line_end_y }}" class="release-callout" />
-                {% if clipped %}
-                  {{ draw_arrow(release_x, line_start_y, 3, 2) }}
-                {% endif %}
-                {% set label_y = line_end_y - gap_to_text %}
-                {{ draw_callout_label(release_version, release_x, label_y, dim) }}
+              <line x1="{{ release_x }}" y1="{{ line_start_y }}" x2="{{ release_x }}" y2="{{ line_end_y }}" class="release-callout" />
+              {% if clipped %}
+                {{ draw_arrow(release_x, line_start_y, 3, 2) }}
               {% endif %}
+              {# If line_start_y == 0 we draw a point at the top edge with no callout line #}
+              {# but just the text.  Increase the gap_to_text slightly by 2 in that case. #}
+              {% set label_y = line_end_y - gap_to_text - (line_start_y == 0 and 2 or 0) %}
+              {{ draw_callout_label(release_version, release_x, label_y, dim) }}
             {% endif %}
           {% endif %}
         {% endif %}
