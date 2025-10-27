@@ -162,22 +162,22 @@ document.addEventListener('click', (event) => {
     return
   }
 
-  const url = new URL(target.href, window.location.origin)
-  const oldQuery = input.value
-  const urlParams = new URLSearchParams(window.location.search)
+  const targetUrl = new URL(target.href, window.location.origin)
+  // read possible query and sort from the clicked link
+  let newQuery = targetUrl.searchParams.get('q')
+  let newSort = targetUrl.searchParams.get('sort')
 
-  let newQuery = url.searchParams.get('q')
-
-  // ... and only if you clicked something that would generate a "q" query
-  if (newQuery === null) {
+  // ... and only intercept when link carries either a query or a sort
+  if (newQuery === null && newSort === null) {
     return
   }
 
   event.preventDefault()
   event.stopPropagation()
 
-  if (target.closest('form')) {
+  if (newQuery !== null && target.closest('form')) {
     // the shortcuts in the form act as filters, toggling off when clicked twice
+    const oldQuery = input.value
     const clickedQuery = newQuery
     const applyToggle = (type) => {
       if (!clickedQuery.includes(`${type}:`)) {
@@ -209,8 +209,17 @@ document.addEventListener('click', (event) => {
     }
   }
 
+  // if the clicked link has only a sort (no q param), clear query
+  if (newQuery === null) {
+    newQuery = ''
+  }
   newQuery = newQuery.trim()
   input.value = newQuery
+
+  // decide which sort to apply: from link if present, else current URL, else default
+  const currentSearch = new URLSearchParams(window.location.search)
+  newSort = newSort ?? currentSearch.get('sort') ?? 'relevance'
+  sortSelect.value = newSort
 
   const inputEvent = new Event('input', { bubbles: true })
   const changeEvent = new Event('change', { bubbles: true })
@@ -218,5 +227,5 @@ document.addEventListener('click', (event) => {
   input.dispatchEvent(changeEvent)
 
   list.scrollUp()
-  list.goSearch(newQuery, urlParams.get('sort') ?? 'relevance', 1)
+  list.goSearch(newQuery, newSort, 1)
 })
