@@ -29,10 +29,11 @@ function basePackage(pkg, stat) {
       // check if the version looks like a "branch"-fallback version
       && !/^\d{4}\.\d{2}\.\d{2}\.\d{2}\.\d{2}\.\d{2}$/.test(release.version ?? '')
     ) {
-      const m = /^https:\/\/codeload\.github\.com\/([^/]+)\/([^/]+)\/zip\/([^/]+)$/.exec(url)
+      const m = /^https:\/\/codeload\.github\.com\/([^/]+)\/([^/]+)\/zip\/(.+)$/.exec(url)
       if (m) {
         const [, owner, repo, tag] = m
-        release.web = `https://github.com/${owner}/${repo}/releases/tag/${tag}`
+        const tag_ = encodeURIComponent(tag)
+        release.web = `https://github.com/${owner}/${repo}/releases/tag/${tag_}`
       }
     }
   }
