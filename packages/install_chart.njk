@@ -11,6 +11,7 @@
     bar_w: 12,
     gap: 1,
     upgrade_pt_r: 2,
+    upgrade_pt_hit_r: 8,
     top: 12,
     bottom: 42,
     left: 50,
@@ -64,7 +65,7 @@
           {% set y_rem      = y_net - rem_h %}
           {% set slice_w = dim.slice_width_at(i) %}
 
-          {% set title_text = dates[i] ~ ': installs: ' ~ (inst | grouping) ~ ', removals: ' ~ (rem | grouping) ~ ', upgrades: ' ~ (up | grouping) %}
+          {% set title_text = dates[i] ~ ': installs: ' ~ (inst | grouping) ~ ', removals: ' ~ (rem | grouping) %}
 
           <g class="week">
             {# subtle hover background spanning the full slice #}
@@ -182,12 +183,16 @@
             {% endfor %}
           {% endif %}
           <path d="{{ d }}" class="upgrades-line" />
+          {# Wide invisible hit path to improve hover over the curve #}
+          <path d="{{ d }}" class="upgrades-line-hit" />
           {% if count > 1 %}
             {% set x_week0 = dim.bar_w / 2 %}
             {% set y_week0 = r_axis.y_for(upgrades[0]) %}
             {% set x_week1 = 1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
             {% set y_week1 = r_axis.y_for(upgrades[1]) %}
             {{ line(x_week0, y_week0, x_week1, y_week1, 'upgrades-line upgrades-line-dashed') }}
+            {# Hit area for the initial dashed segment #}
+            {{ line(x_week0, y_week0, x_week1, y_week1, 'upgrades-line-hit upgrades-line-dashed') }}
           {% endif %}
 
           {# Points with tooltips #}
@@ -197,9 +202,12 @@
             {% set x2 = i * (dim.bar_w_gap) + (dim.bar_w / 2) %}
             {% set inst_i = installs[i] %}
             {% set rem_i = removals[i] %}
-            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point">
-              <title>{{ dates[i] }}: installs: {{ inst_i | grouping }}, removals: {{ rem_i | grouping }}, upgrades: {{ val | grouping }}</title>
+            {# Large invisible hit circle with the tooltip title #}
+            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ dim.upgrade_pt_hit_r }}" class="upgrades-point-hit">
+              <title>{{ dates[i] }}: upgrades: {{ val | grouping }}</title>
             </circle>
+            {# Visible point without title #}
+            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point" />
           {% endfor %}
         {% endif %}
 
@@ -238,9 +246,12 @@
               {% else %}
                 {% set release_y = (y_avg_net is defined and y_avg_net is not none) and y_avg_net or l_axis.y_for(0) %}
               {% endif %}
-              <circle cx="{{ release_x }}" cy="{{ release_y }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point release-point">
+              {# Large invisible hit circle for release tooltip #}
+              <circle cx="{{ release_x }}" cy="{{ release_y }}" r="{{ dim.upgrade_pt_hit_r }}" class="upgrades-point-hit release-point-hit">
                 <title>{{ release_title }}</title>
               </circle>
+              {# Visible release point without title #}
+              <circle cx="{{ release_x }}" cy="{{ release_y }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point release-point" />
 
               {# callout line heading North #}
               {% set line_start_y = (release_y - dim.upgrade_pt_r - gap_to_line_start) | at_least(0) %}
