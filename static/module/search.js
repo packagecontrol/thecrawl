@@ -63,8 +63,8 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
     regex.lastIndex = 0
 
     matches.forEach((currentMatch) => {
-      const [, quoted, unquoted] = currentMatch
-      const filterValue = quoted || unquoted
+      const [, quoted, prefixQuoted, unquoted] = currentMatch
+      const filterValue = (quoted ?? prefixQuoted ?? unquoted)?.trim()
       if (!filterValue) {
         return
       }
@@ -86,7 +86,7 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
   }
 
   const regexFor = field =>
-    new RegExp(`${field}:"([^"]+)"|${field}:([^\\s]+)`, 'gi')
+    new RegExp(`${field}:"([^"]+)"|${field}:"([^"]*)$|${field}:([^\\s]+)`, 'gi')
 
   if (filters.author) {
     extractFilter('author', regexFor('author'))

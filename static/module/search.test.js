@@ -190,6 +190,44 @@ describe('Search.search', () => {
     processor.mockRestore()
   })
 
+  describe('unterminated quoted prefix search', () => {
+    const packages = [
+      {
+        name: 'Text Manipulation Toolkit',
+        description: 'Manipulate text in bulk',
+        author: 'Text Tools Inc.',
+        platforms: ['web'],
+        labels: ['text manipulation'],
+      },
+      {
+        name: 'Text Manipulator',
+        description: 'Interactive text tools',
+        author: 'Utilities Co.',
+        platforms: ['desktop'],
+        labels: ['text manipulator'],
+      },
+      {
+        name: 'Format Helper',
+        description: 'Format markdown and HTML',
+        author: 'Formatter Corp.',
+        platforms: ['web'],
+        labels: ['text formatting'],
+      },
+    ]
+
+    const createSearchInstance = () => new Search(createMinisearch(MiniSearch, packages))
+
+    it('returns entries matching the prefix when closing quote is missing', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:"text manip')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Text Manipulation Toolkit')
+      expect(names).toContain('Text Manipulator')
+      expect(names).not.toContain('Format Helper')
+    })
+  })
+
   describe('Enslosed terms in "" finds exact matches', () => {
     const packages = [
       {
