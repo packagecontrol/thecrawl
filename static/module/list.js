@@ -44,15 +44,9 @@ export class List {
   hideme = document.querySelectorAll(`[${this.attr}='hideme']`)
 
   constructor() {
-    const initialParams = new URLSearchParams(window.location.search)
-    initialParams.delete('q')
-    initialParams.delete('sort')
-    initialParams.delete('page')
-
-    const serializedParams = initialParams.toString()
-    this.revertPath = serializedParams
-      ? `${window.location.pathname}?${serializedParams}`
-      : window.location.pathname
+    this.revertPath = onSearchPage()
+      ? window.location.pathname
+      : `${window.location.pathname}${window.location.search}`
   }
 
   setCounter(count = null) {
@@ -196,13 +190,7 @@ export class List {
     // If we are transitioning from a non-search state into an active search,
     // freeze the current URL as the revert target.
     if (!isReverting && !this.revertLocked) {
-      const currentParams = new URLSearchParams(window.location.search)
-      const onSearchPage = (
-        currentParams.has('q')
-        || currentParams.has('sort')
-        || currentParams.has('page')
-      )
-      if (!onSearchPage) {
+      if (!onSearchPage()) {
         this.revertPath = `${window.location.pathname}${window.location.search}`
       }
       this.revertLocked = true
@@ -246,4 +234,13 @@ export class List {
 
     window.dispatchEvent(new Event('search:done'))
   }
+}
+
+function onSearchPage() {
+  const currentParams = new URLSearchParams(window.location.search)
+  return (
+    currentParams.has('q')
+    || currentParams.has('sort')
+    || currentParams.has('page')
+  )
 }
