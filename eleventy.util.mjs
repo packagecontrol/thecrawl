@@ -63,6 +63,53 @@ export function getReadmeUrl(readme) {
 }
 
 /**
+ * Convert a Sublime Text build selector into its starting build number.
+ * Rules:
+ * - Remove spaces.
+ * - "*" -> 3000
+ * - "<NNNN"   -> 0
+ * - "<=NNNN"  -> 0
+ * - ">NNNN"  -> NNNN + 1
+ * - ">=NNNN" -> NNNN
+ * - "NNNN-MMMM" -> NNNN (strip after '-')
+ * - plain "NNNN" -> NNNN
+ * If parsing fails, return 0.
+ */
+export function parseSublimeTextMin(selector) {
+  if (typeof selector !== 'string') {
+    return 0
+  }
+  const s = selector.replace(/\s+/g, '')
+  if (s === '' || s === '*') {
+    return 3000
+  }
+
+  // range like 3092-4000 -> take left side
+  const rangeIdx = s.indexOf('-')
+  if (rangeIdx !== -1) {
+    const left = s.slice(0, rangeIdx)
+    const n = parseInt(left, 10)
+    return Number.isFinite(n) ? n : 0
+  }
+
+  // comparators
+  if (s.startsWith('<='))
+    return 0
+  if (s.startsWith('<'))
+    return 0
+  if (s.startsWith('>=')) {
+    const n = parseInt(s.slice(2), 10)
+    return Number.isFinite(n) ? n : 0
+  }
+  if (s.startsWith('>')) {
+    const n = parseInt(s.slice(1), 10)
+    return Number.isFinite(n) ? (n + 1) : 0
+  }
+  const n = parseInt(s, 10)
+  return Number.isFinite(n) ? n : 0
+}
+
+/**
  * Find the last git commit hash.
  */
 export const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
@@ -142,6 +189,27 @@ if (import.meta.vitest) {
       ['2016-01-04 00:00:00', '2016-W01'], // Mon of 2016-W01
     ])('isoWeekString(%s) -> %s', (input, expected) => {
       expect(isoWeekString(input)).toBe(expected)
+    })
+  })
+
+  describe('parseSublimeTextMin', () => {
+    it.each([
+      [null, 0],
+      ['', 3000],
+      ['*', 3000],
+      ['  *  ', 3000],
+      ['3092', 3092],
+      ['3092 - 4000', 3092],
+      ['3092-4000', 3092],
+      ['<3092', 0],
+      ['<=3092', 0],
+      ['>3092', 3093],
+      ['>=3092', 3092],
+      [' >=  4075 ', 4075],
+      ['>  4075', 4076],
+      ['n/a', 0],
+    ])('parseSublimeTextMin(%j) -> %j', (input, expected) => {
+      expect(parseSublimeTextMin(input)).toBe(expected)
     })
   })
 }
