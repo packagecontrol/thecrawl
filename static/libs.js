@@ -16,6 +16,15 @@ const data = Array.from(cards, (card) => {
     }
   })())
 
+  // In Libraries, infer 'any' for untagged libs or those that collapsed
+  // to all three base OS (windows, linux, osx) so platform searches include them.
+  if (
+    platforms.size == 0
+    || ['windows', 'linux', 'osx'].every(x => platforms.has(x))
+  ) {
+    platforms = ['any']
+  }
+
   return {
     name: card.dataset.name,
     author: card.dataset.author,
