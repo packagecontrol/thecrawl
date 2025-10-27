@@ -13,8 +13,27 @@
   };
 
   const root = document.documentElement
+  const isHome = root.classList.contains('home')
+  const titlePrefix = (() => {
+    if (isHome) {
+      return 'Search'
+    }
+    if (root.classList.contains('labels-in-package-control-r')) {
+      return 'Labels'
+    }
+    if (root.classList.contains('libraries-in-package-control-r')) {
+      return 'Libraries'
+    }
+    return null
+  })()
+
   root.classList.add('initializing')
-  document.title = q ? `Search — ${q}` : 'Listing'
+  if (titlePrefix && q) {
+    document.title = `${titlePrefix} — ${q}`
+  }
+  else if (isHome) {
+    document.title = 'Listing'
+  }
 
   const resolveHeading = () => {
     return document.querySelector('[data-list-target="heading"]')
@@ -52,9 +71,9 @@
 
     window.removeEventListener('DOMContentLoaded', onDOMContentLoaded)
     window.clearTimeout(timer)
-    root.removeEventListener('search-is-ready', onSearchReady)
+    window.removeEventListener('search:done', onSearchReady)
   }
 
   window.addEventListener('DOMContentLoaded', onDOMContentLoaded)
-  root.addEventListener('search-is-ready', onSearchReady)
+  window.addEventListener('search:done', onSearchReady)
 })()

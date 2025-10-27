@@ -473,7 +473,7 @@ if (window.__SEARCH_DATA__) {
   initWithData(window.__SEARCH_DATA__)
 }
 else {
-  document.addEventListener('search-data-ready', (evt) => {
+  window.addEventListener('search:index-loaded', (evt) => {
     initWithData(evt.detail.data)
   })
 }

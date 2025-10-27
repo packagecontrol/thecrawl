@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { processQueryString, Search } from './search.js'
+import * as searchModule from './search.js'
 
 describe('processQueryString', () => {
   it('returns an empty array for blank input', () => {
@@ -73,6 +74,21 @@ describe('processQueryString', () => {
       },
     ])
   })
+
+  it('treats disabled filters as free text', () => {
+    const result = processQueryString(
+      'author:someone label:ux platform:web',
+      { author: false, label: false, platform: false },
+    )
+
+    expect(result.queries).toEqual([
+      {
+        queries: ['author:someone', 'label:ux', 'platform:web'],
+        fields: ['name', 'description', 'author'],
+      },
+    ])
+    expect(result.hasFreeText).toBe(true)
+  })
 })
 
 describe('Search.search', () => {
@@ -119,5 +135,23 @@ describe('Search.search', () => {
         },
       ],
     })
+  })
+
+  it('passes configured filters to processQueryString', () => {
+    const minisearch = {
+      search: vi.fn().mockReturnValue([]),
+    }
+    const customFilters = {
+      author: false,
+      label: true,
+      platform: false,
+    }
+    const processor = vi.spyOn(searchModule, 'processQueryString')
+    const search = new Search(minisearch, { filters: customFilters }, processor)
+
+    search.search('label:web platform:web')
+
+    expect(processor).toHaveBeenCalledWith('label:web platform:web', customFilters)
+    processor.mockRestore()
   })
 })

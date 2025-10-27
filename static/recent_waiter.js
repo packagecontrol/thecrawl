@@ -36,11 +36,11 @@
       list.style.visibility = 'revert'
       h2.style.visibility = 'revert'
       clearTimeout(timer)
-      document.removeEventListener('search-data-ready', onReady)
+      window.removeEventListener('search:index-loaded', onReady)
     }
 
     const timer = setTimeout(onReady, 500)
-    document.addEventListener('search-data-ready', onReady)
+    window.addEventListener('search:index-loaded', onReady)
   })
 
   function hasQueryParam(param) {

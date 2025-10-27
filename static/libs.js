@@ -5,27 +5,52 @@ import { SimpleSearch } from './module/simplesearch.js'
  * Simplified search features on the library listing page.
  */
 
-const data = []
 const cards = document.querySelectorAll('[data-name]')
-cards.forEach((card) => {
-  data.push({
+const data = Array.from(cards, (card) => {
+  // Map class names like "platform-linux" back to plain platform identifiers
+  let platforms = new Set((function* () {
+    for (const el of card.querySelectorAll('.platform')) {
+      for (const cls of el.classList) {
+        if (cls.startsWith('platform-')) yield cls.slice('platform-'.length)
+      }
+    }
+  })())
+
+  // In Libraries, infer 'any' for untagged libs or those that collapsed
+  // to all three base OS (windows, linux, osx) so platform searches include them.
+  if (
+    platforms.size == 0
+    || ['windows', 'linux', 'osx'].every(x => platforms.has(x))
+  ) {
+    platforms = ['any']
+  }
+
+  return {
     name: card.dataset.name,
     author: card.dataset.author,
     description: card.dataset.description,
-  })
+    platforms: Array.from(platforms),
+  }
 })
 
 const minisrch = new minisearch({
   idField: 'name',
-  fields: ['name', 'author', 'description'],
-  storeFields: ['name'],
+  fields: ['name', 'author', 'description', 'platforms'],
+  storeFields: ['name', 'author', 'platforms'],
   searchOptions: {
     boost: { author: 2 },
-    fuzzy: 0.2,
     prefix: true,
   },
 })
 minisrch.addAll(data)
 
-const search = new SimpleSearch(minisrch, cards, document.getElementById('search-field'))
+const search = new SimpleSearch(
+  minisrch,
+  cards,
+  document.getElementById('search-field'),
+  {
+    titlePrefix: 'Libraries',
+    filters: { label: false },
+  },
+)
 search.init()

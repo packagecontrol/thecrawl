@@ -4,6 +4,8 @@ layout: layout.njk
 date: Last Modified
 ---
 
+{% import "packages/macros.njk" as util %}
+
 {% macro lib(pkg, mark_as_main=false) %}
   <div class="card"
     data-name="{{ pkg.name | escape }}"
@@ -34,10 +36,11 @@ date: Last Modified
         </li>
       {% endif %}
       {% for platform in pkg.platforms %}
+        {% set q = util.searchQueryFor('platform', platform) %}
         <li>
-          <span class="button platform platform-{{ platform }}">
+          <a class="button platform platform-{{ platform }}" href="/libraries/?q={{ q }}">
             {{ platform }}
-          </span>
+          </a>
         </li>
       {% endfor %}
     </ul>
@@ -49,7 +52,7 @@ date: Last Modified
 
   <div class="search-controls">
     <label for="search-field" class="screenreader-only">Search</label>
-    <input type="search" autocomplete="off" name="lib" id="search-field" placeholder="Search {{ collections.libraries | length }} libraries…">
+    <input type="search" autocomplete="off" name="q" id="search-field" placeholder="Search {{ collections.libraries | length }} libraries…">
   </div>
 </form>
 
