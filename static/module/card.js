@@ -152,6 +152,8 @@ const searchQueryFor = (field, rawValue) => {
   const value = String(rawValue ?? '').trim()
   if (!value) return '/?q='
 
-  const filter = `${field}:"${value}"`
+  const filter = field === 'platform' && !value.includes(' ')
+    ? `${field}:${value}`
+    : `${field}:"${value}"`
   return '/?q=' + encodeURIComponent(filter)
 }
