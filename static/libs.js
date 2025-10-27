@@ -39,7 +39,6 @@ const minisrch = new minisearch({
   storeFields: ['name', 'author', 'platforms'],
   searchOptions: {
     boost: { author: 2 },
-    fuzzy: 0.2,
     prefix: true,
   },
 })
