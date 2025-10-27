@@ -296,4 +296,43 @@ describe('Search.search', () => {
       expect(names).not.toContain('ColorSystem')
     })
   })
+
+  describe('Handling dashes (-) in search terms', () => {
+    const packages = [
+      {
+        name: 'Win32 Utility',
+        description: 'Tools for 32-bit Windows',
+        author: 'Systems Inc.',
+        platforms: ['windows-x32'],
+        labels: ['windows-x32'],
+      },
+      {
+        name: 'Lin32 Utility',
+        description: 'Tools for 32-bit Linux',
+        author: 'Systems Inc.',
+        platforms: ['linux-x32'],
+        labels: ['linux-x32'],
+      },
+    ]
+
+    const createSearchInstance = () => new Search(createMinisearch(MiniSearch, packages))
+
+    it('matches only the exact platform when the term includes a dash', () => {
+      const search = createSearchInstance()
+      const results = search.search('platform:windows-x32')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).not.toContain('Lin32 Utility')
+    })
+
+    it('still matches both platforms when searching for the shared suffix', () => {
+      const search = createSearchInstance()
+      const results = search.search('platform:x32')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).toContain('Lin32 Utility')
+    })
+  })
 })

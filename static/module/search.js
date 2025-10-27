@@ -97,10 +97,25 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
   }
 
   if (filters.platform) {
-    extractFilter('platforms', regexFor('platform'), platformValue => ({
-      combineWith: 'OR',
-      queries: [platformValue, 'any'],
-    }))
+    extractFilter('platforms', regexFor('platform'), (platformValue) => {
+      // The lexer splits at "-" but we want "windows-x32" to *not* match
+      // "linux-x32".
+      const parts = platformValue.split(/[-\s]+/).filter(Boolean)
+      const query
+        = parts.length > 1
+          ? {
+              fields: ['platforms'],
+              combineWith: 'AND',
+              queries: parts,
+            }
+          : platformValue
+
+      return {
+        fields: ['platforms'],
+        combineWith: 'OR',
+        queries: [query, 'any'],
+      }
+    })
   }
 
   const trimmed = value.trim()
