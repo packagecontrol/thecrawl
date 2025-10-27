@@ -277,9 +277,14 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addCollection('libraries', () => {
     const libraries = JSON.parse(fs.readFileSync('libraries.json', 'utf8'))
-    return libraries.libraries.map(lib => ({
-      ...normalizedLib(lib),
-    }))
+    const dataset = util.collectPlatformDataset(libraries.libraries)
+    return libraries.libraries.map((lib) => {
+      const base = normalizedLib(lib)
+      return {
+        ...base,
+        platforms: util.simplifyPlatforms(dataset, base.platforms),
+      }
+    })
   })
 
   eleventyConfig.addGlobalData('built', () => {
