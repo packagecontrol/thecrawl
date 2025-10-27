@@ -49,7 +49,9 @@
     }
     if (sort) {
       const select = form.elements['sort']
-      select.value = sort
+      if (select) {
+        select.value = sort
+      }
     }
   }
 
