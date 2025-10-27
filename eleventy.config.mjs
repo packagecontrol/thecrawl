@@ -165,12 +165,24 @@ export default function (eleventyConfig) {
 
   // Optional dataset limiting for faster local dev
   const limitRaw = process.env.LIMIT_DATASET
-  const limit = typeof limitRaw === 'string' ? parseInt(limitRaw, 10) : NaN
-  const shouldLimit = Number.isFinite(limit) && limit > 0
-  if (shouldLimit) {
-    const before = all_packages.length
-    all_packages = all_packages.slice(0, limit)
-    console.warn(`[eleventy] LIMIT_DATASET=${limit} active: ${before} -> ${all_packages.length} packages`)
+  if (typeof limitRaw === 'string' && limitRaw.trim() !== '') {
+    const numeric = parseInt(limitRaw, 10)
+    if (Number.isFinite(numeric) && numeric > 0) {
+      const before = all_packages.length
+      all_packages = all_packages.slice(0, numeric)
+      console.warn(`[eleventy] LIMIT_DATASET=${numeric} active: ${before} -> ${all_packages.length} packages`)
+    } else {
+      const names = limitRaw
+        .split(',')
+        .map(s => s.trim().toLowerCase())
+        .filter(Boolean)
+      if (names.length > 0) {
+        const nameSet = new Set(names)
+        const before = all_packages.length
+        all_packages = all_packages.filter(pkg => nameSet.has(String(pkg.name || '').toLowerCase()))
+        console.warn(`[eleventy] LIMIT_DATASET=[${names.join(', ')}] active: ${before} -> ${all_packages.length} packages`)
+      }
+    }
   }
 
   eleventyConfig.addCollection('packages', () => {
