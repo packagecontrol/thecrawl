@@ -302,14 +302,14 @@ describe('Search.search', () => {
       {
         name: 'Win32 Utility',
         description: 'Tools for 32-bit Windows',
-        author: 'Systems Inc.',
+        author: 'coder-mike',
         platforms: ['windows-x32'],
         labels: ['windows-x32'],
       },
       {
         name: 'Lin32 Utility',
         description: 'Tools for 32-bit Linux',
-        author: 'Systems Inc.',
+        author: 'mike-uwe johnson',
         platforms: ['linux-x32'],
         labels: ['linux-x32'],
       },
@@ -329,6 +329,42 @@ describe('Search.search', () => {
     it('still matches both platforms when searching for the shared suffix', () => {
       const search = createSearchInstance()
       const results = search.search('platform:x32')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).toContain('Lin32 Utility')
+    })
+
+    it('matches only the exact label when the term includes a dash', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:windows-x32')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).not.toContain('Lin32 Utility')
+    })
+
+    it('still matches both labels when searching for the shared suffix', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:x32')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).toContain('Lin32 Utility')
+    })
+
+    it('matches only the exact author when the term includes a dash', () => {
+      const search = createSearchInstance()
+      const results = search.search('author:coder-mike')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).not.toContain('Lin32 Utility')
+    })
+
+    it('still matches both authors when searching for the shared token', () => {
+      const search = createSearchInstance()
+      const results = search.search('author:mike')
       const names = results.map(entry => entry.name)
 
       expect(names).toContain('Win32 Utility')
