@@ -258,21 +258,15 @@
               {# Watch out +- 4 weeks and compute `line_end_y` to stay visually above everything else #}
               {% set look_start = (release_index - 4) | at_least(0) %}
               {% set look_end = (release_index + 4) | at_most(padded_count - 1) %}
-              {% set y_points = [] %}
               {% set max_upgrade_val = upgrades | slice(look_start, look_end + 1) | max %}
-              {% if max_upgrade_val > 0 %}
-                {% set upgrade_top = (r_axis.y_for(max_upgrade_val) - dim.upgrade_pt_r - gap_to_line_start) %}
-                {% set y_points = y_points.concat([upgrade_top]) %}
-              {% endif %}
               {% set max_install_val = installs | slice(look_start, look_end + 1) | max %}
-              {% if max_install_val > 0 %}
-                {% set install_top = (l_axis.y_for(max_install_val) - gap_to_line_start) %}
-                {% set y_points = y_points.concat([install_top]) %}
-              {% endif %}
-              {% if (y_points | length) == 0 %} {# no stats around #}
+
+              {% if max_upgrade_val == 0 and max_install_val == 0 %}  {# no stats around #}
                 {% set line_end_y = (line_start_y - void_line_length) | at_least(0) %}
               {% else %}
-                {% set y_points = y_points.concat([line_start_y - minimum_line_length]) %}
+                {% set upgrade_top = r_axis.y_for(max_upgrade_val) - dim.upgrade_pt_r - gap_to_line_start %}
+                {% set install_top = l_axis.y_for(max_install_val) - gap_to_line_start %}
+                {% set y_points = [line_start_y - minimum_line_length, upgrade_top, install_top] %}
                 {% set line_end_y = y_points | min | at_least(0) %}
               {% endif %}
 
@@ -281,6 +275,7 @@
               {% if clipped %}
                 {% set line_start_y = (line_end_y + max_line_length) | at_most(line_start_y) %}
               {% endif %}
+
               <line x1="{{ release_x }}" y1="{{ line_start_y }}" x2="{{ release_x }}" y2="{{ line_end_y }}" class="release-callout" />
               {% if clipped %}
                 {{ draw_arrow(release_x, line_start_y, 3, 2) }}
