@@ -167,7 +167,7 @@ form.compact {
     }
   }
 
-  &.has-attention {
+  &[data-expanded="true"] {
     .search-controls {
       input {
         width: 12em;
@@ -189,7 +189,7 @@ form.compact {
   @media (max-width: 50rem) {
     display: none;
 
-    &.has-attention,
+    &[data-expanded="true"],
     &.going-away {
       display: flex;
       position: absolute;

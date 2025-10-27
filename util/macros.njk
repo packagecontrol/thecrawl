@@ -39,7 +39,7 @@
 
 
 {% macro form(count, verbose=true) %}
-  <form name="search" action="/" class="{% if not verbose %}compact{% endif %}">
+  <form name="search" role="search" aria-label="Package search" action="/" class="{% if not verbose %}compact{% endif %}">
     <div class="search-controls">
 
       <label for="search-field" class="screenreader-only">Search</label>

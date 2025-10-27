@@ -7,6 +7,7 @@ const input = form.elements['q']
 const select = form.elements['sort']
 const select_button = select.closest('.button')
 const select_label = form.querySelector(`label[for="${select.id}"]`)
+const toggle = document.querySelector('.search-toggle')
 
 let timer
 
@@ -19,7 +20,7 @@ function stopAnimations() {
 
 function goAway() {
   if (!input.value) {
-    form.classList.remove('has-attention')
+    form.removeAttribute('data-expanded')
     form.classList.add('going-away')
     select_button.addEventListener('animationend', goneAway)
     form.addEventListener('animationend', goneAway)
@@ -28,12 +29,14 @@ function goAway() {
 
 function goneAway() {
   form.classList.remove('going-away')
-  form.classList.remove('has-attention')
+  form.removeAttribute('data-expanded')
+  if (toggle) toggle.setAttribute('aria-expanded', 'false')
 }
 
 input.addEventListener('change', () => {
   stopAnimations()
-  form.classList.add('has-attention')
+  form.setAttribute('data-expanded', 'true')
+  if (toggle) toggle.setAttribute('aria-expanded', 'true')
 })
 
 // prevent various clumsly clicks on the select label from hiding the form
@@ -44,7 +47,8 @@ select_label.addEventListener('dblclick', () => {
 // when anything in the form receives focus ensure it's available for interaction
 form.addEventListener('focusin', () => {
   stopAnimations()
-  form.classList.add('has-attention')
+  form.setAttribute('data-expanded', 'true')
+  if (toggle) toggle.setAttribute('aria-expanded', 'true')
 })
 // and when focus leaves again, after a short delay, the user probably lost interest
 form.addEventListener('focusout', () => {
@@ -53,9 +57,23 @@ form.addEventListener('focusout', () => {
   }, 200)
 })
 
-document.querySelector('[href="/#search-field"]').onclick = (event) => {
-  event.preventDefault()
-  event.stopPropagation()
-  form.classList.add('has-attention')
-  input.focus()
+if (toggle) {
+  toggle.setAttribute('role', 'button')
+  toggle.setAttribute('aria-controls', 'search-field')
+  toggle.setAttribute('aria-expanded', 'false')
+
+  toggle.onclick = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    form.setAttribute('data-expanded', 'true')
+    toggle.setAttribute('aria-expanded', 'true')
+    input.focus()
+  }
 }
+
+// Allow other scripts to request expansion without focusing the input.
+window.addEventListener('search:expand', () => {
+  stopAnimations()
+  form.setAttribute('data-expanded', 'true')
+  if (toggle) toggle.setAttribute('aria-expanded', 'true')
+})

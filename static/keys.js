@@ -15,6 +15,11 @@ document.querySelectorAll('.skip-link').forEach((skipLink) => {
     }
 
     event.preventDefault()
+    // If skipping to the compact search field, expand it first.
+    if (targetSelector === '#search-field') {
+      window.dispatchEvent(new CustomEvent('search:expand'))
+    }
+
     const rect = target.getBoundingClientRect()
     const withinViewport = rect.top >= 0
       && rect.left >= 0
@@ -119,6 +124,8 @@ document.addEventListener('keydown', (event) => {
   }
 
   event.preventDefault()
+  window.dispatchEvent(new CustomEvent('search:expand'))
+
   target.focus({ preventScroll: false })
   if (typeof target.select === 'function') {
     target.select()

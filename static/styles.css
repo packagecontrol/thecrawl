@@ -96,8 +96,7 @@ svg {
   span > &,
   a > & {
     /* alignment of icons in text is just slightly off */
-    position: relative;
-    bottom: -1px;
+    vertical-align: -1px;
   }
 }
 
