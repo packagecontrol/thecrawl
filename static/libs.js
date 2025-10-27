@@ -54,3 +54,39 @@ const search = new SimpleSearch(
   },
 )
 search.init()
+
+// Intercept clicks on platform buttons to run in-page search
+document.addEventListener('click', (event) => {
+  const target = event.target.closest('a')
+  if (!target) {
+    return
+  }
+  if (!target.classList.contains('platform')) {
+    return
+  }
+  const url = new URL(target.href, window.location.origin)
+  const q = url.searchParams.get('q')
+  if (!q) {
+    return
+  }
+  event.preventDefault()
+  event.stopPropagation()
+  // Apply the platform query immediately without full navigation
+  scrollUp()
+  search.applySearch(q, { updateHistory: true, updateInput: true })
+})
+
+function scrollUp(all_the_way = true) {
+  const target = all_the_way
+    ? document.forms.search
+    : document.querySelector('[data-list-target="heading"]')
+  if (!target) {
+    return
+  }
+  const rect = target.getBoundingClientRect()
+  const completelyAbove = rect.bottom < 0
+  const completelyBelow = rect.top > window.innerHeight
+  if (completelyAbove || completelyBelow) {
+    target.scrollIntoView()
+  }
+}
