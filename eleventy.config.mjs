@@ -118,7 +118,6 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addPassthroughCopy('assets')
   eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + util.gitHash : 'static' })
-  eleventyConfig.addPassthroughCopy('_headers')
 
   eleventyConfig.ignores.add('util')
   eleventyConfig.ignores.add('README.md')
