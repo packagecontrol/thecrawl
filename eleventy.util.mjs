@@ -51,6 +51,9 @@ export function getReadmeUrl(readme) {
   //
   // https://bitbucket.org/JeisonJHA/sublime-delphi-language/raw/master/README.md
   // => https://bitbucket.org/JeisonJHA/sublime-delphi-language/src/master/README.md
+  //
+  // https://codeberg.org/ISSOtm/sublime-Bison/raw/branch/master/README.md
+  // => https://codeberg.org/ISSOtm/sublime-Bison/src/branch/master/README.md
 
   return readme.replace( // GitHub raw to blob
     /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
@@ -61,6 +64,9 @@ export function getReadmeUrl(readme) {
   ).replace( // Bitbucket raw to src
     /^https:\/\/bitbucket\.org\/([^/]+)\/([^/]+)\/raw\/([^/]+)\/(.+)$/,
     'https://bitbucket.org/$1/$2/src/$3/$4',
+  ).replace( // Codeberg raw to src (branch paths)
+    /^https:\/\/codeberg\.org\/([^/]+)\/([^/]+)\/raw\/branch\/([^/]+)\/(.+)$/,
+    'https://codeberg.org/$1/$2/src/branch/$3/$4',
   )
 }
 
@@ -161,6 +167,12 @@ if (import.meta.vitest) {
       expect(
         getReadmeUrl('https://bitbucket.org/JeisonJHA/sublime-delphi-language/raw/master/README.md'),
       ).toBe('https://bitbucket.org/JeisonJHA/sublime-delphi-language/src/master/README.md')
+    })
+
+    it('maps Codeberg raw URLs to src URLs (branch)', () => {
+      expect(
+        getReadmeUrl('https://codeberg.org/ISSOtm/sublime-Bison/raw/branch/master/README.md'),
+      ).toBe('https://codeberg.org/ISSOtm/sublime-Bison/src/branch/master/README.md')
     })
   })
 
