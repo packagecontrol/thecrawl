@@ -264,6 +264,13 @@ form.compact {
   }
 }
 
+.timeline-break {
+  margin: 0.6rem 0;
+  font-weight: 600;
+  color: var(--foreground-3);
+  padding: 8px 2px;
+}
+
 .search-subcontrols {
   display: flex;
   justify-content: flex-end;

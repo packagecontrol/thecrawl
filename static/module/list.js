@@ -24,6 +24,19 @@ export class List {
   restorableMainContent = document.getElementById('main-content')
   activeMainContentAnchor = null
   filterStateUpdater = null
+  activeSortSelection = 'relevance'
+  timelineNodes = []
+  monthFormatter = new Intl.DateTimeFormat('en', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+
+  quarterFormatter = new Intl.DateTimeFormat('en', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
 
   sortTitleMap = {
     installed: 'Installs',
@@ -83,6 +96,8 @@ export class List {
   // clear any pagination ui and previous results
   clear() {
     this.pagination?.clear()
+    this.timelineNodes.forEach(node => node.remove())
+    this.timelineNodes = []
     Array.from(this.list.children).forEach((card) => {
       card.remove()
     })
@@ -93,17 +108,29 @@ export class List {
     this.clear()
 
     this.pagination = new Pagination(this, items, page, this.section)
+    const pageItems = this.pagination.calculate()
 
-    // Render items for current page
-    this.pagination.calculate().forEach((pkg, index) => {
-      const li = document.createElement('li')
-      const fragment = (new Card(pkg)).render()
-      if (index === 0) {
-        this.assignMainContentTarget(fragment)
-      }
-      li.appendChild(fragment)
-      this.list.appendChild(li)
-    })
+    let assignedMainContent = false
+    const renderItems = (targetList, packages) => {
+      packages.forEach((pkg) => {
+        const li = document.createElement('li')
+        const fragment = (new Card(pkg)).render()
+        if (!assignedMainContent) {
+          this.assignMainContentTarget(fragment)
+          assignedMainContent = true
+        }
+        li.appendChild(fragment)
+        targetList.appendChild(li)
+      })
+    }
+
+    const timeline = this.buildTimeline(pageItems)
+    if (timeline) {
+      this.renderTimeline(timeline, renderItems)
+    }
+    else {
+      renderItems(this.list, pageItems)
+    }
 
     this.pagination.render()
   }
@@ -157,6 +184,7 @@ export class List {
     }
 
     this.filterStateUpdater?.(value)
+    this.activeSortSelection = sortBy
 
     const query = value.trim()
     const hasQuery = query.length > 0
@@ -233,6 +261,158 @@ export class List {
     this.renderPage(sortedResults, page)
 
     window.dispatchEvent(new Event('search:done'))
+  }
+
+  buildTimeline(items) {
+    if (!Array.isArray(items) || items.length === 0) {
+      return null
+    }
+
+    if (!['newest', 'update'].includes(this.activeSortSelection)) {
+      return null
+    }
+
+    const datedItems = items.map(pkg => ({
+      pkg,
+      date: this.extractTimelineDate(pkg),
+    }))
+
+    if (!datedItems.some(({ date }) => date)) {
+      return null
+    }
+
+    for (const mode of ['month', 'quarter', 'year']) {
+      const groups = this.collectTimelineGroups(datedItems, mode)
+      if (groups.length === 0) {
+        continue
+      }
+      if (mode === 'year' || groups.length <= 3) {
+        return { mode, groups }
+      }
+    }
+
+    return null
+  }
+
+  collectTimelineGroups(items, mode) {
+    const groups = []
+    let currentKey = null
+
+    items.forEach(({ pkg, date }) => {
+      const key = this.timelineKey(date, mode)
+      const label = this.timelineLabel(date, mode)
+
+      if (currentKey !== key) {
+        currentKey = key
+        groups.push({ key, label, items: [] })
+      }
+
+      groups[groups.length - 1].items.push(pkg)
+    })
+
+    return groups
+  }
+
+  renderTimeline(timeline, renderItems) {
+    const { groups, mode } = timeline
+
+    groups.forEach((group, index) => {
+      const heading = this.createTimelineHeading(group.label, mode)
+
+      if (index === 0) {
+        this.list.before(heading)
+        this.timelineNodes.push(heading)
+        renderItems(this.list, group.items)
+      }
+      else {
+        const listElement = this.createTimelineList()
+        this.section.appendChild(heading)
+        this.section.appendChild(listElement)
+        this.timelineNodes.push(heading, listElement)
+        renderItems(listElement, group.items)
+      }
+    })
+  }
+
+  createTimelineHeading(label, mode) {
+    const heading = document.createElement('p')
+    heading.classList.add('timeline-break')
+    heading.dataset.mode = mode
+    heading.textContent = label
+    return heading
+  }
+
+  createTimelineList() {
+    const listElement = document.createElement('ul')
+    listElement.className = this.list.className
+    return listElement
+  }
+
+  extractTimelineDate(pkg) {
+    const timestamp = (() => {
+      if (this.activeSortSelection === 'update') {
+        return this.parseTimestamp(pkg.last_modified)
+      }
+      if (this.activeSortSelection === 'newest') {
+        return this.parseTimestamp(pkg.first_seen)
+      }
+      return null
+    })()
+
+    if (!timestamp) {
+      return null
+    }
+
+    return new Date(timestamp * 1000)
+  }
+
+  parseTimestamp(raw) {
+    if (raw === undefined || raw === null) {
+      return null
+    }
+    const value = Number.parseInt(raw, 10)
+    return Number.isFinite(value) && value > 0 ? value : null
+  }
+
+  timelineKey(date, mode) {
+    if (!date) {
+      return 'unknown'
+    }
+
+    const year = date.getUTCFullYear()
+    if (mode === 'month') {
+      return `${year}-${date.getUTCMonth()}`
+    }
+    if (mode === 'quarter') {
+      const quarter = Math.floor(date.getUTCMonth() / 3)
+      return `${year}-q${quarter}`
+    }
+    return String(year)
+  }
+
+  timelineLabel(date, mode) {
+    if (!date) {
+      return 'Unknown'
+    }
+
+    const year = date.getUTCFullYear()
+    if (mode === 'month') {
+      return this.monthFormatter.format(date)
+    }
+
+    if (mode === 'quarter') {
+      const anchor = this.quarterAnchor(date)
+      return this.quarterFormatter.format(anchor)
+    }
+
+    return String(year)
+  }
+
+  quarterAnchor(date) {
+    const year = date.getUTCFullYear()
+    const month = date.getUTCMonth()
+    const anchorMonth = Math.floor(month / 3) * 3 + 2
+    return new Date(Date.UTC(year, anchorMonth, 1))
   }
 }
 
