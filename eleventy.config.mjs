@@ -37,20 +37,17 @@ function basePackage(pkg, stat) {
     }
   }
 
-  // sort releases by date, newest first
-  // secondary by .sublime_text. strip the leading non-digit from that string first, reverse alphabetical
+  // sort releases primarily by Sublime Text selector (higher min build first),
+  // secondary by date, newest first
   releases.sort((a, b) => {
+    const minA = util.parseSublimeTextMin(a.sublime_text)
+    const minB = util.parseSublimeTextMin(b.sublime_text)
+    if (minA !== minB) {
+      return minB - minA // Higher min build first
+    }
     const dateA = new Date(a.date ?? '1970-01-01 00:00:00')
     const dateB = new Date(b.date ?? '1970-01-01 00:00:00')
-    if (dateA.getTime() !== dateB.getTime()) {
-      return dateB - dateA // Newest first
-    }
-    // Secondary: compare .sublime_text, strip leading non-digit, reverse alphabetical
-    const verA = (a.sublime_text || '').replace(/^[^\d]*/, '')
-    const verB = (b.sublime_text || '').replace(/^[^\d]*/, '')
-    if (verA > verB) return -1
-    if (verA < verB) return 1
-    return 0
+    return dateB - dateA // Newest first
   })
 
   // Split releases with same sublime build and same platform set.
