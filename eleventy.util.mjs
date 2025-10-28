@@ -1,5 +1,7 @@
 import { execSync } from 'child_process'
 
+const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
+
 /**
  * Rename osx -> macos, * -> any
  */
@@ -111,8 +113,9 @@ export function parseSublimeTextMin(selector) {
 
 /**
  * Find the last git commit hash.
+ * Only executes in production builds to avoid overhead and issues when git is unavailable.
  */
-export const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
+export const gitHash = isProd ? execSync('git rev-parse --short HEAD').toString().trim() : 'deadbead'
 
 function utcifyISODateString(dateStr) {
   return dateStr.replace(' ', 'T') + (dateStr.endsWith('Z') ? '' : 'Z')
