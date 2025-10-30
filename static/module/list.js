@@ -158,7 +158,7 @@ export class List {
 
     this.filterStateUpdater?.(value)
 
-    const query = value.toLowerCase().trim()
+    const query = value.trim()
     const hasQuery = query.length > 0
     const usingWildcard = !hasQuery && sortBy !== 'relevance'
 
