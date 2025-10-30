@@ -9,9 +9,22 @@ import sys
 from time import time
 from urllib.parse import urlparse
 
-from typing import AsyncIterable, Iterable, Literal, TypedDict
+from typing import AsyncIterable, Iterable
 
+from .model import (
+    BranchInfo,
+    QueryScope,
+    RateLimitInfo,
+    ReleaseAssetInfo,
+    ReleaseInfo,
+    RepoInfo,
+    TagInfo,
+)
 from .utils import drop_falsy, normalize_tz_aware_datetime
+
+type QueryStr = str
+type QueryVars = str
+type Query = QueryStr | tuple[QueryVars, QueryStr]
 
 # This module exposes a single entrypoint
 # fetch_repo_info(Url, Iterable[QueryScope]) -> RepoInfo
@@ -19,84 +32,15 @@ from .utils import drop_falsy, normalize_tz_aware_datetime
 # "tags", "branches", and "releases" are lazy fetched, unless you provide their
 # scopes as initial QueryScope, until exhausted. (Ref: TagPager/BranchesPager)
 
-type QueryScope = str  # Literal["METADATA", "TAGS", "BRANCHES", "RELEASES"]
-type QueryStr = str
-type QueryVars = str
-type Query = QueryStr | tuple[QueryVars, QueryStr]
-type Url = str
-type IsoTimestamp = str
+rate_limit_info = RateLimitInfo(
+    limit=1000,
+    remaining=1000,
+    used=0,
+    reset=int(time()) + 3600,
+    reset_formatted=datetime.fromtimestamp(time() + 3600).strftime("%Y-%m-%d %H:%M:%S"),
+    resource="core",
+)
 
-
-class RepoInfo(TypedDict):
-    metadata: RepoMetadata
-    tags: AsyncIterable[TagInfo]
-    branches: AsyncIterable[BranchInfo]
-    releases: AsyncIterable[ReleaseInfo]
-    rate_limit_info: RateLimitInfo
-
-
-class RepoMetadata(TypedDict, total=False):
-    id: str
-    name: str
-    description: str
-    homepage: Url
-    author: str
-    readme: Url
-    issues: Url
-    donate: Url
-    default_branch: str
-    stars: int
-    created_at: IsoTimestamp
-    archived_at: IsoTimestamp | None
-    hints: list[str]
-
-
-class TagInfo(TypedDict):
-    name: str     # the ref-/ or tagname, e.g. v1.2.5
-    url: Url
-    date: IsoTimestamp
-
-
-class BranchInfo(TypedDict):
-    name: str
-    url: Url
-    date: IsoTimestamp
-
-
-class ReleaseAssetInfo(TypedDict):
-    name: str
-    url: Url
-    size: int | None
-    content_type: str | None
-
-
-class ReleaseInfo(TypedDict):
-    name: str | None
-    tag_name: str
-    url: Url
-    date: IsoTimestamp
-    is_prerelease: bool
-    is_draft: bool
-    assets: list[ReleaseAssetInfo]
-
-
-class RateLimitInfo(TypedDict):
-    limit: int
-    remaining: int
-    used: int
-    reset: int            # epoch seconds
-    reset_formatted: str  # human-readable local timestamp
-    resource: str
-
-
-rate_limit_info: RateLimitInfo = {
-    "limit": 1000,
-    "remaining": 1000,
-    "used": 0,
-    "reset": int(time()) + 3600,
-    "reset_formatted": datetime.fromtimestamp(time() + 3600).strftime("%Y-%m-%d %H:%M:%S"),
-    "resource": "core",
-}
 GITHUB_API_URL = "https://api.github.com/graphql"
 FILES_THRESHOLD = int(os.getenv("FILES_THRESHOLD", "500"))
 

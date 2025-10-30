@@ -6,46 +6,16 @@ import os
 import re
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, quote
-from typing import AsyncIterable, TypedDict, Literal, Iterable
 
+from typing import AsyncIterable, Iterable
+
+from .model import (
+    QueryScope,
+    RepoInfo,
+    RepoMetadata,
+    Url,
+)
 from .utils import drop_falsy, err, normalize_tz_aware_datetime
-
-QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
-Url = str
-IsoTimestamp = str
-
-
-class RepoMetadata(TypedDict, total=False):
-    id: str
-    name: str
-    description: str
-    homepage: Url
-    author: str
-    readme: Url
-    issues: Url
-    donate: Url
-    default_branch: str
-    stars: int
-    created_at: IsoTimestamp
-    archived_at: IsoTimestamp | None
-
-
-class TagInfo(TypedDict):
-    name: str
-    url: Url
-    date: IsoTimestamp
-
-
-class BranchInfo(TypedDict):
-    name: str
-    url: Url
-    date: IsoTimestamp
-
-
-class RepoInfo(TypedDict):
-    metadata: RepoMetadata
-    tags: AsyncIterable[TagInfo]
-    branches: AsyncIterable[BranchInfo]
 
 
 GITLAB_API_URL = "https://gitlab.com/api/v4"

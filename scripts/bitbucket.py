@@ -5,47 +5,15 @@ import asyncio
 import os
 from urllib.parse import urlparse
 
-from typing import AsyncIterable, TypedDict, Literal, Iterable
+from typing import AsyncIterable, Iterable
 
+from .model import (
+    QueryScope,
+    RepoInfo,
+    RepoMetadata,
+    Url,
+)
 from .utils import drop_falsy, err, normalize_tz_aware_datetime
-
-
-type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
-type Url = str
-type IsoTimestamp = str
-
-
-class RepoMetadata(TypedDict, total=False):
-    id: str
-    name: str
-    description: str
-    homepage: Url
-    author: str
-    readme: Url
-    issues: Url
-    donate: Url
-    default_branch: str
-    stars: int
-    created_at: IsoTimestamp
-    archived_at: IsoTimestamp | None
-
-
-class TagInfo(TypedDict):
-    name: str
-    url: Url
-    date: IsoTimestamp
-
-
-class BranchInfo(TypedDict):
-    name: str
-    url: Url
-    date: IsoTimestamp
-
-
-class RepoInfo(TypedDict):
-    metadata: RepoMetadata
-    tags: AsyncIterable[TagInfo]
-    branches: AsyncIterable[BranchInfo]
 
 
 BITBUCKET_API_URL = "https://api.bitbucket.org/2.0"
