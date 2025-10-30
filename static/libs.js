@@ -1,5 +1,6 @@
 import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
 import { SimpleSearch } from './module/simplesearch.js'
+import { customTokenizer } from './module/minisearch.js'
 
 /**
  * Simplified search features on the library listing page.
@@ -36,6 +37,7 @@ const data = Array.from(cards, (card) => {
 const minisrch = new minisearch({
   idField: 'name',
   fields: ['name', 'author', 'description', 'platforms'],
+  tokenize: customTokenizer,
   storeFields: ['name', 'author', 'platforms'],
   searchOptions: {
     boost: { author: 2 },

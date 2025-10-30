@@ -1,5 +1,6 @@
 import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
 import { SimpleSearch } from './module/simplesearch.js'
+import { customTokenizer } from './module/minisearch.js'
 
 /**
  * Simplified search features on the labels listing page.
@@ -32,6 +33,7 @@ cards.forEach((card) => {
 const minisrch = new minisearch({
   idField: 'name',
   fields: ['name'],
+  tokenize: customTokenizer,
   storeFields: ['name'],
   searchOptions: {
     prefix: true,

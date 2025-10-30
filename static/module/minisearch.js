@@ -6,10 +6,10 @@ const VARIANT_REPLACEMENTS = [
 
 let SPLIT_TOKEN_REGEX
 try {
-  SPLIT_TOKEN_REGEX = new RegExp('[^\\p{L}\\p{N}]+', 'u')
+  SPLIT_TOKEN_REGEX = new RegExp('[^\\p{L}\\p{N}#+]+', 'u')
 } catch {
   // Fallback to ASCII-only splitting when Unicode property escapes are unavailable.
-  SPLIT_TOKEN_REGEX = /[^a-z0-9]+/i
+  SPLIT_TOKEN_REGEX = /[^a-z0-9#+]+/i
 }
 
 function normalizeToken(token) {
