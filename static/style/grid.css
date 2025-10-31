@@ -33,8 +33,12 @@ section[name="labels"] {
 
 section[name="labels"] .grid {
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   li a {
     flex: none;
+  }
+  @media (max-width: 800px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
