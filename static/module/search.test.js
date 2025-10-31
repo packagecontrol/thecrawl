@@ -372,3 +372,56 @@ describe('Search.search', () => {
     })
   })
 })
+
+describe('Search integration with MiniSearch', () => {
+  const data = [
+    {
+      name: 'SharpTool',
+      description: 'C# utilities for developers',
+      author: 'Sharp Co',
+      platforms: ['windows'],
+      labels: ['c#', 'dotnet'],
+    },
+    {
+      name: 'PlusPlusHelper',
+      description: 'C++ utilities for developers',
+      author: 'Plus Co',
+      platforms: ['linux'],
+      labels: ['c++'],
+    },
+    {
+      name: 'SeaLangHelper',
+      description: 'C language support tools',
+      author: 'Sea Co',
+      platforms: ['linux'],
+      labels: ['c'],
+    },
+  ]
+
+  const minisrch = createMinisearch(MiniSearch, data)
+  const search = new Search(minisrch)
+
+  it('matches exact C# label filters without returning plain C labels', () => {
+    const results = search.search('label:"c#"')
+    const names = results.map(entry => entry.name)
+    expect(names).toContain('SharpTool')
+    expect(names).not.toContain('SeaLangHelper')
+    expect(names).not.toContain('PlusPlusHelper')
+  })
+
+  it('matches C++ label filters without returning other C variants', () => {
+    const results = search.search('label:"c++"')
+    const names = results.map(entry => entry.name)
+    expect(names).toContain('PlusPlusHelper')
+    expect(names).not.toContain('SharpTool')
+    expect(names).not.toContain('SeaLangHelper')
+  })
+
+  it('supports free text searches for programming terms containing punctuation', () => {
+    const results = search.search('c++')
+    const names = results.map(entry => entry.name)
+    expect(names).toContain('PlusPlusHelper')
+    expect(names).not.toContain('SharpTool')
+    expect(names).not.toContain('SeaLangHelper')
+  })
+})

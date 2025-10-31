@@ -150,4 +150,55 @@ describe('MiniSearch.search', () => {
       expect(names).toContain('中文工具')
     })
   })
+
+  describe('Special handling of c++ and c#', () => {
+    let minisrch
+
+    const cPackages = [
+      {
+        name: 'SharpTool',
+        description: 'C# utilities for developers',
+        author: 'Sharp Co',
+        platforms: ['windows'],
+        labels: ['c#', 'dotnet'],
+      },
+      {
+        name: 'PlusPlusHelper',
+        description: 'C++ utilities for developers',
+        author: 'Plus Co',
+        platforms: ['linux'],
+        labels: ['c++'],
+      },
+      {
+        name: 'SeaLangHelper',
+        description: 'C language support tools',
+        author: 'Sea Co',
+        platforms: ['linux'],
+        labels: ['c'],
+      },
+    ]
+
+    beforeAll(() => {
+      minisrch = createSearch(cPackages)
+    })
+
+    it('tokenizes programming terms containing special characters as whole tokens', () => {
+      const tokens = customTokenizer('c# c++ f# developer')
+      expect(tokens).toEqual(expect.arrayContaining(['c#', 'c++', 'f#']))
+    })
+
+    it('returns only C# packages when searching for c#', () => {
+      const results = minisrch.search('c#')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('SharpTool')
+      expect(names).not.toContain('SeaLangHelper')
+    })
+
+    it('returns only C++ packages when searching for c++', () => {
+      const results = minisrch.search('c++')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('PlusPlusHelper')
+      expect(names).not.toContain('SeaLangHelper')
+    })
+  })
 })
