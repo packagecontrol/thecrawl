@@ -1,5 +1,7 @@
+import MiniSearch from 'minisearch'
 import { describe, expect, it, vi } from 'vitest'
 
+import { createMinisearch } from './minisearch.js'
 import { processQueryString, Search } from './search.js'
 import * as searchModule from './search.js'
 
@@ -89,6 +91,39 @@ describe('processQueryString', () => {
     ])
     expect(result.hasFreeText).toBe(true)
   })
+
+  it('returns a filter function that enforces exact quoted matches', () => {
+    const result = processQueryString('label:"color" author:"Palette" platform:"windows"')
+
+    const passes = {
+      labels: ['color'],
+      author: 'Palette',
+      platforms: ['windows'],
+    }
+
+    const failsLabel = {
+      labels: ['color system'],
+      author: 'Palette',
+      platforms: ['windows'],
+    }
+
+    const failsAuthor = {
+      labels: ['color'],
+      author: 'Palette Systems',
+      platforms: ['windows'],
+    }
+
+    const failsPlatform = {
+      labels: ['color'],
+      author: 'Palette',
+      platforms: ['windows server'],
+    }
+
+    expect(result.filter(passes)).toBe(true)
+    expect(result.filter(failsLabel)).toBe(false)
+    expect(result.filter(failsAuthor)).toBe(false)
+    expect(result.filter(failsPlatform)).toBe(false)
+  })
 })
 
 describe('Search.search', () => {
@@ -153,5 +188,187 @@ describe('Search.search', () => {
 
     expect(processor).toHaveBeenCalledWith('label:web platform:web', customFilters)
     processor.mockRestore()
+  })
+
+  describe('unterminated quoted prefix search', () => {
+    const packages = [
+      {
+        name: 'Text Manipulation Toolkit',
+        description: 'Manipulate text in bulk',
+        author: 'Text Tools Inc.',
+        platforms: ['web'],
+        labels: ['text manipulation'],
+      },
+      {
+        name: 'Text Manipulator',
+        description: 'Interactive text tools',
+        author: 'Utilities Co.',
+        platforms: ['desktop'],
+        labels: ['text manipulator'],
+      },
+      {
+        name: 'Format Helper',
+        description: 'Format markdown and HTML',
+        author: 'Formatter Corp.',
+        platforms: ['web'],
+        labels: ['text formatting'],
+      },
+    ]
+
+    const createSearchInstance = () => new Search(createMinisearch(MiniSearch, packages))
+
+    it('returns entries matching the prefix when closing quote is missing', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:"text manip')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Text Manipulation Toolkit')
+      expect(names).toContain('Text Manipulator')
+      expect(names).not.toContain('Format Helper')
+    })
+  })
+
+  describe('Enslosed terms in "" finds exact matches', () => {
+    const packages = [
+      {
+        name: 'ColorPalette',
+        description: 'Color utilities',
+        author: 'Palette',
+        platforms: ['windows'],
+        labels: ['color'],
+      },
+      {
+        name: 'ColorSystem',
+        description: 'Color system tooling',
+        author: 'Palette Systems',
+        platforms: ['windows server'],
+        labels: ['color system'],
+      },
+    ]
+
+    const createSearchInstance = () => new Search(createMinisearch(MiniSearch, packages))
+
+    it('returns partial matches when using label:color', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:color')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).toContain('ColorSystem')
+    })
+
+    it('returns the exact label match when using label:"color"', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:"color"')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).not.toContain('ColorSystem')
+    })
+
+    it('returns partial matches when using author:Palette', () => {
+      const search = createSearchInstance()
+      const results = search.search('author:Palette')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).toContain('ColorSystem')
+    })
+
+    it('returns the exact author match when using author:"Palette"', () => {
+      const search = createSearchInstance()
+      const results = search.search('author:"Palette"')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).not.toContain('ColorSystem')
+    })
+
+    it('returns partial matches when using platform:windows', () => {
+      const search = createSearchInstance()
+      const results = search.search('platform:windows')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).toContain('ColorSystem')
+    })
+
+    it('returns the exact platform match when using platform:"windows"', () => {
+      const search = createSearchInstance()
+      const results = search.search('platform:"windows"')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('ColorPalette')
+      expect(names).not.toContain('ColorSystem')
+    })
+  })
+
+  describe('Handling dashes (-) in search terms', () => {
+    const packages = [
+      {
+        name: 'Win32 Utility',
+        description: 'Tools for 32-bit Windows',
+        author: 'coder-mike',
+        platforms: ['windows-x32'],
+        labels: ['windows-x32'],
+      },
+      {
+        name: 'Lin32 Utility',
+        description: 'Tools for 32-bit Linux',
+        author: 'mike-uwe johnson',
+        platforms: ['linux-x32'],
+        labels: ['linux-x32'],
+      },
+    ]
+
+    const createSearchInstance = () => new Search(createMinisearch(MiniSearch, packages))
+
+    it('matches only the exact platform when the term includes a dash', () => {
+      const search = createSearchInstance()
+      const results = search.search('platform:windows-x32')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).not.toContain('Lin32 Utility')
+    })
+
+    it('still matches both platforms when searching for the shared suffix', () => {
+      const search = createSearchInstance()
+      const results = search.search('platform:x32')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).toContain('Lin32 Utility')
+    })
+
+    it('matches only the exact label when the term includes a dash', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:windows-x32')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).not.toContain('Lin32 Utility')
+    })
+
+    it('still matches both labels when searching for the shared suffix', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:x32')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).toContain('Lin32 Utility')
+    })
+
+    it('matches only the exact author when the term includes a dash', () => {
+      const search = createSearchInstance()
+      const results = search.search('author:coder-mike')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).not.toContain('Lin32 Utility')
+    })
+
+    it('still matches both authors when searching for the shared token', () => {
+      const search = createSearchInstance()
+      const results = search.search('author:mike')
+      const names = results.map(entry => entry.name)
+
+      expect(names).toContain('Win32 Utility')
+      expect(names).toContain('Lin32 Utility')
+    })
   })
 })

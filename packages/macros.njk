@@ -3,11 +3,10 @@
 {% macro searchQueryFor(field, raw) -%}
   {%- set value = (raw | default('')) | trim -%}
   {%- if value -%}
-    {%- set encoded = value | urlencode -%}
-    {%- if ' ' in value -%}
-      {{- field ~ ':"' ~ encoded ~ '"' -}}
+    {%- if field == 'platform' and not (' ' in value) -%}
+      {{- (field ~ ':' ~ value) | urlencode -}}
     {%- else -%}
-      {{- field ~ ':' ~ encoded -}}
+      {{- (field ~ ':"' ~ value ~ '"') | urlencode -}}
     {%- endif -%}
   {%- endif -%}
 {%- endmacro %}

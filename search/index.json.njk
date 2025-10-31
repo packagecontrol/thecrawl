@@ -7,7 +7,7 @@ permalink: "/search/index.json"
   {
     "name": "{{ pkg.name }}",
     "description": "{{ pkg.description | default('') | nl2br | replace('\n', '') }}",
-    "author": "{{ pkg.author | join(', ') }}",
+    "author": "{{ pkg.author | join(',') }}",
     "stars": "{{ pkg.stars }}",
     "installed": "{{ pkg.installed }}",
     "first_seen": "{{ pkg.first_seen | timestamp }}",
