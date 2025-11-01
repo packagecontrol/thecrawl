@@ -38,6 +38,11 @@ export class List {
     timeZone: 'UTC',
   })
 
+  monthShortFormatter = new Intl.DateTimeFormat('en', {
+    month: 'short',
+    timeZone: 'UTC',
+  })
+
   sortTitleMap = {
     installed: 'Installs',
     stars: 'Stars',
@@ -55,6 +60,7 @@ export class List {
   heading = document.querySelector(`[${this.attr}='heading']`)
   list = document.querySelector(`[${this.attr}='list']`)
   hideme = document.querySelectorAll(`[${this.attr}='hideme']`)
+  rangeIndicator = document.querySelector(`[${this.attr}='range']`)
 
   constructor() {
     this.revertPath = onSearchPage()
@@ -62,7 +68,7 @@ export class List {
       : `${window.location.pathname}${window.location.search}`
   }
 
-  setCounter(count = null) {
+  setCounter(count = null, timeRange = null) {
     if (count === null) {
       this.heading.innerText = 'Results'
     } else if (count === 1) {
@@ -70,6 +76,8 @@ export class List {
     } else {
       this.heading.innerText = `${count} Results`
     }
+
+    this.rangeIndicator.textContent = timeRange ?? ''
   }
 
   // reveal search results and hide any other sections
@@ -109,6 +117,9 @@ export class List {
 
     this.pagination = new Pagination(this, items, page, this.section)
     const pageItems = this.pagination.calculate()
+
+    const timeRangeLabel = this.buildTimeRangeLabel(pageItems)
+    this.setCounter(items.length, timeRangeLabel)
 
     let assignedMainContent = false
     const renderItems = (targetList, packages) => {
@@ -251,8 +262,6 @@ export class List {
       effectiveSort = 'list-' + effectiveSort
     }
     const sortedResults = Sort.sort(searchResults, effectiveSort)
-
-    this.setCounter(sortedResults.length)
 
     // hide the normal homepage and show results
     this.switchToResults()
@@ -410,6 +419,54 @@ export class List {
     const month = date.getUTCMonth()
     const anchorMonth = Math.floor(month / 3) * 3 + 2
     return new Date(Date.UTC(year, anchorMonth, 1))
+  }
+
+  buildTimeRangeLabel(items) {
+    if (!Array.isArray(items) || items.length === 0) {
+      return null
+    }
+
+    if (!['newest', 'update'].includes(this.activeSortSelection)) {
+      return null
+    }
+
+    const dates = items
+      .map(pkg => this.extractTimelineDate(pkg))
+      .filter(Boolean)
+
+    if (dates.length === 0) {
+      return null
+    }
+
+    dates.sort((a, b) => a - b)
+
+    const earliest = dates[0]
+    const latest = dates[dates.length - 1]
+    const earliestYear = earliest.getUTCFullYear()
+    const latestYear = latest.getUTCFullYear()
+    const yearSpan = latestYear - earliestYear
+
+    if (yearSpan > 1) {
+      return `${latestYear} - ${earliestYear}`
+    }
+
+    if (latestYear !== earliestYear) {
+      const latestLabel = `${this.monthShortFormatter.format(latest)} ${latestYear}`
+      const earliestLabel = `${this.monthShortFormatter.format(earliest)} ${earliestYear}`
+      return `${latestLabel} - ${earliestLabel}`
+    }
+
+    const withinOneMonth = (
+      `${earliest.getUTCFullYear()}-${earliest.getUTCMonth()}`
+      === `${latest.getUTCFullYear()}-${latest.getUTCMonth()}`
+    )
+    if (withinOneMonth) {
+      return this.monthFormatter.format(latest)
+    }
+
+    const earliestLabel = this.monthShortFormatter.format(earliest)
+    const latestLabel = this.monthShortFormatter.format(latest)
+    return `${latestLabel}-${earliestLabel} ${latestYear}`
   }
 }
 

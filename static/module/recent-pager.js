@@ -5,15 +5,6 @@ const pagerRegistry = []
 
 const RECENT_PAGER_STYLES = `
   .pager-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-
-    > h2 {
-      padding-top: 0;
-    }
-
     &.is-sticky {
       position: sticky;
       top: 0;
@@ -36,14 +27,6 @@ const RECENT_PAGER_STYLES = `
     }
 
     .pager-pagination {
-      display: flex;
-      align-items: center;
-      align-self: end;
-      gap: 1rem;
-      font-size: 1.3rem;
-      position: relative;
-      top: 2px;
-
       .button-group {
         display: flex;
         gap: 0.2ex;
@@ -62,18 +45,6 @@ const RECENT_PAGER_STYLES = `
           display: inline-block;
           position: relative;
           top: -0.07em;
-        }
-      }
-
-      .month-indicator {
-        margin-left: 0.5rem;
-        color: var(--foreground-3);
-        font-size: 14px;
-        align-self: center;
-        padding-bottom: 10px;
-
-        @media (max-width: 479px) {
-          padding-bottom: 11px;
         }
       }
     }

@@ -243,6 +243,69 @@ section {
   }
 }
 
+.search-results-header {
+  margin-bottom: 4px;
+
+  > h1,
+  > h2 {
+    margin: 0;
+  }
+}
+.pager-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  > h1,
+  > h2 {
+    padding-top: 0;
+  }
+
+  .pager-pagination {
+    display: flex;
+    align-items: center;
+    align-self: end;
+    gap: 1rem;
+    font-size: 1.3rem;
+    position: relative;
+    top: 2px;
+
+    .button-group {
+      display: flex;
+      gap: 0.2ex;
+      font-size: 24px;
+    }
+
+    .button {
+      background: transparent;
+
+      &:enabled:hover,
+      &:enabled:focus-visible {
+        background: var(--background-4);
+      }
+
+      .pager-nav-symbol {
+        display: inline-block;
+        position: relative;
+        top: -0.07em;
+      }
+    }
+
+    .month-indicator {
+      margin-left: 0.5rem;
+      color: var(--foreground-3);
+      font-size: 14px;
+      align-self: center;
+      padding-bottom: 10px;
+
+      @media (max-width: 479px) {
+        padding-bottom: 11px;
+      }
+    }
+  }
+}
+
 .section-heading-link {
   color: inherit;
 }
