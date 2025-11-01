@@ -126,7 +126,7 @@ export class List {
 
     const timeline = this.buildTimeline(pageItems)
     if (timeline) {
-      this.renderTimeline(timeline, renderItems, page)
+      this.renderTimeline(timeline, renderItems)
     }
     else {
       renderItems(this.list, pageItems)
@@ -313,30 +313,19 @@ export class List {
     return groups
   }
 
-  renderTimeline(timeline, renderItems, page) {
+  renderTimeline(timeline, renderItems) {
     const { groups, mode } = timeline
-    const skipInitialHeading = this.shouldSkipInitialTimelineHeading(page, mode, groups[0])
 
     groups.forEach((group, index) => {
-      const isFirstGroup = index === 0
-      const shouldSkipHeading = isFirstGroup && skipInitialHeading
-      const heading = shouldSkipHeading ? null : this.createTimelineHeading(group.label, mode)
-
-      if (isFirstGroup) {
-        if (heading) {
-          this.list.before(heading)
-          this.timelineNodes.push(heading)
-        }
+      if (index === 0) {
         renderItems(this.list, group.items)
       }
       else {
+        const heading = this.createTimelineHeading(group.label, mode)
         const listElement = this.createTimelineList()
-        if (heading) {
-          this.section.appendChild(heading)
-          this.timelineNodes.push(heading)
-        }
+        this.section.appendChild(heading)
         this.section.appendChild(listElement)
-        this.timelineNodes.push(listElement)
+        this.timelineNodes.push(heading, listElement)
         renderItems(listElement, group.items)
       }
     })
@@ -421,15 +410,6 @@ export class List {
     const month = date.getUTCMonth()
     const anchorMonth = Math.floor(month / 3) * 3 + 2
     return new Date(Date.UTC(year, anchorMonth, 1))
-  }
-
-  shouldSkipInitialTimelineHeading(page, mode, firstGroup) {
-    if (page !== 1 || !firstGroup || firstGroup.key === 'unknown') {
-      return false
-    }
-
-    const nowKey = this.timelineKey(new Date(), mode)
-    return firstGroup.key === nowKey
   }
 }
 
