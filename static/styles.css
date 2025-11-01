@@ -304,6 +304,17 @@ section {
       }
     }
   }
+
+  .pager-page-indicator {
+    color: var(--foreground-3);
+    font-size: 14px;
+    align-self: end;
+    padding-bottom: 8px;
+
+    @media (max-width: 479px) {
+      padding-bottom: 10px;
+    }
+  }
 }
 
 .section-heading-link {

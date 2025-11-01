@@ -61,6 +61,7 @@ export class List {
   list = document.querySelector(`[${this.attr}='list']`)
   hideme = document.querySelectorAll(`[${this.attr}='hideme']`)
   rangeIndicator = document.querySelector(`[${this.attr}='range']`)
+  pageIndicator = document.querySelector(`[${this.attr}='page']`)
 
   constructor() {
     this.revertPath = onSearchPage()
@@ -68,7 +69,7 @@ export class List {
       : `${window.location.pathname}${window.location.search}`
   }
 
-  setCounter(count = null, timeRange = null) {
+  setCounter(count = null, timeRange = null, page = null) {
     if (count === null) {
       this.heading.innerText = 'Results'
     } else if (count === 1) {
@@ -78,6 +79,15 @@ export class List {
     }
 
     this.rangeIndicator.textContent = timeRange ?? ''
+
+    if (page > 1) {
+      this.pageIndicator.textContent = `Page: ${page}`
+      this.pageIndicator.removeAttribute('hidden')
+    }
+    else {
+      this.pageIndicator.textContent = ''
+      this.pageIndicator.setAttribute('hidden', '')
+    }
   }
 
   // reveal search results and hide any other sections
@@ -119,7 +129,7 @@ export class List {
     const pageItems = this.pagination.calculate()
 
     const timeRangeLabel = this.buildTimeRangeLabel(pageItems)
-    this.setCounter(items.length, timeRangeLabel)
+    this.setCounter(items.length, timeRangeLabel, page)
 
     let assignedMainContent = false
     const renderItems = (targetList, packages) => {
