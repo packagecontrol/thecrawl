@@ -1,3 +1,13 @@
+# python
+__pycache__/
+*.py[co]
+
+# sublime text
+.sublime/
+*.sublime-project
+*.sublime-workspace
+
+# data files
 .pypi-cache/
 channel*.json
 libraries-metadb.json
