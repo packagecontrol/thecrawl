@@ -69,7 +69,7 @@ export class List {
       : `${window.location.pathname}${window.location.search}`
   }
 
-  setCounter(count = null, timeRange = null, page = null) {
+  updateHeading(count = null, timeRange = null, page = null) {
     if (count === null) {
       this.heading.innerText = 'Results'
     } else if (count === 1) {
@@ -129,7 +129,7 @@ export class List {
     const pageItems = this.pagination.calculate()
 
     const timeRangeLabel = this.buildTimeRangeLabel(pageItems)
-    this.setCounter(items.length, timeRangeLabel, page)
+    this.updateHeading(items.length, timeRangeLabel, page)
 
     let assignedMainContent = false
     const renderItems = (targetList, packages) => {
@@ -254,7 +254,7 @@ export class List {
     }
 
     if (isReverting) {
-      this.setCounter()
+      this.updateHeading()
       this.revertToNormal()
       return
     }
