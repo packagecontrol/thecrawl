@@ -56,12 +56,12 @@ export class List {
   }
 
   attr = 'data-list-target'
-  section = document.querySelector(`[${this.attr}='section']`)
   heading = document.querySelector(`[${this.attr}='heading']`)
   list = document.querySelector(`[${this.attr}='list']`)
   mainContentSections = document.querySelectorAll(`[${this.attr}='main-content']`)
   rangeIndicator = document.querySelector(`[${this.attr}='range']`)
   pageIndicator = document.querySelector(`[${this.attr}='page']`)
+  section = document.querySelector(`[${this.attr}='search-results']`)
 
   constructor() {
     this.revertPath = onSearchPage()
