@@ -78,7 +78,14 @@ export class List {
       this.heading.innerText = `${count} Results`
     }
 
-    this.rangeIndicator.textContent = timeRange ?? ''
+    if (timeRange !== null) {
+      this.rangeIndicator.textContent = timeRange
+      this.rangeIndicator.removeAttribute('hidden')
+    }
+    else {
+      this.rangeIndicator.textContent = ''
+      this.rangeIndicator.setAttribute('hidden', '')
+    }
 
     if (page > 1) {
       this.pageIndicator.textContent = `Page: ${page}`
