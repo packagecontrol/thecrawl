@@ -7,7 +7,7 @@ import { Search } from './search.js'
  * Manage the search results section.
  *
  * On search:
- * - Swap all registered "hideme" elements with the "result" section, and back.
+ * - Swap all registered "main-content" sections with the search results section, and back.
  * - Insert pagination if needed.
  * - Update the heading with the number of results.
  * - .. oh and don't forget to render the results themselves :)
@@ -59,7 +59,7 @@ export class List {
   section = document.querySelector(`[${this.attr}='section']`)
   heading = document.querySelector(`[${this.attr}='heading']`)
   list = document.querySelector(`[${this.attr}='list']`)
-  hideme = document.querySelectorAll(`[${this.attr}='hideme']`)
+  mainContentSections = document.querySelectorAll(`[${this.attr}='main-content']`)
   rangeIndicator = document.querySelector(`[${this.attr}='range']`)
   pageIndicator = document.querySelector(`[${this.attr}='page']`)
 
@@ -99,7 +99,7 @@ export class List {
 
   // reveal search results and hide any other sections
   switchToResults() {
-    this.hideme.forEach((section) => {
+    this.mainContentSections.forEach((section) => {
       section.style.display = 'none'
     })
 
@@ -109,7 +109,7 @@ export class List {
   // hide search results and reveal other sections
   revertToNormal() {
     this.clear()
-    this.hideme.forEach((section) => {
+    this.mainContentSections.forEach((section) => {
       section.style.display = null
     })
     this.section.style.display = 'none'

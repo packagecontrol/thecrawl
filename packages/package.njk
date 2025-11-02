@@ -15,7 +15,7 @@ isPackagePage: true
 {% import "packages/install_chart.njk" as charts %}
 {% import "util/macros.njk" as util %}
 
-<section name="package" data-list-target="hideme">
+<section name="package" data-list-target="main-content">
   <div class="package-title">
     <h1 id="main-content" tabindex="-1" data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
 
@@ -136,7 +136,7 @@ isPackagePage: true
 
 {% if pkg.readme and not pkg.removed %}
   <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
-  <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="hideme"></section>
+  <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="main-content"></section>
   <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
 {% endif %}
 

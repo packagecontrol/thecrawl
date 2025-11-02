@@ -22,7 +22,7 @@ html {
 
   /* while initializing search, hide package listings */
   &.initializing {
-    [data-list-target='hideme'],
+    [data-list-target='main-content'],
     [data-list-target='section'],
     section[name="libraries"],
     section[name="labels"],
