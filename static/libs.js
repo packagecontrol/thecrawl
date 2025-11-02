@@ -81,7 +81,7 @@ document.addEventListener('click', (event) => {
 function scrollUp(all_the_way = true) {
   const target = all_the_way
     ? document.forms.search
-    : document.querySelector('[data-list-target="heading"]')
+    : document.querySelector('[data-list-target="counter"]')
   if (!target) {
     return
   }

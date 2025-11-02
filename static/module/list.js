@@ -58,7 +58,7 @@ export class List {
   attr = 'data-list-target'
   mainContentSections = document.querySelectorAll(`[${this.attr}='main-content']`)
   section = document.querySelector(`[${this.attr}='search-results']`)
-  heading = this.section.querySelector(`[${this.attr}='heading']`)
+  counter = this.section.querySelector(`[${this.attr}='counter']`)
   list = this.section.querySelector(`[${this.attr}='list']`)
   rangeIndicator = this.section.querySelector(`[${this.attr}='range']`)
   pageIndicator = this.section.querySelector(`[${this.attr}='page']`)
@@ -71,11 +71,11 @@ export class List {
 
   updateHeading(count = null, timeRange = null, page = null) {
     if (count === null) {
-      this.heading.innerText = 'Results'
+      this.counter.innerText = 'Results'
     } else if (count === 1) {
-      this.heading.innerText = '1 Result'
+      this.counter.innerText = '1 Result'
     } else {
-      this.heading.innerText = `${count} Results`
+      this.counter.innerText = `${count} Results`
     }
 
     if (timeRange !== null) {
@@ -165,7 +165,7 @@ export class List {
 
   // scroll to top of results after updating the list "in place"
   scrollUp(all_the_way = true) {
-    const target = all_the_way ? document.forms.search : this.heading
+    const target = all_the_way ? document.forms.search : this.counter
     const rect = target.getBoundingClientRect()
     const completelyAbove = rect.bottom < 0
     const completelyBelow = rect.top > window.innerHeight

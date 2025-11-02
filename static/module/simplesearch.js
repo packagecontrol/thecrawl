@@ -3,7 +3,7 @@ import { Search } from './search.js'
 export class SimpleSearch {
   search = null
   input = null
-  heading = document.querySelector('[data-list-target="heading"]')
+  counter = document.querySelector('[data-list-target="counter"]')
   cards = []
   paramKey = 'q'
   initialTitle = document.title
@@ -85,11 +85,11 @@ export class SimpleSearch {
     const results = this.search.search(query).map(result => result.name)
     const visibleItems = new Set(results)
 
-    if (this.heading) {
+    if (this.counter) {
       if (results.length === 1) {
-        this.heading.innerText = '1 Result'
+        this.counter.innerText = '1 Result'
       } else {
-        this.heading.innerText = `${results.length} Results`
+        this.counter.innerText = `${results.length} Results`
       }
     }
 
@@ -112,8 +112,8 @@ export class SimpleSearch {
         container.style.display = hiddenByFilter ? 'none' : null
       }
     })
-    if (this.heading) {
-      this.heading.innerText = 'List'
+    if (this.counter) {
+      this.counter.innerText = 'List'
     }
   }
 

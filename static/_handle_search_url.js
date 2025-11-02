@@ -35,8 +35,8 @@
     document.title = 'Listing'
   }
 
-  const resolveHeading = () => {
-    return document.querySelector('[data-list-target="heading"]')
+  const resolveCounter = () => {
+    return document.querySelector('[data-list-target="counter"]')
   }
 
   const onDOMContentLoaded = () => {
@@ -57,18 +57,18 @@
 
   const timer = window.setTimeout(() => {
     // we're waiting too long
-    const heading = resolveHeading()
-    if (heading) {
-      heading.style.visibility = 'revert'
+    const counter = resolveCounter()
+    if (counter) {
+      counter.style.visibility = 'revert'
     }
   }, 600)
 
   const onSearchReady = () => {
     // we're done initializing, return back to normal
     root.classList.remove('initializing')
-    const heading = resolveHeading()
-    if (heading) {
-      heading.style.visibility = ''
+    const counter = resolveCounter()
+    if (counter) {
+      counter.style.visibility = ''
     }
 
     window.removeEventListener('DOMContentLoaded', onDOMContentLoaded)
