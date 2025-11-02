@@ -44,6 +44,10 @@ And again with a smaller dataset:
 LIMIT_DATASET=100 npm run devb
 ```
 
+### Environment variables
+
+- `DISABLE_L_LINK` — set to any non-empty value to hide the dev-only “L” link to the live site.
+
 
 [pcr]: https://packages.sublimetext.io
 [11ty]: https://www.11ty.dev/docs/
