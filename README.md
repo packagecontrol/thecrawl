@@ -29,20 +29,34 @@ Now, just run eleventy directly in watch mode, e.g.
 ```bash
 npm run dev -- --quiet
 ```
+
 Limit the dataset for a faster build
 
 ```bash
 LIMIT_DATASET=100 npm run dev -- --quiet
 ```
+
+You can also pass a comma-separated list of package names to focus on specific entries:
+
+```bash
+LIMIT_DATASET="A File Icon,GitGutter" npm run dev -- --quiet
+```
+
 Or run it on `http-server`, e.g.
 
 ```bash
 npm run devb
 ```
+
 And again with a smaller dataset:
 ```bash
 LIMIT_DATASET=100 npm run devb
 ```
+
+### Environment variables
+
+- `LIMIT_DATASET` — limit the number of packages or provide a comma-separated list of package names (case-insensitive) to include.
+- `DISABLE_L_LINK` — set to any non-empty value to hide the dev-only “L” link to the live site.
 
 
 [pcr]: https://packages.sublimetext.io

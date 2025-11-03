@@ -299,6 +299,7 @@ export default function (eleventyConfig) {
     origin: siteOrigin,
     prodOrigin,
     devOrigin,
+    disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
   })
 
   // Default permalink: output files with their extension (e.g., /page.html)
