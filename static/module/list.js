@@ -7,7 +7,7 @@ import { Search } from './search.js'
  * Manage the search results section.
  *
  * On search:
- * - Swap all registered "hideme" elements with the "result" section, and back.
+ * - Swap all registered "main-content" sections with the search results section, and back.
  * - Insert pagination if needed.
  * - Update the heading with the number of results.
  * - .. oh and don't forget to render the results themselves :)
@@ -56,12 +56,12 @@ export class List {
   }
 
   attr = 'data-list-target'
-  section = document.querySelector(`[${this.attr}='section']`)
-  heading = document.querySelector(`[${this.attr}='heading']`)
-  list = document.querySelector(`[${this.attr}='list']`)
-  hideme = document.querySelectorAll(`[${this.attr}='hideme']`)
-  rangeIndicator = document.querySelector(`[${this.attr}='range']`)
-  pageIndicator = document.querySelector(`[${this.attr}='page']`)
+  mainContentSections = document.querySelectorAll(`[${this.attr}='main-content']`)
+  section = document.querySelector(`[${this.attr}='search-results']`)
+  counter = this.section.querySelector(`[${this.attr}='counter']`)
+  list = this.section.querySelector(`[${this.attr}='list']`)
+  rangeIndicator = this.section.querySelector(`[${this.attr}='range']`)
+  pageIndicator = this.section.querySelector(`[${this.attr}='page']`)
 
   constructor() {
     this.revertPath = onSearchPage()
@@ -71,11 +71,11 @@ export class List {
 
   updateHeading(count = null, timeRange = null, page = null) {
     if (count === null) {
-      this.heading.innerText = 'Results'
+      this.counter.innerText = 'Results'
     } else if (count === 1) {
-      this.heading.innerText = '1 Result'
+      this.counter.innerText = '1 Result'
     } else {
-      this.heading.innerText = `${count} Results`
+      this.counter.innerText = `${count} Results`
     }
 
     if (timeRange !== null) {
@@ -99,7 +99,7 @@ export class List {
 
   // reveal search results and hide any other sections
   switchToResults() {
-    this.hideme.forEach((section) => {
+    this.mainContentSections.forEach((section) => {
       section.style.display = 'none'
     })
 
@@ -109,7 +109,7 @@ export class List {
   // hide search results and reveal other sections
   revertToNormal() {
     this.clear()
-    this.hideme.forEach((section) => {
+    this.mainContentSections.forEach((section) => {
       section.style.display = null
     })
     this.section.style.display = 'none'
@@ -165,7 +165,7 @@ export class List {
 
   // scroll to top of results after updating the list "in place"
   scrollUp(all_the_way = true) {
-    const target = all_the_way ? document.forms.search : this.heading
+    const target = all_the_way ? document.forms.search : this.counter
     const rect = target.getBoundingClientRect()
     const completelyAbove = rect.bottom < 0
     const completelyBelow = rect.top > window.innerHeight
