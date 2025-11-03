@@ -5,6 +5,15 @@ const pagerRegistry = []
 
 const RECENT_PAGER_STYLES = `
   .pager-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    > h2 {
+      padding-top: 0;
+    }
+
     &.is-sticky {
       position: sticky;
       top: 0;
