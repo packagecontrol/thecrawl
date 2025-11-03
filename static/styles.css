@@ -243,6 +243,50 @@ section {
   }
 }
 
+.search-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 4px;
+
+  > h1,
+  > h2 {
+    margin: 0;
+    padding-top: 0;
+  }
+
+  .pager-page-indicator,
+  .pager-range-indicator {
+    color: var(--foreground-3);
+    font-size: 14px;
+    align-self: end;
+    padding-bottom: 8px;
+
+    &[hidden] {
+      display: inherit;  /* Ensure hidden elements still take up space */
+      visibility: hidden;
+    }
+
+    @media (max-width: 479px) {
+      padding-bottom: 10px;
+    }
+  }
+
+  &:has(.pager-range-indicator[hidden]){
+    & > *:not(.pager-page-indicator) {
+      flex: 1 1 30%;
+    }
+  }
+
+  @media (max-width: 1050px) {
+    /* Center the .pager-page-indicator */
+    .pager-range-indicator[hidden] {
+        display: none;
+    }
+  }
+}
+
 .section-heading-link {
   color: inherit;
 }
