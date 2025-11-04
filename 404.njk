@@ -24,9 +24,9 @@ eleventyExcludeFromCollections: true
 <script>
   (function(){
     var map = {
-{% for p in collections.packages %}
-      "{{ (p.name | string) | replace('\\', '\\\\') | replace('"','\\"') | lower }}": "{{ (p.name | string) | replace('\\', '\\\\') | replace('"','\\"') }}"{% if not loop.last %},{% endif %}
-{% endfor %}
+{%- for p in collections.packages -%}
+      "{{ (p.name | string) | replace('\\', '\\\\') | replace('"','\\"') | lower }}": "{{ (p.name | string) | replace('\\', '\\\\') | replace('"','\\"') }}"{% if not loop.last %},{% endif -%}
+{% endfor -%}
     };
     window.__PKG_NAME_MAP = map;
   })();
