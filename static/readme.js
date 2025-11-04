@@ -40,7 +40,8 @@ else {
     })
     .catch((err) => {
       console.error('Failed to load readme:', err)
-      target.innerHTML = '😒 the readme failed to load.'
+      target.style.textAlign = 'center'
+      target.innerHTML = '😒<br>the readme failed to load.'
     })
 }
 
