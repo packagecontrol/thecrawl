@@ -40,7 +40,13 @@ else {
     })
     .catch((err) => {
       console.error('Failed to load readme:', err)
-      target.innerHTML = '😒 the readme failed to load.'
+      if (source.includes('codeberg.org/') || source.includes('gitlab.com/')) {
+        target.style.display = 'none'
+      }
+      else {
+        target.style.textAlign = 'center'
+        target.innerHTML = '😒<br>The readme failed to load.'
+      }
     })
 }
 
