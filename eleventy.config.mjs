@@ -4,6 +4,14 @@ import { minify } from 'terser'
 import * as util from './eleventy.util.mjs'
 import * as filters from './eleventy.filters.mjs'
 
+const repackagerSite = 'https://repackager.sublimetext.io'
+const supportedRepackagerHosts = [
+  'https://codeload.github.com/',
+  'https://bitbucket.org/',
+  'https://codelab.org/',
+  'https://gitlab.com/',
+]
+
 function basePackage(pkg, stat) {
   // Create a new array of releases with cleaned platforms
   const releases = (pkg.releases || []).map(release => ({
@@ -35,6 +43,11 @@ function basePackage(pkg, stat) {
         const tag_ = encodeURIComponent(tag)
         release.web = `https://github.com/${owner}/${repo}/releases/tag/${tag_}`
       }
+    }
+    // Provide repackager links if possible
+    if (supportedRepackagerHosts.some(n => url.startsWith(n))) {
+      const encodedName = encodeURIComponent(pkg.name)
+      release.download_url = `${repackagerSite}/?url=${url}&name=${encodedName}`
     }
   }
 
