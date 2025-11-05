@@ -67,6 +67,36 @@ export function sum(arr) {
   return arr.reduce((a, b) => a + b, 0)
 }
 
+export function format_requirement(spec) {
+  if (typeof spec !== 'string') return spec
+  const trimmed = spec.replace(/\s+/g, '')
+  if (trimmed === '' || trimmed === '*') return '*'
+  if (trimmed == '>=3000') return '*'
+
+  if (trimmed.startsWith('<=')) {
+    const base = Number.parseInt(trimmed.slice(2), 10)
+    return `<ST${base + 1}`
+  }
+  if (trimmed.startsWith('<')) {
+    return `<ST${trimmed.slice(1)}`
+  }
+  if (trimmed.startsWith('>=')) {
+    const base = Number.parseInt(trimmed.slice(2), 10)
+    return `>ST${base - 1}`
+  }
+  if (trimmed.startsWith('>')) {
+    return `>ST${trimmed.slice(1)}`
+  }
+  if (/^\d{4}-\d{4}$/.test(trimmed)) {
+    const [low, high] = trimmed.split('-')
+    return `ST${low} - ${high}`
+  }
+  if (/^\d{4}$/.test(trimmed)) {
+    return `ST${trimmed}`
+  }
+  return trimmed
+}
+
 // every_other: return every 2nd element starting at index `start` (0 or 1)
 export function every_other(arr, start = 0) {
   if (!Array.isArray(arr)) return arr

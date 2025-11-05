@@ -14,8 +14,9 @@
 {% macro release(version) %}
   <a class="download" href="{{ version.download_url or version.url }}" title="Download package">{{ version.version }}</a>
 
-  {% if version.sublime_text != "*" %}
-    <span class="requirement" title="Required ST build">({{ version.sublime_text }})</span>
+  {% set requirement = version.sublime_text | format_requirement %}
+  {% if requirement != "*" %}
+    <span class="requirement" title="Required ST build">({{ requirement }})</span>
   {% endif %}
 
   {% set notes_separator = '·' %}
