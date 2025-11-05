@@ -23,7 +23,7 @@
   {% endif %}
 
   ·
-  <a class="download" href="{{ version.url }}" title="Download">
+  <a class="download" href="{{ version.download_url or version.url }}" title="Download">
     {{ util.icon('zip') }}
   </a>
 
