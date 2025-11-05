@@ -53,12 +53,15 @@ main {
 a {
   color: var(--orange-2);
   text-decoration: none;
+  text-decoration: underline rgba(0,0,0,0);
   border-radius: 3px;
-  transition: color .1s ease-in-out, outline .1s ease-in-out;
   outline-color: transparent;
+  transition: color .1s ease-in-out, outline .1s ease-in-out;
+  transition: color .1s ease-in-out, outline .1s ease-in-out, text-decoration-color .1s ease-in-out;
 
   &:hover {
     text-decoration: underline;
+    text-decoration-color: inherit;
   }
 
   &:focus-visible {
