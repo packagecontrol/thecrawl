@@ -36,7 +36,7 @@
 
   if (suggestions.length > 0) {
     suggestionEl.textContent = ''
-    suggestionEl.append('Maybe you are looking for ')
+    suggestionEl.append('Were you looking for ')
     suggestions.forEach((name, index) => {
       const link = document.createElement('a')
       link.setAttribute('href', `/packages/${encodeURIComponent(name)}`)
