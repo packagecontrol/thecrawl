@@ -1,0 +1,35 @@
+---
+layout: layout.njk
+permalink: 404.html
+title: 404
+eleventyExcludeFromCollections: true
+---
+
+{% import "util/macros.njk" as util %}
+
+<section class="not-found" style="text-align:center;margin: 10em 0;">
+  <h1>40<span style="
+      transform: rotate(337deg) translate(-6px, 4px);
+      display: inline-block;
+  ">4</span></h1>
+  <p>That's a bummer.<br>
+  <span id="not-found-suggestion" hidden></span></p>
+  <p><a id="search-btn" style="display:inline-block" class="button" href="/#search-field">Search for something</a></p>
+</section>
+
+{#
+  Provide a package name map for case-insensitive lookup on 404s.
+  Map lowercased name -> correct-cased name.
+#}
+<script>
+  (function(){
+    var map = {
+{%- for p in collections.packages -%}
+      "{{ (p.name | string) | replace('\\', '\\\\') | replace('"','\\"') | lower }}": "{{ (p.name | string) | replace('\\', '\\\\') | replace('"','\\"') }}"{% if not loop.last %},{% endif -%}
+{% endfor -%}
+    };
+    window.__PKG_NAME_MAP = map;
+  })();
+</script>
+
+{% inline_js 'static/_404.js' %}

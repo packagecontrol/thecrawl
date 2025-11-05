@@ -8,6 +8,14 @@ date: Last Modified
 
 {{ util.form(collections.packages | length, true) }}
 
+{# Browser massively overscroll anyway but for the search-field we really want
+   to show the header and have it more in the middle for the viewport #}
+<script>
+  if (location.hash === '#search-field') {
+    requestAnimationFrame(() => window.scrollTo(0, 0))
+  }
+</script>
+
 <section name="newest" data-list-target="main-content">
   <h2>
     <a href="/?sort=newest" class="section-heading-link">Newest</a>
