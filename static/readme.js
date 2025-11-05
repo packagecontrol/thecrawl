@@ -45,7 +45,7 @@ else {
       }
       else {
         target.style.textAlign = 'center'
-        target.innerHTML = '😒<br>the readme failed to load.'
+        target.innerHTML = '😒<br>The readme failed to load.'
       }
     })
 }
