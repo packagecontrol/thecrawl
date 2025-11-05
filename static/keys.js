@@ -32,6 +32,10 @@ document.querySelectorAll('.skip-link').forEach((skipLink) => {
 
 // Handle sequential card navigation via j/k keys.
 document.addEventListener('keydown', (event) => {
+  if (hasModifier(event)) {
+    return
+  }
+
   const lower = event.key.toLowerCase()
   if (lower !== 'j' && lower !== 'k') {
     return
@@ -51,6 +55,10 @@ document.addEventListener('keydown', (event) => {
 
 // Allow n/p shortcuts to trigger the pager controls within a section.
 document.addEventListener('keydown', (event) => {
+  if (hasModifier(event)) {
+    return
+  }
+
   const key = event.key
   const lower = key.toLowerCase()
   const isNext = lower === 'n'
@@ -77,6 +85,10 @@ document.addEventListener('keydown', (event) => {
 
 // Handle card navigation via arrow keys, paging horizontally when needed.
 document.addEventListener('keydown', (event) => {
+  if (hasModifier(event)) {
+    return
+  }
+
   const key = event.key
   const isArrowRight = key === 'ArrowRight'
   const isArrowLeft = key === 'ArrowLeft'
@@ -107,6 +119,13 @@ document.addEventListener('keydown', (event) => {
   if (lower !== 's' && lower !== '/') {
     return
   }
+  if (lower === 's' && hasModifier(event)) {
+    return
+  }
+
+  if (lower === '/' && hasNonShiftModifier(event)) {
+    return
+  }
 
   const active = document.activeElement
   const isTyping = active && (
@@ -134,6 +153,10 @@ document.addEventListener('keydown', (event) => {
 
 // After submitting search, move focus to the first visible card for browsing.
 document.addEventListener('keydown', (event) => {
+  if (hasModifier(event)) {
+    return
+  }
+
   if (event.key !== 'Enter') {
     return
   }
@@ -154,6 +177,24 @@ document.addEventListener('keydown', (event) => {
 //
 // Helpers
 //
+
+/**
+ * Check if any modifier key is pressed for the event.
+ * @param {KeyboardEvent} event
+ * @returns {boolean}
+ */
+function hasModifier(event) {
+  return event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+}
+
+/**
+ * Check for modifier keys except Shift. Slash shortcuts need to allow Shift.
+ * @param {KeyboardEvent} event
+ * @returns {boolean}
+ */
+function hasNonShiftModifier(event) {
+  return event.altKey || event.ctrlKey || event.metaKey
+}
 
 /**
  * Check if a card is actually visible.
