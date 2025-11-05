@@ -227,6 +227,10 @@ async def __fetch_repo(
 
 async def get_repositories(channel_url: str, session: aiohttp.ClientSession) -> list[str]:
     channel_info = await http_get_json(channel_url, session)
+    if "repositories" not in channel_info:
+        # Assume the url was not a channel but a "repository" (in Package Control speak)
+        return [channel_url]
+
     return [
         update_url(url)
         for url in resolve_urls(channel_url, channel_info['repositories'])
@@ -300,7 +304,7 @@ def parse_args() -> argparse.Namespace:
         "-c",
         action="append",
         help=(
-            "Channel URL to pull from (can be used multiple times). "
+            "Channel or Repository URL to pull from (can be used multiple times). "
             "If not given, uses the official channel from wbond/package_control_channel."
         ),
     )
