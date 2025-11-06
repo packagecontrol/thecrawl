@@ -14,11 +14,23 @@
 
 {% if pkg.otherReleases and pkg.otherReleases | length > 0 %}
   <details class="other-releases">
-    <summary>Other releases</summary>
+    <summary>More</summary>
     <ul>
+      {% set last_build = '' %}
       {% for version in pkg.otherReleases %}
+        {% set raw_build = version.sublime_text %}
+        {% set build = '' %}
+        {% if raw_build and raw_build != '*' %}
+          {% set build = raw_build | format_requirement %}
+        {% endif %}
         <li>
-          {{ pack.release(version) }}
+          {% if build and build != last_build %}
+            <span class="requirement" title="Required ST build">({{ build }})</span>
+            {% set last_build = build %}
+          {% elseif last_build %}
+            <br>
+          {% endif %}
+          {{ pack.release(version, omit_requirements=true) }}
         </li>
       {% endfor %}
     </ul>

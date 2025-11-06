@@ -87,6 +87,42 @@ ul.stats {
   }
 }
 
+.other-releases {
+
+  summary {
+    margin-bottom: 0px;
+    padding: 0;
+    outline-offset: 8px;
+    margin-top: 28px;
+    color: var(--foreground-1);
+    outline-color: var(--orange-1);
+  }
+
+  ul {
+    list-style: none;
+    display: flex;
+    gap: 1.4rem;
+    overflow-x: auto;
+    margin: 0;
+    padding-left: 0;
+    padding-top: 0;
+
+
+  li {
+      margin: 0px 0 16px 0;
+      min-width: max-content;
+      padding: 0px 8px 2px;
+      border-radius: 3px;
+      margin-left: -6px;
+      margin-right: 6px;
+
+      .requirement {
+        display: block;
+      }
+    }
+  }
+}
+
 .labels {
   a,
   span {

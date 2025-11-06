@@ -11,11 +11,11 @@
   {%- endif -%}
 {%- endmacro %}
 
-{% macro release(version) %}
+{% macro release(version, omit_requirements=false) %}
   <a class="download" href="{{ version.download_url or version.url }}" title="Download package">{{ version.version }}</a>
 
   {% set requirement = version.sublime_text | format_requirement %}
-  {% if requirement != "*" %}
+  {% if not omit_requirements and requirement and requirement != "*" %}
     <span class="requirement" title="Required ST build">({{ requirement }})</span>
   {% endif %}
 
