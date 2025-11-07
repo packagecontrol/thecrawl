@@ -12,20 +12,20 @@
 {%- endmacro %}
 
 {% macro release(version) %}
+  <a class="download" href="{{ version.download_url or version.url }}" title="Download package">{{ version.version }}</a>
+
+  {% set requirement = version.sublime_text | format_requirement %}
+  {% if requirement != "*" %}
+    <span class="requirement" title="Required ST build">({{ requirement }})</span>
+  {% endif %}
+
+  {% set notes_separator = '·' %}
   {% if version.web %}
-    <a class="release" href="{{ version.web }}">{{ version.version }}</a>
-  {% else %}
-    <span class="release">{{ version.version }}</span>
+    <span class="download-notes-sep">{{ notes_separator }}</span>
+    <a class="release" href="{{ version.web }}" title="See release">
+      {{ util.icon('note') }}
+    </a>
   {% endif %}
-
-  {% if version.sublime_text != "*" %}
-    <span class="requirement">({{ version.sublime_text }})</span>
-  {% endif %}
-
-  ·
-  <a class="download" href="{{ version.download_url or version.url }}" title="Download">
-    {{ util.icon('zip') }}
-  </a>
 
   <br>
 

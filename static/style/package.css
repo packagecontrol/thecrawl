@@ -40,19 +40,31 @@
   }
 }
 
-.release {
+.download {
   font-weight: bold;
 }
 
-.download {
+.download-notes-sep {
+  vertical-align: 0px;
+  margin: 0 1px 0 1px;
   color: var(--foreground-3);
+}
+
+.release {
+  color: var(--foreground-2);
+  vertical-align: -2px;
+  margin-left: 2px;
+
   &:hover {
     color: var(--orange-2);
   }
 }
 
 .requirement {
-  color: var(--foreground-3);
+  color: var(--foreground-2);
+  margin: 0 1px 0 0px;
+  vertical-align: 0px;
+  font-size: 14px;
 }
 
 ul.stats {
