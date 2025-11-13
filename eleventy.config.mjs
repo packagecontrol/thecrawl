@@ -12,6 +12,109 @@ const supportedRepackagerHosts = [
   'https://gitlab.com/',
 ]
 
+const MS_IN_DAY = 24 * 60 * 60 * 1000
+const MAGIC_FRESHNESS_WINDOW_DAYS = 365 * 2 // bonus for packages that had updates
+const MAGIC_LONGEVITY_WINDOW_DAYS = 365 * 10 // Advertise newer packages
+const MAGIC_RECENT_UPDATE_DAYS = 90 // extra bonus for just updated packages
+const MAGIC_WEIGHTS = {
+  popularity: 0.4,
+  stars: 0.3,
+  freshness: 0.2,
+  longevity: 0.1,
+  recency: 0.05,
+}
+
+const clamp01 = value => Math.max(0, Math.min(1, value))
+
+function normalizeLog(value, maxValue) {
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0
+  }
+  if (!Number.isFinite(maxValue) || maxValue <= 0) {
+    return 0
+  }
+  return Math.log1p(value) / Math.log1p(maxValue)
+}
+
+function toTimestamp(value) {
+  if (!value) {
+    return null
+  }
+
+  if (value instanceof Date) {
+    const time = value.getTime()
+    return Number.isNaN(time) ? null : time
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value > 1e12 ? value : value * 1000
+  }
+
+  const str = String(value).trim()
+  if (!str) {
+    return null
+  }
+
+  if (/^\d+$/.test(str)) {
+    const num = Number(str)
+    if (!Number.isFinite(num)) {
+      return null
+    }
+    return str.length > 10 ? num : num * 1000
+  }
+
+  const isoCandidate = str.includes('T') || str.endsWith('Z')
+    ? str
+    : `${str.replace(' ', 'T')}Z`
+  const parsed = Date.parse(isoCandidate)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
+function computeMagicMetadata(packages) {
+  const now = Date.now()
+  const maxStars = packages.reduce((max, pkg) => Math.max(max, pkg.stars ?? 0), 0)
+  const maxInstalls = packages.reduce((max, pkg) => Math.max(max, pkg.installs_window ?? 0), 0)
+
+  return packages.map((pkg) => {
+    const installsScore = normalizeLog(pkg.installs_window ?? 0, maxInstalls)
+    const starsScore = normalizeLog(pkg.stars ?? 0, maxStars)
+
+    const lastModifiedTs = toTimestamp(pkg.last_modified) ?? toTimestamp(pkg.created_at) ?? toTimestamp(pkg.first_seen)
+    const createdTs = toTimestamp(pkg.created_at) ?? toTimestamp(pkg.first_seen)
+
+    const ageDaysSinceUpdate = lastModifiedTs ? (now - lastModifiedTs) / MS_IN_DAY : Infinity
+    const P = 8
+    const freshnessScore = Number.isFinite(ageDaysSinceUpdate)
+      ? clamp01(1 - (ageDaysSinceUpdate / MAGIC_FRESHNESS_WINDOW_DAYS) ** P)
+      : 0
+    const recentUpdateBonus = Number.isFinite(ageDaysSinceUpdate)
+      ? clamp01(1 - (ageDaysSinceUpdate / MAGIC_RECENT_UPDATE_DAYS) ** P)
+      : 0
+
+    const ageDaysSinceCreation = createdTs ? (now - createdTs) / MS_IN_DAY : null
+    const longevityScore = ageDaysSinceCreation === null
+      ? 0
+      : clamp01(1 - (ageDaysSinceCreation / MAGIC_LONGEVITY_WINDOW_DAYS))
+
+    const penalty = pkg.removed ? 0.4 : 0
+
+    const baseScore
+      = MAGIC_WEIGHTS.popularity * installsScore
+      + MAGIC_WEIGHTS.stars * starsScore // eslint-disable-line @stylistic/indent-binary-ops
+      + MAGIC_WEIGHTS.freshness * freshnessScore
+      + MAGIC_WEIGHTS.longevity * longevityScore
+      + MAGIC_WEIGHTS.recency * recentUpdateBonus
+      - penalty
+
+    const withPrecision = value => Number(value.toFixed(4))
+
+    return {
+      ...pkg,
+      magic_score: withPrecision(clamp01(baseScore)),
+    }
+  })
+}
+
 function basePackage(pkg, stat) {
   // Create a new array of releases with cleaned platforms
   const releases = (pkg.releases || []).map(release => ({
@@ -230,10 +333,13 @@ export default function (eleventyConfig) {
   })
 
   eleventyConfig.addCollection('searchable_packages', () => {
-    return all_packages.map(pkg => ({
+    const searchable = all_packages.map(pkg => ({
       description: pkg.description,
+      installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b) ?? 0,
       ...basePackage(pkg, stats[pkg.name]),
-    })).sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
+    }))
+    const withMagic = computeMagicMetadata(searchable)
+    return withMagic.sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
 
   eleventyConfig.addCollection('updated_packages', () => {
