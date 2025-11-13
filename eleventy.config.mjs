@@ -125,6 +125,9 @@ function basePackage(pkg, stat) {
   const supportsModernSublime = releases.some((release) => {
     return util.parseSublimeTextMin(release.sublime_text) >= 3000
   })
+  const doesNotSupportNewestSublime = releases.every((release) => {
+    return util.parseSublimeTextMax(release.sublime_text) < 4000
+  })
 
   // For each release, infer a human web URL under key "web"
   // Rules:
@@ -187,6 +190,10 @@ function basePackage(pkg, stat) {
     }
   }
 
+  const labels = pkg.labels?.slice() ?? []
+  if (!supportsModernSublime) labels.push('<ST3')
+  if (supportsModernSublime && doesNotSupportNewestSublime) labels.push('ST3')
+
   return {
     name: pkg.name,
     author: util.cleanAuthors(pkg.author) ?? [],
@@ -200,9 +207,10 @@ function basePackage(pkg, stat) {
     doa: pkg.removed && !pkg.first_seen,
     releases: dedupedReleases,
     otherReleases,
-    labels: pkg.labels,
+    labels: labels,
     platforms: util.dedupePlatforms(releases),
     outdated: !supportsModernSublime,
+    st3_only: supportsModernSublime && doesNotSupportNewestSublime,
   }
 }
 

@@ -17,6 +17,9 @@ permalink: "/search/index.json"
     {%- if pkg.outdated -%}
       "outdated": true,
     {%- endif -%}
+    {%- if pkg.st3_only -%}
+      "st3_only": true,
+    {%- endif -%}
     {%- if pkg.doa -%}
       "doa": true,
     {%- elif pkg.removed -%}
@@ -25,7 +28,7 @@ permalink: "/search/index.json"
       "archived_at": "{{ pkg.archived_at | timestamp }}",
     {%- endif %}
     "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
-    "labels": "{{ pkg.labels | default([]) | join(",") }}",
+    "labels": "{{ pkg.labels | default([]) | join(",") | safe }}",
     "permalink": "/packages/{{ pkg.name | urlencode }}"
   }{{ "," if not loop.last }}
 {%- endfor %}

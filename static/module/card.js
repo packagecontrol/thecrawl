@@ -13,6 +13,11 @@ export class Card {
   }
 
   render() {
+    const cardRoot = this.clone.querySelector('.card')
+    if (cardRoot) {
+      cardRoot.classList.toggle('dimmed', Boolean(this.pkg.outdated))
+    }
+
     this.clone.querySelector('a').innerHTML = this.pkg.name
     this.clone.querySelector('a').setAttribute('href', this.pkg.permalink)
     this.authors(this.clone.querySelector('p.authors'))
@@ -134,6 +139,14 @@ export class Card {
     else {
       a.classList.add('button', 'label')
       a.setAttribute('href', searchQueryFor('label', name))
+      if (name == '<ST3') {
+        a.classList.add('outdated')
+        a.setAttribute('title', 'Outdated package for ST2')
+      }
+      if (name == 'ST3') {
+        a.classList.add('st3_only')
+        a.setAttribute('title', 'Compatible with ST3 only')
+      }
     }
 
     a.innerText = name

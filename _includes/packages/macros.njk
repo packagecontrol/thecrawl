@@ -60,7 +60,7 @@
               {{ label }}
             </a>
           {% else %}
-            <a class="button label" href="/?q={{ q }}">
+            <a class="button label{{ ' outdated' if label == '<ST3' }}{{ ' st3_only' if label == 'ST3' }}" href="/?q={{ q }}">
               {{ label }}
             </a>
           {% endif %}
@@ -111,7 +111,7 @@
 {% endmacro %}
 
 {% macro card(pkg, mark_as_main=false) %}
-  <div class="card">
+  <div class="card{{ ' dimmed' if pkg.outdated }}">
     <h3>
       <a {{ "id=main-content" if mark_as_main }} href="/packages/{{ pkg.name | urlencode }}">
         {{- pkg.name -}}
