@@ -14,6 +14,9 @@ permalink: "/search/index.json"
     "created_at": "{{ pkg.created_at | timestamp }}",
     "last_modified": "{{ pkg.last_modified | timestamp }}",
     "magic_score": {{ pkg.magic_score | default(0) }},
+    {%- if pkg.outdated -%}
+      "outdated": true,
+    {%- endif -%}
     {%- if pkg.doa -%}
       "doa": true,
     {%- elif pkg.removed -%}

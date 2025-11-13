@@ -96,7 +96,7 @@ function computeMagicMetadata(packages) {
       ? 0
       : clamp01(1 - (ageDaysSinceCreation / MAGIC_LONGEVITY_WINDOW_DAYS))
 
-    const penalty = pkg.removed ? 0.4 : 0
+    const penalty = (pkg.removed || pkg.outdated) ? 0.4 : 0
 
     const baseScore
       = MAGIC_WEIGHTS.popularity * installsScore
@@ -121,6 +121,10 @@ function basePackage(pkg, stat) {
     ...release,
     platforms: util.cleanPlatforms(release.platforms),
   }))
+
+  const supportsModernSublime = releases.some((release) => {
+    return util.parseSublimeTextMin(release.sublime_text) >= 3000
+  })
 
   // For each release, infer a human web URL under key "web"
   // Rules:
@@ -198,6 +202,7 @@ function basePackage(pkg, stat) {
     otherReleases,
     labels: pkg.labels,
     platforms: util.dedupePlatforms(releases),
+    outdated: !supportsModernSublime,
   }
 }
 
