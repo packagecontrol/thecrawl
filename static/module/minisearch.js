@@ -60,7 +60,7 @@ function createMinisearchInstance(MiniSearch) {
       'st3_only',
     ],
     searchOptions: {
-      boost: { author: 2 },
+      boost: { author: 2, name: 2 },
       prefix: true,
     },
   })
