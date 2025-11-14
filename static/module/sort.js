@@ -91,7 +91,7 @@ export class Sort {
   }
 }
 
-const MINISEARCH_SCORE_WEIGHT = 0.4
+const MINISEARCH_SCORE_WEIGHT = 0.2
 
 function rankResultsByMagic(results = []) {
   if (!Array.isArray(results) || results.length === 0) {
