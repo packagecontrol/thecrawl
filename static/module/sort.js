@@ -67,7 +67,7 @@ export class Sort {
 
       case 'relevance':
       default:
-        return sortedPackages // Return as-is for relevance or default
+        return rankResultsByMagic(sortedPackages)
     }
   }
 
@@ -89,4 +89,54 @@ export class Sort {
 
     return a.localeCompare(b)
   }
+}
+
+const MINISEARCH_SCORE_WEIGHT = 0.4
+
+function rankResultsByMagic(results = []) {
+  if (!Array.isArray(results) || results.length === 0) {
+    return results
+  }
+
+  const metadataWeight = 1 - MINISEARCH_SCORE_WEIGHT
+  const maxMiniScore = results.reduce((max, pkg) => Math.max(max, pkg.score ?? 0), 0)
+  const finalCache = new WeakMap()
+
+  const getMetadataScore = pkg => clamp01(toNumber(pkg.magic_score))
+
+  const getFinalScore = (pkg) => {
+    if (finalCache.has(pkg)) {
+      return finalCache.get(pkg)
+    }
+    const normalizedMiniScore = maxMiniScore > 0 ? clamp01((pkg.score ?? 0) / maxMiniScore) : 0
+    const score = MINISEARCH_SCORE_WEIGHT * normalizedMiniScore + metadataWeight * getMetadataScore(pkg)
+    finalCache.set(pkg, score)
+    return score
+  }
+
+  return results.sort((a, b) => {
+    const rankA = getFinalScore(a)
+    const rankB = getFinalScore(b)
+    if (rankA === rankB) {
+      return (
+        getMetadataScore(b) - getMetadataScore(a)
+        || toNumber(b.installed) - toNumber(a.installed)
+        || toNumber(b.stars) - toNumber(a.stars)
+        || a.name.localeCompare(b.name)
+      )
+    }
+    return rankB - rankA
+  })
+}
+
+const clamp01 = value => Math.max(0, Math.min(1, value))
+const toNumber = (value, fallback = 0) => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : fallback
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number.parseFloat(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+  }
+  return fallback
 }
