@@ -57,6 +57,7 @@ function createMinisearchInstance(MiniSearch) {
       'permalink',
       'magic_score',
       'outdated',
+      'st3_only',
     ],
     searchOptions: {
       boost: { author: 2 },

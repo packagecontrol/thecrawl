@@ -298,3 +298,6 @@ section {
 .section-heading-link {
   color: inherit;
 }
+.card.dimmed {
+  opacity: 0.8;
+}

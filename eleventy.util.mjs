@@ -179,6 +179,40 @@ export function parseSublimeTextMin(selector) {
   return Number.isFinite(n) ? n : 0
 }
 
+export function parseSublimeTextMax(selector) {
+  if (typeof selector !== 'string') {
+    return Infinity
+  }
+  const s = selector.replace(/\s+/g, '')
+  if (s === '' || s === '*') {
+    return Infinity
+  }
+
+  const rangeIdx = s.indexOf('-')
+  if (rangeIdx !== -1) {
+    const right = s.slice(rangeIdx + 1)
+    const n = parseInt(right, 10)
+    return Number.isFinite(n) ? n : Infinity
+  }
+
+  if (s.startsWith('<=')) {
+    const n = parseInt(s.slice(2), 10)
+    return Number.isFinite(n) ? n : Infinity
+  }
+  if (s.startsWith('<')) {
+    const n = parseInt(s.slice(1), 10)
+    return Number.isFinite(n) ? Math.max(0, n - 1) : Infinity
+  }
+  if (s.startsWith('>=')) {
+    return Infinity
+  }
+  if (s.startsWith('>')) {
+    return Infinity
+  }
+  const n = parseInt(s, 10)
+  return Number.isFinite(n) ? n : Infinity
+}
+
 /**
  * Find the last git commit hash.
  * Only executes in production builds to avoid overhead and issues when git is unavailable.
@@ -287,6 +321,27 @@ if (import.meta.vitest) {
       ['n/a', 0],
     ])('parseSublimeTextMin(%j) -> %j', (input, expected) => {
       expect(parseSublimeTextMin(input)).toBe(expected)
+    })
+  })
+
+  describe('parseSublimeTextMax', () => {
+    it.each([
+      [null, Infinity],
+      ['', Infinity],
+      ['*', Infinity],
+      ['  *  ', Infinity],
+      ['3092', 3092],
+      ['3092 - 4000', 4000],
+      ['3092-4000', 4000],
+      ['<3092', 3091],
+      ['<=3092', 3092],
+      ['>3092', Infinity],
+      ['>=3092', Infinity],
+      [' >=  4075 ', Infinity],
+      ['>  4075', Infinity],
+      ['n/a', Infinity],
+    ])('parseSublimeTextMax(%j) -> %j', (input, expected) => {
+      expect(parseSublimeTextMax(input)).toBe(expected)
     })
   })
 

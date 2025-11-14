@@ -126,6 +126,7 @@ section[name="labels"] .grid {
 
   .list & .labels {
     justify-content: flex-start;
+    margin-top: 18px;  /* usually collapses with margin-bottom from .description */
   }
 
   .list & .stats {
@@ -149,6 +150,21 @@ section[name="labels"] .grid {
     background: var(--background-2);
     &:hover:not(:disabled) {
       background: var(--background-3);
+    }
+  }
+  .button {
+    &.outdated,
+    &.st3_only {
+      color: var(--white);
+      font-size: 10px;
+    }
+
+    &.outdated {
+      background: var(--outdated-badge-bg);
+    }
+
+    &.st3_only {
+      background: var(--st3-badge-bg);
     }
   }
 }
