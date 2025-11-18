@@ -286,30 +286,14 @@ form.compact {
   margin-right: 2px;
   font-size: 0.85em;
   color: var(--foreground-3);
+}
 
-  .usage-toggle {
-    background: none;
-    border: none;
-    padding: 0;
-    color: inherit;
-    cursor: pointer;
-    transition: color .1s ease-in-out;
-    text-decoration: line-through;
-    font-size: small;
-
-    &:hover {
-      color: var(--foreground-2);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--orange-1);
-      outline-offset: 2px;
-    }
-
-    &.is-active {
-      color: var(--foreground-1);
-      font-weight: 500;
-      text-decoration: none;
-    }
-  }
+label:has([name='include-singles']) {
+  cursor: pointer;
+}
+label:has([name='include-singles'][checked])::before {
+  content: "☑️";
+}
+[name='include-singles'] {
+  display: none;
 }
