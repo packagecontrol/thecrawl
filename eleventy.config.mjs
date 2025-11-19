@@ -190,6 +190,16 @@ function basePackage(pkg, stat) {
     }
   }
 
+  const labels = pkg.labels?.slice() ?? []
+  if (!supportsModernSublime) labels.push('ST2')
+  if (supportsModernSublime && doesNotSupportNewestSublime) labels.push('ST3')
+  if (pkg.archived_at) {
+    labels.push('MIA')
+  }
+  else if (pkg.doa || pkg.removed) {
+    labels.push('RIP')
+  }
+
   return {
     name: pkg.name,
     author: util.cleanAuthors(pkg.author) ?? [],
@@ -203,7 +213,7 @@ function basePackage(pkg, stat) {
     doa: pkg.removed && !pkg.first_seen,
     releases: dedupedReleases,
     otherReleases,
-    labels: pkg.labels?.slice() ?? [],
+    labels: labels,
     platforms: util.dedupePlatforms(releases),
     outdated: !supportsModernSublime,
     st3_only: supportsModernSublime && doesNotSupportNewestSublime,

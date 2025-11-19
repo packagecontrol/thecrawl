@@ -43,35 +43,6 @@
   {% endif %}
 
   {% set buttons -%}
-    {%- if pkg.outdated %}
-      {% set q = searchQueryFor('state', 'st2') %}
-      <li>
-        <a class="button state state-bad" title="Outdated package for Sublime Text 2" href="/?q={{ q }}">st2</a>
-      </li>
-    {% elif pkg.st3_only %}
-      {% set q = searchQueryFor('state', 'st3') %}
-      <li>
-        <a class="button state state-warning" title="Compatible with Sublime Text 3 only" href="/?q={{ q }}">st3</a>
-      </li>
-    {% endif -%}
-
-    {%- if pkg.archived_at %}
-      {% set q = searchQueryFor('state', 'unmaintained') %}
-      <li>
-        <a class="button state state-bad" title="Repository was archived on {{ pkg.archived_at | date_format }}" href="/?q={{ q }}">unmaintained</a>
-      </li>
-    {% elif pkg.doa %}
-      {% set q = searchQueryFor('state', 'rip') %}
-      <li>
-        <a class="button state state-bad" title="Package was never crawled" href="/?q={{ q }}">r.i.p</a>
-      </li>
-    {% elif pkg.removed %}
-      {% set q = searchQueryFor('state', 'rip') %}
-      <li>
-        <a class="button state state-bad" title="Package was removed on {{ pkg.removed | date_format }}" href="/?q={{ q }}">r.i.p.</a>
-      </li>
-    {% endif -%}
-
     {%- for platform in platforms %}
       {% set q = searchQueryFor('platform', platform) %}
       <li>
@@ -88,6 +59,28 @@
           <a class="button label-more" href="/labels" title="More labels">
             {{ label }}
           </a>
+        {% elif label == 'ST2' %}
+          <a class="button label state state-bad" href="/?q={{ q }}" title="Outdated package for Sublime Text 2">
+            {{ label }}
+          </a>
+        {% elif label == 'ST3' %}
+          <a class="button label state state-warning" href="/?q={{ q }}" title="Compatible with Sublime Text 3 only">
+            {{ label }}
+          </a>
+        {% elif label == 'MIA' %}
+          <a class="button label state state-warning" href="/?q={{ q }}" title="Repository was archived on {{ pkg.archived_at | date_format }}">
+            {{ label }}
+          </a>
+        {% elif label == 'RIP' %}
+          {% if pkg.doa %}
+            <a class="button label state state-bad" href="/?q={{ q }}" title="Package was never crawled">
+              {{ label }}
+            </a>
+          {% else %}
+            <a class="button label state state-bad" href="/?q={{ q }}" title="Package was removed on {{ pkg.removed | date_format }}">
+              {{ label }}
+            </a>
+          {% endif %}
         {% else %}
           <a class="button label" href="/?q={{ q }}">
             {{ label }}

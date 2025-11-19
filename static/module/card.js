@@ -32,7 +32,6 @@ export class Card {
     const labels = this.clone.querySelector('ul.labels')
     // clear the placeholder then fill with data
     labels.innerHTML = ''
-    this.states(labels)
     this.platforms(labels)
     this.labels(labels)
     this.stats()
@@ -104,29 +103,30 @@ export class Card {
     }
 
     this.pkg.labels.split(',').forEach((item) => {
-      parent.appendChild(this.button(item))
+      console.log(item)
+      switch (item) {
+        case 'ST2':
+          parent.appendChild(this.button(item, 'Outdated package for Sublime Text 2'))
+          break
+        case 'ST3':
+          parent.appendChild(this.button(item, 'Compatible with Sublime Text 3 only'))
+          break
+        case 'MIA':
+          parent.appendChild(this.button(item,
+            'Repository was archived on ' + this.pretty(new Date(Number(this.pkg.archived_at) * 1000))))
+          break
+        case 'RIP':
+          if (this.pkg.doa) {
+            parent.appendChild(this.button(item, 'Package was never crawled'))
+          } else {
+            parent.appendChild(this.button(item,
+              'Package was removed on ' + this.pretty(new Date(Number(this.pkg.removed) * 1000))))
+          }
+          break
+        default:
+          parent.appendChild(this.button(item))
+      }
     })
-  }
-
-  states(parent) {
-    if (this.pkg.outdated) {
-      parent.appendChild(this.button('st2', 'Outdated package for Sublime Text 2'))
-    }
-    else if (this.pkg.st3_only) {
-      parent.appendChild(this.button('st3', 'Compatible with Sublime Text 3 only'))
-    }
-
-    if (this.pkg.archived_at) {
-      const date = new Date(Number(this.pkg.archived_at) * 1000)
-      parent.appendChild(this.button('unmaintained', 'Repository was archived on ' + this.pretty(date)))
-    }
-    else if (this.pkg.doa) {
-      parent.appendChild(this.button('r.i.p.', 'Package was never crawled'))
-    }
-    else if (this.pkg.removed) {
-      const date = new Date(Number(this.pkg.removed) * 1000)
-      parent.appendChild(this.button('r.i.p.', 'Package was removed on ' + this.pretty(date)))
-    }
   }
 
   button(name, tooltip = null) {
@@ -137,13 +137,16 @@ export class Card {
       a.classList.add('button', 'platform', 'platform-' + name)
       a.setAttribute('href', searchQueryFor('platform', name))
     }
-    else if (['st2', 'st3', 'unmaintained', 'r.i.p.'].includes(name)) {
-      a.classList.add('button', 'state', 'state-' + (name == 'st3' ? 'warning' : 'bad'))
-      a.setAttribute('href', searchQueryFor('state', name.replaceAll('.', '')))
-    }
     else {
       a.classList.add('button', 'label')
       a.setAttribute('href', searchQueryFor('label', name))
+    }
+
+    if (['ST2', 'RIP'].includes(name)) {
+      a.classList.add('state', 'state-bad')
+    }
+    if (['ST3', 'MIA'].includes(name)) {
+      a.classList.add('state', 'state-warning')
     }
 
     if (tooltip) {
