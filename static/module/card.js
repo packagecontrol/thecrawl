@@ -110,22 +110,22 @@ export class Card {
 
   states(parent) {
     if (this.pkg.outdated) {
-      parent.appendChild(this.button('ST2', 'Outdated package for Sublime Text 2'))
+      parent.appendChild(this.button('st2', 'Outdated package for Sublime Text 2'))
     }
     else if (this.pkg.st3_only) {
-      parent.appendChild(this.button('ST3', 'Compatible with Sublime Text 3 only'))
+      parent.appendChild(this.button('st3', 'Compatible with Sublime Text 3 only'))
     }
 
     if (this.pkg.archived_at) {
       const date = new Date(Number(this.pkg.archived_at) * 1000)
-      parent.appendChild(this.button('Unmaintained', 'Repository was archived on ' + this.pretty(date)))
+      parent.appendChild(this.button('unmaintained', 'Repository was archived on ' + this.pretty(date)))
     }
     else if (this.pkg.doa) {
-      parent.appendChild(this.button('R.I.P.', 'Package was never crawled'))
+      parent.appendChild(this.button('r.i.p.', 'Package was never crawled'))
     }
     else if (this.pkg.removed) {
       const date = new Date(Number(this.pkg.removed) * 1000)
-      parent.appendChild(this.button('R.I.P.', 'Package was removed on ' + this.pretty(date)))
+      parent.appendChild(this.button('r.i.p.', 'Package was removed on ' + this.pretty(date)))
     }
   }
 
@@ -137,9 +137,9 @@ export class Card {
       a.classList.add('button', 'platform', 'platform-' + name)
       a.setAttribute('href', searchQueryFor('platform', name))
     }
-    else if (['ST2', 'ST3', 'Unmaintained', 'R.I.P.'].includes(name)) {
-      a.classList.add('button', 'state', 'state-' + (name == 'ST3' ? 'warning' : 'bad'))
-      a.setAttribute('href', searchQueryFor('state', name))
+    else if (['st2', 'st3', 'unmaintained', 'r.i.p.'].includes(name)) {
+      a.classList.add('button', 'state', 'state-' + (name == 'st3' ? 'warning' : 'bad'))
+      a.setAttribute('href', searchQueryFor('state', name.replaceAll('.', '')))
     }
     else {
       a.classList.add('button', 'label')

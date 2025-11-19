@@ -91,7 +91,7 @@ isPackagePage: true
     {{ pack.stars(pkg.stars) }}
   </ul>
 
-  {{ pack.labels(pkg.platforms, pkg.labels) }}
+  {{ pack.labels(pkg) }}
 
   {% if not pkg.removed %}
     {# once a package is removed none of the links or the readme are still reliable #}
