@@ -126,6 +126,17 @@ ul.stats {
 .labels {
   a,
   span {
+    box-sizing: border-box;
+    padding: 2px 6px;
+    border: 1px solid transparent;
+    &.state {
+      border-color: var(--orange-1);
+      color: var(--orange-1);
+    }
+    &.state-bad {
+      border-color: var(--red-1);
+      color: var(--red-1);
+    }
     &.platform {
       background: var(--blue-1);
       color: var(--white);
