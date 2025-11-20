@@ -103,7 +103,6 @@ export class Card {
     }
 
     this.pkg.labels.split(',').forEach((item) => {
-      console.log(item)
       switch (item) {
         case 'ST2':
           parent.appendChild(this.button(item, 'Outdated package for Sublime Text 2'))
