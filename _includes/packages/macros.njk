@@ -72,15 +72,9 @@
             {{ label }}
           </a>
         {% elif label == 'RIP' %}
-          {% if pkg.doa %}
-            <a class="button label state state-bad" href="/?q={{ q }}" title="Package was never crawled">
-              {{ label }}
-            </a>
-          {% else %}
-            <a class="button label state state-bad" href="/?q={{ q }}" title="Package was removed on {{ pkg.removed | date_format }}">
-              {{ label }}
-            </a>
-          {% endif %}
+          <a class="button label state state-bad" href="/?q={{ q }}" title="Package was removed on {{ pkg.removed | date_format }}">
+            {{ label }}
+          </a>
         {% else %}
           <a class="button label" href="/?q={{ q }}">
             {{ label }}

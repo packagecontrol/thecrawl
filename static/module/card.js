@@ -43,7 +43,7 @@ export class Card {
     const star = this.clone.querySelector('ul.stats .stars')
     const install = this.clone.querySelector('ul.stats .installs')
 
-    if (this.pkg.removed || this.pkg.doa) {
+    if (this.pkg.removed) {
       star.remove()
       install.remove()
       return
@@ -115,12 +115,8 @@ export class Card {
             'Repository was archived on ' + this.pretty(new Date(Number(this.pkg.archived_at) * 1000))))
           break
         case 'RIP':
-          if (this.pkg.doa) {
-            parent.appendChild(this.button(item, 'Package was never crawled'))
-          } else {
-            parent.appendChild(this.button(item,
-              'Package was removed on ' + this.pretty(new Date(Number(this.pkg.removed) * 1000))))
-          }
+          parent.appendChild(this.button(item,
+            'Package was removed on ' + this.pretty(new Date(Number(this.pkg.removed) * 1000))))
           break
         default:
           parent.appendChild(this.button(item))

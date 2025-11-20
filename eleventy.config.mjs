@@ -193,11 +193,10 @@ function basePackage(pkg, stat) {
   const labels = pkg.labels?.slice() ?? []
   if (!supportsModernSublime) labels.push('ST2')
   if (supportsModernSublime && doesNotSupportNewestSublime) labels.push('ST3')
-  if (pkg.archived_at) {
-    labels.push('MIA')
-  }
-  else if (pkg.doa || pkg.removed) {
+  if (pkg.removed) {
     labels.push('RIP')
+  } else if (pkg.archived_at) {
+    labels.push('MIA')
   }
 
   return {
@@ -210,7 +209,6 @@ function basePackage(pkg, stat) {
     last_modified: pkg.last_modified,
     archived_at: pkg.archived_at,
     removed: pkg.removed,
-    doa: pkg.removed && !pkg.first_seen,
     releases: dedupedReleases,
     otherReleases,
     labels: labels,
