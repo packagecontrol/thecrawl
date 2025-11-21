@@ -36,36 +36,57 @@
   {% endif %}
 {% endmacro %}
 
-{% macro labels(platforms, labels) %}
+{% macro labels(pkg) %}
+  {% set platforms = pkg.platforms %}
   {% if 'any' in platforms %}
     {% set platforms = [] %}
   {% endif %}
 
-  {% if platforms | length > 0 or  labels | length > 0 %}
-    <ul class="button-group labels">
-      {% for platform in platforms %}
-        {% set q = searchQueryFor('platform', platform) %}
-        <li>
-          <a class="button platform platform-{{ platform }}" href="/?q={{ q }}">
-            {{ platform }}
-          </a>
-        </li>
-      {% endfor %}
+  {% set buttons -%}
+    {%- for platform in platforms %}
+      {% set q = searchQueryFor('platform', platform) %}
+      <li>
+        <a class="button platform platform-{{ platform }}" href="/?q={{ q }}">
+          {{ platform }}
+        </a>
+      </li>
+    {% endfor -%}
 
-      {% for label in labels %}
-        {% set q = searchQueryFor('label', label) %}
-        <li>
-          {% if label == '…' %}
-            <a class="button label-more" href="/labels" title="More labels">
-              {{ label }}
-            </a>
-          {% else %}
-            <a class="button label{{ ' outdated' if label == '<ST3' }}{{ ' st3_only' if label == 'ST3' }}" href="/?q={{ q }}">
-              {{ label }}
-            </a>
-          {% endif %}
-        </li>
-      {%- endfor %}
+    {%- for label in pkg.labels %}
+      {% set q = searchQueryFor('label', label) %}
+      <li>
+        {% if label == '…' %}
+          <a class="button label-more" href="/labels" title="More labels">
+            {{ label }}
+          </a>
+        {% elif label == 'ST2' %}
+          <a class="button label state state-bad" href="/?q={{ q }}" title="Outdated package for Sublime Text 2">
+            {{ label }}
+          </a>
+        {% elif label == 'ST3' %}
+          <a class="button label state state-warning" href="/?q={{ q }}" title="Compatible with Sublime Text 3 only">
+            {{ label }}
+          </a>
+        {% elif label == 'MIA' %}
+          <a class="button label state state-warning" href="/?q={{ q }}" title="Repository was archived on {{ pkg.archived_at | date_format }}">
+            {{ label }}
+          </a>
+        {% elif label == 'RIP' %}
+          <a class="button label state state-bad" href="/?q={{ q }}" title="Package was removed on {{ pkg.removed | date_format }}">
+            {{ label }}
+          </a>
+        {% else %}
+          <a class="button label" href="/?q={{ q }}">
+            {{ label }}
+          </a>
+        {% endif %}
+      </li>
+    {%- endfor -%}
+  {%- endset %}
+
+  {% if buttons | trim %}
+    <ul class="button-group labels">
+      {{ buttons | safe }}
     </ul>
   {% endif %}
 {% endmacro %}
@@ -86,26 +107,6 @@
       <span aria-hidden="true">{{ util.icon('download') }}</span>
       <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
       <span class="screenreader-only">installs</span>
-    </li>
-  {% endif %}
-{% endmacro %}
-
-{% macro archived(date) %}
-  {% if date %}
-    <li class="warning" title="Repository was archived on {{ date | date_format }}">
-      <span aria-hidden="true">{{ util.icon('archive') }}</span>
-      <span class="counter">Unmaintained</span>
-      <span class="screenreader-only">{{ date | date_format }}</span>
-    </li>
-  {% endif %}
-{% endmacro %}
-
-{% macro rip(date) %}
-  {% if date %}
-    <li class="warning" title="Package was removed on {{ date | date_format }}">
-      <span aria-hidden="true">{{ util.icon('archive') }}</span>
-      <span class="counter">R.I.P.</span>
-      <span class="screenreader-only">{{ date | date_format }}</span>
     </li>
   {% endif %}
 {% endmacro %}
@@ -132,11 +133,9 @@
     {% endif %}
 
     <ul class="stats">
-      {{ rip(pkg.removed) }}
-      {{ archived(pkg.archived_at) }}
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
     </ul>
-    {{ labels(pkg.platforms, pkg.labels) }}
+    {{ labels(pkg) }}
   </div>
 {% endmacro %}

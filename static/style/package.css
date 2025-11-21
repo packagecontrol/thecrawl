@@ -126,6 +126,24 @@ ul.stats {
 .labels {
   a,
   span {
+    box-sizing: border-box;
+    padding: 2px 6px;
+    border: 1px solid transparent;
+    &.state {
+      background: inherit;
+      border-color: var(--orange-2);
+      color: var(--orange-2);
+      &:hover {
+        background: rgb(from var(--orange-1) r g b / 0.12);
+      }
+    }
+    &.state-bad {
+      border-color: var(--red-2);
+      color: var(--red-2);
+      &:hover {
+        background: rgb(from var(--red-1) r g b / 0.12);
+      }
+    }
     &.platform {
       background: var(--blue-1);
       color: var(--white);

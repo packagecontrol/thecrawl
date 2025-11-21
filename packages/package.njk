@@ -87,13 +87,11 @@ isPackagePage: true
   </div>
 
   <ul class="stats">
-    {{ pack.rip(pkg.removed) }}
-    {{ pack.archived(pkg.archived_at) }}
     {{ pack.installs(pkg.installed) }}
     {{ pack.stars(pkg.stars) }}
   </ul>
 
-  {{ pack.labels(pkg.platforms, pkg.labels) }}
+  {{ pack.labels(pkg) }}
 
   {% if not pkg.removed %}
     {# once a package is removed none of the links or the readme are still reliable #}

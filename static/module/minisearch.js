@@ -51,7 +51,6 @@ function createMinisearchInstance(MiniSearch) {
       'last_modified',
       'archived_at',
       'removed',
-      'doa',
       'platforms',
       'labels',
       'permalink',

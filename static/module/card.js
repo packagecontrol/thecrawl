@@ -29,27 +29,6 @@ export class Card {
       descr_el.innerHTML = this.pkg.description
     }
 
-    const warning = this.clone.querySelector('ul.stats .warning')
-
-    if (this.pkg.archived_at) {
-      const date = new Date(Number(this.pkg.archived_at) * 1000)
-      warning.setAttribute('title', 'Repository was archived on ' + this.pretty(date))
-      warning.querySelector('.counter').innerText = 'Unmaintained'
-    }
-    else if (this.pkg.doa) {
-      warning.setAttribute('title', 'Package was never crawled')
-      warning.querySelector('.counter').innerText = 'R.I.P.'
-      this.clone.querySelector('h3').innerHTML = this.pkg.name
-    }
-    else if (this.pkg.removed) {
-      const date = new Date(Number(this.pkg.removed) * 1000)
-      warning.setAttribute('title', 'Package was removed on ' + this.pretty(date))
-      warning.querySelector('.counter').innerText = 'R.I.P.'
-    }
-    else {
-      warning.remove()
-    }
-
     const labels = this.clone.querySelector('ul.labels')
     // clear the placeholder then fill with data
     labels.innerHTML = ''
@@ -64,7 +43,7 @@ export class Card {
     const star = this.clone.querySelector('ul.stats .stars')
     const install = this.clone.querySelector('ul.stats .installs')
 
-    if (this.pkg.removed || this.pkg.doa) {
+    if (this.pkg.removed) {
       star.remove()
       install.remove()
       return
@@ -124,11 +103,28 @@ export class Card {
     }
 
     this.pkg.labels.split(',').forEach((item) => {
-      parent.appendChild(this.button(item))
+      switch (item) {
+        case 'ST2':
+          parent.appendChild(this.button(item, 'Outdated package for Sublime Text 2'))
+          break
+        case 'ST3':
+          parent.appendChild(this.button(item, 'Compatible with Sublime Text 3 only'))
+          break
+        case 'MIA':
+          parent.appendChild(this.button(item,
+            'Repository was archived on ' + this.pretty(new Date(Number(this.pkg.archived_at) * 1000))))
+          break
+        case 'RIP':
+          parent.appendChild(this.button(item,
+            'Package was removed on ' + this.pretty(new Date(Number(this.pkg.removed) * 1000))))
+          break
+        default:
+          parent.appendChild(this.button(item))
+      }
     })
   }
 
-  button(name) {
+  button(name, tooltip = null) {
     const li = document.createElement('li')
     const a = document.createElement('a')
 
@@ -139,14 +135,17 @@ export class Card {
     else {
       a.classList.add('button', 'label')
       a.setAttribute('href', searchQueryFor('label', name))
-      if (name == '<ST3') {
-        a.classList.add('outdated')
-        a.setAttribute('title', 'Outdated package for ST2')
-      }
-      if (name == 'ST3') {
-        a.classList.add('st3_only')
-        a.setAttribute('title', 'Compatible with ST3 only')
-      }
+    }
+
+    if (['ST2', 'RIP'].includes(name)) {
+      a.classList.add('state', 'state-bad')
+    }
+    if (['ST3', 'MIA'].includes(name)) {
+      a.classList.add('state', 'state-warning')
+    }
+
+    if (tooltip) {
+      a.setAttribute('title', tooltip)
     }
 
     a.innerText = name

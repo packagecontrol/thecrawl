@@ -146,25 +146,10 @@ section[name="labels"] .grid {
     line-height: 18px;
   }
 
-  .button:not(.platform) {
-    background: var(--background-2);
-    &:hover:not(:disabled) {
-      background: var(--background-3);
-    }
-  }
   .button {
-    &.outdated,
-    &.st3_only {
-      color: var(--white);
-      font-size: 10px;
-    }
-
-    &.outdated {
-      background: var(--outdated-badge-bg);
-    }
-
-    &.st3_only {
-      background: var(--st3-badge-bg);
+    background: var(--background-2);
+    &:hover {
+      background: var(--background-3);
     }
   }
 }
