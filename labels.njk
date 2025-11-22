@@ -5,6 +5,7 @@ date: Last Modified
 ---
 
 {% import "packages/macros.njk" as pack %}
+{% import "util/macros.njk" as util %}
 
 <form name="search" role="search" aria-label="Label search">
   <h1>Labels</h1>
@@ -25,7 +26,9 @@ date: Last Modified
 
   <div class="search-subcontrols">
     <label>
-      <input type="checkbox" name="include-singles">
+      <input type="checkbox" name="include-singles" id="include-singles">
+      <span class="icon-off">{{ util.icon('check-off') }}</span>
+      <span class="icon-on">{{ util.icon('check-on') }}</span>
       Include labels with only one usage
     </label>
   </div>

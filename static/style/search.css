@@ -282,18 +282,31 @@ form.compact {
 .search-subcontrols {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   margin-top: 0.35rem;
   margin-right: 2px;
   font-size: 0.85em;
   color: var(--foreground-3);
-}
+  gap: 1ex;
 
-label:has([name='include-singles']) {
-  cursor: pointer;
-}
-label:has([name='include-singles'][checked])::before {
-  content: "☑️";
-}
-[name='include-singles'] {
-  display: none;
+
+  label {
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      display: none;
+    }
+    .icon-on {
+      display: none;
+    }
+    &:has(input[checked]) {
+      color: var(--foreground-1);
+      .icon-on {
+        display: revert;
+      }
+      .icon-off {
+        display: none;
+      }
+    }
+  }
 }
