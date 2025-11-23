@@ -96,6 +96,7 @@ ul.stats {
     margin-top: 28px;
     color: var(--foreground-1);
     outline-color: var(--orange-1);
+    width: fit-content;
   }
 
   ul {
