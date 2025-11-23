@@ -9,8 +9,6 @@ import { customTokenizer } from './module/minisearch.js'
 const list = document.querySelector('section[name="labels"] ul')
 const data = []
 const cards = document.querySelectorAll('section ul .label')
-const cardsTotal = cards.length
-const cardsNoSingles = Array.from(cards).filter(card => Number(card.dataset.usage ?? 0) > 1).length
 const searchInput = document.getElementById('search-field')
 const usageToggle = document.querySelector('[name="include-singles"]')
 const urlParams = new URLSearchParams(window.location.search)
@@ -64,10 +62,8 @@ const updateUsageToggleUI = () => {
   }
   if (omitSingles) {
     usageToggle.removeAttribute('checked')
-    searchInput.setAttribute('placeholder', `Search ${cardsNoSingles} labels…`)
   } else {
     usageToggle.setAttribute('checked', 'checked')
-    searchInput.setAttribute('placeholder', `Search ${cardsTotal} labels…`)
   }
 }
 
