@@ -98,6 +98,9 @@ ul.stats {
     outline-color: var(--orange-1);
     width: fit-content;
   }
+  &:open summary {
+    width: revert;
+  }
 
   ul {
     list-style: none;
