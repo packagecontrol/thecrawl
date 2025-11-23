@@ -152,9 +152,7 @@ select {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0 0.75rem 0 0.5rem;
-    border-left: 1px solid var(--background-3);
-    margin-left: 0.5rem;
+    padding: 0 0.75rem 0 1rem;
 
     button {
       background: none;
@@ -296,6 +294,7 @@ form.compact {
     color: inherit;
     cursor: pointer;
     transition: color .1s ease-in-out;
+    border-radius: 3px;
 
     &:hover {
       color: var(--foreground-2);

@@ -285,6 +285,10 @@ section {
     }
   }
 
+  .search-results-info {
+    text-align: right;
+  }
+
   /* When the range indicator is hidden, keep space for it
      so the pager text doesn't jump horizontally. */
   &:has(.pager-range-indicator[hidden]) {

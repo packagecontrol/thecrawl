@@ -103,19 +103,11 @@ export class SimpleSearch {
 
     if (this.counter) {
       visible = results.length - hidden
-      if (visible === 1) {
-        this.counter.innerText = '1 Result'
-      } else {
-        this.counter.innerText = `${visible} Results`
-      }
+      this.counter.innerText = visible === 1 ? '1 Result' : `${visible} Results`
+    }
 
-      if (this.hiddenCounter) {
-        if (hidden > 0) {
-          this.hiddenCounter.innerText = `${hidden} Excluded`
-        } else {
-          this.hiddenCounter.innerText = ''
-        }
-      }
+    if (this.hiddenCounter) {
+      this.hiddenCounter.innerText = hidden > 0 ? `${hidden} Excluded` : ''
     }
   }
 
