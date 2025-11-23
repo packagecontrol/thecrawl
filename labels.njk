@@ -25,12 +25,11 @@ date: Last Modified
   </div>
 
   <div class="search-subcontrols">
-    <label>
-      <input type="checkbox" name="include-singles" id="include-singles">
+    <button type="button" class="usage-toggle" data-omit-single aria-pressed="false">
       <span class="icon-off">{{ util.icon('check-off') }}</span>
       <span class="icon-on">{{ util.icon('check-on') }}</span>
       Include labels with only one usage
-    </label>
+    </button>
   </div>
 </form>
 
