@@ -35,7 +35,12 @@ date: Last Modified
 </form>
 
 <section name="labels">
-  <h2 data-list-target="counter">List</h2>
+
+  <div class="search-results-header">
+    <h2 data-list-target="counter">List</h2>
+    <span class="search-results-info" data-list-target="hidden"></span>
+  </div>
+
   <ul class="grid">
     {% for item in collections.labels %}
       <li>

@@ -4,6 +4,7 @@ export class SimpleSearch {
   search = null
   input = null
   counter = document.querySelector('[data-list-target="counter"]')
+  hiddenCounter = document.querySelector('[data-list-target="hidden"]')
   cards = []
   paramKey = 'q'
   initialTitle = document.title
@@ -84,14 +85,8 @@ export class SimpleSearch {
   renderSearch(query) {
     const results = this.search.search(query).map(result => result.name)
     const visibleItems = new Set(results)
-
-    if (this.counter) {
-      if (results.length === 1) {
-        this.counter.innerText = '1 Result'
-      } else {
-        this.counter.innerText = `${results.length} Results`
-      }
-    }
+    let hidden = 0
+    let visible = 0
 
     this.cards.forEach((card) => {
       const container = card.closest('li')
@@ -100,8 +95,28 @@ export class SimpleSearch {
       }
       const hiddenBySearch = !visibleItems.has(card.dataset.name)
       const hiddenByFilter = Boolean(this.cardFilter?.(card))
+      if (!hiddenBySearch && hiddenByFilter) {
+        hidden++
+      }
       container.style.display = (hiddenBySearch || hiddenByFilter) ? 'none' : null
     })
+
+    if (this.counter) {
+      visible = results.length - hidden
+      if (visible === 1) {
+        this.counter.innerText = '1 Result'
+      } else {
+        this.counter.innerText = `${visible} Results`
+      }
+
+      if (this.hiddenCounter) {
+        if (hidden > 0) {
+          this.hiddenCounter.innerText = `${hidden} Hidden`
+        } else {
+          this.hiddenCounter.innerText = ''
+        }
+      }
+    }
   }
 
   revertToNormal() {
@@ -114,6 +129,9 @@ export class SimpleSearch {
     })
     if (this.counter) {
       this.counter.innerText = 'List'
+    }
+    if (this.hiddenCounter) {
+      this.hiddenCounter.innerText = ''
     }
   }
 

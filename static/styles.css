@@ -267,6 +267,7 @@ section {
     }
   }
 
+  .search-results-info,
   .pager-page-indicator,
   .pager-range-indicator {
     color: var(--foreground-3);
