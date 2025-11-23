@@ -111,7 +111,7 @@ export class SimpleSearch {
 
       if (this.hiddenCounter) {
         if (hidden > 0) {
-          this.hiddenCounter.innerText = `${hidden} Hidden`
+          this.hiddenCounter.innerText = `${hidden} Excluded`
         } else {
           this.hiddenCounter.innerText = ''
         }
