@@ -12,6 +12,11 @@ build:
 	curl -o _site/channel.json -L "https://github.com/packagecontrol/thecrawl/releases/download/the-channel/channel.json"
 	curl -o _site/channel_st3.json -L "https://github.com/packagecontrol/thecrawl/releases/download/the-st3-channel/channel_st3.json"
 
+build-emoji:
+	# Build emoji.json from gemoji source
+	curl -L https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json -o emoji-source.json
+	npm run build:emoji
+
 lint:
 	npx eslint
 

@@ -26,6 +26,21 @@ const MAGIC_WEIGHTS = {
 
 const clamp01 = value => Math.max(0, Math.min(1, value))
 
+// GitHub-style emoji shortcode mapping, loaded from JSON.
+// Extend emoji.json over time as needed.
+const EMOJI_MAP = Object.freeze(JSON.parse(fs.readFileSync('emoji.json', 'utf8')))
+
+function translateEmojiCodes(text) {
+  if (!text || typeof text !== 'string') return text
+
+  const emojiPattern = /:([a-zA-Z0-9_+-]+):/g
+  return text.replace(emojiPattern, (match, code) => {
+    const normalized = String(code || '').trim()
+    if (!normalized) return match
+    return EMOJI_MAP[normalized] || match
+  })
+}
+
 function normalizeLog(value, maxValue) {
   if (!Number.isFinite(value) || value <= 0) {
     return 0
@@ -343,6 +358,7 @@ export default function (eleventyConfig) {
         weekly_removals: weekly_removals.slice(0, end),
         weekly_upgrades: weekly_upgrades.slice(0, end),
         ...pkg,
+        description: translateEmojiCodes(pkg.description ?? ''),
         ...basePackage(pkg, stats[pkg.name]),
         ...(readme_url !== pkg.readme ? { readme_url } : {}),
       }
@@ -351,7 +367,7 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addCollection('searchable_packages', () => {
     const searchable = all_packages.map(pkg => ({
-      description: pkg.description,
+      description: translateEmojiCodes(pkg.description ?? ''),
       installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b) ?? 0,
       ...basePackage(pkg, stats[pkg.name]),
     }))
@@ -380,7 +396,7 @@ export default function (eleventyConfig) {
       .filter(pkg => !pkg.removed && pkg.first_seen)
       .map(pkg => ({
         ...basePackage(pkg, stats[pkg.name]),
-        description: pkg.description ?? '',
+        description: translateEmojiCodes(pkg.description ?? ''),
         guid: pkg.id ?? pkg.name,
       }))
       .sort((a, b) => {
