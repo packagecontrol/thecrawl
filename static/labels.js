@@ -76,7 +76,14 @@ const updateOmitState = (value, { manual = false, triggerSearch = false } = {}) 
 
   omitSingles = normalized
   if (manual) {
-    manualOmitChoice = true
+    const currentQuery = searchInput?.value?.trim() ?? ''
+    // If the user is turning omit-singles back on while the
+    // query is empty (pristine state), return to auto mode.
+    if (normalized && currentQuery === '') {
+      manualOmitChoice = false
+    } else {
+      manualOmitChoice = true
+    }
   }
   updateUsageToggleUI()
 
