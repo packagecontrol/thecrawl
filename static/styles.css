@@ -247,6 +247,7 @@ section {
 }
 
 .search-results-header {
+  /* Mobile / default: evenly spaced flex layout */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -281,16 +282,55 @@ section {
     }
   }
 
-  &:has(.pager-range-indicator[hidden]){
+  /* When the range indicator is hidden, keep space for it
+     so the pager text doesn't jump horizontally. */
+  &:has(.pager-range-indicator[hidden]) {
     & > *:not(.pager-page-indicator) {
       flex: 1 1 30%;
     }
   }
 
+  /* Wide screens: center the page indicator with 3‑column grid */
+  /* 667–1050px: only use grid when the range indicator is visible */
+  @media (width > 666px) and (width <= 1050px) {
+    &:has(.pager-range-indicator:not([hidden])) {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      column-gap: 1rem;
+
+      .pager-page-indicator {
+        justify-self: center;
+      }
+
+      .pager-range-indicator {
+        justify-self: end;
+      }
+    }
+  }
+
   @media (width <= 1050px) {
-    /* Center the .pager-page-indicator */
+    /* On narrower screens, hide the range indicator
+       in a way it doesn't take up space */
     .pager-range-indicator[hidden] {
-        display: none;
+      display: none;
+    }
+  }
+
+  /* >1050px: always use the centered 3‑column layout,
+     even when the range indicator is hidden */
+  @media (width > 1050px) {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    column-gap: 1rem;
+
+    .pager-page-indicator {
+      justify-self: center;
+    }
+
+    .pager-range-indicator {
+      justify-self: end;
     }
   }
 }
