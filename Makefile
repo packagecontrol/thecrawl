@@ -17,6 +17,10 @@ build-emoji:
 	curl -L https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json -o emoji-source.json
 	npm run build:emoji
 
+build-label-icons:
+	npm run fetch:file-icons
+	npm run build:label-icons
+
 lint:
 	npx eslint
 

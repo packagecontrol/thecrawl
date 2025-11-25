@@ -7,7 +7,9 @@
     "test:build": "eleventy --quiet && http-server _site -o",
     "test": "vitest run",
     "test:watch": "vitest --watch",
-    "build:emoji": "node util/build-emoji-json.mjs"
+    "build:emoji": "node util/build-emoji-json.mjs",
+    "fetch:file-icons": "node util/fetch-file-icons.mjs",
+    "build:label-icons": "node util/build-label-icons.mjs"
   },
   "dependencies": {
     "@11ty/eleventy": "^3.1.1"
