@@ -209,6 +209,12 @@ ul.stats {
       }
     }
   }
+
+  a svg {
+    width: 16px;
+    height: 16px;
+    color: #d9541d;
+  }
 }
 
 .warning-message {

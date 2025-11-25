@@ -135,6 +135,18 @@ export class Card {
     else {
       a.classList.add('button', 'label')
       a.setAttribute('href', searchQueryFor('label', name))
+
+      const iconId = resolveLabelIconId(name)
+      if (iconId) {
+        const svgNS = 'http://www.w3.org/2000/svg'
+        const svg = document.createElementNS(svgNS, 'svg')
+        svg.setAttribute('class', 'label-icon')
+        svg.setAttribute('aria-hidden', 'true')
+        const use = document.createElementNS(svgNS, 'use')
+        use.setAttribute('href', `/static/label-icons.svg#${iconId}`)
+        svg.appendChild(use)
+        a.appendChild(svg)
+      }
     }
 
     if (['ST2', 'RIP'].includes(name)) {
@@ -148,7 +160,7 @@ export class Card {
       a.setAttribute('title', tooltip)
     }
 
-    a.innerText = name
+    a.appendChild(document.createTextNode(name))
     li.appendChild(a)
 
     return li
@@ -168,4 +180,23 @@ const searchQueryFor = (field, rawValue) => {
     ? `${field}:${value}`
     : `${field}:"${value}"`
   return '/?q=' + encodeURIComponent(filter)
+}
+
+function resolveLabelIconId(label) {
+  if (typeof label !== 'string') return null
+  const normalized = label.trim().toLowerCase()
+  if (!normalized) return null
+
+  const sources = Array.isArray(window.__LABEL_ICON_SOURCES__) ? window.__LABEL_ICON_SOURCES__ : []
+  const aliases = (window.__LABEL_ICON_ALIASES__ && typeof window.__LABEL_ICON_ALIASES__ === 'object')
+    ? window.__LABEL_ICON_ALIASES__
+    : {}
+
+  let canonical = aliases[normalized]
+  if (!canonical && sources.includes(normalized)) {
+    canonical = normalized
+  }
+
+  if (!canonical) return null
+  return `label-icon-${canonical}`
 }

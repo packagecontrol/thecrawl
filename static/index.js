@@ -9,16 +9,25 @@ async function fetchSearchData() {
   return await res.json()
 }
 
-const data = await fetchSearchData()
-const minisrch = createMinisearch(MiniSearch, data)
+const rawIndex = await fetchSearchData()
+const packages = Array.isArray(rawIndex) ? rawIndex : (rawIndex.packages || [])
+
+window.__LABEL_ICON_SOURCES__ = Array.isArray(rawIndex.label_icon_sources)
+  ? rawIndex.label_icon_sources
+  : []
+window.__LABEL_ICON_ALIASES__ = rawIndex.label_icon_aliases && typeof rawIndex.label_icon_aliases === 'object'
+  ? rawIndex.label_icon_aliases
+  : {}
+
+const minisrch = createMinisearch(MiniSearch, packages)
 
 /**
  * Handle search features on the index and package pages.
  */
 
 // Expose data for other modules and announce readiness
-window.__SEARCH_DATA__ = data
-window.dispatchEvent(new CustomEvent('search:index-loaded', { detail: { data } }))
+window.__SEARCH_DATA__ = packages
+window.dispatchEvent(new CustomEvent('search:index-loaded', { detail: { data: packages } }))
 
 const list = new List()
 list.setMinisearch(minisrch)

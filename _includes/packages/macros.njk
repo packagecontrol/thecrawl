@@ -36,7 +36,7 @@
   {% endif %}
 {% endmacro %}
 
-{% macro labels(pkg) %}
+{% macro labels(pkg, with_icons=false) %}
   {% set platforms = pkg.platforms %}
   {% if 'any' in platforms %}
     {% set platforms = [] %}
@@ -54,6 +54,7 @@
 
     {%- for label in pkg.labels %}
       {% set q = searchQueryFor('label', label) %}
+      {% set icon_id = with_icons and (label | label_icon_id) or '' %}
       <li>
         {% if label == '…' %}
           <a class="button label-more" href="/labels" title="More labels">
@@ -77,6 +78,11 @@
           </a>
         {% else %}
           <a class="button label" href="/?q={{ q }}">
+            {% if icon_id %}
+              <svg class="label-icon" aria-hidden="true">
+                <use href="/static/label-icons.svg#{{ icon_id }}"></use>
+              </svg>
+            {% endif %}
             {{ label }}
           </a>
         {% endif %}
@@ -136,6 +142,6 @@
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
     </ul>
-    {{ labels(pkg) }}
+    {{ labels(pkg, true) }}
   </div>
 {% endmacro %}

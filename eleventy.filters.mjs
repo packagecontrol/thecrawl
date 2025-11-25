@@ -1,7 +1,40 @@
 import * as util from './eleventy.util.mjs'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 // Compute prod mode locally so filters remain self-contained
 const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+let labelIconSources = []
+let labelIconAliases = {}
+
+try {
+  const sourcesPath = path.join(__dirname, 'label-icons.json')
+  const aliasesPath = path.join(__dirname, 'label-icons-aliases.json')
+
+  if (fs.existsSync(sourcesPath)) {
+    const raw = fs.readFileSync(sourcesPath, 'utf8')
+    const data = JSON.parse(raw)
+    if (Array.isArray(data)) {
+      labelIconSources = data
+    }
+  }
+
+  if (fs.existsSync(aliasesPath)) {
+    const raw = fs.readFileSync(aliasesPath, 'utf8')
+    const data = JSON.parse(raw)
+    if (data && typeof data === 'object') {
+      labelIconAliases = data
+    }
+  }
+} catch {
+  labelIconSources = []
+  labelIconAliases = {}
+}
 
 // Filters as normal functions
 // simple to date string for some dates without times
@@ -26,6 +59,28 @@ export function timestamp(date) {
 export function compact(count) {
   const fmt = new Intl.NumberFormat('en', { notation: 'compact' })
   return fmt.format(count)
+}
+
+export function label_icon_sources_json() {
+  return JSON.stringify(labelIconSources)
+}
+
+export function label_icon_aliases_json() {
+  return JSON.stringify(labelIconAliases)
+}
+
+export function label_icon_id(label) {
+  if (typeof label !== 'string') return ''
+  const normalized = label.trim().toLowerCase()
+  if (!normalized) return ''
+
+  let canonical = labelIconAliases[normalized]
+  if (!canonical && labelIconSources.includes(normalized)) {
+    canonical = normalized
+  }
+
+  if (!canonical) return ''
+  return `label-icon-${canonical}`
 }
 
 // number formatting with grouping (e.g. 10,000)
