@@ -73,10 +73,33 @@ function post_process_html(html, base_url) {
   })
 
   // Replace packagecontrol.io references with packages.sublimetext.io
+  // Only rewrite URLs that point at the old homepage ("/")
+  // or "/packages/*" paths, since those are the only pages
+  // mirrored on the new domain.
   doc.querySelectorAll('a[href]').forEach((el) => {
     const href = el.getAttribute('href')
-    if (href && href.includes('packagecontrol.io')) {
-      el.setAttribute('href', href.replace(/packagecontrol\.io/g, 'packages.sublimetext.io'))
+    if (!href || !href.includes('packagecontrol.io')) {
+      return
+    }
+
+    let url
+    try {
+      url = new URL(href, base)
+    } catch {
+      return
+    }
+
+    const hostname = url.hostname.toLowerCase()
+    if (hostname !== 'packagecontrol.io') {
+      return
+    }
+
+    const path = url.pathname || '/'
+    const isHomepage = path === '/'
+    const isPackagePage = path.startsWith('/packages/')
+    if (isHomepage || isPackagePage) {
+      url.hostname = 'packages.sublimetext.io'
+      el.setAttribute('href', url.toString())
     }
   })
 
