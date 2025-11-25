@@ -88,10 +88,12 @@ isPackagePage: true
     {{ charts.chart(pkg.installed, pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates, pkg.releases) }}
   </div>
 
-  <ul class="stats">
-    {{ pack.installs(pkg.installed) }}
-    {{ pack.stars(pkg.stars) }}
-  </ul>
+  {% if pkg.installed > 0 or pkg.stars > 0 %}
+    <ul class="stats">
+      {{ pack.installs(pkg.installed) }}
+      {{ pack.stars(pkg.stars) }}
+    </ul>
+  {% endif %}
 
   {{ pack.labels(pkg) }}
 
