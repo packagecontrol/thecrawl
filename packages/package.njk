@@ -49,14 +49,18 @@ isPackagePage: true
   {% endif %}
 
   <p>
-    By
-    {% for author in pkg.author -%}
-      {% set q = pack.searchQueryFor('author', author) %}
-      <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
-    {%- endfor %}
+    {% if pkg.author and pkg.author | length %}
+      By
+      {% for author in pkg.author -%}
+        {% set q = pack.searchQueryFor('author', author) %}
+        <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
+      {%- endfor %}
+      {% if pkg.removed or pkg.created_at or pkg.last_modified %}
+        <br>
+      {% endif %}
+    {% endif %}
 
     {% if pkg.removed %}
-      <br>
       {% if pkg.created_at -%}
         Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>,
         removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
@@ -65,7 +69,6 @@ isPackagePage: true
       {%- endif %}
 
     {% elif pkg.created_at %}
-      <br>
       Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>
       {%- if pkg.created_at != pkg.last_modified -%}
         , last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
@@ -74,7 +77,6 @@ isPackagePage: true
       {%- endif %}.
 
     {% elif pkg.last_modified %}
-      <br>
       Last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
       {%- if pkg.archived_at -%}
         , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
@@ -82,14 +84,32 @@ isPackagePage: true
     {% endif %}
   </p>
 
-  <div class="chart-container">
-    {{ charts.chart(pkg.installed, pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates, pkg.releases) }}
-  </div>
+  {# Hide completely empty charts: no install stats and no release in the running year window #}
+  {% set stats_sum = (pkg.weekly_installs | sum) + (pkg.weekly_removals | sum) + (pkg.weekly_upgrades | sum) %}
+  {% set has_install_stats = stats_sum > 0 %}
+  {% set has_release_in_window = false %}
+  {% if pkg.releases and (pkg.releases | length) > 0 and pkg.weekly_dates and (pkg.weekly_dates | length) > 0 %}
+    {% set latest_release = pkg.releases | first %}
+    {% if latest_release.date %}
+      {% set release_index = pkg.weekly_dates | iso_week_index(latest_release.date) %}
+      {% if release_index is not none and release_index < (pkg.weekly_dates | length) %}
+        {% set has_release_in_window = true %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
 
-  <ul class="stats">
-    {{ pack.installs(pkg.installed) }}
-    {{ pack.stars(pkg.stars) }}
-  </ul>
+  {% if has_install_stats or has_release_in_window %}
+    <div class="chart-container">
+      {{ charts.chart(pkg.installed, pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates, pkg.releases) }}
+    </div>
+  {% endif %}
+
+  {% if pkg.installed > 0 or pkg.stars > 0 %}
+    <ul class="stats">
+      {{ pack.installs(pkg.installed) }}
+      {{ pack.stars(pkg.stars) }}
+    </ul>
+  {% endif %}
 
   {{ pack.labels(pkg) }}
 

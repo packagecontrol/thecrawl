@@ -42,6 +42,7 @@ body {
 main {
   max-width: var(--max-content);
   margin: 0 auto;
+  min-height: 44vh;
   padding: 0 var(--side-padding) 3.2rem var(--side-padding);
 
   html.about-faq & {
