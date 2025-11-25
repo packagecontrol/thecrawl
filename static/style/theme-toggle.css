@@ -1,16 +1,13 @@
 #theme-toggle {
   appearance: none;
   all: unset;
-  width: 52px;
-  height: 26px;
   background: var(--background-1);
   border: 2px solid var(--background-1);
   border-radius: 1.6rem;
   cursor: pointer;
-  display: flex;
-  align-items: center;
   margin: 0 auto;
-  position: relative;
+  padding: 2px 0;
+  vertical-align: -1px;
   transition: outline .1s ease-in-out;
 
   &:focus {
@@ -20,16 +17,11 @@
   .icon {
     width: 20px;
     height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border-radius: 100%;
     background: var(--foreground-3);
     color: var(--background-1);
     padding: 1px;
     margin: 0 2px;
-    transition: transform .2s ease-in-out;
-    will-change: transform;
 
     svg {
       margin-top: -2px;
@@ -49,9 +41,6 @@
   }
 
   :root[data-theme='dark'] & {
-    .icon {
-      transform: translateX(26px);
-    }
     .dark {
       display: flex;
     }
