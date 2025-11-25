@@ -84,9 +84,25 @@ isPackagePage: true
     {% endif %}
   </p>
 
-  <div class="chart-container">
-    {{ charts.chart(pkg.installed, pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates, pkg.releases) }}
-  </div>
+  {# Hide completely empty charts: no install stats and no release in the running year window #}
+  {% set stats_sum = (pkg.weekly_installs | sum) + (pkg.weekly_removals | sum) + (pkg.weekly_upgrades | sum) %}
+  {% set has_install_stats = stats_sum > 0 %}
+  {% set has_release_in_window = false %}
+  {% if pkg.releases and (pkg.releases | length) > 0 and pkg.weekly_dates and (pkg.weekly_dates | length) > 0 %}
+    {% set latest_release = pkg.releases | first %}
+    {% if latest_release.date %}
+      {% set release_index = pkg.weekly_dates | iso_week_index(latest_release.date) %}
+      {% if release_index is not none and release_index < (pkg.weekly_dates | length) %}
+        {% set has_release_in_window = true %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+
+  {% if has_install_stats or has_release_in_window %}
+    <div class="chart-container">
+      {{ charts.chart(pkg.installed, pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates, pkg.releases) }}
+    </div>
+  {% endif %}
 
   {% if pkg.installed > 0 or pkg.stars > 0 %}
     <ul class="stats">
