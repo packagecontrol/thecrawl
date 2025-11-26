@@ -22,7 +22,7 @@ const spritePath = path.resolve(cwd, 'static', 'label-icons.svg')
 const jsonPath = path.resolve(cwd, 'label-icons.json')
 const cssPath = path.resolve(cwd, 'static', 'style', 'label-icons.css')
 const workspacePath = path.resolve(cwd, 'workspace.json')
-const aliasesPath = path.resolve(cwd, 'label-icons-aliases.json')
+const configPath = path.resolve(cwd, 'label-icons-config.json')
 
 function ensureDir(targetPath) {
   if (!fs.existsSync(targetPath)) {
@@ -64,17 +64,25 @@ function main() {
 
   /** @type {Record<string, string>} */
   let aliases = {}
+  /** @type {Record<string, string>} */
+  let colorMap = {}
 
-  // Load alias mapping: label -> canonical language/icon id (e.g. ecmascript6 -> js)
-  if (fs.existsSync(aliasesPath)) {
+  // Load config (aliases + colors)
+  if (fs.existsSync(configPath)) {
     try {
-      const raw = fs.readFileSync(aliasesPath, 'utf8')
-      const data = JSON.parse(raw)
-      if (data && typeof data === 'object') {
-        aliases = data
+      const raw = fs.readFileSync(configPath, 'utf8')
+      const cfg = JSON.parse(raw)
+      if (cfg && typeof cfg === 'object') {
+        if (cfg.aliases && typeof cfg.aliases === 'object') {
+          aliases = cfg.aliases
+        }
+        if (cfg.colors && typeof cfg.colors === 'object') {
+          colorMap = cfg.colors
+        }
       }
     } catch {
       aliases = {}
+      colorMap = {}
     }
   }
 
@@ -94,21 +102,11 @@ function main() {
     }
   }
 
-  // Optional metadata for colors
-  const colorsPath = path.join(iconsDir, 'colors.json')
+  // Optional metadata for per-icon tint names (color *names*, not hex)
   const iconsMetaPath = path.join(iconsDir, 'icons.json')
-  /** @type {Record<string,string>} */
-  let colorMap = {}
   /** @type {Record<string,{color?:string}>} */
   let iconMeta = {}
 
-  if (fs.existsSync(colorsPath)) {
-    try {
-      colorMap = JSON.parse(fs.readFileSync(colorsPath, 'utf8'))
-    } catch {
-      colorMap = {}
-    }
-  }
   if (fs.existsSync(iconsMetaPath)) {
     try {
       iconMeta = JSON.parse(fs.readFileSync(iconsMetaPath, 'utf8'))

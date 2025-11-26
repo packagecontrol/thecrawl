@@ -15,7 +15,7 @@ let labelIconTints = {}
 
 try {
   const sourcesPath = path.join(__dirname, 'label-icons.json')
-  const aliasesPath = path.join(__dirname, 'label-icons-aliases.json')
+  const configPath = path.join(__dirname, 'label-icons-config.json')
 
   if (fs.existsSync(sourcesPath)) {
     const raw = fs.readFileSync(sourcesPath, 'utf8')
@@ -28,11 +28,11 @@ try {
     }
   }
 
-  if (fs.existsSync(aliasesPath)) {
-    const raw = fs.readFileSync(aliasesPath, 'utf8')
-    const data = JSON.parse(raw)
-    if (data && typeof data === 'object') {
-      labelIconAliases = data
+  if (fs.existsSync(configPath)) {
+    const raw = fs.readFileSync(configPath, 'utf8')
+    const cfg = JSON.parse(raw)
+    if (cfg && typeof cfg === 'object' && cfg.aliases && typeof cfg.aliases === 'object') {
+      labelIconAliases = cfg.aliases
     }
   }
 } catch {

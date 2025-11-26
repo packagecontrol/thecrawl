@@ -1,14 +1,14 @@
 :root {
-  --label-icon-color-red: #d52a29;
-  --label-icon-color-orange: #ea7130;
-  --label-icon-color-yellow: #e79627;
-  --label-icon-color-green: #6aab20;
-  --label-icon-color-cyan: #26a2c1;
-  --label-icon-color-blue: #497ce3;
-  --label-icon-color-purple: #7963e6;
-  --label-icon-color-pink: #f13c6f;
-  --label-icon-color-sky: #1e9cef;
-  --label-icon-color-graphite: #7a8387;
+  --label-icon-color-red: var(--red-2);
+  --label-icon-color-orange: var(--orange-2);
+  --label-icon-color-yellow: var(--orange-2);
+  --label-icon-color-green: var(--green-2);
+  --label-icon-color-cyan: var(--blue-2);
+  --label-icon-color-blue: var(--blue-2);
+  --label-icon-color-purple: hsl(275 76% 58%);
+  --label-icon-color-pink: hsl(345 76% 58%);
+  --label-icon-color-sky: var(--blue-2);
+  --label-icon-color-graphite: hsl(245 21% 42%);
 }
 
 .label-icon {

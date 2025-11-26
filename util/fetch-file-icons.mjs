@@ -69,7 +69,7 @@ function main() {
 
   // Also copy color and icon metadata for tints
   const metaDir = path.join(tempDir, 'icons')
-  const metaFiles = ['colors.json', 'icons.json']
+  const metaFiles = ['icons.json']
   for (const file of metaFiles) {
     const src = path.join(metaDir, file)
     if (fs.existsSync(src)) {
