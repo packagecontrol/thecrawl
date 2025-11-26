@@ -67,6 +67,18 @@ function main() {
 
   console.log(`Copied ${svgFiles.length} SVG icons into ${destIconsDir}`)
 
+  // Also copy color and icon metadata for tints
+  const metaDir = path.join(tempDir, 'icons')
+  const metaFiles = ['colors.json', 'icons.json']
+  for (const file of metaFiles) {
+    const src = path.join(metaDir, file)
+    if (fs.existsSync(src)) {
+      const dest = path.join(destIconsDir, file)
+      fs.copyFileSync(src, dest)
+      console.log(`Copied ${file} into ${destIconsDir}`)
+    }
+  }
+
   // Clean up the temporary clone
   rimraf(tempDir)
 }

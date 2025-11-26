@@ -140,7 +140,8 @@ export class Card {
       if (iconId) {
         const svgNS = 'http://www.w3.org/2000/svg'
         const svg = document.createElementNS(svgNS, 'svg')
-        svg.setAttribute('class', 'label-icon')
+        const canonical = iconId.replace(/^label-icon-/, '')
+        svg.setAttribute('class', `label-icon label-icon--${canonical}`)
         svg.setAttribute('aria-hidden', 'true')
         const use = document.createElementNS(svgNS, 'use')
         use.setAttribute('href', `/static/label-icons.svg#${iconId}`)

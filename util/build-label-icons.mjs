@@ -20,6 +20,7 @@ const cwd = process.cwd()
 const iconsDir = path.resolve(cwd, '.AFileIcon-icons')
 const spritePath = path.resolve(cwd, 'static', 'label-icons.svg')
 const jsonPath = path.resolve(cwd, 'label-icons.json')
+const cssPath = path.resolve(cwd, 'static', 'style', 'label-icons.css')
 
 function ensureDir(targetPath) {
   if (!fs.existsSync(targetPath)) {
@@ -54,6 +55,30 @@ function main() {
   }
 
   ensureDir(path.dirname(spritePath))
+  ensureDir(path.dirname(cssPath))
+
+  // Optional metadata for colors
+  const colorsPath = path.join(iconsDir, 'colors.json')
+  const iconsMetaPath = path.join(iconsDir, 'icons.json')
+  /** @type {Record<string,string>} */
+  let colorMap = {}
+  /** @type {Record<string,{color?:string}>} */
+  let iconMeta = {}
+
+  if (fs.existsSync(colorsPath)) {
+    try {
+      colorMap = JSON.parse(fs.readFileSync(colorsPath, 'utf8'))
+    } catch {
+      colorMap = {}
+    }
+  }
+  if (fs.existsSync(iconsMetaPath)) {
+    try {
+      iconMeta = JSON.parse(fs.readFileSync(iconsMetaPath, 'utf8'))
+    } catch {
+      iconMeta = {}
+    }
+  }
 
   const entries = fs.readdirSync(iconsDir, { withFileTypes: true })
   const svgFiles = entries.filter(
@@ -61,8 +86,8 @@ function main() {
   )
 
   const symbols = []
-  /** @type {string[]} */
-  const labels = []
+  /** @type {Record<string, string|null>} */
+  const labelTints = {}
 
   for (const entry of svgFiles) {
     const fileName = entry.name
@@ -76,7 +101,14 @@ function main() {
     const symbol = extractSymbolFromSvg(raw, id)
 
     symbols.push(symbol)
-    labels.push(type)
+
+    // Determine tint name from icons metadata, if available
+    let tint = null
+    const meta = iconMeta[base]
+    if (meta && typeof meta.color === 'string' && colorMap[meta.color]) {
+      tint = meta.color
+    }
+    labelTints[type] = tint
   }
 
   const sprite = [
@@ -87,11 +119,44 @@ function main() {
   ].join('\n')
 
   fs.writeFileSync(spritePath, sprite, 'utf8')
-  labels.sort()
-  fs.writeFileSync(jsonPath, JSON.stringify(labels, null, 2) + '\n', 'utf8')
+
+  // Persist label → tint mapping (tint may be null)
+  const sortedKeys = Object.keys(labelTints).sort()
+  const sortedMapping = {}
+  for (const key of sortedKeys) {
+    sortedMapping[key] = labelTints[key]
+  }
+  fs.writeFileSync(jsonPath, JSON.stringify(sortedMapping, null, 2) + '\n', 'utf8')
+
+  // Generate CSS variables for all colors and per-label tint rules
+  const cssLines = []
+  if (Object.keys(colorMap).length > 0) {
+    cssLines.push(':root {')
+    for (const [name, value] of Object.entries(colorMap)) {
+      cssLines.push(`  --label-icon-color-${name}: ${value};`)
+    }
+    cssLines.push('}')
+    cssLines.push('')
+  }
+
+  cssLines.push('.label-icon {')
+  cssLines.push('  fill: currentColor;')
+  cssLines.push('}')
+  cssLines.push('')
+
+  for (const [label, tint] of Object.entries(sortedMapping)) {
+    if (!tint || !colorMap[tint]) continue
+    cssLines.push(`.label-icon--${label} {`)
+    cssLines.push(`  color: var(--label-icon-color-${tint});`)
+    cssLines.push('}')
+  }
+  cssLines.push('')
+
+  fs.writeFileSync(cssPath, cssLines.join('\n'), 'utf8')
 
   console.log(`Wrote ${symbols.length} label icons to ${spritePath}`)
-  console.log(`Wrote ${labels.length} canonical label names to ${jsonPath}`)
+  console.log(`Wrote ${sortedKeys.length} canonical label entries with tints to ${jsonPath}`)
+  console.log(`Wrote label icon styles to ${cssPath}`)
 }
 
 main()

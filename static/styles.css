@@ -9,6 +9,7 @@
 @import url('style/search.css');
 @import url('style/chart.css');
 @import url('style/theme-toggle.css');
+@import url('style/label-icons.css');
 
 html {
   height: 100%;

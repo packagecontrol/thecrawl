@@ -11,6 +11,7 @@ const __dirname = path.dirname(__filename)
 
 let labelIconSources = []
 let labelIconAliases = {}
+let labelIconTints = {}
 
 try {
   const sourcesPath = path.join(__dirname, 'label-icons.json')
@@ -21,6 +22,9 @@ try {
     const data = JSON.parse(raw)
     if (Array.isArray(data)) {
       labelIconSources = data
+    } else if (data && typeof data === 'object') {
+      labelIconSources = Object.keys(data)
+      labelIconTints = data
     }
   }
 
@@ -34,6 +38,7 @@ try {
 } catch {
   labelIconSources = []
   labelIconAliases = {}
+  labelIconTints = {}
 }
 
 // Filters as normal functions

@@ -79,7 +79,8 @@
         {% else %}
           <a class="button label" href="/?q={{ q }}">
             {% if icon_id %}
-              <svg class="label-icon" aria-hidden="true">
+              {% set canonical = icon_id | replace('label-icon-', '') %}
+              <svg class="label-icon label-icon--{{ canonical }}" aria-hidden="true">
                 <use href="/static/label-icons.svg#{{ icon_id }}"></use>
               </svg>
             {% endif %}
