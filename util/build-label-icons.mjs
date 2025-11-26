@@ -21,6 +21,8 @@ const iconsDir = path.resolve(cwd, '.AFileIcon-icons')
 const spritePath = path.resolve(cwd, 'static', 'label-icons.svg')
 const jsonPath = path.resolve(cwd, 'label-icons.json')
 const cssPath = path.resolve(cwd, 'static', 'style', 'label-icons.css')
+const workspacePath = path.resolve(cwd, 'workspace.json')
+const aliasesPath = path.resolve(cwd, 'label-icons-aliases.json')
 
 function ensureDir(targetPath) {
   if (!fs.existsSync(targetPath)) {
@@ -56,6 +58,41 @@ function main() {
 
   ensureDir(path.dirname(spritePath))
   ensureDir(path.dirname(cssPath))
+
+  /** @type {Set<string>} */
+  const usedLabels = new Set()
+
+  /** @type {Record<string, string>} */
+  let aliases = {}
+
+  // Load alias mapping: label -> canonical language/icon id (e.g. ecmascript6 -> js)
+  if (fs.existsSync(aliasesPath)) {
+    try {
+      const raw = fs.readFileSync(aliasesPath, 'utf8')
+      const data = JSON.parse(raw)
+      if (data && typeof data === 'object') {
+        aliases = data
+      }
+    } catch {
+      aliases = {}
+    }
+  }
+
+  // Collect labels actually used in the workspace
+  if (fs.existsSync(workspacePath)) {
+    const raw = fs.readFileSync(workspacePath, 'utf8')
+    const workspace = JSON.parse(raw)
+    const packages = Object.values(workspace.packages)
+    for (const pkg of packages) {
+      const labels = pkg.labels ?? []
+      for (const label of labels) {
+        const key = label.trim().toLowerCase()
+        if (!key) continue
+        const canonical = (aliases[key] && aliases[key].trim().toLowerCase()) || key
+        usedLabels.add(canonical)
+      }
+    }
+  }
 
   // Optional metadata for colors
   const colorsPath = path.join(iconsDir, 'colors.json')
@@ -94,6 +131,12 @@ function main() {
     const base = fileName.replace(/\.svg$/i, '')
     const type = base.replace(/^file_type_/, '')
     if (!type) continue
+
+    const typeKey = type.trim().toLowerCase()
+    // If we have a set of used labels, restrict icons to those labels (or alias targets)
+    if (usedLabels.size > 0 && !usedLabels.has(typeKey)) {
+      continue
+    }
 
     const id = `label-icon-${type}`
     const filePath = path.join(iconsDir, fileName)

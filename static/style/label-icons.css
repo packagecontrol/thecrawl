@@ -15,21 +15,6 @@
   fill: currentColor;
 }
 
-.label-icon--access {
-  color: var(--label-icon-color-red);
-}
-.label-icon--actionscript {
-  color: var(--label-icon-color-red);
-}
-.label-icon--ada {
-  color: var(--label-icon-color-red);
-}
-.label-icon--adonisjs {
-  color: var(--label-icon-color-purple);
-}
-.label-icon--ae {
-  color: var(--label-icon-color-purple);
-}
 .label-icon--ai {
   color: var(--label-icon-color-orange);
 }
@@ -38,21 +23,6 @@
 }
 .label-icon--ansible {
   color: var(--label-icon-color-red);
-}
-.label-icon--antlr {
-  color: var(--label-icon-color-orange);
-}
-.label-icon--apache {
-  color: var(--label-icon-color-yellow);
-}
-.label-icon--applescript {
-  color: var(--label-icon-color-graphite);
-}
-.label-icon--appveyor {
-  color: var(--label-icon-color-sky);
-}
-.label-icon--archive {
-  color: var(--label-icon-color-graphite);
 }
 .label-icon--arduino {
   color: var(--label-icon-color-cyan);
@@ -66,14 +36,8 @@
 .label-icon--audio {
   color: var(--label-icon-color-red);
 }
-.label-icon--awk {
-  color: var(--label-icon-color-red);
-}
 .label-icon--azure {
   color: var(--label-icon-color-sky);
-}
-.label-icon--babel {
-  color: var(--label-icon-color-yellow);
 }
 .label-icon--bazel {
   color: var(--label-icon-color-green);
@@ -81,19 +45,10 @@
 .label-icon--binary {
   color: var(--label-icon-color-graphite);
 }
-.label-icon--biome {
-  color: var(--label-icon-color-yellow);
-}
 .label-icon--blade {
   color: var(--label-icon-color-orange);
 }
-.label-icon--blender {
-  color: var(--label-icon-color-orange);
-}
 .label-icon--bower {
-  color: var(--label-icon-color-yellow);
-}
-.label-icon--bun {
   color: var(--label-icon-color-yellow);
 }
 .label-icon--c {
@@ -105,22 +60,7 @@
 .label-icon--c++ {
   color: var(--label-icon-color-sky);
 }
-.label-icon--cabal {
-  color: var(--label-icon-color-blue);
-}
-.label-icon--cad {
-  color: var(--label-icon-color-orange);
-}
-.label-icon--caddy {
-  color: var(--label-icon-color-blue);
-}
 .label-icon--cairo {
-  color: var(--label-icon-color-graphite);
-}
-.label-icon--cf {
-  color: var(--label-icon-color-cyan);
-}
-.label-icon--circleci {
   color: var(--label-icon-color-graphite);
 }
 .label-icon--clojure {
@@ -129,38 +69,17 @@
 .label-icon--cmake {
   color: var(--label-icon-color-blue);
 }
-.label-icon--cname {
-  color: var(--label-icon-color-sky);
-}
-.label-icon--cobol {
-  color: var(--label-icon-color-cyan);
-}
-.label-icon--codecov {
-  color: var(--label-icon-color-red);
-}
 .label-icon--coffeescript {
   color: var(--label-icon-color-orange);
 }
 .label-icon--composer {
   color: var(--label-icon-color-orange);
 }
-.label-icon--coreboot {
-  color: var(--label-icon-color-sky);
-}
-.label-icon--cottle {
-  color: var(--label-icon-color-orange);
-}
 .label-icon--cpp {
-  color: var(--label-icon-color-sky);
-}
-.label-icon--cppheader {
   color: var(--label-icon-color-sky);
 }
 .label-icon--crystal {
   color: var(--label-icon-color-graphite);
-}
-.label-icon--csharp {
-  color: var(--label-icon-color-blue);
 }
 .label-icon--css {
   color: var(--label-icon-color-blue);
@@ -171,20 +90,11 @@
 .label-icon--cuda {
   color: var(--label-icon-color-green);
 }
-.label-icon--cython {
-  color: var(--label-icon-color-yellow);
-}
 .label-icon--dart {
   color: var(--label-icon-color-cyan);
 }
-.label-icon--default {
-  color: var(--label-icon-color-graphite);
-}
 .label-icon--delphi {
   color: var(--label-icon-color-red);
-}
-.label-icon--dependabot {
-  color: var(--label-icon-color-sky);
 }
 .label-icon--diff {
   color: var(--label-icon-color-yellow);
@@ -194,15 +104,6 @@
 }
 .label-icon--docker {
   color: var(--label-icon-color-sky);
-}
-.label-icon--dotnet {
-  color: var(--label-icon-color-cyan);
-}
-.label-icon--editorconfig {
-  color: var(--label-icon-color-yellow);
-}
-.label-icon--ejs {
-  color: var(--label-icon-color-green);
 }
 .label-icon--elm {
   color: var(--label-icon-color-cyan);
@@ -219,17 +120,8 @@
 .label-icon--eslint {
   color: var(--label-icon-color-purple);
 }
-.label-icon--ex {
-  color: var(--label-icon-color-purple);
-}
 .label-icon--excel {
   color: var(--label-icon-color-green);
-}
-.label-icon--fabricengine {
-  color: var(--label-icon-color-purple);
-}
-.label-icon--fastq {
-  color: var(--label-icon-color-sky);
 }
 .label-icon--font {
   color: var(--label-icon-color-green);
@@ -237,29 +129,14 @@
 .label-icon--fortran {
   color: var(--label-icon-color-red);
 }
-.label-icon--fsharp {
-  color: var(--label-icon-color-sky);
-}
-.label-icon--gatsby {
-  color: var(--label-icon-color-purple);
-}
 .label-icon--git {
   color: var(--label-icon-color-orange);
 }
 .label-icon--gleam {
   color: var(--label-icon-color-pink);
 }
-.label-icon--glyphs {
-  color: var(--label-icon-color-green);
-}
 .label-icon--go {
   color: var(--label-icon-color-sky);
-}
-.label-icon--gradle {
-  color: var(--label-icon-color-cyan);
-}
-.label-icon--gradle_wrapper {
-  color: var(--label-icon-color-purple);
 }
 .label-icon--graphql {
   color: var(--label-icon-color-pink);
@@ -270,31 +147,10 @@
 .label-icon--groovy {
   color: var(--label-icon-color-cyan);
 }
-.label-icon--gruntfile {
-  color: var(--label-icon-color-orange);
-}
-.label-icon--gulpfile {
-  color: var(--label-icon-color-pink);
-}
-.label-icon--hack {
-  color: var(--label-icon-color-yellow);
-}
 .label-icon--haml {
   color: var(--label-icon-color-yellow);
 }
-.label-icon--harbour {
-  color: var(--label-icon-color-sky);
-}
 .label-icon--haskell {
-  color: var(--label-icon-color-purple);
-}
-.label-icon--haxe {
-  color: var(--label-icon-color-orange);
-}
-.label-icon--haxelib {
-  color: var(--label-icon-color-red);
-}
-.label-icon--heroku {
   color: var(--label-icon-color-purple);
 }
 .label-icon--html {
@@ -303,26 +159,14 @@
 .label-icon--http {
   color: var(--label-icon-color-purple);
 }
-.label-icon--hxml {
-  color: var(--label-icon-color-blue);
-}
 .label-icon--image {
   color: var(--label-icon-color-green);
-}
-.label-icon--indesign {
-  color: var(--label-icon-color-pink);
 }
 .label-icon--java {
   color: var(--label-icon-color-red);
 }
-.label-icon--jenkins {
-  color: var(--label-icon-color-cyan);
-}
 .label-icon--jest {
   color: var(--label-icon-color-red);
-}
-.label-icon--jinja {
-  color: var(--label-icon-color-graphite);
 }
 .label-icon--jq {
   color: var(--label-icon-color-orange);
@@ -348,28 +192,13 @@
 .label-icon--kotlin {
   color: var(--label-icon-color-blue);
 }
-.label-icon--kotlin_gradle {
-  color: var(--label-icon-color-blue);
-}
-.label-icon--ksp {
-  color: var(--label-icon-color-graphite);
-}
 .label-icon--less {
   color: var(--label-icon-color-blue);
-}
-.label-icon--license {
-  color: var(--label-icon-color-cyan);
 }
 .label-icon--liquid {
   color: var(--label-icon-color-green);
 }
 .label-icon--lisp {
-  color: var(--label-icon-color-red);
-}
-.label-icon--llvm {
-  color: var(--label-icon-color-blue);
-}
-.label-icon--lock {
   color: var(--label-icon-color-red);
 }
 .label-icon--log {
@@ -393,44 +222,14 @@
 .label-icon--maven {
   color: var(--label-icon-color-red);
 }
-.label-icon--maven_wrapper {
-  color: var(--label-icon-color-purple);
-}
-.label-icon--maya {
-  color: var(--label-icon-color-cyan);
-}
-.label-icon--mcnp {
-  color: var(--label-icon-color-blue);
-}
 .label-icon--mdx {
   color: var(--label-icon-color-cyan);
-}
-.label-icon--meson {
-  color: var(--label-icon-color-blue);
-}
-.label-icon--mint {
-  color: var(--label-icon-color-green);
-}
-.label-icon--mojo {
-  color: var(--label-icon-color-graphite);
-}
-.label-icon--mp3tag {
-  color: var(--label-icon-color-yellow);
-}
-.label-icon--mustache {
-  color: var(--label-icon-color-orange);
-}
-.label-icon--nextjs {
-  color: var(--label-icon-color-sky);
 }
 .label-icon--nginx {
   color: var(--label-icon-color-green);
 }
 .label-icon--nim {
   color: var(--label-icon-color-yellow);
-}
-.label-icon--nix {
-  color: var(--label-icon-color-sky);
 }
 .label-icon--nodejs {
   color: var(--label-icon-color-green);
@@ -444,29 +243,17 @@
 .label-icon--nsis {
   color: var(--label-icon-color-purple);
 }
-.label-icon--nuxt {
-  color: var(--label-icon-color-sky);
-}
 .label-icon--ocaml {
   color: var(--label-icon-color-yellow);
 }
 .label-icon--odin {
   color: var(--label-icon-color-blue);
 }
-.label-icon--onenote {
-  color: var(--label-icon-color-purple);
-}
-.label-icon--opengl {
-  color: var(--label-icon-color-orange);
-}
 .label-icon--parquet {
   color: var(--label-icon-color-sky);
 }
 .label-icon--pawn {
   color: var(--label-icon-color-orange);
-}
-.label-icon--pcb {
-  color: var(--label-icon-color-cyan);
 }
 .label-icon--pdf {
   color: var(--label-icon-color-red);
@@ -477,29 +264,8 @@
 .label-icon--php {
   color: var(--label-icon-color-blue);
 }
-.label-icon--pine {
-  color: var(--label-icon-color-green);
-}
-.label-icon--pkl {
-  color: var(--label-icon-color-green);
-}
-.label-icon--playlist {
-  color: var(--label-icon-color-blue);
-}
-.label-icon--plist {
-  color: var(--label-icon-color-cyan);
-}
-.label-icon--pnpm {
-  color: var(--label-icon-color-purple);
-}
 .label-icon--postcss {
   color: var(--label-icon-color-red);
-}
-.label-icon--postscript {
-  color: var(--label-icon-color-red);
-}
-.label-icon--powerpoint {
-  color: var(--label-icon-color-orange);
 }
 .label-icon--powershell {
   color: var(--label-icon-color-blue);
@@ -507,29 +273,17 @@
 .label-icon--preferences {
   color: var(--label-icon-color-yellow);
 }
-.label-icon--premiere {
-  color: var(--label-icon-color-purple);
-}
 .label-icon--prisma {
   color: var(--label-icon-color-graphite);
 }
-.label-icon--prolog {
-  color: var(--label-icon-color-red);
-}
 .label-icon--protobuf {
   color: var(--label-icon-color-graphite);
-}
-.label-icon--psd {
-  color: var(--label-icon-color-sky);
 }
 .label-icon--pug {
   color: var(--label-icon-color-yellow);
 }
 .label-icon--puppet {
   color: var(--label-icon-color-purple);
-}
-.label-icon--purebasic {
-  color: var(--label-icon-color-graphite);
 }
 .label-icon--python {
   color: var(--label-icon-color-yellow);
@@ -546,26 +300,11 @@
 .label-icon--rails {
   color: var(--label-icon-color-red);
 }
-.label-icon--reach {
-  color: var(--label-icon-color-green);
-}
 .label-icon--react {
-  color: var(--label-icon-color-sky);
-}
-.label-icon--registry {
   color: var(--label-icon-color-sky);
 }
 .label-icon--restructuredtext {
   color: var(--label-icon-color-sky);
-}
-.label-icon--riot {
-  color: var(--label-icon-color-red);
-}
-.label-icon--rollup {
-  color: var(--label-icon-color-red);
-}
-.label-icon--rss {
-  color: var(--label-icon-color-orange);
 }
 .label-icon--ruby {
   color: var(--label-icon-color-red);
@@ -591,9 +330,6 @@
 .label-icon--shell {
   color: var(--label-icon-color-green);
 }
-.label-icon--sketch {
-  color: var(--label-icon-color-purple);
-}
 .label-icon--slim {
   color: var(--label-icon-color-cyan);
 }
@@ -609,14 +345,8 @@
 .label-icon--stata {
   color: var(--label-icon-color-sky);
 }
-.label-icon--stylelint {
-  color: var(--label-icon-color-graphite);
-}
 .label-icon--stylus {
   color: var(--label-icon-color-green);
-}
-.label-icon--sublime {
-  color: var(--label-icon-color-orange);
 }
 .label-icon--svelte {
   color: var(--label-icon-color-orange);
@@ -633,29 +363,8 @@
 .label-icon--tailwind {
   color: var(--label-icon-color-cyan);
 }
-.label-icon--taskfile {
-  color: var(--label-icon-color-cyan);
-}
-.label-icon--tcl {
-  color: var(--label-icon-color-yellow);
-}
-.label-icon--tern {
-  color: var(--label-icon-color-graphite);
-}
 .label-icon--terraform {
   color: var(--label-icon-color-purple);
-}
-.label-icon--test_js {
-  color: var(--label-icon-color-yellow);
-}
-.label-icon--test_jsx {
-  color: var(--label-icon-color-blue);
-}
-.label-icon--test_tsx {
-  color: var(--label-icon-color-sky);
-}
-.label-icon--test_typescript {
-  color: var(--label-icon-color-sky);
 }
 .label-icon--tex {
   color: var(--label-icon-color-blue);
@@ -669,17 +378,11 @@
 .label-icon--todo {
   color: var(--label-icon-color-green);
 }
-.label-icon--toit {
-  color: var(--label-icon-color-orange);
-}
 .label-icon--toml {
   color: var(--label-icon-color-cyan);
 }
 .label-icon--travis {
   color: var(--label-icon-color-orange);
-}
-.label-icon--tsx {
-  color: var(--label-icon-color-sky);
 }
 .label-icon--twig {
   color: var(--label-icon-color-green);
@@ -690,9 +393,6 @@
 .label-icon--typst {
   color: var(--label-icon-color-cyan);
 }
-.label-icon--unity3d {
-  color: var(--label-icon-color-sky);
-}
 .label-icon--unreal {
   color: var(--label-icon-color-graphite);
 }
@@ -702,26 +402,14 @@
 .label-icon--vala {
   color: var(--label-icon-color-sky);
 }
-.label-icon--vercel {
-  color: var(--label-icon-color-graphite);
-}
 .label-icon--verilog {
   color: var(--label-icon-color-blue);
 }
 .label-icon--vhdl {
   color: var(--label-icon-color-blue);
 }
-.label-icon--video {
-  color: var(--label-icon-color-purple);
-}
 .label-icon--vim {
   color: var(--label-icon-color-green);
-}
-.label-icon--visualstudio {
-  color: var(--label-icon-color-purple);
-}
-.label-icon--vite {
-  color: var(--label-icon-color-sky);
 }
 .label-icon--vue {
   color: var(--label-icon-color-cyan);
@@ -738,32 +426,17 @@
 .label-icon--wgsl {
   color: var(--label-icon-color-sky);
 }
-.label-icon--windicss {
-  color: var(--label-icon-color-sky);
-}
 .label-icon--windows {
   color: var(--label-icon-color-sky);
 }
 .label-icon--wit {
   color: var(--label-icon-color-pink);
 }
-.label-icon--wolfram {
-  color: var(--label-icon-color-red);
-}
-.label-icon--word {
-  color: var(--label-icon-color-blue);
-}
-.label-icon--xsl {
-  color: var(--label-icon-color-sky);
-}
 .label-icon--yaml {
   color: var(--label-icon-color-yellow);
 }
 .label-icon--yarn {
   color: var(--label-icon-color-blue);
-}
-.label-icon--yarn_wrapper {
-  color: var(--label-icon-color-purple);
 }
 .label-icon--zig {
   color: var(--label-icon-color-yellow);
