@@ -55,6 +55,7 @@
     {%- for label in pkg.labels %}
       {% set q = searchQueryFor('label', label) %}
       {% set icon_id = with_icons and (label | label_icon_id) or '' %}
+      {% set tint = with_icons and (label | label_icon_tint) or '' %}
       <li>
         {% if label == '…' %}
           <a class="button label-more" href="/labels" title="More labels">
@@ -79,8 +80,7 @@
         {% else %}
           <a class="button label" href="/?q={{ q }}">
             {% if icon_id %}
-              {% set canonical = icon_id | replace('label-icon-', '') %}
-              <svg class="label-icon label-icon--{{ canonical }}" aria-hidden="true">
+              <svg class="label-icon{{ tint and (' label-icon--' ~ tint) or '' }}" aria-hidden="true">
                 <use href="/static/label-icons.svg#{{ icon_id }}"></use>
               </svg>
             {% endif %}

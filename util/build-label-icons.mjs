@@ -10,7 +10,8 @@ import path from 'path'
  *
  * Outputs:
  *   static/label-icons.svg   - <symbol> sprite sheet
- *   label-icons.json         - ["python", "js", "vercel", ...] (canonical labels)
+ *   label-icons.json         - { "<label>": "<tintName>|null", ... }
+ *   static/style/label-icons.css - color variables and per-tint rules
  *
  * Usage (from repo root):
  *   node util/build-label-icons.mjs
@@ -169,7 +170,7 @@ function main() {
   }
   fs.writeFileSync(jsonPath, JSON.stringify(sortedMapping, null, 2) + '\n', 'utf8')
 
-  // Generate CSS variables for all colors and per-label tint rules
+  // Generate CSS variables for all colors and per-tint rules
   const cssLines = []
   if (Object.keys(colorMap).length > 0) {
     cssLines.push(':root {')
@@ -185,9 +186,12 @@ function main() {
   cssLines.push('}')
   cssLines.push('')
 
-  for (const [label, tint] of Object.entries(sortedMapping)) {
-    if (!tint || !colorMap[tint]) continue
-    cssLines.push(`.label-icon--${label} {`)
+  const usedTints = new Set(
+    Object.values(sortedMapping)
+      .filter(tint => typeof tint === 'string' && tint && colorMap[tint]),
+  )
+  for (const tint of usedTints) {
+    cssLines.push(`.label-icon--${tint} {`)
     cssLines.push(`  color: var(--label-icon-color-${tint});`)
     cssLines.push('}')
   }

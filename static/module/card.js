@@ -141,7 +141,8 @@ export class Card {
         const svgNS = 'http://www.w3.org/2000/svg'
         const svg = document.createElementNS(svgNS, 'svg')
         const canonical = iconId.replace(/^label-icon-/, '')
-        svg.setAttribute('class', `label-icon label-icon--${canonical}`)
+        const tint = resolveLabelIconTint(canonical)
+        svg.setAttribute('class', `label-icon${tint ? ' label-icon--' + tint : ''}`)
         svg.setAttribute('aria-hidden', 'true')
         const use = document.createElementNS(svgNS, 'use')
         use.setAttribute('href', `/static/label-icons.svg#${iconId}`)
@@ -188,16 +189,29 @@ function resolveLabelIconId(label) {
   const normalized = label.trim().toLowerCase()
   if (!normalized) return null
 
-  const sources = Array.isArray(window.__LABEL_ICON_SOURCES__) ? window.__LABEL_ICON_SOURCES__ : []
   const aliases = (window.__LABEL_ICON_ALIASES__ && typeof window.__LABEL_ICON_ALIASES__ === 'object')
     ? window.__LABEL_ICON_ALIASES__
     : {}
+  const tints = (window.__LABEL_ICON_TINTS__ && typeof window.__LABEL_ICON_TINTS__ === 'object')
+    ? window.__LABEL_ICON_TINTS__
+    : {}
 
   let canonical = aliases[normalized]
-  if (!canonical && sources.includes(normalized)) {
+  if (!canonical && Object.prototype.hasOwnProperty.call(tints, normalized)) {
     canonical = normalized
   }
 
   if (!canonical) return null
   return `label-icon-${canonical}`
+}
+
+function resolveLabelIconTint(canonical) {
+  if (typeof canonical !== 'string') return null
+  const key = canonical.trim().toLowerCase()
+  if (!key) return null
+  const tints = (window.__LABEL_ICON_TINTS__ && typeof window.__LABEL_ICON_TINTS__ === 'object')
+    ? window.__LABEL_ICON_TINTS__
+    : {}
+  const tint = tints[key]
+  return typeof tint === 'string' && tint ? tint : null
 }

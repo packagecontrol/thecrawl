@@ -66,12 +66,12 @@ export function compact(count) {
   return fmt.format(count)
 }
 
-export function label_icon_sources_json() {
-  return JSON.stringify(labelIconSources)
-}
-
 export function label_icon_aliases_json() {
   return JSON.stringify(labelIconAliases)
+}
+
+export function label_icon_tints_json() {
+  return JSON.stringify(labelIconTints)
 }
 
 export function label_icon_id(label) {
@@ -86,6 +86,21 @@ export function label_icon_id(label) {
 
   if (!canonical) return ''
   return `label-icon-${canonical}`
+}
+
+export function label_icon_tint(label) {
+  if (typeof label !== 'string') return ''
+  const normalized = label.trim().toLowerCase()
+  if (!normalized) return ''
+
+  let canonical = labelIconAliases[normalized]
+  if (!canonical && labelIconSources.includes(normalized)) {
+    canonical = normalized
+  }
+  if (!canonical) return ''
+
+  const tint = labelIconTints[canonical]
+  return typeof tint === 'string' ? tint : ''
 }
 
 // number formatting with grouping (e.g. 10,000)

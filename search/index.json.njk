@@ -3,7 +3,7 @@ permalink: "/search/index.json"
 ---
 {% import "packages/macros.njk" as pack %}
 {
-"packages": [
+  "packages": [
 {% for pkg in collections.searchable_packages -%}
   {
     "name": "{{ pkg.name }}",
@@ -31,7 +31,7 @@ permalink: "/search/index.json"
     "permalink": "/packages/{{ pkg.name | urlencode }}"
   }{{ "," if not loop.last }}
 {%- endfor %}
-],
-"label_icon_sources": {{ "" | label_icon_sources_json | safe }},
-"label_icon_aliases": {{ "" | label_icon_aliases_json | safe }}
+  ],
+  "label_icon_aliases": {{ "" | label_icon_aliases_json | safe }},
+  "label_icon_tints": {{ "" | label_icon_tints_json | safe }}
 }
