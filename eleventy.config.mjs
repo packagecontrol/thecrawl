@@ -268,6 +268,7 @@ export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy('assets')
   eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + util.gitHash : 'static' })
 
+  eleventyConfig.ignores.add('.AFileIcon')
   eleventyConfig.ignores.add('util')
   eleventyConfig.ignores.add('README.md')
   eleventyConfig.ignores.add('**/*.test.js')

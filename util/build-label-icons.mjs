@@ -3,10 +3,11 @@ import path from 'path'
 
 /**
  * Build an SVG sprite and JSON mapping for label icons based on
- * SVGs from `.AFileIcon-icons`.
+ * SVGs from repo at `.AFileIcon`.
  *
  * Input:
- *   .AFileIcon-icons/file_type_<label>.svg
+ *   .AFileIcon/icons/svg/file_type_<label>.svg
+ *   .AFileIcon/icons/icons.json
  *
  * Outputs:
  *   static/label-icons.svg   - <symbol> sprite sheet
@@ -17,11 +18,16 @@ import path from 'path'
  */
 
 const cwd = process.cwd()
-const iconsDir = path.resolve(cwd, '.AFileIcon-icons')
-const spritePath = path.resolve(cwd, 'static', 'label-icons.svg')
-const jsonPath = path.resolve(cwd, 'label-icons.json')
+
+const repoDir = path.resolve(cwd, '.AFileIcon')
+const svgDir = path.join(repoDir, 'icons', 'svg')
+const iconsMetaPath = path.join(repoDir, 'icons', 'icons.json')
 const workspacePath = path.resolve(cwd, 'workspace.json')
 const configPath = path.resolve(cwd, 'label-icons-config.json')
+
+// OUT
+const spritePath = path.resolve(cwd, 'static', 'label-icons.svg')
+const jsonPath = path.resolve(cwd, 'label-icons.json')
 
 function ensureDir(targetPath) {
   if (!fs.existsSync(targetPath)) {
@@ -48,9 +54,9 @@ function extractSymbolFromSvg(content, id) {
 }
 
 function main() {
-  if (!fs.existsSync(iconsDir)) {
-    console.error(`Icons directory not found: ${iconsDir}`)
-    console.error('Run `node util/fetch-file-icons.mjs` first.')
+  if (!fs.existsSync(svgDir)) {
+    console.error(`SVG icons directory not found: ${svgDir}`)
+    console.error('Run `make build-label-icons` to clone AFileIcon first.')
     process.exitCode = 1
     return
   }
@@ -95,7 +101,6 @@ function main() {
   }
 
   // Optional metadata for per-icon tint names (color *names*, not hex)
-  const iconsMetaPath = path.join(iconsDir, 'icons.json')
   /** @type {Record<string,{color?:string}>} */
   let iconMeta = {}
 
@@ -107,7 +112,7 @@ function main() {
     }
   }
 
-  const entries = fs.readdirSync(iconsDir, { withFileTypes: true })
+  const entries = fs.readdirSync(svgDir, { withFileTypes: true })
   const svgFiles = entries.filter(
     e => e.isFile() && e.name.toLowerCase().startsWith('file_type_') && e.name.toLowerCase().endsWith('.svg'),
   )
@@ -129,7 +134,7 @@ function main() {
     }
 
     const id = `label-icon-${type}`
-    const filePath = path.join(iconsDir, fileName)
+    const filePath = path.join(svgDir, fileName)
     const raw = fs.readFileSync(filePath, 'utf8')
     const symbol = extractSymbolFromSvg(raw, id)
 

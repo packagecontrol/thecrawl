@@ -18,7 +18,7 @@ build-emoji:
 	npm run build:emoji
 
 build-label-icons:
-	npm run fetch:file-icons
+	[ -d .AFileIcon ] || git clone --depth 1 https://github.com/SublimeText/AFileIcon.git .AFileIcon
 	npm run build:label-icons
 
 lint:
@@ -29,6 +29,9 @@ test:
 
 clean:
 	rm -rf _site/*
+
+clean-a-fileicon:
+	rm -rf .AFileIcon
 
 serve:
 	open http://localhost:8080/

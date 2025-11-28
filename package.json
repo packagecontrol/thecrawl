@@ -8,7 +8,6 @@
     "test": "vitest run",
     "test:watch": "vitest --watch",
     "build:emoji": "node util/build-emoji-json.mjs",
-    "fetch:file-icons": "node util/fetch-file-icons.mjs",
     "build:label-icons": "node util/build-label-icons.mjs"
   },
   "dependencies": {
