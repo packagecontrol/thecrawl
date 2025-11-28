@@ -11,7 +11,6 @@ import path from 'path'
  * Outputs:
  *   static/label-icons.svg   - <symbol> sprite sheet
  *   label-icons.json         - { "<label>": "<tintName>|null", ... }
- *   static/style/label-icons.css - color variables and per-tint rules
  *
  * Usage (from repo root):
  *   node util/build-label-icons.mjs
@@ -21,7 +20,6 @@ const cwd = process.cwd()
 const iconsDir = path.resolve(cwd, '.AFileIcon-icons')
 const spritePath = path.resolve(cwd, 'static', 'label-icons.svg')
 const jsonPath = path.resolve(cwd, 'label-icons.json')
-const cssPath = path.resolve(cwd, 'static', 'style', 'label-icons.css')
 const workspacePath = path.resolve(cwd, 'workspace.json')
 const configPath = path.resolve(cwd, 'label-icons-config.json')
 
@@ -58,17 +56,14 @@ function main() {
   }
 
   ensureDir(path.dirname(spritePath))
-  ensureDir(path.dirname(cssPath))
 
   /** @type {Set<string>} */
   const usedLabels = new Set()
 
   /** @type {Record<string, string>} */
   let aliases = {}
-  /** @type {Record<string, string>} */
-  let colorMap = {}
 
-  // Load config (aliases + colors)
+  // Load config (aliases)
   if (fs.existsSync(configPath)) {
     try {
       const raw = fs.readFileSync(configPath, 'utf8')
@@ -77,13 +72,9 @@ function main() {
         if (cfg.aliases && typeof cfg.aliases === 'object') {
           aliases = cfg.aliases
         }
-        if (cfg.colors && typeof cfg.colors === 'object') {
-          colorMap = cfg.colors
-        }
       }
     } catch {
       aliases = {}
-      colorMap = {}
     }
   }
 
@@ -147,7 +138,7 @@ function main() {
     // Determine tint name from icons metadata, if available
     let tint = null
     const meta = iconMeta[base]
-    if (meta && typeof meta.color === 'string' && colorMap[meta.color]) {
+    if (meta && typeof meta.color === 'string') {
       tint = meta.color
     }
     labelTints[type] = tint
@@ -170,38 +161,8 @@ function main() {
   }
   fs.writeFileSync(jsonPath, JSON.stringify(sortedMapping, null, 2) + '\n', 'utf8')
 
-  // Generate CSS variables for all colors and per-tint rules
-  const cssLines = []
-  if (Object.keys(colorMap).length > 0) {
-    cssLines.push(':root {')
-    for (const [name, value] of Object.entries(colorMap)) {
-      cssLines.push(`  --label-icon-color-${name}: ${value};`)
-    }
-    cssLines.push('}')
-    cssLines.push('')
-  }
-
-  cssLines.push('.label-icon {')
-  cssLines.push('  fill: currentColor;')
-  cssLines.push('}')
-  cssLines.push('')
-
-  const usedTints = new Set(
-    Object.values(sortedMapping)
-      .filter(tint => typeof tint === 'string' && tint && colorMap[tint]),
-  )
-  for (const tint of usedTints) {
-    cssLines.push(`.label-icon--${tint} {`)
-    cssLines.push(`  color: var(--label-icon-color-${tint});`)
-    cssLines.push('}')
-  }
-  cssLines.push('')
-
-  fs.writeFileSync(cssPath, cssLines.join('\n'), 'utf8')
-
   console.log(`Wrote ${symbols.length} label icons to ${spritePath}`)
   console.log(`Wrote ${sortedKeys.length} canonical label entries with tints to ${jsonPath}`)
-  console.log(`Wrote label icon styles to ${cssPath}`)
 }
 
 main()

@@ -31,6 +31,10 @@
   --green-1: hsl(80 70% 49%);
   --green-2: hsl(80 67% 47%);
   --green-3: hsl(80 65% 42%);
+
+  --purple-1: hsl(275 76% 58%);
+  --pink-1: hsl(345 76% 58%);
+  --graphite-1: hsl(245 21% 42%);
 }
 
 :root[data-theme='dark'] {
@@ -59,4 +63,8 @@
   --green-1: hsl(80 67% 47%);
   --green-2: hsl(80 70% 49%);
   --green-3: hsl(80 72% 58%);
+
+  --purple-1: hsl(275 80% 64%);
+  --pink-1: hsl(345 82% 62%);
+  --graphite-1: hsl(245 20% 47%);
 }

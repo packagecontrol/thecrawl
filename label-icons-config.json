@@ -1,21 +1,8 @@
 {
-  "_": "Manually maintained mapping of labels to icon/language ids and shared colors",
+  "_": "Manually maintained mapping of labels to icon/language ids",
   "aliases": {
     "javascript": "js",
     "ecmascript": "js",
     "ecmascript6": "js"
-  },
-  "colors": {
-    "red": "var(--red-2)",
-    "orange": "var(--orange-2)",
-    "yellow": "var(--orange-2)",
-    "green": "var(--green-2)",
-    "cyan": "var(--blue-2)",
-    "blue": "var(--blue-2)",
-    "purple": "hsl(275 76% 58%)",
-    "pink": "hsl(345 76% 58%)",
-    "sky": "var(--blue-2)",
-    "graphite": "hsl(245 21% 42%)"
   }
 }
-

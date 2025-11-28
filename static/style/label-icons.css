@@ -5,10 +5,10 @@
   --label-icon-color-green: var(--green-2);
   --label-icon-color-cyan: var(--blue-2);
   --label-icon-color-blue: var(--blue-2);
-  --label-icon-color-purple: hsl(275 76% 58%);
-  --label-icon-color-pink: hsl(345 76% 58%);
+  --label-icon-color-purple: var(--purple-1);
+  --label-icon-color-pink: var(--pink-1);
   --label-icon-color-sky: var(--blue-2);
-  --label-icon-color-graphite: hsl(245 21% 42%);
+  --label-icon-color-graphite: var(--graphite-1);
 }
 
 .label-icon {
