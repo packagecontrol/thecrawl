@@ -13,7 +13,7 @@ const searchInput = document.getElementById('search-field')
 const usageToggle = document.querySelector('[data-omit-single]')
 const urlParams = new URLSearchParams(window.location.search)
 const initialQuery = urlParams.get('q') ?? ''
-let manualOmitChoice = false
+let autoMode = true
 let omitSingles = initialQuery.trim() === ''
 
 const cardFilter = (card) => {
@@ -65,7 +65,7 @@ const updateUsageToggleUI = () => {
 }
 
 const updateOmitState = (value, { manual = false, triggerSearch = false } = {}) => {
-  if (!manual && manualOmitChoice) {
+  if (!manual && !autoMode) {
     return false
   }
 
@@ -76,7 +76,14 @@ const updateOmitState = (value, { manual = false, triggerSearch = false } = {}) 
 
   omitSingles = normalized
   if (manual) {
-    manualOmitChoice = true
+    const currentQuery = searchInput?.value?.trim() ?? ''
+    // If the user is turning omit-singles back on while the
+    // query is empty (pristine state), return to auto mode.
+    if (normalized && currentQuery === '') {
+      autoMode = true
+    } else {
+      autoMode = false
+    }
   }
   updateUsageToggleUI()
 
