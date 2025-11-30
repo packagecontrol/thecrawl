@@ -166,12 +166,15 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  const card = Array.from(document.querySelectorAll(CARD_SELECTOR)).find(isVisibleCard)
-  if (!card) {
-    return
-  }
+  // Schedule our side-effect so the onsubmit has a chance to run
+  setTimeout(() => {
+    const card = Array.from(document.querySelectorAll(CARD_SELECTOR)).find(isVisibleCard)
+    if (!card) {
+      return
+    }
 
-  focusCardHeading(card)
+    focusCardHeading(card)
+  })
 })
 
 //
