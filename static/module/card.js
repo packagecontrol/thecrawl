@@ -192,8 +192,12 @@ function resolveLabelIconId(label) {
   const aliases = window.__LABEL_ICON_ALIASES__ ?? {}
   const tints = window.__LABEL_ICON_TINTS__ ?? {}
 
-  let canonical = aliases[normalized]
-  if (!canonical && Object.prototype.hasOwnProperty.call(tints, normalized)) {
+  let canonical = null
+  const alias = aliases[normalized]
+  if (alias && Object.prototype.hasOwnProperty.call(tints, alias)) {
+    canonical = alias
+  }
+  else if (Object.prototype.hasOwnProperty.call(tints, normalized)) {
     canonical = normalized
   }
 
