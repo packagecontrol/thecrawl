@@ -8,37 +8,28 @@ const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const sourcesPath = path.join(__dirname, 'label-icons.json')
+const configPath = path.join(__dirname, 'label-icons-config.json')
 
 let labelIconSources = []
 let labelIconAliases = {}
 let labelIconTints = {}
+{
+  const rawSources = fs.readFileSync(sourcesPath, 'utf8')
+  const sourcesData = JSON.parse(rawSources)
+  if (!sourcesData || typeof sourcesData !== 'object') {
+    throw new Error(`Unexpected data format in ${sourcesPath}; expected object mapping labels to tints`)
+  }
+  labelIconSources = Object.keys(sourcesData)
+  labelIconTints = sourcesData
 
-try {
-  const sourcesPath = path.join(__dirname, 'label-icons.json')
-  const configPath = path.join(__dirname, 'label-icons-config.json')
-
-  if (fs.existsSync(sourcesPath)) {
-    const raw = fs.readFileSync(sourcesPath, 'utf8')
-    const data = JSON.parse(raw)
-    if (Array.isArray(data)) {
-      labelIconSources = data
-    } else if (data && typeof data === 'object') {
-      labelIconSources = Object.keys(data)
-      labelIconTints = data
-    }
+  const rawConfig = fs.readFileSync(configPath, 'utf8')
+  const configData = JSON.parse(rawConfig)
+  if (!configData || typeof configData.aliases !== 'object') {
+    throw new Error(`Missing or invalid "aliases" object in ${configPath}`)
   }
 
-  if (fs.existsSync(configPath)) {
-    const raw = fs.readFileSync(configPath, 'utf8')
-    const cfg = JSON.parse(raw)
-    if (cfg && typeof cfg === 'object' && cfg.aliases && typeof cfg.aliases === 'object') {
-      labelIconAliases = cfg.aliases
-    }
-  }
-} catch {
-  labelIconSources = []
-  labelIconAliases = {}
-  labelIconTints = {}
+  labelIconAliases = configData.aliases
 }
 
 // Filters as normal functions
