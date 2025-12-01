@@ -270,11 +270,7 @@ export class List {
       ? this.search.search(query)
       : this.search.all()
 
-    // when not searching for strings, sorting magically switches to install number
     let effectiveSort = sortBy
-    if (effectiveSort === 'relevance' && !this.search.stringSearch) {
-      effectiveSort = 'installed'
-    }
     if (usingWildcard && effectiveSort.startsWith('author')) {
       effectiveSort = 'list-' + effectiveSort
     }
