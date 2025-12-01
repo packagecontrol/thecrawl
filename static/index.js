@@ -11,13 +11,8 @@ async function fetchSearchData() {
 
 const rawIndex = await fetchSearchData()
 const packages = Array.isArray(rawIndex) ? rawIndex : (rawIndex.packages || [])
-
-window.__LABEL_ICON_ALIASES__ = rawIndex.label_icon_aliases && typeof rawIndex.label_icon_aliases === 'object'
-  ? rawIndex.label_icon_aliases
-  : {}
-window.__LABEL_ICON_TINTS__ = rawIndex.label_icon_tints && typeof rawIndex.label_icon_tints === 'object'
-  ? rawIndex.label_icon_tints
-  : {}
+window.__LABEL_ICON_ALIASES__ = rawIndex.label_icon_aliases ?? {}
+window.__LABEL_ICON_TINTS__ = rawIndex.label_icon_tints ?? {}
 
 const minisrch = createMinisearch(MiniSearch, packages)
 

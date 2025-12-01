@@ -189,12 +189,8 @@ function resolveLabelIconId(label) {
   const normalized = label.trim().toLowerCase()
   if (!normalized) return null
 
-  const aliases = (window.__LABEL_ICON_ALIASES__ && typeof window.__LABEL_ICON_ALIASES__ === 'object')
-    ? window.__LABEL_ICON_ALIASES__
-    : {}
-  const tints = (window.__LABEL_ICON_TINTS__ && typeof window.__LABEL_ICON_TINTS__ === 'object')
-    ? window.__LABEL_ICON_TINTS__
-    : {}
+  const aliases = window.__LABEL_ICON_ALIASES__ ?? {}
+  const tints = window.__LABEL_ICON_TINTS__ ?? {}
 
   let canonical = aliases[normalized]
   if (!canonical && Object.prototype.hasOwnProperty.call(tints, normalized)) {
@@ -209,9 +205,7 @@ function resolveLabelIconTint(canonical) {
   if (typeof canonical !== 'string') return null
   const key = canonical.trim().toLowerCase()
   if (!key) return null
-  const tints = (window.__LABEL_ICON_TINTS__ && typeof window.__LABEL_ICON_TINTS__ === 'object')
-    ? window.__LABEL_ICON_TINTS__
-    : {}
+  const tints = window.__LABEL_ICON_TINTS__ ?? {}
   const tint = tints[key]
   return typeof tint === 'string' && tint ? tint : null
 }
