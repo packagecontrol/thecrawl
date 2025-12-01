@@ -74,33 +74,33 @@ export function label_icon_tints_json() {
   return JSON.stringify(labelIconTints)
 }
 
-export function label_icon_id(label) {
+function canonicalLabel(label) {
   if (typeof label !== 'string') return ''
   const normalized = label.trim().toLowerCase()
   if (!normalized) return ''
 
-  let canonical = labelIconAliases[normalized]
-  if (!canonical && labelIconSources.includes(normalized)) {
-    canonical = normalized
+  const alias = labelIconAliases[normalized]
+  if (alias && labelIconSources.includes(alias)) {
+    return alias
   }
 
+  if (labelIconSources.includes(normalized)) {
+    return normalized
+  }
+
+  return ''
+}
+
+export function label_icon_id(label) {
+  const canonical = canonicalLabel(label)
   if (!canonical) return ''
   return `label-icon-${canonical}`
 }
 
 export function label_icon_tint(label) {
-  if (typeof label !== 'string') return ''
-  const normalized = label.trim().toLowerCase()
-  if (!normalized) return ''
-
-  let canonical = labelIconAliases[normalized]
-  if (!canonical && labelIconSources.includes(normalized)) {
-    canonical = normalized
-  }
+  const canonical = canonicalLabel(label)
   if (!canonical) return ''
-
-  const tint = labelIconTints[canonical]
-  return typeof tint === 'string' ? tint : ''
+  return labelIconTints[canonical] ?? ''
 }
 
 // number formatting with grouping (e.g. 10,000)
