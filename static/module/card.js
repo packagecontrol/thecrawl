@@ -206,10 +206,6 @@ function resolveLabelIconId(label) {
 }
 
 function resolveLabelIconTint(canonical) {
-  if (typeof canonical !== 'string') return null
-  const key = canonical.trim().toLowerCase()
-  if (!key) return null
   const tints = window.__LABEL_ICON_TINTS__ ?? {}
-  const tint = tints[key]
-  return typeof tint === 'string' && tint ? tint : null
+  return tints[canonical]
 }
