@@ -5,7 +5,7 @@ import path from 'path'
  * Build an SVG sprite and JSON mapping for label icons based on
  * SVGs from repo at `.AFileIcon`.
  *
- * Input:
+ * Assumed Input:
  *   .AFileIcon/icons/svg/file_type_<label>.svg
  *   .AFileIcon/icons/icons.json
  *
