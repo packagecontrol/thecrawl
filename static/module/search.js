@@ -122,7 +122,7 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
   if (trimmed.length > 0) {
     queries.push({
       queries: trimmed.split(/\s+/),
-      fields: ['name', 'description', 'author'],
+      fields: ['name', 'description', 'author', 'labels'],
     })
     hasFreeText = true
   }

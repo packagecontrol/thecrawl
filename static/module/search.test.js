@@ -37,7 +37,7 @@ describe('processQueryString', () => {
       },
       {
         queries: ['react'],
-        fields: ['name', 'description', 'author'],
+        fields: ['name', 'description', 'author', 'labels'],
       },
     ])
   })
@@ -72,7 +72,7 @@ describe('processQueryString', () => {
       },
       {
         queries: ['web', 'component'],
-        fields: ['name', 'description', 'author'],
+        fields: ['name', 'description', 'author', 'labels'],
       },
     ])
   })
@@ -86,7 +86,7 @@ describe('processQueryString', () => {
     expect(result.queries).toEqual([
       {
         queries: ['author:someone', 'label:ux', 'platform:web'],
-        fields: ['name', 'description', 'author'],
+        fields: ['name', 'description', 'author', 'labels'],
       },
     ])
     expect(result.hasFreeText).toBe(true)
@@ -166,7 +166,7 @@ describe('Search.search', () => {
       queries: [
         {
           queries: ['react', 'components'],
-          fields: ['name', 'description', 'author'],
+          fields: ['name', 'description', 'author', 'labels'],
         },
       ],
     })
@@ -423,5 +423,26 @@ describe('Search integration with MiniSearch', () => {
     expect(names).toContain('PlusPlusHelper')
     expect(names).not.toContain('SharpTool')
     expect(names).not.toContain('SeaLangHelper')
+  })
+})
+
+describe('Label matching in free-text search', () => {
+  const packages = [
+    {
+      name: 'Nilesoft Shell Script',
+      description: 'Syntax definition for Nilesoft Shell Script files.',
+      author: 'abdalmoniem',
+      platforms: ['*'],
+      labels: ['language syntax', 'nilesoft shell', 'nss'],
+    },
+  ]
+
+  const createSearchInstance = () => new Search(createMinisearch(MiniSearch, packages))
+
+  it('finds packages by label when searching free text', () => {
+    const search = createSearchInstance()
+    const results = search.search('nss')
+    const names = results.map(entry => entry.name)
+    expect(names).toContain('Nilesoft Shell Script')
   })
 })
