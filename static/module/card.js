@@ -2,6 +2,7 @@ export class Card {
   pkg = {}
   clone
   compact = false
+  staticBase = window.STATIC_BASE ?? '/static/'
 
   constructor(data, compact = null) {
     this.pkg = data
@@ -145,7 +146,7 @@ export class Card {
         svg.setAttribute('class', `label-icon${tint ? ' label-icon--' + tint : ''}`)
         svg.setAttribute('aria-hidden', 'true')
         const use = document.createElementNS(svgNS, 'use')
-        use.setAttribute('href', `/static/label-icons.svg#${iconId}`)
+        use.setAttribute('href', `${this.staticBase}label-icons.svg#${iconId}`)
         svg.appendChild(use)
         a.appendChild(svg)
       }
