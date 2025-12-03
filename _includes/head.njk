@@ -14,6 +14,9 @@
   {% inline_js 'static/_handle_theme.js' %}
   {% inline_js 'static/_handle_search_url.js' %}
   {% inline_js 'static/_human_date.js' %}
+  <script>
+    window.STATIC_BASE = '/{{ "static/" | bust }}';
+  </script>
 
   <link rel="stylesheet" href="{{ '/static/styles.css' | bust}}">
   <link rel="icon" href="/assets/favicon.ico">
