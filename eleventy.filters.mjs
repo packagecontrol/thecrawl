@@ -1,7 +1,36 @@
 import * as util from './eleventy.util.mjs'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 // Compute prod mode locally so filters remain self-contained
 const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const sourcesPath = path.join(__dirname, 'label-icons.json')
+const configPath = path.join(__dirname, 'label-icons-config.json')
+
+let labelIconSources = []
+let labelIconAliases = {}
+let labelIconTints = {}
+{
+  const rawSources = fs.readFileSync(sourcesPath, 'utf8')
+  const sourcesData = JSON.parse(rawSources)
+  if (!sourcesData || typeof sourcesData !== 'object') {
+    throw new Error(`Unexpected data format in ${sourcesPath}; expected object mapping labels to tints`)
+  }
+  labelIconSources = Object.keys(sourcesData)
+  labelIconTints = sourcesData
+
+  const rawConfig = fs.readFileSync(configPath, 'utf8')
+  const configData = JSON.parse(rawConfig)
+  if (!configData || typeof configData.aliases !== 'object') {
+    throw new Error(`Missing or invalid "aliases" object in ${configPath}`)
+  }
+
+  labelIconAliases = configData.aliases
+}
 
 // Filters as normal functions
 // simple to date string for some dates without times
@@ -26,6 +55,43 @@ export function timestamp(date) {
 export function compact(count) {
   const fmt = new Intl.NumberFormat('en', { notation: 'compact' })
   return fmt.format(count)
+}
+
+export function label_icon_aliases_json() {
+  return JSON.stringify(labelIconAliases)
+}
+
+export function label_icon_tints_json() {
+  return JSON.stringify(labelIconTints)
+}
+
+function canonicalLabel(label) {
+  if (typeof label !== 'string') return ''
+  const normalized = label.trim().toLowerCase()
+  if (!normalized) return ''
+
+  const alias = labelIconAliases[normalized]
+  if (alias && labelIconSources.includes(alias)) {
+    return alias
+  }
+
+  if (labelIconSources.includes(normalized)) {
+    return normalized
+  }
+
+  return ''
+}
+
+export function label_icon_id(label) {
+  const canonical = canonicalLabel(label)
+  if (!canonical) return ''
+  return `label-icon-${canonical}`
+}
+
+export function label_icon_tint(label) {
+  const canonical = canonicalLabel(label)
+  if (!canonical) return ''
+  return labelIconTints[canonical] ?? ''
 }
 
 // number formatting with grouping (e.g. 10,000)

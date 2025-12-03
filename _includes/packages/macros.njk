@@ -36,7 +36,7 @@
   {% endif %}
 {% endmacro %}
 
-{% macro labels(pkg) %}
+{% macro labels(pkg, with_icons=false) %}
   {% set platforms = pkg.platforms %}
   {% if 'any' in platforms %}
     {% set platforms = [] %}
@@ -77,6 +77,13 @@
           </a>
         {% else %}
           <a class="button label" href="/?q={{ q }}">
+            {% set icon_id = (label | label_icon_id) if with_icons else '' %}
+            {% if icon_id %}
+              {% set tint = (label | label_icon_tint) if with_icons else '' %}
+              <svg class="label-icon{{ (' label-icon--' ~ tint) if tint }}" aria-hidden="true">
+                <use href="/static/label-icons.svg#{{ icon_id }}"></use>
+              </svg>
+            {% endif %}
             {{ label }}
           </a>
         {% endif %}
@@ -136,6 +143,6 @@
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
     </ul>
-    {{ labels(pkg) }}
+    {{ labels(pkg, true) }}
   </div>
 {% endmacro %}

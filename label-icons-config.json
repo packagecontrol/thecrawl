@@ -1,0 +1,8 @@
+{
+  "_": "Manually maintained mapping of labels to icon/language ids",
+  "aliases": {
+    "javascript": "js",
+    "ecmascript": "js",
+    "ecmascript6": "js"
+  }
+}

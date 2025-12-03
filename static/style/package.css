@@ -209,6 +209,11 @@ ul.stats {
       }
     }
   }
+
+  a svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .warning-message {

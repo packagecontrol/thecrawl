@@ -17,6 +17,10 @@ build-emoji:
 	curl -L https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json -o emoji-source.json
 	npm run build:emoji
 
+build-label-icons:
+	[ -d .AFileIcon ] || git clone --depth 1 https://github.com/SublimeText/AFileIcon.git .AFileIcon
+	npm run build:label-icons
+
 lint:
 	npx eslint
 
@@ -25,6 +29,9 @@ test:
 
 clean:
 	rm -rf _site/*
+
+clean-a-fileicon:
+	rm -rf .AFileIcon
 
 serve:
 	open http://localhost:8080/
