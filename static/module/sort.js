@@ -91,25 +91,34 @@ export class Sort {
   }
 }
 
-const MINISEARCH_SCORE_WEIGHT = 0.2
+function shiftedSCurve(x, a = 2, b = 0.5) {
+  const u = x - b
+  const num = Math.pow(u, a)
+  const den = num + Math.pow(1 - u, a)
+  return num / den
+/*
+def shifted_s(x, a=2, b=0.5):
+    u = x - b
+    return (u**a) / (u**a + (1-u)**a)
+*/
+}
 
 function rankResultsByMagic(results = []) {
   if (!Array.isArray(results) || results.length === 0) {
     return results
   }
 
-  const metadataWeight = 1 - MINISEARCH_SCORE_WEIGHT
+  const getMetadataScore = pkg => clamp01(toNumber(pkg.magic_score))
   const maxMiniScore = results.reduce((max, pkg) => Math.max(max, pkg.score ?? 0), 0)
   const finalCache = new WeakMap()
-
-  const getMetadataScore = pkg => clamp01(toNumber(pkg.magic_score))
 
   const getFinalScore = (pkg) => {
     if (finalCache.has(pkg)) {
       return finalCache.get(pkg)
     }
     const normalizedMiniScore = maxMiniScore > 0 ? clamp01((pkg.score ?? 0) / maxMiniScore) : 0
-    const score = MINISEARCH_SCORE_WEIGHT * normalizedMiniScore + metadataWeight * getMetadataScore(pkg)
+    const factor = shiftedSCurve(normalizedMiniScore, 3, -0.1)
+    const score = clamp01(getMetadataScore(pkg) * factor)
     finalCache.set(pkg, score)
     return score
   }
