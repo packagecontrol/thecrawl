@@ -318,7 +318,36 @@ export default function (eleventyConfig) {
     const numeric = parseInt(limitRaw, 10)
     if (Number.isFinite(numeric) && numeric > 0) {
       const before = all_packages.length
-      all_packages = all_packages.slice(0, numeric)
+      const newestCount = Math.ceil(numeric / 2)
+      const byNewest = [...all_packages].sort((a, b) => {
+        const tsA = toTimestamp(a.first_seen) ?? 0
+        const tsB = toTimestamp(b.first_seen) ?? 0
+        return tsB - tsA
+      }).slice(0, newestCount)
+      const installsFor = (pkg) => {
+        const yearly = stats[pkg.name]?.installs?.yearly
+        if (!Array.isArray(yearly)) return 0
+        return yearly.reduce((sum, value) => sum + (Number(value) || 0), 0)
+      }
+      const byPopular = [...all_packages].sort((a, b) => installsFor(b) - installsFor(a))
+
+      const limited = []
+      const seen = new Set()
+      const pushUnique = (pkg) => {
+        if (!pkg || seen.has(pkg.name)) {
+          return
+        }
+        seen.add(pkg.name)
+        limited.push(pkg)
+      }
+      byNewest.forEach(pushUnique)
+      if (limited.length < numeric) {
+        for (const pkg of byPopular) {
+          pushUnique(pkg)
+          if (limited.length >= numeric) break
+        }
+      }
+      all_packages = limited
       console.warn(`[eleventy] LIMIT_DATASET=${numeric} active: ${before} -> ${all_packages.length} packages`)
     } else {
       const names = limitRaw
