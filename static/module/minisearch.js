@@ -55,6 +55,7 @@ function createMinisearchInstance(MiniSearch) {
       'labels',
       'permalink',
       'magic_score',
+      'magic',
       'outdated',
       'st3_only',
     ],

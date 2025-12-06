@@ -17,6 +17,7 @@ export class Card {
     const cardRoot = this.clone.querySelector('.card')
     if (cardRoot) {
       cardRoot.classList.toggle('dimmed', Boolean(this.pkg.outdated))
+      this.insertDebugComment(cardRoot)
     }
 
     this.clone.querySelector('a').innerHTML = this.pkg.name
@@ -38,6 +39,89 @@ export class Card {
     this.stats()
 
     return this.clone
+  }
+
+  insertDebugComment(cardRoot) {
+    const debugText = this.buildDebugComment()
+    if (!debugText) {
+      return
+    }
+    const comment = document.createComment(`\n${debugText}\n`)
+    cardRoot.before(comment)
+  }
+
+  buildDebugComment() {
+    const breakdown = this.pkg?.magic
+    if (!breakdown || typeof breakdown !== 'object') {
+      return null
+    }
+
+    const formatValue = (value) => {
+      const num = Number(value)
+      return Number.isFinite(num) ? num.toFixed(4) : '0.0000'
+    }
+    const formatOptional = (num) => {
+      return Number.isFinite(num) ? num.toFixed(4) : '   n/a'
+    }
+    const pad = label => label.padEnd(21, ' ')
+    const prefix = '    '
+
+    const formatContribution = (label, rawValue, showSign, forceNegative = false) => {
+      const value = Number(rawValue) || 0
+      const magnitude = Math.abs(value)
+      const formatted = formatValue(magnitude)
+      if (!showSign) {
+        return `${prefix}${pad(label)}  ${formatted}    `
+      }
+      const sign = value < 0 || forceNegative ? '-' : '+'
+      return `${prefix}${pad(label)}${sign} ${formatted}    `
+    }
+
+    const sections = []
+    const contributions = [
+      ['popularity', breakdown.popularity, false, false],
+      ['stars', breakdown.stars, true, false],
+      ['freshness', breakdown.freshness, true, false],
+      ['longevity', breakdown.longevity, true, false],
+      ['recency', breakdown.recency, true, false],
+      ['penalty', breakdown.penalty, true, true],
+    ]
+
+    contributions.forEach(([label, value, showSign, forceNegative]) => {
+      if (typeof value === 'undefined') {
+        return
+      }
+      sections.push(formatContribution(label, value, showSign, forceNegative))
+    })
+
+    if (sections.length === 0) {
+      return null
+    }
+
+    const metadataScore = toFinite(this.pkg?.magic_score)
+    const finalScore = toFinite(this.pkg?.__magicRanking?.final)
+    const normalizedMini = toFinite(this.pkg?.__magicRanking?.normalizedMini)
+    const miniFactor = toFinite(this.pkg?.__magicRanking?.factor)
+
+    sections.push(`${prefix}-----------------------------`)
+    sections.push(`${prefix}${pad('magic score')}  ${formatOptional(metadataScore)}    `)
+
+    if (normalizedMini !== null && miniFactor !== null) {
+      const normalizedDisplay = Number(normalizedMini).toFixed(2)
+      const leftSide = `mini score ${normalizedDisplay}≘`
+      sections.push(`${prefix}${pad(leftSide)}x ${formatValue(miniFactor)}`)
+    }
+    else {
+      const miniDisplay = formatOptional(toFinite(this.pkg?.score))
+      sections.push(`${prefix}${pad('mini score')}  ${miniDisplay}`)
+    }
+
+    if (finalScore !== null) {
+      sections.push(`${prefix}-----------------------------`)
+      sections.push(`${prefix}${pad('final weighted')}  ${formatOptional(finalScore)}`)
+    }
+
+    return sections.join('\n')
   }
 
   stats() {
@@ -209,4 +293,8 @@ function resolveLabelIconId(label) {
 function resolveLabelIconTint(canonical) {
   const tints = window.__LABEL_ICON_TINTS__ ?? {}
   return tints[canonical]
+}
+const toFinite = (value) => {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : null
 }

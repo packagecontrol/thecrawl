@@ -1,6 +1,7 @@
 export class Sort {
   static sort(packages, sortBy) {
     const sortedPackages = [...packages] // Create a copy to avoid mutating original
+    annotateMagicRanking(sortedPackages)
 
     switch (sortBy) {
       case 'name':
@@ -107,21 +108,8 @@ function rankResultsByMagic(results = []) {
   if (!Array.isArray(results) || results.length === 0) {
     return results
   }
-
-  const getMetadataScore = pkg => clamp01(toNumber(pkg.magic_score))
-  const maxMiniScore = results.reduce((max, pkg) => Math.max(max, pkg.score ?? 0), 0)
-  const finalCache = new WeakMap()
-
-  const getFinalScore = (pkg) => {
-    if (finalCache.has(pkg)) {
-      return finalCache.get(pkg)
-    }
-    const normalizedMiniScore = maxMiniScore > 0 ? clamp01((pkg.score ?? 0) / maxMiniScore) : 0
-    const factor = shiftedSCurve(normalizedMiniScore, 3, -0.1)
-    const score = clamp01(getMetadataScore(pkg) * factor)
-    finalCache.set(pkg, score)
-    return score
-  }
+  const getMetadataScore = pkg => pkg?.__magicRanking?.metadata ?? clamp01(toNumber(pkg?.magic_score))
+  const getFinalScore = pkg => pkg?.__magicRanking?.final ?? getMetadataScore(pkg)
 
   return results.sort((a, b) => {
     const rankA = getFinalScore(a)
@@ -148,4 +136,27 @@ const toNumber = (value, fallback = 0) => {
     return Number.isFinite(parsed) ? parsed : fallback
   }
   return fallback
+}
+
+function annotateMagicRanking(results = []) {
+  if (!Array.isArray(results) || results.length === 0) {
+    return
+  }
+
+  const maxMiniScore = results.reduce((max, pkg) => Math.max(max, toNumber(pkg.score ?? 0)), 0)
+
+  results.forEach((pkg) => {
+    const metadataScore = clamp01(toNumber(pkg.magic_score))
+    const miniScore = toNumber(pkg.score ?? 0)
+    const normalizedMini = maxMiniScore > 0 ? clamp01(miniScore / maxMiniScore) : 0
+    const factor = shiftedSCurve(normalizedMini, 3, -0.1)
+    const finalScore = clamp01(metadataScore * factor)
+    pkg.__magicRanking = {
+      metadata: metadataScore,
+      miniscore: miniScore,
+      normalizedMini,
+      factor,
+      final: finalScore,
+    }
+  })
 }
