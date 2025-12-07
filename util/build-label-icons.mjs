@@ -65,9 +65,10 @@ function main() {
 
   /** @type {Set<string>} */
   const usedLabels = new Set()
-
   /** @type {Record<string, string>} */
   let aliases = {}
+  /** @type {Set<string>} */
+  const excludedLabels = new Set()
 
   // Load config (aliases)
   if (fs.existsSync(configPath)) {
@@ -78,9 +79,19 @@ function main() {
         if (cfg.aliases && typeof cfg.aliases === 'object') {
           aliases = cfg.aliases
         }
+        if (Array.isArray(cfg.exclude)) {
+          for (const value of cfg.exclude) {
+            const key = value.trim().toLowerCase()
+            if (key) {
+              excludedLabels.add(key)
+            }
+          }
+        }
       }
-    } catch {
-      aliases = {}
+    } catch (error) {
+      console.error(`Failed to parse ${configPath}: ${error instanceof Error ? error.message : error}`)
+      process.exitCode = 1
+      return
     }
   }
 
@@ -130,6 +141,10 @@ function main() {
     const typeKey = type.trim().toLowerCase()
     // If we have a set of used labels, restrict icons to those labels (or alias targets)
     if (usedLabels.size > 0 && !usedLabels.has(typeKey)) {
+      continue
+    }
+
+    if (excludedLabels.has(typeKey)) {
       continue
     }
 
