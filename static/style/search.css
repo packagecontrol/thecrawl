@@ -277,37 +277,27 @@ form.compact {
   padding: 8px 2px;
 }
 
-.search-subcontrols {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-top: 0.35rem;
-  margin-right: 2px;
-  font-size: 0.85em;
-  color: var(--foreground-3);
-  gap: 1ex;
+.usage-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  transition: color .1s ease-in-out;
+  border-radius: 3px;
+  line-height: inherit;
 
-  .usage-toggle {
-    background: none;
-    border: none;
-    padding: 0;
-    color: inherit;
-    cursor: pointer;
-    transition: color .1s ease-in-out;
-    border-radius: 3px;
+  &:hover {
+    color: var(--foreground-2);
+  }
 
-    &:hover {
-      color: var(--foreground-2);
-    }
+  &:focus-visible {
+    outline: 2px solid var(--orange-1);
+    outline-offset: 2px;
+  }
 
-    &:focus-visible {
-      outline: 2px solid var(--orange-1);
-      outline-offset: 2px;
-    }
-
-    &[aria-pressed="false"] {
-      text-decoration: line-through;
-      color: var(--foreground-1);
-    }
+  &[aria-pressed="false"] {
+    text-decoration: line-through;
+    color: var(--foreground-1);
   }
 }

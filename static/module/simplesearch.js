@@ -105,7 +105,7 @@ export class SimpleSearch {
     }
 
     if (this.hiddenCounter) {
-      this.hiddenCounter.innerText = hidden > 0 ? `${hidden} omitted` : ''
+      this.hiddenCounter.innerText = hidden > 0 ? `${hidden}` : ''
     }
   }
 
@@ -125,7 +125,7 @@ export class SimpleSearch {
       this.counter.innerText = 'List'
     }
     if (this.hiddenCounter) {
-      this.hiddenCounter.innerText = hidden > 0 ? `${hidden} omitted` : ''
+      this.hiddenCounter.innerText = hidden > 0 ? `${hidden}` : ''
     }
   }
 

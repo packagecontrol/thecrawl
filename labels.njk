@@ -23,12 +23,6 @@ date: Last Modified
       </button>
     </div>
   </div>
-
-  <div class="search-subcontrols">
-    <button type="button" class="usage-toggle" data-omit-single aria-pressed="false">
-      Omitting labels with only one usage
-    </button>
-  </div>
 </form>
 
 <section name="labels">
@@ -36,7 +30,9 @@ date: Last Modified
   <div class="search-results-header">
     <h2 data-list-target="counter">List</h2>
     <span class="pager-page-indicator" hidden></span>
-    <span class="search-results-info" data-list-target="hidden"></span>
+    <button type="button" class="usage-toggle search-results-info" data-omit-single aria-pressed="false">
+      Omitted <span data-list-target="hidden"></span> labels with one usage
+    </button>
   </div>
 
   <ul class="grid">
