@@ -305,18 +305,9 @@ form.compact {
       outline-offset: 2px;
     }
 
-    .icon-on {
-      display: none;
-    }
-
-    &.is-active {
+    &[aria-pressed="false"] {
+      text-decoration: line-through;
       color: var(--foreground-1);
-      .icon-on {
-        display: revert;
-      }
-      .icon-off {
-        display: none;
-      }
     }
   }
 }

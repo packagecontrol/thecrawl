@@ -86,7 +86,6 @@ export class SimpleSearch {
     const results = this.search.search(query).map(result => result.name)
     const visibleItems = new Set(results)
     let hidden = 0
-    let visible = 0
 
     this.cards.forEach((card) => {
       const container = card.closest('li')
@@ -102,11 +101,11 @@ export class SimpleSearch {
     })
 
     if (this.counter) {
-      this.counter.innerText = visible === 1 ? '1 Result' : `${results.length} Results`
+      this.counter.innerText = results.length === 1 ? '1 Result' : `${results.length} Results`
     }
 
     if (this.hiddenCounter) {
-      this.hiddenCounter.innerText = hidden > 0 ? `${hidden} Excluded` : ''
+      this.hiddenCounter.innerText = hidden > 0 ? `${hidden} omitted` : ''
     }
   }
 

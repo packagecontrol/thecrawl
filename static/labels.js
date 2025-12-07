@@ -60,8 +60,7 @@ const updateUsageToggleUI = () => {
   if (!usageToggle) {
     return
   }
-  usageToggle.classList.toggle('is-active', !omitSingles)
-  usageToggle.setAttribute('aria-pressed', String(!omitSingles))
+  usageToggle.setAttribute('aria-pressed', String(omitSingles))
 }
 
 const updateOmitState = (value, { manual = false, triggerSearch = false } = {}) => {
