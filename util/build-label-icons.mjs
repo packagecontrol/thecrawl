@@ -88,8 +88,10 @@ function main() {
           }
         }
       }
-    } catch {
-      aliases = {}
+    } catch (error) {
+      console.error(`Failed to parse ${configPath}: ${error instanceof Error ? error.message : error}`)
+      process.exitCode = 1
+      return
     }
   }
 
