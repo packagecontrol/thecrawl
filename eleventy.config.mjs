@@ -316,20 +316,25 @@ export default function (eleventyConfig) {
   const limitRaw = process.env.LIMIT_DATASET
   if (typeof limitRaw === 'string' && limitRaw.trim() !== '') {
     const numeric = parseInt(limitRaw, 10)
-    if (Number.isFinite(numeric) && numeric > 0) {
+    if (Number.isFinite(numeric) && numeric !== 0) {
       const before = all_packages.length
-      const newestCount = Math.ceil(numeric / 2)
-      const byNewest = [...all_packages].sort((a, b) => {
-        const tsA = toTimestamp(a.first_seen) ?? 0
-        const tsB = toTimestamp(b.first_seen) ?? 0
-        return tsB - tsA
-      }).slice(0, newestCount)
+      const limit = Math.abs(numeric)
       const installsFor = (pkg) => {
         const yearly = stats[pkg.name]?.installs?.yearly
         if (!Array.isArray(yearly)) return 0
         return yearly.reduce((sum, value) => sum + (Number(value) || 0), 0)
       }
-      const byPopular = [...all_packages].sort((a, b) => installsFor(b) - installsFor(a))
+      const timestampFor = pkg => toTimestamp(pkg.first_seen) ?? 0
+      const byNewest = [...all_packages].sort((a, b) => {
+        const tsA = timestampFor(a)
+        const tsB = timestampFor(b)
+        return numeric > 0 ? tsB - tsA : tsA - tsB
+      }).slice(0, Math.ceil(limit / 2))
+      const byPopular = [...all_packages].sort((a, b) => {
+        const instA = installsFor(a)
+        const instB = installsFor(b)
+        return numeric > 0 ? instB - instA : instA - instB
+      })
 
       const limited = []
       const seen = new Set()
@@ -341,14 +346,15 @@ export default function (eleventyConfig) {
         limited.push(pkg)
       }
       byNewest.forEach(pushUnique)
-      if (limited.length < numeric) {
+      if (limited.length < limit) {
         for (const pkg of byPopular) {
           pushUnique(pkg)
-          if (limited.length >= numeric) break
+          if (limited.length >= limit) break
         }
       }
       all_packages = limited
-      console.warn(`[eleventy] LIMIT_DATASET=${numeric} active: ${before} -> ${all_packages.length} packages`)
+      const modeLabel = numeric > 0 ? '' : '(oldest/unpopular mix)'
+      console.warn(`[eleventy] LIMIT_DATASET=${numeric} active ${modeLabel}: ${before} -> ${all_packages.length} packages`)
     } else {
       const names = limitRaw
         .split(',')
