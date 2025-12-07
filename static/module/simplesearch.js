@@ -102,8 +102,7 @@ export class SimpleSearch {
     })
 
     if (this.counter) {
-      visible = results.length - hidden
-      this.counter.innerText = visible === 1 ? '1 Result' : `${visible} Results`
+      this.counter.innerText = visible === 1 ? '1 Result' : `${results.length} Results`
     }
 
     if (this.hiddenCounter) {
