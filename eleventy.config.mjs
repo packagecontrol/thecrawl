@@ -316,10 +316,45 @@ export default function (eleventyConfig) {
   const limitRaw = process.env.LIMIT_DATASET
   if (typeof limitRaw === 'string' && limitRaw.trim() !== '') {
     const numeric = parseInt(limitRaw, 10)
-    if (Number.isFinite(numeric) && numeric > 0) {
+    if (Number.isFinite(numeric) && numeric !== 0) {
       const before = all_packages.length
-      all_packages = all_packages.slice(0, numeric)
-      console.warn(`[eleventy] LIMIT_DATASET=${numeric} active: ${before} -> ${all_packages.length} packages`)
+      const limit = Math.abs(numeric)
+      const installsFor = (pkg) => {
+        const yearly = stats[pkg.name]?.installs?.yearly
+        if (!Array.isArray(yearly)) return 0
+        return yearly.reduce((sum, value) => sum + (Number(value) || 0), 0)
+      }
+      const timestampFor = pkg => toTimestamp(pkg.first_seen) ?? 0
+      const byNewest = [...all_packages].sort((a, b) => {
+        const tsA = timestampFor(a)
+        const tsB = timestampFor(b)
+        return numeric > 0 ? tsB - tsA : tsA - tsB
+      }).slice(0, Math.ceil(limit / 2))
+      const byPopular = [...all_packages].sort((a, b) => {
+        const instA = installsFor(a)
+        const instB = installsFor(b)
+        return numeric > 0 ? instB - instA : instA - instB
+      })
+
+      const limited = []
+      const seen = new Set()
+      const pushUnique = (pkg) => {
+        if (!pkg || seen.has(pkg.name)) {
+          return
+        }
+        seen.add(pkg.name)
+        limited.push(pkg)
+      }
+      byNewest.forEach(pushUnique)
+      if (limited.length < limit) {
+        for (const pkg of byPopular) {
+          pushUnique(pkg)
+          if (limited.length >= limit) break
+        }
+      }
+      all_packages = limited
+      const modeLabel = numeric > 0 ? '' : '(oldest/unpopular mix)'
+      console.warn(`[eleventy] LIMIT_DATASET=${numeric} active ${modeLabel}: ${before} -> ${all_packages.length} packages`)
     } else {
       const names = limitRaw
         .split(',')

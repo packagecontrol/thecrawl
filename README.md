@@ -42,6 +42,12 @@ You can also pass a comma-separated list of package names to focus on specific e
 LIMIT_DATASET="A File Icon,GitGutter" npm run dev -- --quiet
 ```
 
+If you quickly want to see old packages:
+
+```bash
+LIMIT_DATASET=-100 npm run dev -- --quiet
+```
+
 Or run it on `http-server`, e.g.
 
 ```bash
