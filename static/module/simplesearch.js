@@ -110,18 +110,22 @@ export class SimpleSearch {
   }
 
   revertToNormal() {
+    let hidden = 0
     this.cards.forEach((card) => {
       const container = card.closest('li')
       if (container) {
         const hiddenByFilter = Boolean(this.cardFilter?.(card))
         container.style.display = hiddenByFilter ? 'none' : null
+        if (hiddenByFilter) {
+          hidden++
+        }
       }
     })
     if (this.counter) {
       this.counter.innerText = 'List'
     }
     if (this.hiddenCounter) {
-      this.hiddenCounter.innerText = ''
+      this.hiddenCounter.innerText = hidden > 0 ? `${hidden} omitted` : ''
     }
   }
 
