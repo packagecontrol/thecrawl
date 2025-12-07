@@ -113,19 +113,35 @@ function computeMagicMetadata(packages) {
 
     const penalty = (pkg.removed || pkg.outdated) ? 0.4 : 0
 
+    const weightedPopularity = MAGIC_WEIGHTS.popularity * installsScore
+    const weightedStars = MAGIC_WEIGHTS.stars * starsScore
+    const weightedFreshness = MAGIC_WEIGHTS.freshness * freshnessScore
+    const weightedLongevity = MAGIC_WEIGHTS.longevity * longevityScore
+    const weightedRecency = MAGIC_WEIGHTS.recency * recentUpdateBonus
+
     const baseScore
-      = MAGIC_WEIGHTS.popularity * installsScore
-      + MAGIC_WEIGHTS.stars * starsScore // eslint-disable-line @stylistic/indent-binary-ops
-      + MAGIC_WEIGHTS.freshness * freshnessScore
-      + MAGIC_WEIGHTS.longevity * longevityScore
-      + MAGIC_WEIGHTS.recency * recentUpdateBonus
+      = weightedPopularity
+      + weightedStars // eslint-disable-line @stylistic/indent-binary-ops
+      + weightedFreshness
+      + weightedLongevity
+      + weightedRecency
       - penalty
 
     const withPrecision = value => Number(value.toFixed(4))
+    const magicBreakdown = {
+      popularity: withPrecision(weightedPopularity),
+      stars: withPrecision(weightedStars),
+      freshness: withPrecision(weightedFreshness),
+      longevity: withPrecision(weightedLongevity),
+      recency: withPrecision(weightedRecency),
+      penalty: withPrecision(-penalty),
+    }
+    const clampedScore = withPrecision(clamp01(baseScore))
 
     return {
       ...pkg,
-      magic_score: withPrecision(clamp01(baseScore)),
+      magic_score: clampedScore,
+      magic: magicBreakdown,
     }
   })
 }

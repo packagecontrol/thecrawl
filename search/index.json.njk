@@ -15,6 +15,14 @@ permalink: "/search/index.json"
     "created_at": "{{ pkg.created_at | timestamp }}",
     "last_modified": "{{ pkg.last_modified | timestamp }}",
     "magic_score": {{ pkg.magic_score | default(0) }},
+    "magic": {
+      "popularity": {{ pkg.magic.popularity | default(0) }},
+      "stars": {{ pkg.magic.stars | default(0) }},
+      "freshness": {{ pkg.magic.freshness | default(0) }},
+      "longevity": {{ pkg.magic.longevity | default(0) }},
+      "recency": {{ pkg.magic.recency | default(0) }},
+      "penalty": {{ pkg.magic.penalty | default(0) }}
+    },
     {%- if pkg.outdated -%}
       "outdated": true,
     {%- endif -%}

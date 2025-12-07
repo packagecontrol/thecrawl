@@ -28,12 +28,7 @@ export class Search {
       combineWith: 'AND',
     }).filter(query.filter)
 
-    // omit minisearch result internals
-    // eslint-disable-next-line no-unused-vars
-    return results.map(({ score, /**/id, queryTerms, terms, match, /**/ ...rest }) => ({
-      ...rest,
-      score,
-    }))
+    return normalizeResults(results)
   }
 
   // return all indexed packages using minisearch's wildcard query
@@ -43,7 +38,7 @@ export class Search {
     if (!wildcard) {
       throw new Error('minisearch wildcard symbol is unavailable')
     }
-    return this.minisearch.search(wildcard)
+    return normalizeResults(this.minisearch.search(wildcard))
   }
 }
 
@@ -139,4 +134,12 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
   })
 
   return { queries, hasFreeText, filter }
+}
+
+function normalizeResults(entries = []) {
+  // eslint-disable-next-line no-unused-vars
+  return entries.map(({ score, /**/id, queryTerms, terms, match, /**/ ...rest }) => ({
+    ...rest,
+    score,
+  }))
 }
