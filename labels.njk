@@ -24,9 +24,16 @@ date: Last Modified
   </div>
 
   <div class="search-subcontrols">
-    <button type="button" class="usage-toggle" aria-pressed="true">
+    <button type="button" class="usage-toggle" data-omit-control aria-pressed="true">
       Omitting labels with only one usage
     </button>
+    <script>
+      {
+        if (document.documentElement.classList.contains('initializing')) {
+          document.querySelector('[data-omit-control]').setAttribute('disabled', '')
+        }
+      }
+    </script>
   </div>
 </form>
 

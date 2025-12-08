@@ -30,6 +30,9 @@ html {
     form[name='search'] {
       visibility: hidden;
     }
+    section[name="labels"] {
+      display: none;
+    }
   }
 }
 
