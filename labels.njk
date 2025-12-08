@@ -31,6 +31,13 @@ date: Last Modified
     <button type="button" class="usage-toggle" data-omit-control aria-pressed="true">
       Omitting labels with only one usage
     </button>
+    <script>
+      {
+        if (document.documentElement.classList.contains('initializing')) {
+          document.querySelector('[data-omit-control]').setAttribute('aria-pressed', 'false')
+        }
+      }
+    </script>
   </div>
 </form>
 
