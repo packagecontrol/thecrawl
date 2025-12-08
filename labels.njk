@@ -34,7 +34,8 @@ date: Last Modified
   <h2 data-list-target="counter">List</h2>
   <ul class="grid">
     {% for item in collections.labels %}
-      <li>
+      {% set omitted_by_default = item.count <= 1 %}
+      <li{% if omitted_by_default %} style="display:none"{% endif %}>
         {% set q = pack.searchQueryFor('label', item.key) %}
         <a {{ "id=main-content" if loop.index0 == 0 }} data-name="{{ item.key }}" data-usage="{{ item.count }}" class="button label" href="/?q={{ q }}">
           {% set icon_id = item.key | label_icon_id %}
