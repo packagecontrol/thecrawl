@@ -9,16 +9,21 @@ import { customTokenizer } from './module/minisearch.js'
 const list = document.querySelector('section[name="labels"] ul')
 const data = []
 const cards = document.querySelectorAll('section ul .label')
-const searchInput = document.getElementById('search-field')
-const usageToggle = document.querySelector('[data-omit-single]')
-const urlParams = new URLSearchParams(window.location.search)
-const initialQuery = urlParams.get('q') ?? ''
-let autoMode = true
-let omitSingles = initialQuery.trim() === ''
+const form = document.forms.search
+const searchInput = form.elements['q']
+const usageToggle = form.querySelector('.usage-toggle')
+
+const hasActiveQuery = () => Boolean(searchInput?.value.trim())
+const omitSingles = () => usageToggle?.getAttribute('aria-pressed') === 'true'
+
+function initState() {
+  usageToggle?.setAttribute('aria-pressed', 'true')
+  usageToggle?.toggleAttribute('disabled', hasActiveQuery())
+}
 
 const cardFilter = (card) => {
-  if (!omitSingles) {
-    return false
+  if (hasActiveQuery() || !omitSingles()) {
+    return false // == show *all* entries
   }
   const usage = Number(card.dataset.usage ?? 0)
   return usage <= 1
@@ -56,60 +61,19 @@ const search = new SimpleSearch(
   },
 )
 
-const updateUsageToggleUI = () => {
-  if (!usageToggle) {
-    return
-  }
-  usageToggle.classList.toggle('is-active', omitSingles)
-  usageToggle.setAttribute('aria-pressed', String(omitSingles))
-}
+initState()
 
-const updateOmitState = (value, { manual = false, triggerSearch = false } = {}) => {
-  if (!manual && !autoMode) {
-    return false
-  }
+addAttributeListener(usageToggle, 'aria-pressed', () => {
+  search.applySearch(searchInput?.value ?? '', { updateHistory: false, updateInput: false })
+})
 
-  const normalized = Boolean(value)
-  if (omitSingles === normalized) {
-    return false
-  }
-
-  omitSingles = normalized
-  if (manual) {
-    const currentQuery = searchInput?.value?.trim() ?? ''
-    // If the user is turning omit-singles back on while the
-    // query is empty (pristine state), return to auto mode.
-    if (normalized && currentQuery === '') {
-      autoMode = true
-    } else {
-      autoMode = false
-    }
-  }
-  updateUsageToggleUI()
-
-  if (triggerSearch) {
-    search.applySearch(searchInput?.value ?? '', { updateHistory: false, updateInput: false })
-  }
-
-  return true
-}
-
-updateUsageToggleUI()
-
-if (searchInput) {
-  searchInput.addEventListener('input', () => {
-    updateOmitState(searchInput.value.trim() === '')
-  })
-}
-
-window.addEventListener('popstate', () => {
-  const queryParam = new URLSearchParams(window.location.search).get('q') ?? ''
-  updateOmitState(queryParam.trim() === '')
+window.addEventListener('search:done', () => {
+  usageToggle?.toggleAttribute('disabled', hasActiveQuery())
 })
 
 usageToggle?.addEventListener('click', (event) => {
   event.preventDefault()
-  updateOmitState(!omitSingles, { manual: true, triggerSearch: true })
+  usageToggle?.setAttribute('aria-pressed', String(!omitSingles()))
 })
 
 const sortControls = document.querySelector('[data-sort-controls]')
@@ -211,3 +175,17 @@ window.addEventListener('popstate', () => {
 
 syncSortFromUrl()
 search.init()
+
+function addAttributeListener(element, attrName, callback) {
+  const observer = new MutationObserver((mutations) => {
+    mutations
+      .filter(mut => (
+        mut.type === 'attributes'
+        && mut.attributeName === attrName
+        && mut.oldValue !== element.getAttribute(attrName)
+      ))
+      .forEach(callback)
+  })
+  observer.observe(element, { attributes: true, attributeOldValue: true })
+  return observer
+}

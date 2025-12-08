@@ -293,7 +293,7 @@ form.compact {
     padding: 0;
     color: inherit;
     cursor: pointer;
-    transition: color .1s ease-in-out;
+    transition: color .1s ease-in-out, opacity .3s;
     text-decoration: line-through;
     font-size: small;
 
@@ -306,10 +306,16 @@ form.compact {
       outline-offset: 2px;
     }
 
-    &.is-active {
+    &[aria-pressed='true'] {
       color: var(--foreground-1);
       font-weight: 500;
       text-decoration: none;
+    }
+
+    &[disabled] {
+      cursor: default;
+      pointer-events: none;
+      opacity: 0;
     }
   }
 }
