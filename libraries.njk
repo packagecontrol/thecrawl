@@ -5,6 +5,7 @@ date: Last Modified
 ---
 
 {% import "packages/macros.njk" as util %}
+{% import "util/macros.njk" as shared %}
 
 {% macro lib(pkg, mark_as_main=false) %}
   <div class="card"
@@ -53,6 +54,9 @@ date: Last Modified
   <div class="search-controls">
     <label for="search-field" class="screenreader-only">Search</label>
     <input type="search" autocomplete="off" name="q" id="search-field" placeholder="Search {{ collections.libraries | length }} libraries…">
+    <button class="clear-btn" type="button" aria-label="Clear search" tabindex="-1" onclick="const input=document.getElementById('search-field'); input.value=''; input.dispatchEvent(new Event('input', { bubbles: true })); input.focus();">
+      {{ shared.icon('x-circle-fill') }}
+    </button>
   </div>
 </form>
 

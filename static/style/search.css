@@ -91,7 +91,8 @@ select {
 
   --animation-timing: .1s ease-in-out;
 
-  &:has(input:focus) {
+  &:has(input:focus),
+  &:has(.clear-btn:focus) {
     border-color: var(--orange-1);
     outline: 1px solid var(--orange-1);
   }
@@ -114,6 +115,47 @@ select {
     padding: 0;
     background: transparent;
     border: none;
+  }
+
+  input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .clear-btn {
+    cursor: pointer;
+    border: none;
+    color: var(--foreground-2);
+    background: inherit;
+    visibility: hidden;
+    padding: 3px 10px 0;
+    padding: 7px 7px 4px;
+    margin-right: 2px;
+    border-radius: 50%;
+
+    :root[data-theme='light'] & {
+      color: hsl(240 5% 56.6%);
+      &:hover {
+        color: hsl(240 3% 45.5%);
+      }
+    }
+    :root[data-theme='dark'] & {
+      color: hsl(0 5.52% 81.31%);
+      &:hover {
+        color: hsl(0 0% 87%);
+      }
+    }
+
+    &:focus {
+      background: var(--background-2);
+      outline: 2px solid var(--orange-1);
+      outline-offset: -5px;
+    }
+  }
+
+  & input:not(:placeholder-shown):is(:hover, :focus) + .clear-btn,
+  .clear-btn:hover {
+    visibility: revert;
   }
 
   .button {
