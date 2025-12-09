@@ -53,7 +53,7 @@
 
       {% if site.origin != site.prodOrigin and not site.disableLiveLink %}
         {% set liveHref = site.prodOrigin + (page.url or '/') %}
-        <a href="{{ liveHref }}" aria-label="View this page on the live site" style="margin: 0 0.5em;" data-live-site-link>L</a>
+        <a href="{{ liveHref }}" aria-label="View this page on the live site" style="margin: 0 0.5em;" data-live-site-link target="_blank" rel="noopener noreferrer">L</a>
         {# The search and possible hash state in the URL must be inspected live using JS: #}
         <script>
           (() => {
