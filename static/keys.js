@@ -171,10 +171,7 @@ document.addEventListener('keydown', (event) => {
   }
 
   event.preventDefault()
-  if (isSearchPending(target.form)) {
-    target.form?.requestSubmit()
-  }
-
+  ensureNoPendingSearch(target.form)
   const preferredColumn = event.key === 'ArrowDown' ? lastGridColumnPreference : 0
   focusFirstVisibleCard(preferredColumn)
 })
@@ -202,16 +199,21 @@ function hasNonShiftModifier(event) {
 }
 
 /**
- * Check whether a debounced search is still pending.
+ * Ensure any pending debounced search gets flushed before moving focus.
  * @param {HTMLFormElement|null} form
- * @returns {boolean}
+ * @returns {boolean} True if a submission was requested.
  */
-function isSearchPending(form) {
+function ensureNoPendingSearch(form) {
   if (!form) {
     return false
   }
 
-  return form.dataset.searchPending === 'true'
+  if (form.dataset.searchPending === 'true') {
+    form.requestSubmit()
+    return true
+  }
+
+  return false
 }
 
 /**
