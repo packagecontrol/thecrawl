@@ -151,13 +151,13 @@ document.addEventListener('keydown', (event) => {
   }
 })
 
-// After submitting search, move focus to the first visible card for browsing.
+// On enter or arrow down, submit and move focus to the first visible card for browsing.
 document.addEventListener('keydown', (event) => {
   if (hasModifier(event)) {
     return
   }
 
-  if (event.key !== 'Enter') {
+  if (event.key !== 'Enter' && event.key !== 'ArrowDown') {
     return
   }
 
@@ -166,15 +166,14 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  // Schedule our side-effect so the onsubmit has a chance to run
-  setTimeout(() => {
-    const card = Array.from(document.querySelectorAll(CARD_SELECTOR)).find(isVisibleCard)
-    if (!card) {
-      return
-    }
+  event.preventDefault()
+  target.form.requestSubmit()
 
-    focusCardHeading(card)
-  })
+  const card = Array.from(document.querySelectorAll(CARD_SELECTOR)).find(isVisibleCard)
+  if (!card) {
+    return
+  }
+  focusCardHeading(card)
 })
 
 //
