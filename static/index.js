@@ -26,6 +26,7 @@ window.dispatchEvent(new CustomEvent('search:index-loaded', { detail: { data: pa
 
 const list = new List()
 list.setMinisearch(minisrch)
+list.setFilterStateUpdater(updateFilterButtonStates)
 
 const form = document.forms.search
 const input = form.elements['q']
@@ -70,7 +71,7 @@ function parseFilterButton(element) {
   return { element, type, token }
 }
 
-const updateFilterButtonStates = (query) => {
+function updateFilterButtonStates(query) {
   if (!filterButtons.length) {
     return
   }
@@ -96,8 +97,6 @@ const updateFilterButtonStates = (query) => {
     }
   }
 }
-
-list.setFilterStateUpdater(updateFilterButtonStates)
 
 const syncFromUrl = ({ initialPageLoad = false }) => {
   const urlParams = new URLSearchParams(window.location.search)
