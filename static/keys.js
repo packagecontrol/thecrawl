@@ -137,18 +137,7 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  const target = document.querySelector('#search-field')
-  if (!target) {
-    return
-  }
-
-  event.preventDefault()
-  window.dispatchEvent(new CustomEvent('search:expand'))
-
-  target.focus({ preventScroll: false })
-  if (typeof target.select === 'function') {
-    target.select()
-  }
+  focusSearchField(event)
 })
 
 // On enter or arrow down, submit and move focus to the first visible card for browsing.
@@ -384,18 +373,21 @@ function handleGridNavigation(event, currentCard, directions) {
 
     // No higher row in this section; stop if outside a pager section.
     if (!pagerSection) {
+      focusSearchField(event)
       return
     }
 
     // Move into the last row of the previous section (recent → newest).
     const siblingSection = findSiblingSection(pagerSection, 'prev')
     if (!siblingSection) {
+      focusSearchField(event)
       return
     }
 
     // Target the last available row in that section.
     const siblingCards = visibleCardsInSection(siblingSection)
     if (!siblingCards.length) {
+      focusSearchField(event)
       return
     }
 
@@ -404,6 +396,8 @@ function handleGridNavigation(event, currentCard, directions) {
     if (targetRow?.length) {
       // Align with the same column index if possible.
       focusCardInRow(targetRow, position.column, event)
+    } else {
+      focusSearchField(event)
     }
   }
 }
@@ -476,6 +470,28 @@ function buildCardGrid(cards) {
 
 function getAllVisibleCards() {
   return Array.from(document.querySelectorAll(CARD_SELECTOR)).filter(isVisibleCard)
+}
+
+/**
+ * Focus the main search field and expand it if needed.
+ * @param {KeyboardEvent} [event]
+ * @returns {boolean}
+ */
+function focusSearchField(event) {
+  const searchField = document.querySelector('#search-field')
+  if (!searchField) {
+    return false
+  }
+
+  event?.preventDefault()
+  window.dispatchEvent(new CustomEvent('search:expand'))
+
+  searchField.focus({ preventScroll: false })
+  if (typeof searchField.select === 'function') {
+    searchField.select()
+  }
+
+  return document.activeElement === searchField
 }
 
 /**
