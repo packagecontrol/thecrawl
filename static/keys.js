@@ -105,12 +105,16 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  handleGridNavigation(event, currentCard, {
+  const handled = handleGridNavigation(event, currentCard, {
     isArrowDown,
     isArrowUp,
     isArrowRight,
     isArrowLeft,
   })
+
+  if (!handled && isArrowUp) {
+    focusSearchField(event)
+  }
 })
 
 // Focus the search field when s or / is pressed outside editable inputs.
@@ -277,12 +281,13 @@ function handleSequentialNavigation(currentCard, direction) {
  *   isArrowRight: boolean,
  *   isArrowLeft: boolean,
  * }} directions - Flags describing which arrow was pressed.
+ * @returns {boolean} True when focus was moved or paging occurred.
  */
 function handleGridNavigation(event, currentCard, directions) {
   const pagerSection = findPagerSection(currentCard)
   const cards = pagerSection ? visibleCardsInSection(pagerSection) : getAllVisibleCards()
   if (!cards.length) {
-    return
+    return false
   }
 
   const grid = buildCardGrid(cards)
@@ -292,6 +297,7 @@ function handleGridNavigation(event, currentCard, directions) {
       const direction = directions.isArrowDown ? 1 : -1
       if (handleSequentialNavigation(currentCard, direction)) {
         event.preventDefault()
+        return true
       }
     }
   }
@@ -303,12 +309,14 @@ function handleGridNavigation(event, currentCard, directions) {
       const nextCard = rowCards[position.column + 1]
       if (nextCard && focusCardHeading(nextCard)) {
         event.preventDefault()
+        return true
       }
     // ... or flip to the next page.
     } else if (pagerSection) {
       const desiredIndex = position.row * grid.maxColumns
       if (clickPagerControl(pagerSection, 'next', desiredIndex)) {
         event.preventDefault()
+        return true
       }
     }
   }
@@ -320,12 +328,14 @@ function handleGridNavigation(event, currentCard, directions) {
       const prevCard = rowCards[position.column - 1]
       if (prevCard && focusCardHeading(prevCard)) {
         event.preventDefault()
+        return true
       }
     // ... or flip to the previous page.
     } else if (pagerSection) {
       const desiredIndex = position.row * grid.maxColumns + Math.max(grid.maxColumns - 1, 0)
       if (clickPagerControl(pagerSection, 'prev', desiredIndex)) {
         event.preventDefault()
+        return true
       }
     }
   }
@@ -334,32 +344,31 @@ function handleGridNavigation(event, currentCard, directions) {
     const nextRow = grid.rows[position.row + 1]
     // If another row exists in the same section, move down within that row.
     if (nextRow?.length) {
-      focusCardInRow(nextRow, position.column, event)
-      return
+      return focusCardInRow(nextRow, position.column, event)
     }
 
     // No lower row in this section; bail if the card was outside a pager section.
     if (!pagerSection) {
-      return
+      return false
     }
 
     // Try to enter the first row of the next section (newest → recent).
     const siblingSection = findSiblingSection(pagerSection, 'next')
     if (!siblingSection) {
-      return
+      return false
     }
 
     // Target the first available row in that section.
     const siblingCards = visibleCardsInSection(siblingSection)
     if (!siblingCards.length) {
-      return
+      return false
     }
 
     const siblingGrid = buildCardGrid(siblingCards)
     const targetRow = siblingGrid.rows[0]
     if (targetRow?.length) {
       // Align with the same column index if possible.
-      focusCardInRow(targetRow, position.column, event)
+      return focusCardInRow(targetRow, position.column, event)
     }
   }
 
@@ -367,39 +376,35 @@ function handleGridNavigation(event, currentCard, directions) {
     const previousRow = grid.rows[position.row - 1]
     // If a row exists above in the same section, move up there.
     if (previousRow?.length) {
-      focusCardInRow(previousRow, position.column, event)
-      return
+      return focusCardInRow(previousRow, position.column, event)
     }
 
     // No higher row in this section; stop if outside a pager section.
     if (!pagerSection) {
-      focusSearchField(event)
-      return
+      return false
     }
 
     // Move into the last row of the previous section (recent → newest).
     const siblingSection = findSiblingSection(pagerSection, 'prev')
     if (!siblingSection) {
-      focusSearchField(event)
-      return
+      return false
     }
 
     // Target the last available row in that section.
     const siblingCards = visibleCardsInSection(siblingSection)
     if (!siblingCards.length) {
-      focusSearchField(event)
-      return
+      return false
     }
 
     const siblingGrid = buildCardGrid(siblingCards)
     const targetRow = siblingGrid.rows[siblingGrid.rows.length - 1]
     if (targetRow?.length) {
       // Align with the same column index if possible.
-      focusCardInRow(targetRow, position.column, event)
-    } else {
-      focusSearchField(event)
+      return focusCardInRow(targetRow, position.column, event)
     }
   }
+
+  return false
 }
 
 const HOMEPAGE_SECTIONS = ['newest', 'recent']
