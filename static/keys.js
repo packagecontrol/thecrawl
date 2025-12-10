@@ -17,7 +17,7 @@ document.querySelectorAll('.skip-link').forEach((skipLink) => {
     event.preventDefault()
     // If skipping to the compact search field, expand it first.
     if (targetSelector === '#search-field') {
-      window.dispatchEvent(new CustomEvent('search:expand'))
+      expandIfCompact(target)
     }
 
     const rect = target.getBoundingClientRect()
@@ -538,8 +538,7 @@ function focusSearchField(event) {
   }
 
   event?.preventDefault()
-  window.dispatchEvent(new CustomEvent('search:expand'))
-
+  expandIfCompact(searchField)
   searchField.focus({ preventScroll: false })
   if (typeof searchField.select === 'function') {
     searchField.select()
@@ -644,4 +643,16 @@ function visibleCardsInSection(section) {
   }
 
   return Array.from(section.querySelectorAll(CARD_SELECTOR)).filter(isVisibleCard)
+}
+/**
+ * Dispatch a compact search expansion event when applicable.
+ * @param {HTMLElement} element
+ */
+function expandIfCompact(element) {
+  const compactForm = element?.closest('form.compact')
+  if (!compactForm) {
+    return
+  }
+
+  compactForm.dispatchEvent(new CustomEvent('search:expand', { bubbles: true }))
 }
