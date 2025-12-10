@@ -115,12 +115,20 @@ const syncFromUrl = ({ initialPageLoad = false }) => {
   list.goSearch(query, effectiveSortBy, page)
 }
 
+function setSearchPending(pending) {
+  if (form) {
+    form.dataset.searchPending = pending ? 'true' : 'false'
+  }
+}
+
 // Handle initial page load
+setSearchPending(false)
 syncFromUrl({ initialPageLoad: true })
 
 const handleInput = () => {
   const query = input.value
   const sortBy = sortSelect.value
+  setSearchPending(false)
   list.goSearch(query, sortBy)
 }
 
@@ -132,6 +140,7 @@ input.addEventListener('input', () => {
   if (input.value.trim() == '') {
     handleInput()
   } else {
+    setSearchPending(true)
     debounceTimeout = setTimeout(() => {
       handleInput()
     }, 300) // .3 seconds

@@ -171,7 +171,9 @@ document.addEventListener('keydown', (event) => {
   }
 
   event.preventDefault()
-  target.form?.requestSubmit()
+  if (isSearchPending(target.form)) {
+    target.form?.requestSubmit()
+  }
 
   const preferredColumn = event.key === 'ArrowDown' ? lastGridColumnPreference : 0
   focusFirstVisibleCard(preferredColumn)
@@ -197,6 +199,19 @@ function hasModifier(event) {
  */
 function hasNonShiftModifier(event) {
   return event.altKey || event.ctrlKey || event.metaKey
+}
+
+/**
+ * Check whether a debounced search is still pending.
+ * @param {HTMLFormElement|null} form
+ * @returns {boolean}
+ */
+function isSearchPending(form) {
+  if (!form) {
+    return false
+  }
+
+  return form.dataset.searchPending === 'true'
 }
 
 /**
