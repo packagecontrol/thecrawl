@@ -12,10 +12,12 @@ date: Last Modified
 
   <div class="search-controls">
     <label for="search-field" class="screenreader-only">Search</label>
-    <input type="search" autocomplete="off" name="q" id="search-field" placeholder="Search {{ collections.labels | length }} labels…">
-    <button class="clear-btn" type="button" aria-label="Clear search" tabindex="-1" onclick="const input=document.getElementById('search-field'); input.value=''; input.dispatchEvent(new Event('input', { bubbles: true })); input.focus();">
-      {{ util.icon('x-circle-fill') }}
-    </button>
+    <span class="input-with-clearance">
+      <input type="search" autocomplete="off" name="q" id="search-field" placeholder="Search {{ collections.labels | length }} labels…">
+      <button class="clear-btn" type="button" aria-label="Clear search" tabindex="-1" onclick="const input=document.getElementById('search-field'); input.value=''; input.dispatchEvent(new Event('input', { bubbles: true })); input.focus();">
+        {{ util.icon('x-circle-fill') }}
+      </button>
+    </span>
     <div class="sort-toggle" data-sort-controls role="group" aria-label="Sort labels">
       <button type="button" data-sort-option="name" class="is-active" aria-pressed="true">
         By Name

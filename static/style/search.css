@@ -101,6 +101,13 @@ select {
     color: var(--foreground-3);
   }
 
+  .input-with-clearance {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
   input {
     flex: 1;
     margin-bottom: 0;
@@ -153,9 +160,8 @@ select {
     }
   }
 
-  & input:not(:placeholder-shown):is(:hover, :focus) + .clear-btn,
-  .clear-btn:hover {
-    visibility: revert;
+  .input-with-clearance:has(input:not(:placeholder-shown)):is(:hover, :focus-within) .clear-btn {
+    visibility: visible;
   }
 
   .button {
