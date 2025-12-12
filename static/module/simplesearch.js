@@ -21,6 +21,7 @@ export class SimpleSearch {
   }
 
   init() {
+    this.setPending(false)
     // Apply state from the initial URL (supports shared links)
     this.syncFromUrl()
 
@@ -30,6 +31,7 @@ export class SimpleSearch {
         event.preventDefault()
         event.stopPropagation()
         clearTimeout(this.debounceTimeout)
+        this.setPending(false)
         this.debounceTimeout = null
         this.handleInput()
       }
@@ -39,12 +41,15 @@ export class SimpleSearch {
     this.input?.addEventListener('input', () => {
       clearTimeout(this.debounceTimeout)
       this.debounceTimeout = null
+      this.setPending(false)
       if (this.input.value.trim() === '') {
         this.handleInput()
       } else {
+        this.setPending(true)
         this.debounceTimeout = setTimeout(() => {
           this.handleInput()
           this.debounceTimeout = null
+          this.setPending(false)
         }, 300) // .3 seconds
       }
     })
@@ -53,6 +58,7 @@ export class SimpleSearch {
   }
 
   handleInput() {
+    this.setPending(false)
     this.applySearch(this.input.value, { updateInput: false })
   }
 
@@ -153,6 +159,7 @@ export class SimpleSearch {
   syncFromUrl() {
     clearTimeout(this.debounceTimeout)
     this.debounceTimeout = null
+    this.setPending(false)
 
     const params = new URLSearchParams(window.location.search)
     const queryFromUrl = params.get(this.paramKey) ?? ''
@@ -173,5 +180,11 @@ export class SimpleSearch {
 
   dispatchSearchDone() {
     window.dispatchEvent(new Event('search:done'))
+  }
+
+  setPending(pending) {
+    if (this.input?.form) {
+      this.input.form.dataset.searchPending = pending ? 'true' : 'false'
+    }
   }
 }

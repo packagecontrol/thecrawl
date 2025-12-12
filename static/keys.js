@@ -17,7 +17,7 @@ document.querySelectorAll('.skip-link').forEach((skipLink) => {
     event.preventDefault()
     // If skipping to the compact search field, expand it first.
     if (targetSelector === '#search-field') {
-      window.dispatchEvent(new CustomEvent('search:expand'))
+      expandIfCompact(target)
     }
 
     const rect = target.getBoundingClientRect()
@@ -83,6 +83,8 @@ document.addEventListener('keydown', (event) => {
   }
 })
 
+let lastGridColumnPreference = 0
+
 // Handle card navigation via arrow keys, paging horizontally when needed.
 document.addEventListener('keydown', (event) => {
   if (hasModifier(event)) {
@@ -105,12 +107,26 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  handleGridNavigation(event, currentCard, {
+  const grid = buildGridForCard(currentCard)
+  if (!grid) {
+    return
+  }
+
+  let handled = handleGridNavigation(grid, currentCard, {
     isArrowDown,
     isArrowUp,
     isArrowRight,
     isArrowLeft,
   })
+
+  if (!handled && isArrowUp) {
+    const position = grid.positions.get(currentCard)
+    lastGridColumnPreference = position?.column ?? 0
+    handled = focusSearchField()
+  }
+  if (handled) {
+    event.preventDefault()
+  }
 })
 
 // Focus the search field when s or / is pressed outside editable inputs.
@@ -137,27 +153,18 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  const target = document.querySelector('#search-field')
-  if (!target) {
-    return
-  }
-
-  event.preventDefault()
-  window.dispatchEvent(new CustomEvent('search:expand'))
-
-  target.focus({ preventScroll: false })
-  if (typeof target.select === 'function') {
-    target.select()
+  if (focusSearchField()) {
+    event.preventDefault()
   }
 })
 
-// After submitting search, move focus to the first visible card for browsing.
+// On enter or arrow down, submit and move focus to the first visible card for browsing.
 document.addEventListener('keydown', (event) => {
   if (hasModifier(event)) {
     return
   }
 
-  if (event.key !== 'Enter') {
+  if (event.key !== 'Enter' && event.key !== 'ArrowDown') {
     return
   }
 
@@ -166,15 +173,10 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  // Schedule our side-effect so the onsubmit has a chance to run
-  setTimeout(() => {
-    const card = Array.from(document.querySelectorAll(CARD_SELECTOR)).find(isVisibleCard)
-    if (!card) {
-      return
-    }
-
-    focusCardHeading(card)
-  })
+  event.preventDefault()
+  ensureNoPendingSearch(target.form)
+  const preferredColumn = event.key === 'ArrowDown' ? lastGridColumnPreference : 0
+  focusFirstVisibleCard(preferredColumn)
 })
 
 //
@@ -197,6 +199,24 @@ function hasModifier(event) {
  */
 function hasNonShiftModifier(event) {
   return event.altKey || event.ctrlKey || event.metaKey
+}
+
+/**
+ * Ensure any pending debounced search gets flushed before moving focus.
+ * @param {HTMLFormElement|null} form
+ * @returns {boolean} True if a submission was requested.
+ */
+function ensureNoPendingSearch(form) {
+  if (!form) {
+    return false
+  }
+
+  if (form.dataset.searchPending === 'true') {
+    form.requestSubmit()
+    return true
+  }
+
+  return false
 }
 
 /**
@@ -281,7 +301,7 @@ function handleSequentialNavigation(currentCard, direction) {
 /**
  * Navigate within the visual card grid using arrow keys.
  *
- * @param {KeyboardEvent} event - The originating keydown event.
+ * @param {GridMetadata} grid - Context for the card's grid.
  * @param {Element} currentCard - Currently focused card element.
  * @param {{
  *   isArrowDown: boolean,
@@ -289,21 +309,15 @@ function handleSequentialNavigation(currentCard, direction) {
  *   isArrowRight: boolean,
  *   isArrowLeft: boolean,
  * }} directions - Flags describing which arrow was pressed.
+ * @returns {boolean} True when focus was moved or paging occurred.
  */
-function handleGridNavigation(event, currentCard, directions) {
-  const pagerSection = findPagerSection(currentCard)
-  const cards = pagerSection ? visibleCardsInSection(pagerSection) : getAllVisibleCards()
-  if (!cards.length) {
-    return
-  }
-
-  const grid = buildCardGrid(cards)
+function handleGridNavigation(grid, currentCard, directions) {
   const position = grid.positions.get(currentCard)
   if (!position) {
     if (directions.isArrowDown || directions.isArrowUp) {
       const direction = directions.isArrowDown ? 1 : -1
       if (handleSequentialNavigation(currentCard, direction)) {
-        event.preventDefault()
+        return true
       }
     }
   }
@@ -314,13 +328,13 @@ function handleGridNavigation(event, currentCard, directions) {
     if (position.column < rowCards.length - 1) {
       const nextCard = rowCards[position.column + 1]
       if (nextCard && focusCardHeading(nextCard)) {
-        event.preventDefault()
+        return true
       }
     // ... or flip to the next page.
-    } else if (pagerSection) {
+    } else if (grid.pagerSection) {
       const desiredIndex = position.row * grid.maxColumns
-      if (clickPagerControl(pagerSection, 'next', desiredIndex)) {
-        event.preventDefault()
+      if (clickPagerControl(grid.pagerSection, 'next', desiredIndex)) {
+        return true
       }
     }
   }
@@ -331,13 +345,13 @@ function handleGridNavigation(event, currentCard, directions) {
     if (position.column > 0) {
       const prevCard = rowCards[position.column - 1]
       if (prevCard && focusCardHeading(prevCard)) {
-        event.preventDefault()
+        return true
       }
     // ... or flip to the previous page.
-    } else if (pagerSection) {
+    } else if (grid.pagerSection) {
       const desiredIndex = position.row * grid.maxColumns + Math.max(grid.maxColumns - 1, 0)
-      if (clickPagerControl(pagerSection, 'prev', desiredIndex)) {
-        event.preventDefault()
+      if (clickPagerControl(grid.pagerSection, 'prev', desiredIndex)) {
+        return true
       }
     }
   }
@@ -346,32 +360,31 @@ function handleGridNavigation(event, currentCard, directions) {
     const nextRow = grid.rows[position.row + 1]
     // If another row exists in the same section, move down within that row.
     if (nextRow?.length) {
-      focusCardInRow(nextRow, position.column, event)
-      return
+      return focusCardInRow(nextRow, position.column)
     }
 
     // No lower row in this section; bail if the card was outside a pager section.
-    if (!pagerSection) {
-      return
+    if (!grid.pagerSection) {
+      return false
     }
 
     // Try to enter the first row of the next section (newest → recent).
-    const siblingSection = findSiblingSection(pagerSection, 'next')
+    const siblingSection = findSiblingSection(grid.pagerSection, 'next')
     if (!siblingSection) {
-      return
+      return false
     }
 
     // Target the first available row in that section.
     const siblingCards = visibleCardsInSection(siblingSection)
     if (!siblingCards.length) {
-      return
+      return false
     }
 
     const siblingGrid = buildCardGrid(siblingCards)
     const targetRow = siblingGrid.rows[0]
     if (targetRow?.length) {
       // Align with the same column index if possible.
-      focusCardInRow(targetRow, position.column, event)
+      return focusCardInRow(targetRow, position.column)
     }
   }
 
@@ -379,34 +392,35 @@ function handleGridNavigation(event, currentCard, directions) {
     const previousRow = grid.rows[position.row - 1]
     // If a row exists above in the same section, move up there.
     if (previousRow?.length) {
-      focusCardInRow(previousRow, position.column, event)
-      return
+      return focusCardInRow(previousRow, position.column)
     }
 
     // No higher row in this section; stop if outside a pager section.
-    if (!pagerSection) {
-      return
+    if (!grid.pagerSection) {
+      return false
     }
 
     // Move into the last row of the previous section (recent → newest).
-    const siblingSection = findSiblingSection(pagerSection, 'prev')
+    const siblingSection = findSiblingSection(grid.pagerSection, 'prev')
     if (!siblingSection) {
-      return
+      return false
     }
 
     // Target the last available row in that section.
     const siblingCards = visibleCardsInSection(siblingSection)
     if (!siblingCards.length) {
-      return
+      return false
     }
 
     const siblingGrid = buildCardGrid(siblingCards)
     const targetRow = siblingGrid.rows[siblingGrid.rows.length - 1]
     if (targetRow?.length) {
       // Align with the same column index if possible.
-      focusCardInRow(targetRow, position.column, event)
+      return focusCardInRow(targetRow, position.column)
     }
   }
+
+  return false
 }
 
 const HOMEPAGE_SECTIONS = ['newest', 'recent']
@@ -421,20 +435,19 @@ const HOMEPAGE_SECTIONS = ['newest', 'recent']
  *   rows: Card[][],
  *   positions: CardPositions,
  *   maxColumns: number,
+ *   pagerSection?: Element|null,
  * }} GridMetadata - Snapshot of the grid layout.
  */
 
 /**
  * @param {Card[]} row - Ordered cards for a single visual row.
  * @param {number} preferredColumn - Column index to align with when possible.
- * @param {KeyboardEvent} [event] - Optional originating event.
  * @returns {boolean} Whether focus was moved to a card in the row.
  */
-function focusCardInRow(row, preferredColumn, event) {
+function focusCardInRow(row, preferredColumn) {
   const columnIndex = Math.min(preferredColumn, row.length - 1)
   const target = row[columnIndex]
   if (target && focusCardHeading(target)) {
-    event?.preventDefault()
     return true
   }
   return false
@@ -477,6 +490,64 @@ function buildCardGrid(cards) {
 
 function getAllVisibleCards() {
   return Array.from(document.querySelectorAll(CARD_SELECTOR)).filter(isVisibleCard)
+}
+
+/**
+ * Build grid metadata for the card's current context.
+ * @param {Element} card
+ * @returns {GridMetadata|null}
+ */
+function buildGridForCard(card) {
+  const pagerSection = findPagerSection(card)
+  const cards = pagerSection ? visibleCardsInSection(pagerSection) : getAllVisibleCards()
+  if (!cards.length) {
+    return null
+  }
+
+  const grid = buildCardGrid(cards)
+  return {
+    ...grid,
+    pagerSection,
+  }
+}
+
+/**
+ * Focus the first row's card that aligns with `preferredColumn` when possible.
+ * @param {number} preferredColumn
+ * @returns {boolean}
+ */
+function focusFirstVisibleCard(preferredColumn = 0) {
+  const cards = getAllVisibleCards()
+  if (!cards.length) {
+    return false
+  }
+
+  const grid = buildCardGrid(cards)
+  const firstRow = grid.rows[0]
+  if (!firstRow?.length) {
+    return false
+  }
+
+  return focusCardInRow(firstRow, preferredColumn)
+}
+
+/**
+ * Focus the main search field and expand it if needed.
+ * @returns {boolean} Whether the search field received focus.
+ */
+function focusSearchField() {
+  const searchField = document.querySelector('#search-field')
+  if (!searchField) {
+    return false
+  }
+
+  expandIfCompact(searchField)
+  searchField.focus({ preventScroll: false })
+  if (typeof searchField.select === 'function') {
+    searchField.select()
+  }
+
+  return document.activeElement === searchField
 }
 
 /**
@@ -575,4 +646,16 @@ function visibleCardsInSection(section) {
   }
 
   return Array.from(section.querySelectorAll(CARD_SELECTOR)).filter(isVisibleCard)
+}
+/**
+ * Dispatch a compact search expansion event when applicable.
+ * @param {HTMLElement} element
+ */
+function expandIfCompact(element) {
+  const compactForm = element?.closest('form.compact')
+  if (!compactForm) {
+    return
+  }
+
+  compactForm.dispatchEvent(new CustomEvent('search:expand', { bubbles: true }))
 }
