@@ -41,6 +41,7 @@ body {
   color: var(--foreground-1);
   margin: 0;
   padding: 0;
+  transition: background .1s;
 }
 
 main {
