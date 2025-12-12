@@ -113,6 +113,7 @@ select {
     margin-bottom: 0;
     border: none;
     line-height: 28px;
+
     &:focus {
       outline: none;
     }
@@ -135,7 +136,6 @@ select {
     color: var(--foreground-2);
     background: inherit;
     visibility: hidden;
-    padding: 3px 10px 0;
     padding: 7px 7px 4px;
     margin-right: 2px;
     border-radius: 50%;
