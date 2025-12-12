@@ -10,7 +10,7 @@ const list = document.querySelector('section[name="labels"] ul')
 const data = []
 const cards = document.querySelectorAll('section ul .label')
 const searchInput = document.getElementById('search-field')
-const usageToggle = document.querySelector('[data-omit-single]')
+const usageToggle = document.querySelector('[data-omit-control]')
 const urlParams = new URLSearchParams(window.location.search)
 const initialQuery = urlParams.get('q') ?? ''
 let autoMode = true
@@ -60,7 +60,6 @@ const updateUsageToggleUI = () => {
   if (!usageToggle) {
     return
   }
-  usageToggle.classList.toggle('is-active', omitSingles)
   usageToggle.setAttribute('aria-pressed', String(omitSingles))
 }
 
