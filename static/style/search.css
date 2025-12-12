@@ -350,7 +350,6 @@ form.compact {
 
     &[aria-pressed="true"] {
       color: var(--foreground-1);
-      font-weight: 500;
       text-decoration: none;
     }
   }
