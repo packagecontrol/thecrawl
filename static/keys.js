@@ -112,19 +112,20 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  const handled = handleGridNavigation(grid, currentCard, {
+  let handled = handleGridNavigation(grid, currentCard, {
     isArrowDown,
     isArrowUp,
     isArrowRight,
     isArrowLeft,
   })
 
-  if (handled) {
-    event.preventDefault()
-  } else if (isArrowUp) {
+  if (!handled && isArrowUp) {
     const position = grid.positions.get(currentCard)
     lastGridColumnPreference = position?.column ?? 0
-    focusSearchField(event)
+    handled = focusSearchField()
+  }
+  if (handled) {
+    event.preventDefault()
   }
 })
 
@@ -152,7 +153,9 @@ document.addEventListener('keydown', (event) => {
     return
   }
 
-  focusSearchField(event)
+  if (focusSearchField()) {
+    event.preventDefault()
+  }
 })
 
 // On enter or arrow down, submit and move focus to the first visible card for browsing.
@@ -530,16 +533,14 @@ function focusFirstVisibleCard(preferredColumn = 0) {
 
 /**
  * Focus the main search field and expand it if needed.
- * @param {KeyboardEvent} [event]
- * @returns {boolean}
+ * @returns {boolean} Whether the search field received focus.
  */
-function focusSearchField(event) {
+function focusSearchField() {
   const searchField = document.querySelector('#search-field')
   if (!searchField) {
     return false
   }
 
-  event?.preventDefault()
   expandIfCompact(searchField)
   searchField.focus({ preventScroll: false })
   if (typeof searchField.select === 'function') {
