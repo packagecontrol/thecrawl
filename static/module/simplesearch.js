@@ -89,25 +89,30 @@ export class SimpleSearch {
 
   renderSearch(query) {
     const results = this.search.search(query).map(result => result.name)
-    const visibleItems = new Set(results)
-
-    if (this.counter) {
-      if (results.length === 1) {
-        this.counter.innerText = '1 Result'
-      } else {
-        this.counter.innerText = `${results.length} Results`
-      }
-    }
+    const resultSet = new Set(results)
+    let visibleCount = 0
 
     this.cards.forEach((card) => {
       const container = card.closest('li')
       if (!container) {
         return
       }
-      const hiddenBySearch = !visibleItems.has(card.dataset.name)
+      const hiddenBySearch = !resultSet.has(card.dataset.name)
       const hiddenByFilter = Boolean(this.cardFilter?.(card))
-      container.style.display = (hiddenBySearch || hiddenByFilter) ? 'none' : null
+      const hidden = hiddenBySearch || hiddenByFilter
+      container.style.display = hidden ? 'none' : null
+      if (!hidden) {
+        visibleCount += 1
+      }
     })
+
+    if (this.counter) {
+      if (visibleCount === 1) {
+        this.counter.innerText = '1 Result'
+      } else {
+        this.counter.innerText = `${visibleCount} Results`
+      }
+    }
   }
 
   revertToNormal() {
