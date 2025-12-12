@@ -348,7 +348,7 @@ form.compact {
       outline-offset: 2px;
     }
 
-    &.is-active {
+    &[aria-pressed="true"] {
       color: var(--foreground-1);
       font-weight: 500;
       text-decoration: none;
