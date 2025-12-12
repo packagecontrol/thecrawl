@@ -49,10 +49,12 @@
     <div class="search-controls">
 
       <label for="search-field" class="screenreader-only">Search</label>
-      <input type="search" autocomplete="off" name="q" id="search-field" placeholder="{{ 'Search ' ~ count ~ ' packages' if verbose else 'Search' }}…">
-      <button class="clear-btn" type="button" aria-label="Clear search" tabindex="-1" onclick="const input=document.getElementById('search-field'); input.value=''; input.dispatchEvent(new Event('input', { bubbles: true })); input.focus();">
-        {{ icon('x-circle-fill') }}
-      </button>
+      <span class="input-with-clearance">
+        <input type="search" autocomplete="off" name="q" id="search-field" placeholder="{{ 'Search ' ~ count ~ ' packages' if verbose else 'Search' }}…">
+        <button class="clear-btn" type="button" aria-label="Clear search" tabindex="-1" onclick="const input=document.getElementById('search-field'); input.value=''; input.dispatchEvent(new Event('input', { bubbles: true })); input.focus();">
+          {{ icon('x-circle-fill') }}
+        </button>
+      </span>
 
       <div class="button">
         <label for="sort-field">Sort by</label>

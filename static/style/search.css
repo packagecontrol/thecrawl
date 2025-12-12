@@ -101,11 +101,19 @@ select {
     color: var(--foreground-3);
   }
 
+  .input-with-clearance {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
   input {
     flex: 1;
     margin-bottom: 0;
     border: none;
     line-height: 28px;
+
     &:focus {
       outline: none;
     }
@@ -128,7 +136,6 @@ select {
     color: var(--foreground-2);
     background: inherit;
     visibility: hidden;
-    padding: 3px 10px 0;
     padding: 7px 7px 4px;
     margin-right: 2px;
     border-radius: 50%;
@@ -153,9 +160,8 @@ select {
     }
   }
 
-  & input:not(:placeholder-shown):is(:hover, :focus) + .clear-btn,
-  .clear-btn:hover {
-    visibility: revert;
+  .input-with-clearance:has(input:not(:placeholder-shown)):is(:hover, :focus-within) .clear-btn {
+    visibility: visible;
   }
 
   .button {
