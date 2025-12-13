@@ -77,7 +77,8 @@ jobs:
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/registry.json --clobber
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/workspace.json --clobber
 
-          DATE=$(TZ=Europe/Berlin date +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
+          DATE_TS=$(date +%s)
+          DATE=$(TZ=Europe/Berlin date -d "@$DATE_TS" +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
           REPO_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           # Build new notes
           {
@@ -92,6 +93,14 @@ jobs:
 
           echo "Updating release notes..."
           gh release edit ${{ env.RELEASE_TAG }} --notes-file notes.txt
+
+          echo "Updating logs history..."
+          uv run -m scripts.collect_logs \
+            --run-id "${{ github.run_id }}" \
+            --timestamp "$DATE_TS" \
+            -o ./wrk/logs.json \
+            notes.txt
+          gh release upload ${{ env.RELEASE_TAG }} ./wrk/logs.json --clobber
 
       - name: Upload wrk backup
         id: crawl-backup-step
