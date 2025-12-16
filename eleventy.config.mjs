@@ -506,6 +506,7 @@ export default function (eleventyConfig) {
     disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
   })
 
+  eleventyConfig.addPassthroughCopy('logs.json')
   // Default permalink: output files with their extension (e.g., /page.html)
   // Can be overridden per-template (e.g., RSS feed or JSON endpoints)
   eleventyConfig.addGlobalData('permalink', () => {

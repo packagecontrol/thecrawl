@@ -51,9 +51,10 @@ _site/*
 
 # Database #
 ######################
-workspace.json
-libraries.json
-stats.json
-channel.json
-registry.json
 .AFileIcon/
+channel.json
+logs.json
+libraries.json
+registry.json
+stats.json
+workspace.json

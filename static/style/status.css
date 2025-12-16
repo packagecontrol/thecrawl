@@ -1,0 +1,142 @@
+.status-page {
+  margin-top: 0.5rem;
+  max-width: var(--max-line);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.status-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+  color: var(--foreground-2);
+}
+
+.status-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.status-date {
+  color: var(--foreground-3);
+  font-size: 14px;
+  align-self: center;
+  padding-bottom: 10px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  text-transform: capitalize;
+  letter-spacing: 0.01em;
+}
+
+.status-badge-success {
+  background: rgb(from var(--green-1) r g b / 0.15);
+  color: var(--green-2);
+  border-color: rgb(from var(--green-2) r g b / 0.4);
+}
+
+.status-badge-warning {
+  background: rgb(from var(--orange-1) r g b / 0.14);
+  color: var(--orange-2);
+  border-color: rgb(from var(--orange-2) r g b / 0.35);
+}
+
+.status-badge-error {
+  background: rgb(from var(--red-1) r g b / 0.16);
+  color: var(--red-2);
+  border-color: rgb(from var(--red-2) r g b / 0.45);
+}
+
+.status-badge-muted {
+  background: var(--background-3);
+  color: var(--foreground-2);
+  border-color: transparent;
+}
+
+.status-pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.status-pagination .button-group {
+  display: flex;
+  gap: 0.2ex;
+  font-size: 24px;
+}
+
+.status-pagination .button {
+  background: transparent;
+  &:enabled:hover,
+  &:enabled:focus-visible {
+    background: var(--background-4);
+  }
+
+  .pager-nav-symbol {
+    display: inline-block;
+    position: relative;
+    top: -0.07em;
+  }
+}
+
+.status-notes {
+  background: var(--background-1);
+  border-radius: 8px;
+  padding: 1.4rem 1.6rem;
+  box-shadow:
+    0 1px 0 rgb(from var(--background-5) r g b / 0.35),
+    0 18px 36px -24px rgb(from var(--foreground-1) r g b / 0.35);
+}
+
+.status-notes p,
+.status-notes ul,
+.status-notes ol {
+  max-width: var(--max-line);
+}
+
+.status-notes pre {
+  background: var(--background-2);
+  border-radius: 6px;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+}
+
+.status-notes code {
+  background: var(--highlight);
+}
+
+.status-notes ul,
+.status-notes ol {
+  padding-left: 1.2rem;
+}
+
+.status-notes a {
+  word-break: break-word;
+}
+
+.status-notes hr {
+  margin: 2em 0 1em;
+}
+
+html.status main {
+  margin-top: 3em;
+}
