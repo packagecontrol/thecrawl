@@ -1,5 +1,9 @@
 name: Publish Channel and Site
 
+concurrency:
+  group: crawl-pipeline
+  cancel-in-progress: false
+
 on:
   workflow_run:
     workflows: ["Crawl Registry"]
