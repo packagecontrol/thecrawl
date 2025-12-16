@@ -238,9 +238,53 @@ jobs:
           python -m json.tool channel_st3.json > new.json
           diff -u old.json new.json || true
 
+  enrich_logs:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      RELEASE_TAG: crawler-status
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Prepare wrk
+        run: mkdir -p wrk
+
+      - name: Fetch recent workflow runs
+        run: |
+          SINCE=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          gh api \
+            repos/${{ github.repository }}/actions/workflows/${{ env.WORKFLOW_ID }}/runs \
+            --method GET \
+            -f per_page=100 \
+            -f status=completed \
+            -f created=">=$SINCE" \
+            --paginate \
+            --jq '[.workflow_runs[] | {id, conclusion, run_started_at}]' \
+            > ./wrk/workflow_runs.json
+
+      - name: Enrich logs.json
+        run: |
+          gh release download ${{ env.RELEASE_TAG }} --pattern "logs.json" --output ./wrk/logs.json || echo "logs.json missing"
+          uv run -m scripts.enrich_logs \
+            --runs ./wrk/workflow_runs.json \
+            -i ./wrk/logs.json \
+            -o ./wrk/logs.json
+          gh release upload ${{ env.RELEASE_TAG }} ./wrk/logs.json --clobber
+
   gh-pages-after-build:
     runs-on: ubuntu-latest
-    needs: build-st4-channel
+    needs: [enrich_logs, build-st4-channel]
     if: needs.build-st4-channel.outputs.update_needed == 'true'
     environment:
       name: github-pages
@@ -271,6 +315,7 @@ jobs:
 
   gh-pages-nightly:
     runs-on: ubuntu-latest
+    needs: enrich_logs
     if: github.event_name == 'schedule'
     environment:
       name: github-pages
