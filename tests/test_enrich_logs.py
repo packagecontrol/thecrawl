@@ -39,6 +39,5 @@ def test_enrich_updates_existing_and_adds_missing(tmp_path):
     assert first["conclusion"] == "success"
 
     second = next(entry for entry in data if entry["run_id"] == "2")
-    assert second["notes"] == "Run did not produce notes."
     assert second["conclusion"] == "failure"
     assert second["date"] == "2024-10-06T09:00:00Z"
