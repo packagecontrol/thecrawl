@@ -266,7 +266,7 @@ jobs:
 
       - name: Fetch recent workflow runs
         run: |
-          SINCE=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          SINCE=$(date -u -d '240 hours ago' +%Y-%m-%dT%H:%M:%SZ)
           gh api \
             repos/${{ github.repository }}/actions/workflows/${{ env.WORKFLOW_ID }}/runs \
             --method GET \
