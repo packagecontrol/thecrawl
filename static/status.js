@@ -113,7 +113,9 @@ function updateHeading(entry) {
  */
 function renderNotes(entry) {
   if (!entry.notes) {
-    notesEl.innerHTML = '<p>No notes for this run.</p>'
+    notesEl.innerHTML = `
+      <p>No notes for this run. (${linkToRun(entry.run_id)})</p>
+    `
     return
   }
 
@@ -457,6 +459,12 @@ function classFor(conclusion) {
 function formatHourLabel(hour) {
   const h = String(hour).padStart(2, '0')
   return `${h}:00`
+}
+
+function linkToRun(runId) {
+  if (!runId) return ''
+  const href = `https://github.com/packagecontrol/thecrawl/actions/runs/${runId}`
+  return `<a href="${href}">logs</a>`
 }
 
 function crisp(value) {
