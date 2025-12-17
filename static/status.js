@@ -31,6 +31,7 @@ function init() {
   }
 
   bindControls()
+  bindKeyboard()
   loadLogs().then((entries) => {
     logs = annotateChanges(entries)
     if (!logs.length) {
@@ -49,6 +50,72 @@ function bindControls() {
   prevButton?.addEventListener('click', () => render(index + 1))
   nextButton?.addEventListener('click', () => render(index - 1))
   lastButton?.addEventListener('click', () => render(0))
+}
+
+function bindKeyboard() {
+  window.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented) return
+    if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
+    const target = event.target
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+      return
+    }
+
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      navigateDay(-1)
+    }
+    else if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      navigateDay(1)
+    }
+    else if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      render(index + 1)
+    }
+    else if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      render(index - 1)
+    }
+  })
+}
+
+function navigateDay(dayOffset) {
+  if (!logs.length) return
+  const current = logs[index]
+  const currentTs = safeDate(current.date)
+  if (!currentTs) return
+
+  const DAY_MS = 24 * 60 * 60 * 1000
+  const targetTs = currentTs + dayOffset * DAY_MS
+  const desiredDay = new Date(targetTs).getDate()
+
+  const closest = findClosestByTimestamp(targetTs)
+  if (closest === -1) return
+
+  const targetEntry = logs[closest]
+  const targetEntryTs = safeDate(targetEntry.date)
+  if (!targetEntryTs) return
+
+  const targetDay = new Date(targetEntryTs).getDate()
+  if (targetDay !== desiredDay) return
+
+  render(closest)
+}
+
+function findClosestByTimestamp(targetTs) {
+  let bestIdx = -1
+  let bestDelta = Number.POSITIVE_INFINITY
+  logs.forEach((entry, idx) => {
+    const ts = safeDate(entry.date)
+    if (!ts) return
+    const delta = Math.abs(ts - targetTs)
+    if (delta < bestDelta) {
+      bestDelta = delta
+      bestIdx = idx
+    }
+  })
+  return bestIdx
 }
 
 const ASSET_URL = 'https://repackager.sublimetext.io/logs.json'
