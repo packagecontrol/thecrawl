@@ -50,11 +50,11 @@ function bindControls() {
   lastButton?.addEventListener('click', () => render(0))
 }
 
-const ASSET_URL = 'https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/logs.json'
+const ASSET_URL = 'https://repackager.sublimetext.io/logs.json'
 
 async function loadLogs() {
   const sources = [
-    () => fetchWithProxy(ASSET_URL),
+    () => fetch(ASSET_URL, { cache: 'no-cache' }),
     () => fetch('/logs.json', { cache: 'no-cache' }),
   ]
 
@@ -75,11 +75,6 @@ async function loadLogs() {
   }
 
   throw lastError || new Error('Failed to load logs')
-}
-
-async function fetchWithProxy(targetUrl) {
-  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
-  return fetch(proxyUrl, { cache: 'no-cache' })
 }
 
 /**
