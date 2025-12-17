@@ -313,6 +313,9 @@ class StatusChart {
       if (h % 6 !== 0) {
         line.setAttribute('stroke-opacity', '0.25')
       }
+      if (h === 0) {
+        line.dataset.axis = 'true'
+      }
       this.gridLayer.appendChild(line)
 
       if (h % 6 === 0) {

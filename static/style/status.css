@@ -45,6 +45,11 @@ html.status main {
     stroke-width: 1;
     pointer-events: none;
     transition: stroke .12s ease;
+
+    line[data-axis="true"] {
+      stroke: var(--foreground-1);
+      stroke-width: 0.6px;
+    }
   }
 
   .dot {
