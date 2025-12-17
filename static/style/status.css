@@ -74,8 +74,6 @@ html.status main {
     }
     &.active {
       stroke: var(--status-dot-active-stroke);
-      stroke-width: 2px;
-      transform: scale(0.78);
       fill: var(--status-dot-active-fill);
     }
     &.active.changed {
