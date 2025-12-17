@@ -329,6 +329,9 @@ class StatusChart {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
     const msInDay = 24 * 60 * 60 * 1000
 
+    const neutralNodes = []
+    const otherNodes = []
+
     this.entries.forEach((entry) => {
       const ts = Date.parse(entry.date || 0)
       if (!Number.isFinite(ts)) return
@@ -341,6 +344,19 @@ class StatusChart {
       const x = this.padding.left + (this.days - 1 - diffDays + 0.5) * this.barWidth
       const y = this.yForHour(hour)
       const node = this.makeDot(entry, x, y)
+
+      const cls = classFor(entry.conclusion)
+      const isNeutral = cls === '' || cls === 'muted'
+      const target = isNeutral ? neutralNodes : otherNodes
+      target.push({ entry, node })
+    })
+
+    // Append neutral first, then everything else on top
+    neutralNodes.forEach(({ entry, node }) => {
+      this.dotLayer.appendChild(node)
+      this.points.push({ entry, node })
+    })
+    otherNodes.forEach(({ entry, node }) => {
       this.dotLayer.appendChild(node)
       this.points.push({ entry, node })
     })
