@@ -39,7 +39,7 @@ function init() {
       return
     }
     chart?.setData(logs)
-    render(0)
+    render(resolveInitialIndex())
   }).catch((err) => {
     console.error('Failed to load logs:', err)
     renderEmptyState('Failed to load logs. Please try again later.')
@@ -118,6 +118,15 @@ function findClosestByTimestamp(targetTs) {
   return bestIdx
 }
 
+function resolveInitialIndex() {
+  if (!logs.length || typeof window === 'undefined') return 0
+  const url = new URL(window.location.href)
+  const runId = url.searchParams.get('run_id')
+  if (!runId) return 0
+  const found = logs.findIndex(entry => entry.run_id && String(entry.run_id) === runId)
+  return found >= 0 ? found : 0
+}
+
 const ASSET_URL = 'https://repackager.sublimetext.io/logs.json'
 
 async function loadLogs() {
@@ -159,6 +168,7 @@ function render(targetIndex) {
   renderNotes(entry)
   updateButtons()
   chart?.highlight(entry)
+  updateUrl(entry)
 }
 
 /**
@@ -540,6 +550,22 @@ function linkToRun(runId) {
   if (!runId) return ''
   const href = `https://github.com/packagecontrol/thecrawl/actions/runs/${runId}`
   return `<a href="${href}">logs</a>`
+}
+
+/**
+ * Update the URL query to reflect the current entry.
+ * Uses replaceState to avoid adding history entries.
+ * @param {LogEntry} entry
+ */
+function updateUrl(entry) {
+  const url = new URL(window.location.href)
+  if (entry.run_id) {
+    url.searchParams.set('run_id', entry.run_id)
+  }
+  else {
+    url.searchParams.delete('run_id')
+  }
+  window.history.replaceState({}, '', url.toString())
 }
 
 function annotateChanges(entries) {
