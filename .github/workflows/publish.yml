@@ -275,7 +275,7 @@ jobs:
             -f created=">=$SINCE" \
             --paginate \
             --jq '[.workflow_runs[] | {id, conclusion, run_started_at}]' \
-            > ./wrk/workflow_runs.json
+            | jq -s 'add' > ./wrk/workflow_runs.json
 
       - name: Enrich logs.json
         run: |
