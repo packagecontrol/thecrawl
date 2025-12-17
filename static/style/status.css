@@ -81,13 +81,23 @@ html.status main {
   font-size: 14px;
   line-height: 20px;
   font-weight: 700;
+  color: var(--foreground-4);
+  border-radius: 6px;
+  padding: 2px 9px;
+  margin-bottom: 5px;
+}
+
+.status-label {
   color: var(--foreground-2);
+  text-transform: capitalize;
+  font-weight: 400;
 }
 
 .status-right {
   display: inline-flex;
   align-items: center;
   gap: 0.9rem;
+  margin-bottom: -5px;
 }
 
 .status-date {
@@ -100,31 +110,37 @@ html.status main {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 4px 8px;
+  gap: 0.35rem;
+  padding: 2px 0;
   border-radius: 6px;
   border: 1px solid transparent;
   font-weight: 700;
   text-transform: capitalize;
   letter-spacing: 0.01em;
+
+  &::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+  }
 }
 
 .status-badge-success {
-  background: rgb(from var(--green-1) r g b / 0.15);
+  background: transparent;
   color: var(--green-2);
-  border-color: rgb(from var(--green-2) r g b / 0.4);
 }
 
 .status-badge-warning {
-  background: rgb(from var(--orange-1) r g b / 0.14);
+  background: transparent;
   color: var(--orange-2);
-  border-color: rgb(from var(--orange-2) r g b / 0.35);
 }
 
 .status-badge-error {
-  background: rgb(from var(--red-1) r g b / 0.16);
+  background: transparent;
   color: var(--red-2);
-  border-color: rgb(from var(--red-2) r g b / 0.45);
 }
 
 .status-badge-muted {

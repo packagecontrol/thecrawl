@@ -25,9 +25,8 @@ description: "Latest crawler runs and notes."
 <section class="status-page">
   <div class="pager-header status-header">
     <div class="status-heading" role="heading" aria-level="2">
-      <span class="status-badge {{ badge_class }}" data-status-badge>
-        {{ latest.conclusion or '—' }}
-      </span>
+      <span class="status-badge {{ badge_class }}" data-status-badge></span>
+      <span class="status-label" data-status-label>{{ latest.conclusion or '' }}</span>
     </div>
 
     <div class="status-right">
