@@ -313,7 +313,7 @@ class StatusChart {
       const y = crisp(this.yForHour(h))
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
       line.setAttribute('x1', crisp(this.padding.left))
-      line.setAttribute('x2', crisp(this.width - this.padding.right))
+      line.setAttribute('x2', crisp(this.width - this.padding.right - 4))
       line.setAttribute('y1', y)
       line.setAttribute('y2', y)
       if (h % 6 !== 0) {
@@ -342,6 +342,20 @@ class StatusChart {
         this.labelLayer.appendChild(labelRight)
       }
     }
+
+    // x-axis arrow on the right
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+    const axisY = crisp(this.yForHour(24))
+    const baseX = crisp(this.width - this.padding.right - 4)
+    const size = 6
+    const points = [
+      `${baseX + size},${axisY}`,
+      `${baseX},${axisY - size / 2}`,
+      `${baseX},${axisY + size / 2}`,
+    ].join(' ')
+    arrow.setAttribute('points', points)
+    arrow.setAttribute('class', 'x-arrow')
+    this.labelLayer.appendChild(arrow)
   }
 
   setData(entries) {

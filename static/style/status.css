@@ -98,6 +98,10 @@ html.status main {
     transition: stroke 0.1s;
     shape-rendering: crispEdges;
   }
+
+  .x-arrow {
+    fill: var(--foreground-2);
+    stroke: none;
   }
 }
 
