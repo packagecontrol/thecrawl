@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { marked } from 'marked'
 import { minify } from 'terser'
 import * as util from './eleventy.util.mjs'
 import * as filters from './eleventy.filters.mjs'
@@ -26,8 +25,6 @@ const MAGIC_WEIGHTS = {
 }
 
 const clamp01 = value => Math.max(0, Math.min(1, value))
-const normalizeNotes = text => (text || '').replace(/\r\n?/g, '\n')
-
 // GitHub-style emoji shortcode mapping, loaded from JSON.
 // Extend emoji.json over time as needed.
 const EMOJI_MAP = Object.freeze(JSON.parse(fs.readFileSync('emoji.json', 'utf8')))
@@ -499,23 +496,6 @@ export default function (eleventyConfig) {
       timestamp: now.toISOString(),
       formatted: now.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
       year: now.getFullYear(),
-    }
-  })
-
-  eleventyConfig.addGlobalData('logs', () => {
-    const raw = fs.readFileSync('logs.json', 'utf8')
-    const entries = JSON.parse(raw)
-      .sort((a, b) => Date.parse(b.date || 0) - Date.parse(a.date || 0))
-
-    const latest = entries[0] || null
-    const latestHtml = latest?.notes
-      ? marked.parse(normalizeNotes(latest.notes), { breaks: true })
-      : ''
-
-    return {
-      entries,
-      latest,
-      latestHtml,
     }
   })
 

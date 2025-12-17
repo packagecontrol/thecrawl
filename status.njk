@@ -4,20 +4,6 @@ title: Status
 description: "Latest crawler runs and notes."
 ---
 
-{% set latest = logs.latest or {} %}
-{% set conclusion = latest.conclusion | default('') | lower %}
-{% if conclusion == 'success' %}
-  {% set badge_class = 'status-badge-success' %}
-{% elseif conclusion in ['failure', 'failed', 'cancelled', 'timed_out'] %}
-  {% set badge_class = 'status-badge-error' %}
-{% elseif conclusion in ['action_required', 'neutral', 'stale'] %}
-  {% set badge_class = 'status-badge-warning' %}
-{% elseif conclusion %}
-  {% set badge_class = 'status-badge-muted' %}
-{% else %}
-  {% set badge_class = 'status-badge-muted' %}
-{% endif %}
-
 <div class="status-chart" data-status-chart aria-hidden="true">
   <svg role="presentation"></svg>
 </div>
@@ -25,8 +11,8 @@ description: "Latest crawler runs and notes."
 <section class="status-page">
   <div class="pager-header status-header">
     <div class="status-heading" role="heading" aria-level="2">
-      <span class="status-badge {{ badge_class }}" data-status-badge></span>
-      <span class="status-label" data-status-label>{{ latest.conclusion or '' }}</span>
+      <span class="status-badge status-badge-muted" data-status-badge></span>
+      <span class="status-label" data-status-label></span>
     </div>
 
     <div class="status-right">
@@ -48,11 +34,7 @@ description: "Latest crawler runs and notes."
   </div>
 
   <div class="status-notes" id="status-notes">
-    {% if logs.latestHtml %}
-      {{ logs.latestHtml | safe }}
-    {% else %}
-      <p>Loading logs…</p>
-    {% endif %}
+    <p></p>
   </div>
 </section>
 
