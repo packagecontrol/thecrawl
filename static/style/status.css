@@ -80,25 +80,25 @@ html.status main {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-}
 
-.status-pagination .button-group {
-  display: flex;
-  gap: 0.2ex;
-  font-size: 24px;
-}
-
-.status-pagination .button {
-  background: transparent;
-  &:enabled:hover,
-  &:enabled:focus-visible {
-    background: var(--background-4);
+  .button-group {
+    display: flex;
+    gap: 0.2ex;
+    font-size: 24px;
   }
 
-  .pager-nav-symbol {
-    display: inline-block;
-    position: relative;
-    top: -0.07em;
+  .button {
+    background: transparent;
+    &:enabled:hover,
+    &:enabled:focus-visible {
+      background: var(--background-4);
+    }
+
+    .pager-nav-symbol {
+      display: inline-block;
+      position: relative;
+      top: -0.07em;
+    }
   }
 }
 
@@ -109,34 +109,34 @@ html.status main {
   box-shadow:
     0 1px 0 rgb(from var(--background-5) r g b / 0.35),
     0 18px 36px -24px rgb(from var(--foreground-1) r g b / 0.35);
-}
 
-.status-notes p,
-.status-notes ul,
-.status-notes ol {
-  max-width: var(--max-line);
-}
+  p,
+  ul,
+  ol {
+    max-width: var(--max-line);
+  }
 
-.status-notes pre {
-  background: var(--background-2);
-  border-radius: 6px;
-  padding: 0.9rem 1rem;
-  overflow-x: auto;
-}
+  pre {
+    background: var(--background-2);
+    border-radius: 6px;
+    padding: 0.9rem 1rem;
+    overflow-x: auto;
+  }
 
-.status-notes code {
-  background: var(--highlight);
-}
+  code {
+    background: var(--highlight);
+  }
 
-.status-notes ul,
-.status-notes ol {
-  padding-left: 1.2rem;
-}
+  ul,
+  ol {
+    padding-left: 1.2rem;
+  }
 
-.status-notes a {
-  word-break: break-word;
-}
+  a {
+    word-break: break-word;
+  }
 
-.status-notes hr {
-  margin: 2em 0 1em;
+  hr {
+    margin: 2em 0 1em;
+  }
 }
