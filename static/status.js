@@ -319,7 +319,7 @@ class StatusChart {
       if (h % 6 !== 0) {
         line.setAttribute('stroke-opacity', '0.25')
       }
-      if (h === 0) {
+      if (h === 24) {
         line.dataset.axis = 'true'
       }
       this.gridLayer.appendChild(line)
@@ -408,7 +408,7 @@ class StatusChart {
   }
 
   yForHour(hour) {
-    return this.height - this.padding.bottom - hour * this.hourHeight
+    return this.padding.top + hour * this.hourHeight
   }
 
   highlight(entry) {
