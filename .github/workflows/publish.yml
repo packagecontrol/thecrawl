@@ -266,7 +266,7 @@ jobs:
 
       - name: Fetch recent workflow runs
         run: |
-          SINCE=$(date -u -d '240 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          SINCE=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
           gh api \
             repos/${{ github.repository }}/actions/workflows/${{ env.WORKFLOW_ID }}/runs \
             --method GET \
@@ -275,7 +275,7 @@ jobs:
             -f created=">=$SINCE" \
             --paginate \
             --jq '[.workflow_runs[] | {id, conclusion, run_started_at}]' \
-            | jq -s 'add' > ./wrk/workflow_runs.json
+            > ./wrk/workflow_runs.json
 
       - name: Enrich logs.json
         run: |
