@@ -281,16 +281,22 @@ class StatusChart {
       line.setAttribute('y2', this.height - this.padding.bottom)
       this.gridLayer.appendChild(line)
 
-      // Month labels at the first of the month
+      // Compute the actual calendar date for this day slot
       const dayDate = new Date()
       dayDate.setHours(0, 0, 0, 0)
       dayDate.setDate(dayDate.getDate() - i)
-      if (dayDate.getDate() === 1) {
+
+      const isMonthStart = dayDate.getDate() === 1
+      const isFiveDayTick = dayDate.getDate() % 5 === 0
+
+      if (isMonthStart || isFiveDayTick || i === 0) {
         const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
         label.setAttribute('class', 'x-label')
         label.setAttribute('x', x)
         label.setAttribute('y', this.height)
-        label.textContent = dayDate.toLocaleString('en-US', { month: 'short' })
+        label.textContent = isMonthStart
+          ? dayDate.toLocaleString('en-US', { month: 'short' })
+          : String(dayDate.getDate())
         this.labelLayer.appendChild(label)
 
         const callout = document.createElementNS('http://www.w3.org/2000/svg', 'line')
