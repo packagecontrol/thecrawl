@@ -27,7 +27,8 @@ function init() {
   }
 
   if (chartEl) {
-    chart = new StatusChart(chartEl, onChartSelect)
+    chart = new StatusChart(chartEl, onChartSelect, onDotHover)
+    chartEl.addEventListener('mouseleave', restoreActiveEntry)
   }
 
   bindControls()
@@ -291,6 +292,19 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
 
+/**
+ * @param {LogEntry} entry
+ */
+function onDotHover(entry) {
+  if (!entry) return
+  updateHeading(entry)
+  renderNotes(entry)
+}
+
+function restoreActiveEntry() {
+  render(index)
+}
+
 function onChartSelect(entry) {
   if (!entry || !logs.length) return
   const idx = logs.findIndex((it) => {
@@ -303,9 +317,10 @@ function onChartSelect(entry) {
 }
 
 class StatusChart {
-  constructor(el, onSelect) {
+  constructor(el, onSelect, onHover) {
     this.el = el
     this.onSelect = onSelect
+    this.onHover = onHover
     this.svg = el.querySelector('svg')
     this.gridLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.gridLayer.setAttribute('class', 'grid')
@@ -496,6 +511,11 @@ class StatusChart {
     circle.addEventListener('click', () => {
       if (typeof this.onSelect === 'function') {
         this.onSelect(entry)
+      }
+    })
+    circle.addEventListener('mouseenter', () => {
+      if (typeof this.onHover === 'function') {
+        this.onHover(entry)
       }
     })
     return circle
