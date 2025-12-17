@@ -303,7 +303,8 @@ class StatusChart {
         callout.setAttribute('class', 'x-callout')
         callout.setAttribute('x1', x)
         callout.setAttribute('x2', x)
-        callout.setAttribute('y1', crisp(this.height - this.padding.bottom))
+        // + 1 to not overwrite the x-axis
+        callout.setAttribute('y1', crisp(this.height - this.padding.bottom + 1))
         callout.setAttribute('y2', crisp(this.height - 10))
         this.labelLayer.appendChild(callout)
       }
