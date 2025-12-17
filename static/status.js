@@ -4,6 +4,7 @@ import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
 const notesEl = document.getElementById('status-notes')
 const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
+const chartEl = document.querySelector('[data-status-chart]')
 /** @type {HTMLButtonElement | null} */
 const prevButton = document.querySelector('[data-control="prev"]')
 /** @type {HTMLButtonElement | null} */
@@ -16,12 +17,16 @@ const lastButton = document.querySelector('[data-control="last"]')
 /** @type {LogEntry[]} */
 let logs = []
 let index = 0
-
-init()
+/** @type {StatusChart | null} */
+let chart = null
 
 function init() {
   if (!notesEl || !dateEl || !badgeEl) {
     return
+  }
+
+  if (chartEl) {
+    chart = new StatusChart(chartEl, onChartSelect)
   }
 
   bindControls()
@@ -31,6 +36,7 @@ function init() {
       renderEmptyState('No log entries found.')
       return
     }
+    chart?.setData(logs)
     render(0)
   }).catch((err) => {
     console.error('Failed to load logs:', err)
@@ -44,14 +50,36 @@ function bindControls() {
   lastButton?.addEventListener('click', () => render(0))
 }
 
+const ASSET_URL = 'https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/logs.json'
+
 async function loadLogs() {
-  const res = await fetch('/logs.json', { cache: 'no-cache' })
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`)
+  const sources = [
+    () => fetchWithProxy(ASSET_URL),
+    () => fetch('/logs.json', { cache: 'no-cache' }),
+  ]
+
+  let lastError = null
+  for (const fn of sources) {
+    try {
+      const res = await fn()
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`)
+      }
+      /** @type {LogEntry[]} */
+      const data = await res.json()
+      return [...data].sort((a, b) => safeDate(b.date) - safeDate(a.date))
+    }
+    catch (err) {
+      lastError = err
+    }
   }
-  /** @type {LogEntry[]} */
-  const data = await res.json()
-  return [...data].sort((a, b) => safeDate(b.date) - safeDate(a.date))
+
+  throw lastError || new Error('Failed to load logs')
+}
+
+async function fetchWithProxy(targetUrl) {
+  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+  return fetch(proxyUrl, { cache: 'no-cache' })
 }
 
 /**
@@ -67,6 +95,7 @@ function render(targetIndex) {
   updateHeading(entry)
   renderNotes(entry)
   updateButtons()
+  chart?.highlight(entry)
 }
 
 /**
@@ -186,3 +215,185 @@ function normalizeNotes(text) {
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
+
+function onChartSelect(entry) {
+  if (!entry || !logs.length) return
+  const idx = logs.findIndex((it) => {
+    if (it.run_id && entry.run_id && it.run_id === entry.run_id) return true
+    return it.date === entry.date
+  })
+  if (idx >= 0) {
+    render(idx)
+  }
+}
+
+class StatusChart {
+  constructor(el, onSelect) {
+    this.el = el
+    this.onSelect = onSelect
+    this.svg = el.querySelector('svg')
+    this.gridLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.gridLayer.setAttribute('class', 'grid')
+    this.labelLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.labelLayer.setAttribute('class', 'labels')
+    this.dotLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.svg.appendChild(this.gridLayer)
+    this.svg.appendChild(this.labelLayer)
+    this.svg.appendChild(this.dotLayer)
+
+    // Fixed chart constants
+    this.padding = { top: 16, right: 32, bottom: 16, left: 32 }
+    this.radius = 3
+    this.days = 30
+    // Defaults overridden in layout()
+    this.barWidth = 12
+    this.hourHeight = 12
+    this.height = 320
+    this.width = this.el.clientWidth || 400
+    this.svg.setAttribute('preserveAspectRatio', 'none')
+
+    this.points = []
+    this.entries = []
+
+    this.resizeObserver = new ResizeObserver(() => this.layout())
+    this.resizeObserver.observe(this.el)
+    this.layout()
+  }
+
+  layout() {
+    this.width = this.el.clientWidth || this.width
+    this.height = this.el.clientHeight || this.height
+    const usableHeight = Math.max(1, this.height - this.padding.top - this.padding.bottom)
+    const usableWidth = Math.max(1, this.width - this.padding.left - this.padding.right)
+    this.hourHeight = usableHeight / 24
+    this.barWidth = usableWidth / this.days
+    this.svg.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`)
+    this.drawGrid()
+    this.redrawDots()
+  }
+
+  drawGrid() {
+    while (this.gridLayer.firstChild) this.gridLayer.firstChild.remove()
+    while (this.labelLayer.firstChild) this.labelLayer.firstChild.remove()
+    // vertical grid: one per day (at center)
+    for (let i = 0; i < this.days; i++) {
+      const x = this.padding.left + (this.days - 1 - i + 0.5) * this.barWidth
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+      line.setAttribute('x1', x)
+      line.setAttribute('x2', x)
+      line.setAttribute('y1', this.padding.top)
+      line.setAttribute('y2', this.height - this.padding.bottom)
+      this.gridLayer.appendChild(line)
+    }
+    // horizontal lines every hour (lighter), stronger every 6 hours
+    for (let h = 0; h <= 24; h += 1) {
+      const y = this.yForHour(h)
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+      line.setAttribute('x1', this.padding.left)
+      line.setAttribute('x2', this.width - this.padding.right)
+      line.setAttribute('y1', y)
+      line.setAttribute('y2', y)
+      if (h % 6 !== 0) {
+        line.setAttribute('stroke-opacity', '0.25')
+      }
+      this.gridLayer.appendChild(line)
+
+      if (h % 6 === 0) {
+        const labelLeft = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        labelLeft.setAttribute('class', 'y-label')
+        labelLeft.setAttribute('x', this.padding.left - 6)
+        labelLeft.setAttribute('y', y)
+        labelLeft.setAttribute('text-anchor', 'end')
+        labelLeft.textContent = formatHourLabel(h)
+        this.labelLayer.appendChild(labelLeft)
+
+        const labelRight = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        labelRight.setAttribute('class', 'y-label')
+        labelRight.setAttribute('x', this.width - this.padding.right + 6)
+        labelRight.setAttribute('y', y)
+        labelRight.setAttribute('text-anchor', 'start')
+        labelRight.textContent = formatHourLabel(h)
+        this.labelLayer.appendChild(labelRight)
+      }
+    }
+  }
+
+  setData(entries) {
+    this.entries = entries || []
+    this.redrawDots()
+  }
+
+  redrawDots() {
+    this.points = []
+    while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
+
+    if (!this.entries.length) return
+
+    const now = new Date()
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const msInDay = 24 * 60 * 60 * 1000
+
+    this.entries.forEach((entry) => {
+      const ts = Date.parse(entry.date || 0)
+      if (!Number.isFinite(ts)) return
+      const d = new Date(ts)
+      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+      const diffDays = Math.floor((todayStart - dayStart) / msInDay)
+      if (diffDays < 0 || diffDays >= this.days) return
+
+      const hour = d.getHours() + d.getMinutes() / 60
+      const x = this.padding.left + (this.days - 1 - diffDays + 0.5) * this.barWidth
+      const y = this.yForHour(hour)
+      const node = this.makeDot(entry, x, y)
+      this.dotLayer.appendChild(node)
+      this.points.push({ entry, node })
+    })
+  }
+
+  makeDot(entry, x, y) {
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    circle.setAttribute('cx', x)
+    circle.setAttribute('cy', y)
+    circle.setAttribute('r', this.radius)
+    circle.dataset.key = (entry.run_id || '') + '|' + (entry.date || '')
+    circle.setAttribute('class', `dot ${classFor(entry.conclusion)}`)
+    circle.addEventListener('click', () => {
+      if (typeof this.onSelect === 'function') {
+        this.onSelect(entry)
+      }
+    })
+    return circle
+  }
+
+  yForHour(hour) {
+    return this.height - this.padding.bottom - hour * this.hourHeight
+  }
+
+  highlight(entry) {
+    const key = (entry?.run_id || '') + '|' + (entry?.date || '')
+    this.points.forEach(({ entry: e, node }) => {
+      const k = (e.run_id || '') + '|' + (e.date || '')
+      if (k === key) {
+        node.classList.add('active')
+      }
+      else {
+        node.classList.remove('active')
+      }
+    })
+  }
+}
+
+function classFor(conclusion) {
+  const normalized = (conclusion || '').toLowerCase()
+  if (normalized === 'success') return ''
+  if (['failure', 'failed', 'cancelled', 'timed_out'].includes(normalized)) return 'error'
+  if (['action_required', 'neutral', 'stale'].includes(normalized)) return 'warn'
+  return 'muted'
+}
+
+function formatHourLabel(hour) {
+  const h = String(hour).padStart(2, '0')
+  return `${h}:00`
+}
+
+init()

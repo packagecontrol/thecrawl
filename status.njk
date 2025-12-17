@@ -17,6 +17,11 @@ description: "Latest crawler runs and notes."
 {% else %}
   {% set badge_class = 'status-badge-muted' %}
 {% endif %}
+
+<div class="status-chart" data-status-chart aria-hidden="true">
+  <svg role="presentation"></svg>
+</div>
+
 <section class="status-page">
   <div class="pager-header status-header">
     <div class="status-heading" role="heading" aria-level="2">

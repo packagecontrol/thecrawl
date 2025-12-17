@@ -9,6 +9,63 @@ html.status main {
   margin-right: auto;
 }
 
+.status-chart {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  margin: 0 auto 2rem;
+  max-width: var(--max-content);
+
+  svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+}
+
+.status-chart svg {
+  .grid {
+    stroke: var(--background-3);
+    stroke-linecap: round;
+    stroke-width: 1;
+    pointer-events: none;
+    transition: stroke .12s ease;
+  }
+
+  .dot {
+    fill: var(--foreground-1); /* success default black */
+    transition: transform .12s ease, stroke-width .12s ease, fill .12s ease;
+    transform-origin: center;
+    transform-box: fill-box;
+    cursor: pointer;
+
+    &.warn {
+      fill: var(--orange-2);
+    }
+    &.error {
+      fill: var(--red-2);
+    }
+    &.muted {
+      fill: var(--foreground-3);
+    }
+    &.active {
+      stroke: var(--orange-1);
+      stroke-width: 2px;
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 0.5px var(--background-1));
+    }
+  }
+
+  .y-label {
+    fill: var(--foreground-3);
+    font-size: 9px;
+    dominant-baseline: middle;
+    pointer-events: none;
+  }
+}
+
 .status-header {
   display: flex;
   align-items: center;
