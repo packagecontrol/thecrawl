@@ -4,6 +4,7 @@ html.status {
 
 html.status main {
   margin-top: 3em;
+  min-height: 66vh;
 }
 
 .status-page {
