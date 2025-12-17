@@ -280,6 +280,27 @@ class StatusChart {
       line.setAttribute('y1', this.padding.top)
       line.setAttribute('y2', this.height - this.padding.bottom)
       this.gridLayer.appendChild(line)
+
+      // Month labels at the first of the month
+      const dayDate = new Date()
+      dayDate.setHours(0, 0, 0, 0)
+      dayDate.setDate(dayDate.getDate() - i)
+      if (dayDate.getDate() === 1) {
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        label.setAttribute('class', 'x-label')
+        label.setAttribute('x', x)
+        label.setAttribute('y', this.height)
+        label.textContent = dayDate.toLocaleString('en-US', { month: 'short' })
+        this.labelLayer.appendChild(label)
+
+        const callout = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        callout.setAttribute('class', 'x-callout')
+        callout.setAttribute('x1', x)
+        callout.setAttribute('x2', x)
+        callout.setAttribute('y1', this.height - this.padding.bottom)
+        callout.setAttribute('y2', this.height - 10)
+        this.labelLayer.appendChild(callout)
+      }
     }
     // horizontal lines every hour (lighter), stronger every 6 hours
     for (let h = 0; h <= 24; h += 1) {
