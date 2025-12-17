@@ -10,6 +10,19 @@ html.status main {
 }
 
 .status-chart {
+  --status-dot: hsl(245deg 3.77% 60.38%);
+  --status-dot-active-fill: hsl(273.7deg 12.38% 32.69%);
+  --status-dot-active-stroke: hsl(282.55deg 11.03% 41.72%);
+
+  --status-error-dot: hsl(7deg 90.45% 50.1%);
+
+  :root[data-theme='dark'] & {
+    --status-dot: hsl(245deg 34.8% 64.47%);
+    --status-dot-active-fill: hsl(273.7deg 48.28% 87.52%);
+    --status-dot-active-stroke: hsl(282.55deg 60.41% 75.84%);
+    --status-error-dot: var(--red-2);
+  }
+
   position: relative;
   width: 100%;
   height: 360px;
@@ -35,7 +48,7 @@ html.status main {
   }
 
   .dot {
-    fill: var(--foreground-1); /* success default black */
+    fill: var(--status-dot); /* success default */
     transition: transform .12s ease, stroke-width .12s ease, fill .12s ease;
     transform-origin: center;
     transform-box: fill-box;
@@ -45,16 +58,16 @@ html.status main {
       fill: var(--orange-2);
     }
     &.error {
-      fill: var(--red-2);
+      fill: var(--status-error-dot);
     }
     &.muted {
       fill: var(--foreground-3);
     }
     &.active {
-      stroke: var(--orange-1);
+      stroke: var(--status-dot-active-stroke);
       stroke-width: 2px;
-      transform: scale(1.08);
-      filter: drop-shadow(0 0 0.5px var(--background-1));
+      transform: scale(0.78);
+      fill: var(--status-dot-active-fill);
     }
   }
 
