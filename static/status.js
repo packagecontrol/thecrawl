@@ -507,7 +507,10 @@ class StatusChart {
     circle.setAttribute('cy', y)
     circle.setAttribute('r', this.radius)
     circle.dataset.key = (entry.run_id || '') + '|' + (entry.date || '')
-    circle.setAttribute('class', `dot ${classForEntry(entry)}`)
+    const classes = ['dot', classForEntry(entry), entry.notes ? '' : 'no-notes']
+      .filter(Boolean)
+      .join(' ')
+    circle.setAttribute('class', classes)
     circle.addEventListener('click', () => {
       if (typeof this.onSelect === 'function') {
         this.onSelect(entry)

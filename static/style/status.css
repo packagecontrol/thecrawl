@@ -64,6 +64,7 @@ html.status main {
     transform-origin: center;
     transform-box: fill-box;
     cursor: pointer;
+    opacity: 1;
 
     &.warn {
       fill: var(--orange-2);
@@ -77,9 +78,16 @@ html.status main {
     &.changed {
       fill: var(--orange-2);
     }
+    &.no-notes {
+      opacity: 0.35;
+    }
+    &.error.no-notes:not(.active) {
+      opacity: 0.65;
+    }
     &.active {
       stroke: var(--status-dot-active-stroke);
       fill: var(--status-dot-active-fill);
+      opacity: 1;
     }
     &.active.changed {
       stroke: hsl(30.8deg 88.01% 50.11%);
