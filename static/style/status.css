@@ -1,3 +1,7 @@
+html.status main {
+  margin-top: 3em;
+}
+
 .status-page {
   margin-top: 0.5rem;
   max-width: var(--max-line);
@@ -135,8 +139,4 @@
 
 .status-notes hr {
   margin: 2em 0 1em;
-}
-
-html.status main {
-  margin-top: 3em;
 }
