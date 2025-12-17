@@ -99,7 +99,7 @@ jobs:
           gh release edit ${{ env.RELEASE_TAG }} --notes-file notes.txt
 
           echo "Updating logs history..."
-          gh release download ${{ env.RELEASE_TAG }} --pattern "logs.json" --output ./wrk/logs.json || true
+          gh release download ${{ env.RELEASE_TAG }} --pattern "logs.json" --output ./wrk/logs.json --clobber || true
           uv run -m scripts.collect_logs \
             --run-id "${{ github.run_id }}" \
             --timestamp "$DATE_TS" \
