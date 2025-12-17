@@ -367,15 +367,21 @@ class StatusChart {
 
   highlight(entry) {
     const key = (entry?.run_id || '') + '|' + (entry?.date || '')
+    let activeNode = null
     this.points.forEach(({ entry: e, node }) => {
       const k = (e.run_id || '') + '|' + (e.date || '')
       if (k === key) {
         node.classList.add('active')
+        activeNode = node
       }
       else {
         node.classList.remove('active')
       }
     })
+    if (activeNode && activeNode.parentNode === this.dotLayer) {
+      // Move active node to the end so it paints on top of siblings
+      this.dotLayer.appendChild(activeNode)
+    }
   }
 }
 
