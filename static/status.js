@@ -273,12 +273,12 @@ class StatusChart {
     while (this.labelLayer.firstChild) this.labelLayer.firstChild.remove()
     // vertical grid: one per day (at center)
     for (let i = 0; i < this.days; i++) {
-      const x = this.padding.left + (this.days - 1 - i + 0.5) * this.barWidth
+      const x = crisp(this.padding.left + (this.days - 1 - i + 0.5) * this.barWidth)
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
       line.setAttribute('x1', x)
       line.setAttribute('x2', x)
-      line.setAttribute('y1', this.padding.top)
-      line.setAttribute('y2', this.height - this.padding.bottom)
+      line.setAttribute('y1', crisp(this.padding.top))
+      line.setAttribute('y2', crisp(this.height - this.padding.bottom))
       this.gridLayer.appendChild(line)
 
       // Compute the actual calendar date for this day slot
@@ -303,17 +303,17 @@ class StatusChart {
         callout.setAttribute('class', 'x-callout')
         callout.setAttribute('x1', x)
         callout.setAttribute('x2', x)
-        callout.setAttribute('y1', this.height - this.padding.bottom)
-        callout.setAttribute('y2', this.height - 10)
+        callout.setAttribute('y1', crisp(this.height - this.padding.bottom))
+        callout.setAttribute('y2', crisp(this.height - 10))
         this.labelLayer.appendChild(callout)
       }
     }
     // horizontal lines every hour (lighter), stronger every 6 hours
     for (let h = 0; h <= 24; h += 1) {
-      const y = this.yForHour(h)
+      const y = crisp(this.yForHour(h))
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-      line.setAttribute('x1', this.padding.left)
-      line.setAttribute('x2', this.width - this.padding.right)
+      line.setAttribute('x1', crisp(this.padding.left))
+      line.setAttribute('x2', crisp(this.width - this.padding.right))
       line.setAttribute('y1', y)
       line.setAttribute('y2', y)
       if (h % 6 !== 0) {
@@ -371,7 +371,7 @@ class StatusChart {
       if (diffDays < 0 || diffDays >= this.days) return
 
       const hour = d.getHours() + d.getMinutes() / 60
-      const x = this.padding.left + (this.days - 1 - diffDays + 0.5) * this.barWidth
+      const x = crisp(this.padding.left + (this.days - 1 - diffDays + 0.5) * this.barWidth)
       const y = this.yForHour(hour)
       const node = this.makeDot(entry, x, y)
 
@@ -442,6 +442,10 @@ function classFor(conclusion) {
 function formatHourLabel(hour) {
   const h = String(hour).padStart(2, '0')
   return `${h}:00`
+}
+
+function crisp(value) {
+  return Math.round(value) + 0.5
 }
 
 init()

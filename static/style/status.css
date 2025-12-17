@@ -45,6 +45,7 @@ html.status main {
     stroke-width: 1;
     pointer-events: none;
     transition: stroke .12s ease;
+    shape-rendering: crispEdges;
 
     line[data-axis="true"] {
       stroke: var(--foreground-1);
@@ -95,6 +96,8 @@ html.status main {
     stroke-width: 1;
     stroke-linecap: round;
     transition: stroke 0.1s;
+    shape-rendering: crispEdges;
+  }
   }
 }
 
