@@ -69,11 +69,17 @@ html.status main {
     &.muted {
       fill: var(--foreground-3);
     }
+    &.changed {
+      fill: var(--orange-2);
+    }
     &.active {
       stroke: var(--status-dot-active-stroke);
       stroke-width: 2px;
       transform: scale(0.78);
       fill: var(--status-dot-active-fill);
+    }
+    &.active.changed {
+      stroke: hsl(30.8deg 88.01% 50.11%);
     }
   }
 

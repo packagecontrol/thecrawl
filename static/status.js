@@ -13,7 +13,7 @@ const nextButton = document.querySelector('[data-control="next"]')
 /** @type {HTMLButtonElement | null} */
 const lastButton = document.querySelector('[data-control="last"]')
 
-/** @typedef {{ date: string, run_id?: string, notes?: string, conclusion?: string }} LogEntry */
+/** @typedef {{ date: string, run_id?: string, notes?: string, conclusion?: string, failuresChanged?: boolean }} LogEntry */
 
 /** @type {LogEntry[]} */
 let logs = []
@@ -32,7 +32,7 @@ function init() {
 
   bindControls()
   loadLogs().then((entries) => {
-    logs = entries
+    logs = annotateChanges(entries)
     if (!logs.length) {
       renderEmptyState('No log entries found.')
       return
@@ -392,7 +392,7 @@ class StatusChart {
       const y = this.yForHour(hour)
       const node = this.makeDot(entry, x, y)
 
-      const cls = classFor(entry.conclusion)
+      const cls = classForEntry(entry)
       const isNeutral = cls === '' || cls === 'muted'
       const target = isNeutral ? neutralNodes : otherNodes
       target.push({ entry, node })
@@ -415,7 +415,7 @@ class StatusChart {
     circle.setAttribute('cy', y)
     circle.setAttribute('r', this.radius)
     circle.dataset.key = (entry.run_id || '') + '|' + (entry.date || '')
-    circle.setAttribute('class', `dot ${classFor(entry.conclusion)}`)
+    circle.setAttribute('class', `dot ${classForEntry(entry)}`)
     circle.addEventListener('click', () => {
       if (typeof this.onSelect === 'function') {
         this.onSelect(entry)
@@ -448,7 +448,15 @@ class StatusChart {
   }
 }
 
-function classFor(conclusion) {
+function classForEntry(entry) {
+  const base = classForConclusion(entry.conclusion)
+  if (entry.failuresChanged && base !== 'error') {
+    return 'changed'
+  }
+  return base
+}
+
+function classForConclusion(conclusion) {
   const normalized = (conclusion || '').toLowerCase()
   if (normalized === 'success') return ''
   if (['failure', 'failed', 'cancelled', 'timed_out'].includes(normalized)) return 'error'
@@ -465,6 +473,32 @@ function linkToRun(runId) {
   if (!runId) return ''
   const href = `https://github.com/packagecontrol/thecrawl/actions/runs/${runId}`
   return `<a href="${href}">logs</a>`
+}
+
+function annotateChanges(entries) {
+  const sections = entries.map(entry => extractCurrentlyFailing(entry.notes || ''))
+  return entries.map((entry, idx) => {
+    const section = sections[idx] || ''
+    const nextSection = sections[idx + 1]
+    const hasNext = typeof nextSection !== 'undefined' && nextSection !== false
+    const failuresChanged = hasNext && section !== nextSection
+    return { ...entry, failuresChanged }
+  })
+}
+
+function extractCurrentlyFailing(notes) {
+  if (!notes) return false
+  const normalized = normalizeNotes(notes)
+  const marker = '**currently failing**:\n'
+  const lower = normalized.toLowerCase()
+  const idx = lower.indexOf(marker)
+  if (idx === -1) return ''
+  const slice = normalized.slice(idx + marker.length)
+  return slice
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean)
+    .join('\n')
 }
 
 function crisp(value) {
