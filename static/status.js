@@ -4,6 +4,7 @@ import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
 const notesEl = document.getElementById('status-notes')
 const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
+const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
 /** @type {HTMLButtonElement | null} */
 const prevButton = document.querySelector('[data-control="prev"]')
@@ -103,7 +104,7 @@ function updateHeading(entry) {
   const conclusion = entry.conclusion || 'unknown'
   const badgeInfo = badgeFor(conclusion)
 
-  badgeEl.textContent = badgeInfo.label
+  badgeLabelEl.textContent = badgeInfo.label === 'unknown' ? '' : badgeInfo.label
   badgeEl.className = `status-badge ${badgeInfo.className}`
 }
 
