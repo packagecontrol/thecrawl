@@ -365,9 +365,11 @@ class StatusChart {
   drawGrid() {
     while (this.gridLayer.firstChild) this.gridLayer.firstChild.remove()
     while (this.labelLayer.firstChild) this.labelLayer.firstChild.remove()
+    const xPositions = []
     // vertical grid: one per day (at center)
     for (let i = 0; i < this.days; i++) {
       const x = crisp(this.padding.left + (this.days - 1 - i + 0.5) * this.barWidth)
+      xPositions.push(x)
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
       line.setAttribute('x1', x)
       line.setAttribute('x2', x)
@@ -403,12 +405,17 @@ class StatusChart {
         this.labelLayer.appendChild(callout)
       }
     }
+    const gridStartX = Math.min(...xPositions)
+    const gridEndX = Math.max(...xPositions)
     // horizontal lines every hour (lighter), stronger every 6 hours
     for (let h = 0; h <= 24; h += 1) {
       const y = crisp(this.yForHour(h))
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-      line.setAttribute('x1', crisp(this.padding.left))
-      line.setAttribute('x2', crisp(this.width - this.padding.right - 4))
+      // Let the top line snap to the vertical grid bounds
+      const lineStart = h === 0 ? gridStartX : crisp(this.padding.left)
+      const lineEnd = h === 0 ? gridEndX : crisp(this.width - this.padding.right - 4)
+      line.setAttribute('x1', lineStart)
+      line.setAttribute('x2', lineEnd)
       line.setAttribute('y1', y)
       line.setAttribute('y2', y)
       if (h % 6 !== 0) {
