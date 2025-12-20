@@ -521,22 +521,39 @@ class BranchesPager:
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
 
     async def main():
-        if len(sys.argv) > 1:
-            arg = sys.argv[1]
-            if arg.startswith("https://"):
-                url = arg
-            else:
-                owner_repo = arg.strip("/")
-                url = f"https://github.com/{owner_repo}"
+        parser = argparse.ArgumentParser(description="Fetch GitHub info via GraphQL.")
+        parser.add_argument(
+            "repo",
+            nargs="?",
+            default="https://github.com/daverosoff/PreTeXtual",
+            help="GitHub repo URL or owner/repo",
+        )
+        parser.add_argument(
+            "--rest-files",
+            action="store_true",
+            help="Use REST for root files (skip GraphQL files).",
+        )
+        args = parser.parse_args()
+
+        arg = args.repo
+        if arg.startswith("https://"):
+            url = arg
         else:
-            url = "https://github.com/daverosoff/PreTeXtual"
+            owner_repo = arg.strip("/")
+            url = f"https://github.com/{owner_repo}"
 
         print(f"Fetching GitHub info for: {url}")
         async with aiohttp.ClientSession() as session:
-            info = await fetch_github_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
+            hints = {"TOO_MANY_FILES"} if args.rest_files else set()
+            info = await fetch_github_info(
+                session,
+                url,
+                ("METADATA", "TAGS", "BRANCHES"),
+                hints=hints,
+            )
             print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
             print("Tags:")
             async for tag in info["tags"]:
