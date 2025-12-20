@@ -1,6 +1,7 @@
 channel*.json
+logs.json
 prev_totals.json
-registry.json
 stats.json
+registry.json
 workspace.json
 wrk/
