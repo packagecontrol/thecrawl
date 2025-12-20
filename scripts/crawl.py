@@ -10,11 +10,14 @@ import sys
 from typing import Iterable, Literal, NotRequired, Required, TypedDict
 
 
-from .bitbucket import fetch_bitbucket_info
+from .bitbucket import fetch_bitbucket_info, RepoInfo as BitbucketRepoInfo
 from .generate_registry import Registry, PackageEntry as PackageEntryV1
-from .github import fetch_github_info, rate_limit_info, strip_possible_prefix, QueryScope
-from .gitlab import fetch_gitlab_info
-from .codeberg import fetch_codeberg_info
+from .github import (
+    fetch_github_info, rate_limit_info, strip_possible_prefix,
+    QueryScope, RepoInfo as GithubRepoInfo
+)
+from .gitlab import fetch_gitlab_info, RepoInfo as GitlabRepoInfo
+from .codeberg import fetch_codeberg_info, RepoInfo as CodebergRepoInfo
 from .utils import parse_version, resolve_url, update_url
 import traceback
 
@@ -58,6 +61,9 @@ class PackageEntry(TypedDict, total=False):
     last_modified: IsoTimestamp
     failing_since: IsoTimestamp
     fail_reason: str
+
+    # 'hints' are meant as a storage for additional 'hub' info
+    hints: NotRequired[list[str]]
 
 
 class Workspace(TypedDict):
@@ -333,10 +339,13 @@ async def crawl_package(
             if "branch" in r:
                 uow[base].add("BRANCHES")
 
+    type HubRepoInfo = GithubRepoInfo | BitbucketRepoInfo | GitlabRepoInfo | CodebergRepoInfo
     for url, scopes in uow.items():
+        info: HubRepoInfo
         match which_hub(url):
             case "github":
-                info = await fetch_github_info(session, url, scopes)
+                hints = existing.get("hints", [])
+                info = await fetch_github_info(session, url, scopes, hints=hints)
             case "bitbucket":
                 info = await fetch_bitbucket_info(session, url, scopes)
             case "gitlab":
@@ -361,6 +370,10 @@ async def crawl_package(
                     f"Repository ID mismatch for {details}: "
                     f"{existing.get('id')} != {out.get('id')}"
                 )
+
+            if existing.get("hints", []) != out.get("hints", []):
+                hints = out.get("hints", [])
+                err(f"Hints for {url} changed to: {', '.join(hints) if hints else 'None'}")
 
         for r in release_definitions[:]:
             if is_fulfilled_release_definition(r):

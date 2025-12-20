@@ -18,7 +18,6 @@ from .utils import drop_falsy
 # "tags" and "branches" are lazy fetched, unless you provide TAGS or BRANCHES as
 # initial QueryScope, until exhausted. (Ref: TagPager and BranchesPager)
 
-type Hint = Literal["TOO_MANY_FILES"]
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 type QueryStr = str
 type QueryVars = str
@@ -48,6 +47,7 @@ class RepoMetadata(TypedDict, total=False):
     stars: int
     created_at: IsoTimestamp
     archived_at: IsoTimestamp | None
+    hints: list[str]
 
 
 class TagInfo(TypedDict):
@@ -309,12 +309,12 @@ async def fetch_github_info(
     github_url: str,
     scopes: Iterable[QueryScope],
     *,
-    hints: set[Hint] = set()
+    hints: list[str] = []
 ) -> RepoInfo:
     owner, repo = parse_owner_repo(github_url)
 
     final_scopes: list[str] = list(scopes)
-    if "METADATA" in final_scopes and "TOO_MANY_FILES" not in hints:
+    if "METADATA" in final_scopes and "too_many_files" not in hints:
         final_scopes.append("FILES")
     query = build_query(scope_to_query[scope] for scope in final_scopes)
     variables = {
@@ -326,7 +326,7 @@ async def fetch_github_info(
 
     rest_entries = (
         await fetch_root_entries_per_rest_api(session, owner, repo)
-        if "METADATA" in final_scopes and "TOO_MANY_FILES" in hints
+        if "METADATA" in final_scopes and "too_many_files" in hints
         else []
     )
 
@@ -355,7 +355,7 @@ async def fetch_github_info(
                 archived_at[:19].replace('T', ' ')
                 if (archived_at := repo_data.get("archivedAt"))
                 else None,
-            "too_many_files": len(entries) >= FILES_THRESHOLD,
+            "hints": ["too_many_files"] if len(entries) >= FILES_THRESHOLD else None,
         }) if "METADATA" in final_scopes else {},
         "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
         "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
@@ -404,7 +404,10 @@ def strip_possible_prefix(version: str) -> str:
 
 def find_readme_url(entries, owner, repo, branch) -> str | None:
     for entry in entries or []:
-        if entry.get("type") in {"blob", "file"} and entry.get("name", "").lower() in _readme_filenames:
+        if (
+            entry.get("type") in {"blob", "file"}
+            and entry.get("name", "").lower() in _readme_filenames
+        ):
             return f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{entry['name']}"
     return None
 
@@ -547,7 +550,7 @@ if __name__ == "__main__":
 
         print(f"Fetching GitHub info for: {url}")
         async with aiohttp.ClientSession() as session:
-            hints = {"TOO_MANY_FILES"} if args.rest_files else set()
+            hints = ["too_many_files"] if args.rest_files else []
             info = await fetch_github_info(
                 session,
                 url,
