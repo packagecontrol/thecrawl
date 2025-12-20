@@ -27,7 +27,10 @@ function init() {
   }
 
   if (chartEl) {
-    chart = new StatusChart(chartEl, onChartSelect, onDotHover)
+    chart = new StatusChart(chartEl, {
+      onSelect: renderEntry,
+      onHover: showHoverPreview,
+    })
     chartEl.addEventListener('mouseleave', restoreActiveEntry)
   }
 
@@ -295,7 +298,7 @@ function clamp(value, min, max) {
 /**
  * @param {LogEntry} entry
  */
-function onDotHover(entry) {
+function showHoverPreview(entry) {
   if (!entry) return
   updateHeading(entry)
   renderNotes(entry)
@@ -305,7 +308,10 @@ function restoreActiveEntry() {
   render(index)
 }
 
-function onChartSelect(entry) {
+/**
+ * @param {LogEntry} entry
+ */
+function renderEntry(entry) {
   if (!entry || !logs.length) return
   const idx = logs.findIndex((it) => {
     if (it.run_id && entry.run_id && it.run_id === entry.run_id) return true
@@ -317,7 +323,7 @@ function onChartSelect(entry) {
 }
 
 class StatusChart {
-  constructor(el, onSelect, onHover) {
+  constructor(el, { onSelect, onHover } = {}) {
     this.el = el
     this.onSelect = onSelect
     this.onHover = onHover
