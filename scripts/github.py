@@ -19,7 +19,7 @@ from .utils import drop_falsy
 # initial QueryScope, until exhausted. (Ref: TagPager and BranchesPager)
 
 type Hint = Literal["TOO_MANY_FILES"]
-type QueryScope = Literal["METADATA", "FILES", "TAGS", "BRANCHES"]
+type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 type QueryStr = str
 type QueryVars = str
 type Query = QueryStr | tuple[QueryVars, QueryStr]
@@ -209,6 +209,34 @@ _readme_filenames = {
 }
 
 
+def github_headers(accept: str) -> dict[str, str]:
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        raise RuntimeError("GITHUB_TOKEN env var is not set")
+    return {
+        "Authorization": f"Bearer {token}",
+        "Accept": accept,
+    }
+
+
+async def fetch_root_entries_per_rest_api(
+    session: aiohttp.ClientSession,
+    owner: str,
+    repo: str,
+) -> list[dict]:
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents"
+    async with session.get(
+        url,
+        headers=github_headers("application/vnd.github+json"),
+        params={"ref": "HEAD"}
+    ) as resp:
+        if resp.status in {404, 409}:
+            return []
+        resp.raise_for_status()
+        data = await resp.json()
+        return data if isinstance(data, list) else []
+
+
 class GraphQLClientError(aiohttp.ClientResponseError):
     """Structured exception for GraphQL API errors with type/message."""
 
@@ -216,14 +244,7 @@ class GraphQLClientError(aiohttp.ClientResponseError):
 async def make_graphql_query(session: aiohttp.ClientSession, query: str, variables: dict) -> dict:
     global rate_limit_info
 
-    token = os.getenv("GITHUB_TOKEN")
-    if not token:
-        raise RuntimeError("GITHUB_TOKEN env var is not set")
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/json",
-    }
+    headers = github_headers("application/json")
 
     async with session.post(
         GITHUB_API_URL,
@@ -290,20 +311,32 @@ async def fetch_github_info(
     *,
     hints: set[Hint] = set()
 ) -> RepoInfo:
-    final_scopes = list(scopes)
+    owner, repo = parse_owner_repo(github_url)
+
+    final_scopes: list[str] = list(scopes)
     if "METADATA" in final_scopes and "TOO_MANY_FILES" not in hints:
         final_scopes.append("FILES")
-    owner, repo = parse_owner_repo(github_url)
+    query = build_query(scope_to_query[scope] for scope in final_scopes)
     variables = {
         "owner": owner,
         "name": repo,
         "expression": "HEAD:"
     }
-    query = build_query(scope_to_query[scope] for scope in final_scopes)
     data = await make_graphql_query(session, query, variables)
+
+    rest_entries = (
+        await fetch_root_entries_per_rest_api(session, owner, repo)
+        if "METADATA" in final_scopes and "TOO_MANY_FILES" in hints
+        else []
+    )
+
     repo_data = data["repository"]
     default_branch = repo_data.get("defaultBranchRef", {}).get("name", "master")
-    entries = repo_data.get("files", {}).get("entries", []) if "FILES" in final_scopes else []
+    entries = (
+        repo_data.get("files", {}).get("entries", [])
+        if "FILES" in final_scopes
+        else rest_entries
+    )
 
     return {
         "metadata": drop_falsy({
@@ -312,9 +345,7 @@ async def fetch_github_info(
             "description": repo_data.get("description"),
             "homepage": repo_data.get("homepageUrl"),
             "author": repo_data.get("owner", {}).get("login"),
-            "readme":
-                find_readme_url(entries, owner, repo, default_branch)
-                if "FILES" in final_scopes else None,
+            "readme": find_readme_url(entries, owner, repo, default_branch),
             "issues": repo_data.get("issuesUrl"),
             "donate": (repo_data.get("fundingLinks") or [{}])[0].get("url"),
             "default_branch": default_branch,
@@ -324,9 +355,7 @@ async def fetch_github_info(
                 archived_at[:19].replace('T', ' ')
                 if (archived_at := repo_data.get("archivedAt"))
                 else None,
-            "too_many_files":
-                len(entries) >= FILES_THRESHOLD
-                if "FILES" in final_scopes else None,
+            "too_many_files": len(entries) >= FILES_THRESHOLD,
         }) if "METADATA" in final_scopes else {},
         "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
         "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
@@ -375,7 +404,7 @@ def strip_possible_prefix(version: str) -> str:
 
 def find_readme_url(entries, owner, repo, branch) -> str | None:
     for entry in entries or []:
-        if entry["type"] == "blob" and entry["name"].lower() in _readme_filenames:
+        if entry.get("type") in {"blob", "file"} and entry.get("name", "").lower() in _readme_filenames:
             return f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{entry['name']}"
     return None
 
