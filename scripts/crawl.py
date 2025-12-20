@@ -416,9 +416,9 @@ async def crawl_package(
                     continue
 
                 if tag_prefix:
-                    err(f"No prefixed tag found for {url} matching ^{tag_prefix}")
+                    err(f"No tag found for {url} matching the prefix ^{tag_prefix}")
                 else:
-                    err(f"No tagged version found for {url}")
+                    err(f"No valid version found for {url}")
 
             # Fallback to the default branch
             branches_definition = r.get("branch", True)
@@ -446,8 +446,9 @@ async def crawl_package(
         if missing_keys := missing_from_release_definition(r):
             s = "s" if len(missing_keys) > 1 else ""
             err(
-                f"Release definition {r} for {entry['name']} incomplete.  "
-                f"Missing key{s}: {missing_keys}"
+                f"Release definition for *{entry['name']}* incomplete.  "
+                f"Got `{r}`. "
+                f"Missing key{s}: `{', '.join(missing_keys)}`."
             )
             release_definitions.remove(r)
 
