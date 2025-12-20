@@ -18,8 +18,11 @@ from .utils import drop_falsy
 # "tags" and "branches" are lazy fetched, unless you provide TAGS or BRANCHES as
 # initial QueryScope, until exhausted. (Ref: TagPager and BranchesPager)
 
-type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
-type Query = str | tuple[str, str]
+type Hint = Literal["TOO_MANY_FILES"]
+type QueryScope = Literal["METADATA", "FILES", "TAGS", "BRANCHES"]
+type QueryStr = str
+type QueryVars = str
+type Query = QueryStr | tuple[QueryVars, QueryStr]
 type Url = str
 type Sha = str
 type IsoTimestamp = str
@@ -80,10 +83,10 @@ rate_limit_info: RateLimitInfo = {
     "resource": "core",
 }
 GITHUB_API_URL = "https://api.github.com/graphql"
+FILES_THRESHOLD = int(os.getenv("FILES_THRESHOLD", "500"))
 
-STD_VARS = "$owner: String!, $name: String!"
+REPO_BASE_VARS: QueryVars = "$owner: String!, $name: String!"
 METADATA = (
-    '$branch_ex: String="HEAD:"',
     """
     id
     name
@@ -102,7 +105,11 @@ METADATA = (
     stargazerCount
     createdAt
     archivedAt
-
+    """
+)
+FILES = (
+    '$branch_ex: String="HEAD:"',
+    """
     files: object(expression: $branch_ex) {
       ... on Tree {
         entries {
@@ -172,6 +179,7 @@ TAGS = (
 )
 scope_to_query: dict[str, Query] = {
     "METADATA": METADATA,
+    "FILES": FILES,
     "TAGS": TAGS,
     "BRANCHES": BRANCHES,
 }
@@ -187,7 +195,7 @@ def build_query(sub_queries: Iterable[str | tuple[str, str]]) -> str:
             queries.append(q)
 
     return f"""
-    query GetRepoMetadata({", ".join(drop_falsy([STD_VARS] + vars))}) {{
+    query GetRepoMetadata({", ".join(drop_falsy([REPO_BASE_VARS] + vars))}) {{
       repository(owner: $owner, name: $name) {{
         {"\n".join(queries)}
       }}
@@ -278,19 +286,24 @@ def parse_owner_repo(url: str):
 async def fetch_github_info(
     session: aiohttp.ClientSession,
     github_url: str,
-    scopes: Iterable[QueryScope]
+    scopes: Iterable[QueryScope],
+    *,
+    hints: set[Hint] = set()
 ) -> RepoInfo:
+    final_scopes = list(scopes)
+    if "METADATA" in final_scopes and "TOO_MANY_FILES" not in hints:
+        final_scopes.append("FILES")
     owner, repo = parse_owner_repo(github_url)
     variables = {
         "owner": owner,
         "name": repo,
         "expression": "HEAD:"
     }
-    query = build_query(scope_to_query[scope] for scope in scopes)
+    query = build_query(scope_to_query[scope] for scope in final_scopes)
     data = await make_graphql_query(session, query, variables)
     repo_data = data["repository"]
-
     default_branch = repo_data.get("defaultBranchRef", {}).get("name", "master")
+    entries = repo_data.get("files", {}).get("entries", []) if "FILES" in final_scopes else []
 
     return {
         "metadata": drop_falsy({
@@ -299,12 +312,9 @@ async def fetch_github_info(
             "description": repo_data.get("description"),
             "homepage": repo_data.get("homepageUrl"),
             "author": repo_data.get("owner", {}).get("login"),
-            "readme": find_readme_url(
-                repo_data.get("files", {}).get("entries", []),
-                owner,
-                repo,
-                default_branch,
-            ),
+            "readme":
+                find_readme_url(entries, owner, repo, default_branch)
+                if "FILES" in final_scopes else None,
             "issues": repo_data.get("issuesUrl"),
             "donate": (repo_data.get("fundingLinks") or [{}])[0].get("url"),
             "default_branch": default_branch,
@@ -313,9 +323,11 @@ async def fetch_github_info(
             "archived_at":
                 archived_at[:19].replace('T', ' ')
                 if (archived_at := repo_data.get("archivedAt"))
-                else None
-            ,
-        }) if "METADATA" in scopes else {},
+                else None,
+            "too_many_files":
+                len(entries) >= FILES_THRESHOLD
+                if "FILES" in final_scopes else None,
+        }) if "METADATA" in final_scopes else {},
         "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
         "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
         "rate_limit_info": data["rate_limit_info"],
