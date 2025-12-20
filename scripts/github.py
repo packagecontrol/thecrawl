@@ -5,6 +5,7 @@ import os
 import aiohttp
 import asyncio
 import re
+import sys
 from time import time
 from urllib.parse import urlparse
 
@@ -370,7 +371,7 @@ def grab_tags(repo: str, entries) -> list[TagInfo]:
         t = node["target"]
         commit = t.get("target", t)
         if "oid" not in commit:
-            print("Skip tag with no oid:", node, "from", repo)
+            err(f"Skip tag `{node}` from https://github.com/{repo} which has no commit sha")
             continue
         tags.append({
             "name": tag_name,
@@ -521,6 +522,10 @@ class BranchesPager:
         """Optional: Eagerly load all branches."""
         async for _ in self:
             pass
+
+
+def err(*args, **kwargs) -> None:
+    print(*args, **kwargs, file=sys.stderr)
 
 
 if __name__ == "__main__":
