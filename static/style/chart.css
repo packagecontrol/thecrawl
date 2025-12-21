@@ -183,8 +183,8 @@ section:has(.chart-container)::after {
 
 .legend {
   font-size: 14px;
-  line-height: 26px;
-  margin-top: 18px;
+  line-height: 28px;
+  margin-top: 21px;
   color: var(--foreground-2);
 
   .color {

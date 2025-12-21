@@ -1,5 +1,5 @@
 footer {
-  padding: 3.2rem 1rem;
+  padding: 3.5rem 1rem;
   text-align: center;
   color: var(--foreground-2);
 
@@ -8,7 +8,7 @@ footer {
   }
 
   nav {
-    margin: 1.6rem auto;
+    margin: 14px auto;
     * + * {
       margin-left: 1ex;
     }

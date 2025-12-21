@@ -4,34 +4,42 @@
  * Vertical rhythm by Syncope
  * http://nowodzinski.pl/syncope
  *
- * Input: 16px base size, 1.6 line height, 1.33 scale.
+ * Input: 16px base size, 1.75 line height (28px), 1.33 scale.
  *
  * For testing vertical rhythm enable the body style:
  */
 
-/*body {
+/*body::after {
+  content: '';
+  display: block;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
   background-image: linear-gradient(to bottom, rgba( 32,160,255,.35 ) 1px, transparent 1px) !important;
   background-size: 100% 28px !important;
-  background-position-y: 26px !important;
+  background-position-y: 24px !important;
 }*/
 
 code,
 kbd {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.94em;
-  line-height: 1rem;
+  font-size: 15px;
+  line-height: 14px;
 }
 
 html,
 body {
   font-family: "Lato", sans-serif;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.75;
 }
 
 .big {
   font-size: 51px;
-  line-height: 52px;
+  line-height: 42px;
   padding-top: 9px;
   margin-bottom: 17px;
   padding-bottom: 0;
@@ -39,28 +47,28 @@ body {
 }
 
 h1 {
-  font-size: 38px;
-  line-height: 52px;
-  padding-top: 13px;
-  margin-bottom: 13px;
+  font-size: 38px;  /* 1.33^3 * 16, rounded */
+  line-height: 42px;
+  padding-top: 12px;
+  margin-bottom: 16px;
   padding-bottom: 0;
   margin-top: 0;
 }
 
 h2 {
-  font-size: 28px;
-  line-height: 54px;
-  padding-top: 16px;
+  font-size: 28px;  /* 1.33^2 * 16, rounded */
+  line-height: 42px;  /* 1.5 grid line */
+  padding-top: 16px;  /* 16+12=28 */
   margin-bottom: 12px;
   padding-bottom: 0;
   margin-top: 0;
 }
 
 h3 {
-  font-size: 21px;
-  line-height: 28px;
+  font-size: 21px;  /* 1.33 * 16, rounded */
+  line-height: 28px;  /* one grid line */
   padding-top: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;  /* 6+8=14 is half a grid line */
   padding-bottom: 0;
   margin-top: 0;
 }
@@ -69,10 +77,10 @@ p,
 ul,
 ol,
 summary {
-  font-size: 1rem;
-  line-height: 28px;
-  padding-top: 0px;
-  margin-bottom: 16px;
+  font-size: 16px;
+  line-height: 1.75;  /* 28/16 */
+  padding-top: 0;
+  margin-bottom: 14px;  /* half a grid line, so every other block falls back in line */
   padding-bottom: 0;
   margin-top: 0;
 
