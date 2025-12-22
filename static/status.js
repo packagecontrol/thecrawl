@@ -636,6 +636,8 @@ function extractCurrentlyFailing(notes) {
   return slice
     .split('\n')
     .map(line => line.trim())
+    // Ignore trailing relative-date annotations like "[since 3 months]".
+    .map(line => line.replace(/\s*\[[^\]]+\]\s*$/, ''))
     .filter(Boolean)
     .join('\n')
 }
