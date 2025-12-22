@@ -13,4 +13,15 @@ footer {
       margin-left: 1ex;
     }
   }
+
+  .github-link {
+    margin-left: 0.9ex;
+    vertical-align: -1px;
+    padding: 2px 0px 1px 4px;
+    border-radius: 50%;
+
+    &:hover {
+      text-decoration: underline rgba(0, 0, 0, 0);
+    }
+  }
 }

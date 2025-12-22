@@ -21,12 +21,34 @@
     {% else %}
       <a href="/libraries">Libraries</a>
     {% endif %}
-    {% if page.url == "/labels" %}
-      <a href="/">Packages</a>
-    {% else %}
-      <a href="/labels">Labels</a>
-    {% endif %}
     <a href="/about">About</a>
-    <a href="https://github.com/packagecontrol/thecrawl/tree/gh-pages">This website on GitHub</a>
+    <a class="github-link" href="https://github.com/packagecontrol/thecrawl/tree/gh-pages">
+      {{ util.icon('octocat') }}
+      <span class="screenreader-only">This website on GitHub</span>
+    </a>
+    <a href="/status">Status</a>
+    {% if site.origin != site.prodOrigin and not site.disableLiveLink %}
+      {% set liveHref = site.prodOrigin + (page.url or '/') %}
+      <a href="{{ liveHref }}" aria-label="View this page on the live site" data-live-site-link target="_blank" rel="noopener noreferrer">L</a>
+      {# The search and possible hash state in the URL must be inspected live using JS: #}
+      <script>
+        (() => {
+          const link = document.querySelector('[data-live-site-link]')
+          if (!link) {
+            return
+          }
+          const prodOrigin = '{{ site.prodOrigin }}'
+          const updateHref = (anchor) => {
+            const { pathname, search, hash } = window.location
+            anchor.href = prodOrigin + pathname + search + hash
+          }
+          const handler = (event) => updateHref(event.currentTarget)
+          link.addEventListener('click', handler)
+          link.addEventListener('auxclick', handler)
+          link.addEventListener('mouseenter', handler)
+          link.addEventListener('focus', handler)
+        })()
+      </script>
+    {% endif %}
   </nav>
 </footer>

@@ -25,7 +25,6 @@ const MAGIC_WEIGHTS = {
 }
 
 const clamp01 = value => Math.max(0, Math.min(1, value))
-
 // GitHub-style emoji shortcode mapping, loaded from JSON.
 // Extend emoji.json over time as needed.
 const EMOJI_MAP = Object.freeze(JSON.parse(fs.readFileSync('emoji.json', 'utf8')))
@@ -499,6 +498,7 @@ export default function (eleventyConfig) {
       year: now.getFullYear(),
     }
   })
+
   eleventyConfig.addGlobalData('site', {
     origin: siteOrigin,
     prodOrigin,
@@ -506,6 +506,7 @@ export default function (eleventyConfig) {
     disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
   })
 
+  eleventyConfig.addPassthroughCopy('logs.json')
   // Default permalink: output files with their extension (e.g., /page.html)
   // Can be overridden per-template (e.g., RSS feed or JSON endpoints)
   eleventyConfig.addGlobalData('permalink', () => {
