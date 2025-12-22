@@ -135,7 +135,7 @@ const ASSET_URL = 'https://repackager.sublimetext.io/logs.json'
 
 async function loadLogs() {
   const sources = [
-    () => fetch(ASSET_URL, { cache: 'no-cache' }),
+    () => fetch(ASSET_URL),
     () => fetch('/logs.json', { cache: 'no-cache' }),
   ]
 
