@@ -518,7 +518,17 @@ class StatusChart {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
     circle.setAttribute('cx', x)
     circle.setAttribute('cy', y)
-    circle.setAttribute('r', this.radius)
+    const crawledPackages = extractPackagesCrawled(entry.notes || '')
+    const MIN_RADIUS = 2
+    const MAX_RADIUS = 3
+    const radius = crawledPackages === null
+      ? this.radius
+      : clamp(
+          MIN_RADIUS + (Math.min(crawledPackages, 500) / 500) * (MAX_RADIUS - MIN_RADIUS),
+          MIN_RADIUS,
+          MAX_RADIUS,
+        )
+    circle.setAttribute('r', radius)
     circle.dataset.key = (entry.run_id || '') + '|' + (entry.date || '')
     const classes = ['dot', classForEntry(entry), entry.notes ? '' : 'no-notes']
       .filter(Boolean)
@@ -628,6 +638,14 @@ function extractCurrentlyFailing(notes) {
     .map(line => line.trim())
     .filter(Boolean)
     .join('\n')
+}
+
+function extractPackagesCrawled(notes) {
+  if (!notes) return null
+  const match = /found\s+([\d,]+)\s+packages?\s+to\s+crawl/i.exec(notes)
+  if (!match) return null
+  const value = Number(match[1].replace(/,/g, ''))
+  return Number.isFinite(value) ? value : null
 }
 
 function crisp(value) {
