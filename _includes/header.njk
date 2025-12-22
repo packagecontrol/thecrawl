@@ -45,10 +45,8 @@
       {% endif %}
 
       <button id="theme-toggle" aria-label="Toggle color scheme">
-        <div class="icon">
-          <span class="light" aria-label="light">{{ util.icon('sun') }}</span>
-          <span class="dark" aria-label="dark">{{ util.icon('moon') }}</span>
-        </div>
+        <span class="icon light" aria-label="light">{{ util.icon('sun') }}</span>
+        <span class="icon dark" aria-label="dark">{{ util.icon('moon') }}</span>
       </button>
 
       {% if site.origin != site.prodOrigin and not site.disableLiveLink %}
