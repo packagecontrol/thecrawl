@@ -1,33 +1,51 @@
-const system_pref = window.matchMedia('(prefers-color-scheme: dark)')
-const system_theme = system_pref.matches ? 'dark' : 'light'
-const user_pref = localStorage.getItem('theme')
+const systemPref = window.matchMedia('(prefers-color-scheme: dark)')
 
-let current_theme = user_pref ?? system_theme
-
-function toggle(user_initiated) {
-  if (current_theme === 'light') {
-    current_theme = 'dark'
-  }
-  else {
-    current_theme = 'light'
-  }
-
-  if (user_initiated) {
-    localStorage.setItem('theme', current_theme)
-  }
-  document.documentElement.setAttribute('data-theme', current_theme)
+function getSystemTheme() {
+  return systemPref.matches ? 'dark' : 'light'
 }
 
-document.querySelector('#theme-toggle').onclick = (event) => {
+function getStoredTheme() {
+  const v = localStorage.getItem('theme')
+  return v === 'dark' || v === 'light' ? v : null
+}
+
+function getEffectiveTheme() {
+  return getStoredTheme() ?? getSystemTheme()
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme)
+}
+
+function setStoredThemeOrSystem(theme) {
+  // If the chosen theme matches system, treat it as "system" (no override).
+  if (theme === getSystemTheme()) {
+    localStorage.removeItem('theme')
+  } else {
+    localStorage.setItem('theme', theme)
+  }
+}
+
+function toggleThemeUser() {
+  const current = getEffectiveTheme()
+  const next = current === 'dark' ? 'light' : 'dark'
+
+  setStoredThemeOrSystem(next)
+  applyTheme(next)
+}
+
+// initial apply
+applyTheme(getEffectiveTheme())
+
+document.querySelector('#theme-toggle').addEventListener('click', (event) => {
   event.preventDefault()
   event.stopPropagation()
-  toggle(true)
-}
+  toggleThemeUser()
+})
 
-system_pref.addEventListener('change', () => {
-  if (localStorage.getItem('theme')) {
-    // we have a user pref, so don't switch;
-    return
+systemPref.addEventListener('change', () => {
+  // only affects us when there is no override
+  if (getStoredTheme() == null) {
+    applyTheme(getSystemTheme())
   }
-  toggle(false)
 })
