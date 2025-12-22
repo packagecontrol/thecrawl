@@ -24,6 +24,7 @@ const RECENT_PAGER_STYLES = `
       padding-left: var(--side-padding);
       padding-right: var(--side-padding);
       margin-bottom: 2px;  /* room for the 2px card outline */
+      transition: background .1s;
 
       > h2 {
         padding-top: 4px;

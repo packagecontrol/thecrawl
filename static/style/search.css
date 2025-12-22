@@ -59,6 +59,7 @@ input {
   margin-bottom: 11px;
   font-size: 1em;
   line-height: 1.6;
+  transition: background .1s;
 }
 
 select {
@@ -72,6 +73,7 @@ select {
   font-size: 1em;
   line-height: 1.6;
   cursor: pointer;
+  transition: background .1s, color .1s;
 }
 
 .search-controls {
@@ -82,7 +84,7 @@ select {
   border-radius: 3px;
   border: 1px solid var(--background-3);
   outline-color: transparent;
-  transition: border .1s ease-in-out, outline .1s ease-in-out;
+  transition: border .1s ease-in-out, outline .1s ease-in-out, background .1s;
   overflow: hidden;
 
   * {
