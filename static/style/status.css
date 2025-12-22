@@ -15,7 +15,7 @@ html.status main {
 }
 
 .status-chart {
-  --status-dot: hsl(245deg 3.77% 60.38%);
+  --status-dot: hsl(222.25deg 15.62% 63.35%);
   --status-dot-active-fill: hsl(273.7deg 12.38% 32.69%);
   --status-dot-active-stroke: hsl(282.55deg 11.03% 41.72%);
 
