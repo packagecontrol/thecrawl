@@ -133,12 +133,13 @@ function resolveIndexFromUrl() {
 }
 
 const ASSET_URL = 'https://repackager.sublimetext.io/logs.json'
+const FALLBACK_URL = `${window.STATIC_BASE ?? '/static/'}logs.json`
 const LOG_REFRESH_MS = 10 * 60 * 1000
 
 async function loadLogs() {
   const sources = [
     () => fetch(ASSET_URL),
-    () => fetch('/logs.json', { cache: 'no-cache' }),
+    () => fetch(FALLBACK_URL),
   ]
 
   let lastError = null

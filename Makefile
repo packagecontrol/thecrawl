@@ -7,7 +7,7 @@ build:
 	# installation stats
 	curl -o stats.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/stats.json"
 	# thecrawl logs
-	curl -o logs.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/logs.json"
+	curl -o static/logs.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/logs.json"
 	# compile eleventy (production)
 	ELEVENTY_ENV=production NODE_ENV=production npx @11ty/eleventy
 	# add compiled channels for public consumption
