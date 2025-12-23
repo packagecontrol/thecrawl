@@ -43,11 +43,12 @@ function init() {
       return
     }
     chart?.setData(logs)
-    render(resolveInitialIndex())
+    render(resolveIndexFromUrl())
   }).catch((err) => {
     console.error('Failed to load logs:', err)
     renderEmptyState('Failed to load logs. Please try again later.')
   })
+  startLogRefreshInterval()
 }
 
 function bindControls() {
@@ -122,7 +123,7 @@ function findClosestByTimestamp(targetTs) {
   return bestIdx
 }
 
-function resolveInitialIndex() {
+function resolveIndexFromUrl() {
   if (!logs.length || typeof window === 'undefined') return 0
   const url = new URL(window.location.href)
   const runId = url.searchParams.get('run_id')
@@ -132,11 +133,13 @@ function resolveInitialIndex() {
 }
 
 const ASSET_URL = 'https://repackager.sublimetext.io/logs.json'
+const FALLBACK_URL = `${window.STATIC_BASE ?? '/static/'}logs.json`
+const LOG_REFRESH_MS = 10 * 60 * 1000
 
 async function loadLogs() {
   const sources = [
-    () => fetch(ASSET_URL, { cache: 'no-cache' }),
-    () => fetch('/logs.json', { cache: 'no-cache' }),
+    () => fetch(ASSET_URL),
+    () => fetch(FALLBACK_URL),
   ]
 
   let lastError = null
@@ -173,6 +176,21 @@ function render(targetIndex) {
   updateButtons()
   chart?.highlight(entry)
   updateUrl(entry)
+}
+
+function refreshLogs() {
+  loadLogs().then((entries) => {
+    if (!entries.length) return
+    logs = annotateChanges(entries)
+    chart?.setData(logs)
+    render(resolveIndexFromUrl())
+  }).catch((err) => {
+    console.error('Failed to refresh logs:', err)
+  })
+}
+
+function startLogRefreshInterval() {
+  window.setInterval(refreshLogs, LOG_REFRESH_MS)
 }
 
 /**
