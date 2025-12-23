@@ -11,12 +11,12 @@
   --install-legend-color: var(--orange-1);
   --upgrade-hit-stroke-width: 12px;
 
-  --spacing: calc(2 * var(--side-padding));
+  --spacing: calc(1.75 * var(--side-padding));
   max-width: calc(var(--max-content) * 2/3 - var(--spacing));
-  margin: 10px 0 38px 0;
+  margin: 14px 0 42px 0;
 
   @media (min-width: 1200px) {
-    margin: 0 0 0 var(--spacing);
+    margin: 0 0 0 28px;
     padding: var(--spacing) 0 var(--spacing) var(--spacing);
     border-left: 1px solid var(--background-4);
     width: 100%;

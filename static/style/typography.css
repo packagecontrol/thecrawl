@@ -20,7 +20,7 @@
   pointer-events: none;
   background-image: linear-gradient(to bottom, rgba( 32,160,255,.35 ) 1px, transparent 1px) !important;
   background-size: 100% 28px !important;
-  background-position-y: 24px !important;
+  background-position-y: 26px !important;
 }*/
 
 code,
@@ -39,16 +39,16 @@ body {
 
 .big {
   font-size: 51px;
-  line-height: 42px;
-  padding-top: 9px;
-  margin-bottom: 17px;
+  line-height: 48px;
+  padding-top: 12px;
+  margin-bottom: 16px;
   padding-bottom: 0;
   margin-top: 0;
 }
 
 h1 {
   font-size: 38px;  /* 1.33^3 * 16, rounded */
-  line-height: 42px;
+  line-height: 48px;
   padding-top: 12px;
   margin-bottom: 16px;
   padding-bottom: 0;
@@ -56,21 +56,24 @@ h1 {
 }
 
 h2 {
-  font-size: 28px;  /* 1.33^2 * 16, rounded */
-  line-height: 42px;  /* 1.5 grid line */
-  padding-top: 16px;  /* 16+12=28 */
-  margin-bottom: 12px;
+  font-size: 28px;     /* 1.33^2 * 16, rounded */
+  line-height: 42px;   /* 1.5 grid line */
+  padding-top: 28px;   /* 1 grid line */
+  margin-bottom: 14px; /* 0.5 grid line */
   padding-bottom: 0;
   margin-top: 0;
 }
 
-h3 {
-  font-size: 21px;  /* 1.33 * 16, rounded */
+h3, h4 {
+  font-size: 21px;    /* 1.33 * 16, rounded */
   line-height: 28px;  /* one grid line */
-  padding-top: 6px;
-  margin-bottom: 8px;  /* 6+8=14 is half a grid line */
+  padding-top: 10px;  /* 10+18 = 1 grid line */
+  margin-bottom: 18px;
   padding-bottom: 0;
   margin-top: 0;
+}
+h4 {
+  font-size: 19px;
 }
 
 p,
@@ -79,12 +82,15 @@ ol,
 summary {
   font-size: 16px;
   line-height: 1.75;  /* 28/16 */
-  padding-top: 0;
-  margin-bottom: 14px;  /* half a grid line, so every other block falls back in line */
+  padding-top: 10px;
+  margin-bottom: 18px;
   padding-bottom: 0;
   margin-top: 0;
+}
 
+ul, ol {
   ul, ol {
-    padding-top: 0px;
+    padding-top: 0;
+    margin-bottom: 0;
   }
 }
