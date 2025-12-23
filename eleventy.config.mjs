@@ -187,7 +187,7 @@ function basePackage(pkg, stat) {
     // Provide repackager links if possible
     if (supportedRepackagerHosts.some(n => url.startsWith(n))) {
       const encodedName = encodeURIComponent(pkg.name)
-      release.download_url = `${repackagerSite}/?url=${url}&name=${encodedName}`
+      release.download_url = `${repackagerSite}/packages/${encodedName}?url=${url}`
     }
   }
 
