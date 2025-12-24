@@ -94,3 +94,9 @@ ul, ol {
     margin-bottom: 0;
   }
 }
+
+blockquote {
+  margin: 0 var(--side-padding) 14px var(--side-padding);
+  padding: 0 0 0 var(--side-padding);
+  border-left: 2px solid var(--background-4);
+}
