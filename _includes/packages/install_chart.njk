@@ -41,7 +41,23 @@
             {% set css_class = (i < count - 1) and 'x-month-label' or 'x-month-label x-month-label-dimmed' %}
             {% if label == 'Dec' %}
               {% set year = dates | monday_at(i + 1) | full_year %}
-              {{ multiline_text([label, year], xt + 2, dim.chart_h + 12, css_class) }}
+              {% set dec_label_x = xt + 2 %}
+              {% set dec_label_y = dim.chart_h + 12 %}
+              {% set dec_anchor = 'start' %}
+              {# For December, we draw a multiline with the year and that can collide #}
+              {# with the "Weekly Upgrades" label of the y-axis.  Hence we move the #}
+              {# Dec label out of its way near the end of a year.  #}
+              {# These are manually crafted adjustments. #}
+              {% if i == padded_count - 2 %}
+                {% set dec_label_x = xt - 12 %}
+                {% set dec_label_y = dim.chart_h + 18 %}
+                {% set dec_anchor = 'start' %}
+              {% elseif i == padded_count - 1 %}
+                {% set dec_label_x = xt + 6 %}
+                {% set dec_label_y = dim.chart_h + 18 %}
+                {% set dec_anchor = 'end' %}
+              {% endif %}
+              {{ multiline_text([label, year], dec_label_x, dec_label_y, css_class, dec_anchor) }}
             {% else %}
               {{ text(label, xt + 2, dim.chart_h + 12, css_class) }}
             {% endif %}
