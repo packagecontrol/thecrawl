@@ -1,11 +1,21 @@
 .readme {
-  margin-top: 3.2rem;
-  padding: var(--side-padding) calc(var(--side-padding) * 2);
+  margin-top: 28px;
+  padding: 14px calc(var(--side-padding) * 2);
   border-radius: 6px;
   background: var(--background-1);
 
+  max-width: var(--max-line);
+  margin-left: auto;
+  margin-right: auto;
+
   &:empty {
     display: none;
+  }
+
+  /* increase density around paragraphs */
+  p, ul, ol, summary {
+    padding-top: 0;
+    margin-bottom: 14px; /* half a gridline */
   }
 
   img, video {

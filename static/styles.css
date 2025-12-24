@@ -242,7 +242,7 @@ human-date[clickable] {
 section {
   margin-bottom: 28px;
 
-  &[data-list-target] {
+  &[data-list-target]:not(.readme) {
     padding-top: 14px;
     > h2:first-child {
       padding-top: 0;
