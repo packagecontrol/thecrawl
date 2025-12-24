@@ -35,10 +35,10 @@
             {# weeks are newest→oldest left→right; #}
             {# that means Monday is at *right* ("1 -") edge of slice. #}
             {% set xt = x + (slice_w * (1 - (day_offset / 7))) %}
-            {{ line(xt, dim.chart_h, xt, dim.chart_h + 12, 'x-month-tick') }}
             {# i + 1 to show the name of the next month #}
             {% set label = dates | monday_at(i + 1) | abbr_month %}
             {% set css_class = (i < count - 1) and 'x-month-label' or 'x-month-label x-month-label-dimmed' %}
+            {% set tick_len = 12 %}
             {% if label == 'Dec' %}
               {% set year = dates | monday_at(i + 1) | full_year %}
               {% set dec_label_x = xt + 2 %}
@@ -50,17 +50,18 @@
               {# These are manually crafted adjustments. #}
               {% if i == padded_count - 2 %}
                 {% set dec_label_x = xt - 12 %}
-                {% set dec_label_y = dim.chart_h + 18 %}
                 {% set dec_anchor = 'start' %}
+                {% set tick_len = 6 %}
               {% elseif i == padded_count - 1 %}
-                {% set dec_label_x = xt + 6 %}
-                {% set dec_label_y = dim.chart_h + 18 %}
+                {% set dec_label_x = xt + 4 %}
                 {% set dec_anchor = 'end' %}
+                {% set tick_len = 6 %}
               {% endif %}
               {{ multiline_text([label, year], dec_label_x, dec_label_y, css_class, dec_anchor) }}
             {% else %}
               {{ text(label, xt + 2, dim.chart_h + 12, css_class) }}
             {% endif %}
+            {{ line(xt, dim.chart_h, xt, dim.chart_h + tick_len, 'x-month-tick') }}
           {% endif %}
         {% endfor %}
 
