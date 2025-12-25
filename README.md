@@ -89,6 +89,7 @@ $ uv run -m scripts.generate_channel
 ```
 
 The output is a fat `channel.json`.
+Use `--berlin` to format relative "since" timestamps in Europe/Berlin instead of UTC.
 
 ---
 

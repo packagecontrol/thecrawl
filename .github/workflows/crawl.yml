@@ -64,6 +64,7 @@ jobs:
           PYTHONUNBUFFERED=1 uv run -m scripts.generate_channel \
             --registry ./wrk/registry.json \
             --workspace ./wrk/workspace.json \
+            --berlin \
             -o ./wrk/channel.json \
             2>&1 | tee channel.log
 

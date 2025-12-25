@@ -1,6 +1,7 @@
 import argparse
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 import json
 import sys
 import os
@@ -53,7 +54,7 @@ DEFAULT_CHANNEL = "./channel.json"
 # of packages intact and available to users.  (We even show removed packages in the UI!)
 
 
-def main(registry_path, workspace_path, channel_path):
+def main(registry_path, workspace_path, channel_path, berlin: bool):
     # Load registry
     try:
         with open(registry_path, "r", encoding="utf-8") as f:
@@ -125,7 +126,7 @@ def main(registry_path, workspace_path, channel_path):
         if pkg.get("failing_since") and not pkg.get("removed")
     ]:
         failing_info = "\n".join(
-            f"*{pkg['name']}:* {pkg['fail_reason']} [{failing_since(pkg)}]"
+            f"*{pkg['name']}:* {pkg['fail_reason']} [{failing_since(pkg, berlin)}]"
             for pkg in sorted(failing_packages, key=lambda p: p['name'].lower())
         )
         print(f"\n**Currently failing**:\n{failing_info}")
@@ -200,26 +201,28 @@ def normalize_package(pkg) -> Package | None:
     return out
 
 
-def failing_since(pkg):
+def failing_since(pkg, berlin: bool):
     extra = ""
     if failing_since := pkg.get("failing_since"):
         try:
             dt = datetime.strptime(failing_since, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
-            rel = relative_time(dt)
+            rel = relative_time(dt, berlin)
             extra = f"since {rel}"
-        except Exception:
-            pass
+        except Exception as e:
+            err(f"computing relative_time for *{pkg['name']}* raised {e}.")
     return extra
 
 
-def relative_time(dt: datetime) -> str:
-    now = datetime.now(timezone.utc)
-    delta = now - dt
+def relative_time(dt: datetime, berlin: bool) -> str:
+    tz = ZoneInfo("Europe/Berlin") if berlin else timezone.utc
+    now = datetime.now(tz)
+    local_dt = dt.astimezone(tz)
+    delta = now - local_dt
     days = delta.days
-    if dt.date() == now.date():
-        return dt.strftime('%H:%M today')
-    elif dt.date() == (now.date() - timedelta(days=1)):
-        return dt.strftime('%H:%M yesterday')
+    if local_dt.date() == now.date():
+        return local_dt.strftime('%H:%M today')
+    elif local_dt.date() == (now.date() - timedelta(days=1)):
+        return local_dt.strftime('%H:%M yesterday')
     elif days < 14:
         return f"{days} day{'s' if days != 1 else ''}"
     elif days < 60:
@@ -261,6 +264,11 @@ def parse_args():
         default=".",
         help="Working directory to resolve file paths (default: .)"
     )
+    parser.add_argument(
+        "--berlin",
+        action="store_true",
+        help="Format relative times in Europe/Berlin (default: UTC)"
+    )
     return parser.parse_args()
 
 
@@ -271,4 +279,4 @@ if __name__ == "__main__":
     args.registry = os.path.normpath(os.path.join(wd, args.registry))
     args.workspace = os.path.normpath(os.path.join(wd, args.workspace))
     args.output = os.path.normpath(os.path.join(wd, args.output))
-    main(args.registry, args.workspace, args.output)
+    main(args.registry, args.workspace, args.output, args.berlin)
