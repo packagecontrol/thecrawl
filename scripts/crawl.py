@@ -366,6 +366,10 @@ async def crawl_package(
                 and existing.get("id") != out.get("id")
                 and existing.get("details") == details
             ):
+                # Allowed: URL changes with same ID (renames/transfers).
+                # Allowed: URL+ID both change (registry move).
+                # Allowed: missing existing ID on first crawl.
+                # Deny: same URL with different ID (takeover risk).
                 raise HeartAttack(
                     f"Repository ID mismatch for {details}: "
                     f"{existing.get('id')} != {out.get('id')}"
