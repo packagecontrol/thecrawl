@@ -49,9 +49,11 @@ DEFAULT_REGISTRY = "./registry.json"
 DEFAULT_WORKSPACE = "./workspace.json"
 DEFAULT_CHANNEL = "./channel.json"
 
-# Note: This drops ST2 packages for smaller download.  For the website, this would
-# probably not the right thing to do, as we generally want to keep the history
-# of packages intact and available to users.  (We even show removed packages in the UI!)
+# Note: Workspace is the source of truth and keeps all crawl output for the website.
+# This step filters out removed/fatal/invalid packages and normalizes releases for channel.json.
+# A package is minimally defined with: name, author, last_modified, releases.
+# At least one release is required with the info: sublime_text, platforms, version, url, date.
+# Targeted ST3/ST4 filtering happens later in collate_channel.py.
 
 
 def main(registry_path, workspace_path, channel_path, berlin: bool):
