@@ -381,12 +381,15 @@ async def crawl_package(
             if r.get("base") != url:
                 continue
 
+            tag_error = None
+
             if tag_definition := r.get("tags"):
                 tag_prefix = "" if tag_definition is True else tag_definition
                 # preleases are rare, but if used there can be many pre-releases
                 # before a valid final release.  We only need the first (newest)
                 # one, and `prerelease_pushed` is used to track that.
                 prerelease_pushed = False
+                prerelease_version = None
                 async for tag in info["tags"]:
                     if (
                         tag["name"].startswith(tag_prefix)
@@ -404,6 +407,7 @@ async def crawl_package(
                             r_ |= {"version": version_string}
                             release_definitions.append(r_)
                             prerelease_pushed = True
+                            prerelease_version = version_string
                             continue
 
                         elif version.is_final:
@@ -412,15 +416,20 @@ async def crawl_package(
                             r |= {"version": version_string}
                             break
 
-                if "version" in r or prerelease_pushed:
+                if "version" in r:
+                    continue
+
+                if prerelease_pushed:
+                    version_note = f" {prerelease_version}" if prerelease_version else ""
+                    err(f"No final tag found for {url}; using prerelease{version_note}.")
                     continue
 
                 if tag_prefix:
-                    err(f"No tag found for {url} matching the prefix ^{tag_prefix}")
+                    tag_error = f"No tag found for {url} matching the prefix ^{tag_prefix}"
                 else:
-                    err(f"No valid version found for {url}")
+                    tag_error = f"No valid version found for {url}"
 
-            # Fallback to the default branch
+            # `True` == Fallback to the default branch
             branches_definition = r.get("branch", True)
             default_branch = info["metadata"].get("default_branch", "master")
             wanted_branch = (
@@ -433,13 +442,19 @@ async def crawl_package(
                     r.pop("branch", None)
                     r |= pluck(branch, ("version", "url", "date"))  # type: ignore[arg-type]
                     break
+
             if "version" in r:
+                if tag_error:
+                    err(f"{tag_error}.  Falling back to tip of {wanted_branch}.")
                 continue
 
-            err(
-                f"No branch named {wanted_branch} found on {url}.  "
-                f"Release definition cannot be fulfilled."
-            )
+            if tag_error:
+                err(f"{tag_error}.  Release definition cannot be fulfilled.")
+            else:
+                err(
+                    f"No branch named {wanted_branch} found on {url}.  "
+                    f"Release definition cannot be fulfilled."
+                )
             release_definitions.remove(r)
 
     for r in release_definitions[:]:
