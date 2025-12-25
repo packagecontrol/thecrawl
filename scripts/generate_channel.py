@@ -219,7 +219,9 @@ def relative_time(dt: datetime, berlin: bool) -> str:
     local_dt = dt.astimezone(tz)
     delta = now - local_dt
     days = delta.days
-    if local_dt.date() == now.date():
+    if 0 <= delta.total_seconds() < 300:
+        return "now"
+    elif local_dt.date() == now.date():
         return local_dt.strftime('%H:%M today')
     elif local_dt.date() == (now.date() - timedelta(days=1)):
         return local_dt.strftime('%H:%M yesterday')
