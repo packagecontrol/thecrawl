@@ -44,6 +44,8 @@ Fetches and generates a registry of all packages and dependencies from one or mo
 control channels.  Defaults to our main channel, collected and maintained at
 [wbond](https://github.com/wbond/package_control_channel).
 
+Supports also Package Control repositories as input, e.g. the highly trusted
+https://github.com/wbond/package_control_channel/blob/master/repository.json
 
 
 ```bash
