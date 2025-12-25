@@ -798,3 +798,71 @@ async def test_hints_persisted_from_metadata(set_now, set_github_info):
     package = workspace["packages"].get("HintsPkg")
     assert package is not None
     assert package.get("hints") == ["too_many_files", "extra_hint"]
+
+
+@pytest.mark.asyncio
+async def test_repo_id_mismatch_same_url_is_fatal(set_now, set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "RepoTakeover",
+                "details": "https://github.com/example/repo-takeover",
+                "releases": [
+                    {
+                        "sublime_text": "*",
+                        "branch": True
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {
+        "packages": {
+            "RepoTakeover": {
+                "name": "RepoTakeover",
+                "details": "https://github.com/example/repo-takeover",
+                "id": "OLD_ID"
+            }
+        },
+        "dependencies": []
+    }
+
+    github_info = {
+        "metadata": {
+            "id": "NEW_ID",
+            "name": "RepoTakeover",
+            "description": "Fixture package with ID change",
+            "homepage": "https://github.com/example/repo-takeover",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/repo-takeover/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01 00:00:00"
+        },
+        "tags": [],
+        "branches": [
+            {
+                "name": "main",
+                "version": "2024.05.10.12.00.00",
+                "sha": "main123",
+                "date": "2024-05-10 12:00:00",
+                "url": "https://codeload.github.com/example/repo-takeover/zip/main"
+            }
+        ]
+    }
+
+    set_now("2024-05-11 00:00:00")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("RepoTakeover")
+    assert package is not None
+    assert package.get("fail_reason", "").startswith("fatal: Repository ID mismatch")
+
