@@ -114,7 +114,7 @@ The command above reuses the same layout as [CI](https://github.com/packagecontr
 
 - Successful runs upload `wrk/stats.json` to the `crawler-status` release and keep a 30-day `stats-backup` artifact with the full working directory.
 
-### Restoring from a backup
+#### Restoring stats from a backup
 
 - Download a `stats-backup` artifact from the workflow run (or copy a saved local `wrk/` snapshot) and extract it into `restore-stats/` at the repo root.
 - On the next execution, the script detects files in `restore-stats/`, hashes their contents, and copies them into the working directory exactly once (it drops a marker named `ingested_<hash>` to avoid double imports).
