@@ -44,4 +44,19 @@
     box-shadow: inset 0px -1px 0px var(--foreground-4);
     background: var(--highlight);
   }
+
+  table {
+    border-spacing: 0px;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+
+    tr:nth-child(2n) {
+      background: rgb(from var(--background-2) r g b / 0.3);
+    }
+
+    td {
+      border: 1px solid var(--background-3);
+      padding: 6px 13px;
+    }
+  }
 }
