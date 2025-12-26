@@ -1,8 +1,10 @@
 from __future__ import annotations
+import hashlib
 import re
 import sys
 from urllib.parse import urljoin
 
+from datetime import datetime, timedelta, timezone
 from typing import Iterable, Iterator, NamedTuple, Optional, overload
 
 
@@ -138,3 +140,48 @@ def parse_version(s: str) -> Optional[VersionInfo]:
 
 def is_semver(s: str) -> bool:
     return parse_version(s) is not None
+
+
+SECONDS_PER_DAY = 24 * 60 * 60
+
+
+def next_run_in_a_day(name: str, *, now: datetime | None = None, seed: bytes = b"") -> datetime:
+    """
+    Next run time: the next occurrence of that task's daily time-of-day (UTC).
+    """
+    if now is None:
+        now = datetime.now(timezone.utc)
+    elif now.tzinfo is None:
+        raise ValueError("now must be timezone-aware")
+
+    offset = seconds_since_midnight(name, seed=seed)
+    today_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    candidate = today_midnight + timedelta(seconds=offset)
+
+    if candidate <= now:
+        candidate += timedelta(days=1)
+
+    return candidate
+
+
+def seconds_since_midnight(
+    name: str,
+    *,
+    day_seconds: int = SECONDS_PER_DAY,
+    seed: bytes = b""
+) -> int:
+    """
+    Stable mapping: name -> [0, day_seconds).
+    - name: unique task identifier (e.g. "Advanced CSV")
+    - seed: optional global salt/seed to decouple from plain hashing
+    """
+    if day_seconds <= 0:
+        raise ValueError("day_seconds must be > 0")
+
+    h = hashlib.blake2s(digest_size=8, key=seed)  # 64-bit output
+    h.update(name.encode("utf-8"))
+    x = int.from_bytes(h.digest(), "big")         # 0..2^64-1
+
+    # Map to range with *minimal* modulo bias using multiply-high:
+    # floor(x * day_seconds / 2^64)
+    return (x * day_seconds) >> 64
