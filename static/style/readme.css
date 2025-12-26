@@ -1,12 +1,16 @@
 .readme {
-  margin-top: 28px;
-  padding: 14px calc(var(--side-padding) * 2);
+  margin-top: 42px; /* 1.5 grid lines */
+  padding: 28px calc(var(--side-padding) * 3.5);
   border-radius: 6px;
   background: var(--background-1);
 
   max-width: var(--max-line);
   margin-left: auto;
   margin-right: auto;
+
+  @media (max-width: 800px) {
+    padding: 14px calc(var(--side-padding) * 2);
+  }
 
   &:empty {
     display: none;
