@@ -262,7 +262,6 @@ section {
   gap: 1rem;
   margin-bottom: 4px;
 
-  > h1,
   > h2 {
     margin: 0;
     padding-top: 0;

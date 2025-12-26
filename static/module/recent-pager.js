@@ -27,12 +27,12 @@ const RECENT_PAGER_STYLES = `
       transition: background .1s;
 
       > h2 {
-        padding-top: 4px;
-        margin-bottom: 8px;  /* 2px up (10 is the default for our h2) */
+        padding-top: 8px;
+        margin-bottom: 12px;
       }
 
       & .pager-pagination {
-        top: 4px;           /* 2px down */
+        top: -14px;
       }
     }
 
@@ -41,14 +41,15 @@ const RECENT_PAGER_STYLES = `
       align-items: center;
       align-self: end;
       gap: 1rem;
-      font-size: 1.3rem;
       position: relative;
-      top: 2px;
+      top: -16px;
 
       .button-group {
         display: flex;
         gap: 0.2ex;
         font-size: 24px;
+        margin: 0;
+        padding: 0;
       }
 
       .button {
@@ -70,8 +71,6 @@ const RECENT_PAGER_STYLES = `
         margin-left: 0.5rem;
         color: var(--foreground-3);
         font-size: 14px;
-        align-self: center;
-        padding-bottom: 10px;
 
         @media (max-width: 479px) {
           padding-bottom: 11px;

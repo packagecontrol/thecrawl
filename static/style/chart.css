@@ -17,7 +17,7 @@
 
   @media (min-width: 1200px) {
     margin: 0 0 0 var(--spacing);
-    padding: var(--spacing) 0 var(--spacing) var(--spacing);
+    padding: 24px 0 22px var(--spacing);
     border-left: 1px solid var(--background-4);
     width: 100%;
     float: right;

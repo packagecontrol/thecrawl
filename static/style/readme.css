@@ -20,6 +20,9 @@
   p, ul, ol, summary {
     padding-top: 0;
     margin-bottom: 14px; /* half a gridline */
+    ul, ol {
+      margin-bottom: 0;
+    }
   }
 
   img, video {

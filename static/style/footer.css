@@ -8,7 +8,8 @@ footer {
   }
 
   nav {
-    margin: 14px auto;
+    padding-top: 10px;
+    margin: 0 auto;
     * + * {
       margin-left: 1ex;
     }

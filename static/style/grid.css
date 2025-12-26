@@ -122,6 +122,10 @@ section[name="labels"] .grid {
     justify-content: flex-end;
     padding: 0;
     margin: 0;
+    a {
+      line-height: 20px;
+      padding: 1px 6px;
+    }
   }
 
   .list & .labels {
@@ -136,13 +140,14 @@ section[name="labels"] .grid {
     }
   }
 
+  .list & .authors {
+    margin-bottom: 14px;
+  }
   .list & .description {
     font-size: 1rem;
     max-width: calc(var(--max-line) * 5/6);
-  }
-
-  .button-group {
-    line-height: 21px;
+    padding: 0;
+    margin: 0;
   }
 
   .button {
