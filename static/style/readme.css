@@ -33,10 +33,10 @@
 
   pre {
     border-radius: 6px;
-    background: var(--background-2);
+    background: var(--highlight);
   }
   pre code {
-    background: var(--background-2);
+    background: transparent;
   }
 
   kbd {
