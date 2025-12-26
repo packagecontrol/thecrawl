@@ -1,5 +1,5 @@
 footer {
-  padding: 3.5rem 1rem;
+  padding: 3.5rem var(--side-padding);
   text-align: center;
   color: var(--foreground-2);
 
