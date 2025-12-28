@@ -158,7 +158,7 @@ def normalize_package(pkg) -> Package | None:
             "platforms": platforms,
             "version": rel["version"],
             "url": rel["url"],
-            "date": rel["date"],
+            "date": format_utc_datetime(rel["date"]),
         })
     if not releases:
         err(f"Drop package {name} with no valid releases")
@@ -185,7 +185,7 @@ def normalize_package(pkg) -> Package | None:
     out: Package = {
         "name": pkg["name"],
         "author": author,
-        "last_modified": pkg["last_modified"],
+        "last_modified": format_utc_datetime(pkg["last_modified"]),
         "releases": releases,
 
         # mandatory with fallback
@@ -201,6 +201,12 @@ def normalize_package(pkg) -> Package | None:
         "buy": pkg.get("buy"),
     }
     return out
+
+
+def format_utc_datetime(value: str) -> str:
+    if "T" not in value:
+        return value
+    return value[:19].replace("T", " ")
 
 
 def failing_since(pkg, berlin: bool):
