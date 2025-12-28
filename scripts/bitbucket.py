@@ -110,7 +110,7 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "donate": None,  # Not available
         "default_branch": default_branch,
         "stars": stars,
-        "created_at": data.get("created_on")[:19].replace('T', ' '),
+        "created_at": data.get("created_on")[:19] + "Z",
         #                               ^^ funny, isn't it?
         "archived_at": None,  # Not available
     })
@@ -150,7 +150,7 @@ class TagPager:
                 {
                     "name": tag["name"],
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{tag['name']}.zip",
-                    "date": tag["target"]["date"][:19].replace('T', ' '),
+                    "date": tag["target"]["date"][:19] + "Z",
                     "sha": tag.get("target", {}).get("hash", ""),
                 }
                 for tag in data.get("values", [])
@@ -182,9 +182,9 @@ class BranchesPager:
             new_branches = [
                 {
                     "name": branch["name"],
-                    "version": re.sub(r"\D", ".", branch.get("target", {}).get("date", "")[:19].replace('T', ' ')),
+                    "version": re.sub(r"\D", ".", branch.get("target", {}).get("date", "")[:19] + "Z"),
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{branch['name']}.zip",
-                    "date": branch.get("target", {}).get("date", "")[:19].replace('T', ' '),
+                    "date": branch.get("target", {}).get("date", "")[:19] + "Z",
                     "sha": branch.get("target", {}).get("hash", ""),
                 }
                 for branch in data.get("values", [])

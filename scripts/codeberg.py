@@ -122,9 +122,9 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
             or data.get("stargazers_count")
             or data.get("watchers_count")
         ,
-        "created_at": data.get("created_at")[:19].replace('T', ' '),
+        "created_at": data.get("created_at")[:19] + "Z",
         "archived_at":
-            archived_at[:19].replace('T', ' ')
+            archived_at[:19] + "Z"
             if (
                 data.get("archived", False)
                 and (archived_at := data.get("archived_at"))

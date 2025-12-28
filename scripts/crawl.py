@@ -24,6 +24,8 @@ import traceback
 
 DEFAULT_REGISTRY = "./registry.json"
 DEFAULT_WORKSPACE = "./workspace.json"
+UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+STYLIZED_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 type PackageName = str
 type Url = str
@@ -149,7 +151,7 @@ def next_packages_to_crawl(
     If next_crawl is not set, it defaults to the current time.
     """
     now = datetime.now(timezone.utc)
-    now_string = now.strftime("%Y-%m-%d %H:%M:%S")
+    now_string = now.strftime(UTC_FORMAT)
     packages = registry["packages"]
     packages_to_crawl = [
         entry
@@ -186,7 +188,7 @@ def next_packages_to_crawl(
             )
             next_crawl_dt = (
                 datetime
-                .strptime(next_crawl_time, "%Y-%m-%d %H:%M:%S")
+                .strptime(next_crawl_time, UTC_FORMAT)
                 .replace(tzinfo=timezone.utc)
             )
             delta = next_crawl_dt - now
@@ -206,11 +208,44 @@ def next_packages_to_crawl(
         )
     )[:limit]
 
+
 def maintenance(registry: Registry, workspace: Workspace) -> None:
+    fields = (
+        "removed",
+        "first_seen",
+        "last_seen",
+        "next_crawl",
+        "last_modified",
+        "failing_since",
+        # hub specific data
+        "created_at",
+        "archived_at",
+    )
+    for pkg in workspace["packages"].values():
+        for field in fields:
+            if value := pkg.get(field):
+                if isinstance(value, str) and "T" not in value:
+                    try:
+                        datetime.strptime(value, STYLIZED_DATETIME_FORMAT)
+                    except ValueError:
+                        ...
+                    else:
+                        pkg[field] = value.replace(" ", "T") + "Z"  # type: ignore[literal-required]
+
+            for r in pkg.get("releases", []):
+                if value := r.get("date"):
+                    if isinstance(value, str) and "T" not in value:
+                        try:
+                            datetime.strptime(value, STYLIZED_DATETIME_FORMAT)
+                        except ValueError:
+                            ...
+                        else:
+                            r["date"] = value.replace(" ", "T") + "Z"
+
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
     now = datetime.now(timezone.utc)
-    now_string = now.strftime("%Y-%m-%d %H:%M:%S")
+    now_string = now.strftime(UTC_FORMAT)
     current_package_names = {entry["name"] for entry in registry["packages"]}
     packages = workspace["packages"]
     for name in packages.keys() - current_package_names:
@@ -224,7 +259,7 @@ async def crawl(
 ) -> PackageEntry:
     out: PackageEntry
     now = datetime.now(timezone.utc)
-    now_string = now.strftime("%Y-%m-%d %H:%M:%S")
+    now_string = now.strftime(UTC_FORMAT)
 
     try:
         out = await crawl_package(session, package, existing)
@@ -238,7 +273,7 @@ async def crawl(
         if isinstance(e, aiohttp.ClientResponseError):
             err(
                 f"HTTP error during crawl for {package['name']}: "
-                f"{e.status} {e.message.removesuffix(".")}", end=". "
+                f"{e.status} {e.message.removesuffix('.')}", end=". "
             )
             fatal = "fatal: " if e.status == 404 else ""
             out["fail_reason"] = f"{fatal}{e.status} {e.message}"
@@ -253,7 +288,7 @@ async def crawl(
         # Determine next_crawl interval
         failing_since_dt = (
             datetime
-            .strptime(out["failing_since"], "%Y-%m-%d %H:%M:%S")
+            .strptime(out["failing_since"], UTC_FORMAT)
             .replace(tzinfo=timezone.utc)
         )
         age = now - failing_since_dt
@@ -267,7 +302,7 @@ async def crawl(
         else:
             interval = timedelta(hours=24)
 
-        out["next_crawl"] = (now + interval).strftime("%Y-%m-%d %H:%M:%S")
+        out["next_crawl"] = (now + interval).strftime(UTC_FORMAT)
         hours_str = str(interval.total_seconds() / 3600).removesuffix(".0")
         s = "s" if hours_str != "1" else ""
         err(f"Retrying in {hours_str} hour{s}.")
@@ -285,14 +320,14 @@ async def crawl(
     if not releases:
         err(f"No releases found for {out['name']}")
         out["invalid"] = True
-        out["next_crawl"] = (now + timedelta(hours=3)).strftime("%Y-%m-%d %H:%M:%S")
+        out["next_crawl"] = (now + timedelta(hours=3)).strftime(UTC_FORMAT)
     else:
         out["last_modified"] = max((r["date"] for r in releases))
 
         # Determine next_crawl interval
         last_modified_dt = (
             datetime
-            .strptime(out["last_modified"], "%Y-%m-%d %H:%M:%S")
+            .strptime(out["last_modified"], UTC_FORMAT)
             .replace(tzinfo=timezone.utc)
         )
         age = now - last_modified_dt
@@ -306,7 +341,7 @@ async def crawl(
         else:
             next_crawl = next_run_in_a_day(out["name"], now=now)
 
-        out["next_crawl"] = next_crawl.strftime("%Y-%m-%d %H:%M:%S")
+        out["next_crawl"] = next_crawl.strftime(UTC_FORMAT)
 
     return out
 
@@ -530,16 +565,17 @@ def normalize_release_definition(
 
 def normalize_datetime_str(dt_str: str) -> str:
     formats = [
-        "%Y-%m-%d %H:%M",     # missing seconds
-        "%Y-%m-%d",           # date only
+        STYLIZED_DATETIME_FORMAT,  # full format
+        "%Y-%m-%d %H:%M",          # missing seconds
+        "%Y-%m-%d",                # date only
     ]
     try:
-        datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")  # full format
+        datetime.strptime(dt_str, UTC_FORMAT)
     except ValueError:
         for fmt in formats:
             try:
                 dt = datetime.strptime(dt_str, fmt)
-                return dt.strftime("%Y-%m-%d %H:%M:%S")
+                return dt.strftime(UTC_FORMAT)
             except ValueError:
                 continue
     else:

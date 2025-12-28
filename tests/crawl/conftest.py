@@ -12,7 +12,7 @@ def set_now(monkeypatch):
 
 
 def fixed_date(date_str: str):
-    fixed_dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+    fixed_dt = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
 
     class FixedDateTime(datetime):
         @classmethod

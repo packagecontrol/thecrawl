@@ -46,19 +46,19 @@ GITHUB_INFO = """
     "donate": "https://paypal.me/herrkaste",
     "default_branch": "master",
     "stars": 1928,
-    "created_at": "2015-01-18 05:40:08"
+    "created_at": "2015-01-18T05:40:08Z"
   },
   "tags": [
     {
       "name": "2.51.1",
       "sha": "f9914a898f39318f66e571e8e4a49af0d1ae2937",
-      "date": "2025-06-25 14:14:09",
+      "date": "2025-06-25T14:14:09Z",
       "url": "https://codeload.github.com/timbrel/GitSavvy/zip/2.51.1"
     },
     {
       "name": "st3-2.39.1",
       "sha": "e4f642076522ab0a8785ec478414c1bd014fbe6b",
-      "date": "2023-02-10 23:41:10",
+      "date": "2023-02-10T23:41:10Z",
       "url": "https://codeload.github.com/timbrel/GitSavvy/zip/st3-2.39.1"
     }
   ],
@@ -67,7 +67,7 @@ GITHUB_INFO = """
       "name": "master",
       "version": "2025.08.02.23.24.33",
       "sha": "5f3a58302b257ad7cf4724c2472fcc59479efe24",
-      "date": "2025-08-02 23:24:33",
+      "date": "2025-08-02T23:24:33Z",
       "url": "https://codeload.github.com/timbrel/GitSavvy/zip/master"
     }
   ]
@@ -87,14 +87,14 @@ EXPECTED = """
       "donate": "https://paypal.me/herrkaste",
       "default_branch": "master",
       "stars": 1928,
-      "created_at": "2015-01-18 05:40:08",
+      "created_at": "2015-01-18T05:40:08Z",
       "details": "https://github.com/timbrel/GitSavvy",
       "releases": [
         {
           "sublime_text": "<4000",
           "platforms": ["*"],
           "base": "https://github.com/timbrel/GitSavvy",
-          "date": "2023-02-10 23:41:10",
+          "date": "2023-02-10T23:41:10Z",
           "url": "https://codeload.github.com/timbrel/GitSavvy/zip/st3-2.39.1",
           "version": "2.39.1"
         },
@@ -102,17 +102,17 @@ EXPECTED = """
           "sublime_text": ">=4000",
           "platforms": ["*"],
           "base": "https://github.com/timbrel/GitSavvy",
-          "date": "2025-06-25 14:14:09",
+          "date": "2025-06-25T14:14:09Z",
           "url": "https://codeload.github.com/timbrel/GitSavvy/zip/2.51.1",
           "version": "2.51.1"
         }
       ],
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
-      "first_seen": "2025-08-13 21:44:16",
-      "last_seen": "2025-08-13 21:44:16",
-      "last_modified": "2025-06-25 14:14:09",
-      "next_crawl": "2025-08-13 23:44:16"
+      "first_seen": "2025-08-13T21:44:16Z",
+      "last_seen": "2025-08-13T21:44:16Z",
+      "last_modified": "2025-06-25T14:14:09Z",
+      "next_crawl": "2025-08-13T23:44:16Z"
     }
   },
   "dependencies": []
@@ -150,7 +150,7 @@ async def test_happy_path(
     set_now,
     set_github_info
 ):
-    set_now("2025-08-13 21:44:16")
+    set_now("2025-08-13T21:44:16Z")
     set_github_info(github_info)
 
     await main_(registry, workspace, None, 100)
@@ -169,7 +169,7 @@ async def test_drop_packagecontrolio_as_homepage(
     github_info["metadata"]["homepage"] = "https://packagecontrol.io/packages/GitSavvy"
     expected["packages"]["GitSavvy"].pop("homepage")
 
-    set_now("2025-08-13 21:44:16")
+    set_now("2025-08-13T21:44:16Z")
     set_github_info(github_info)
 
     await main_(registry, workspace, None, 100)
@@ -210,13 +210,13 @@ async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_i
             "readme": "https://raw.githubusercontent.com/example/pre-release-only/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [
             {
                 "name": "v0.0.1-beta",
                 "sha": "abc123",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/example/pre-release-only/zip/v0.0.1-beta"
             }
         ],
@@ -225,7 +225,7 @@ async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_i
                 "name": "main",
                 "version": "2024.05.10.12.00.00",
                 "sha": "def456",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/example/pre-release-only/zip/main"
             }
         ]
@@ -249,7 +249,7 @@ async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_i
     release = releases[0]
     assert release["version"] == "0.0.1-beta"
     assert release["url"].endswith("v0.0.1-beta")
-    assert release["date"] == "2024-05-10 12:00:00"
+    assert release["date"] == "2024-05-10T12:00:00Z"
 
 
 @pytest.mark.asyncio
@@ -286,7 +286,7 @@ async def test_tag_missing_falls_back_to_branch(set_now, set_github_info, capsys
             "readme": "https://raw.githubusercontent.com/example/branch-fallback/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [],
         "branches": [
@@ -294,7 +294,7 @@ async def test_tag_missing_falls_back_to_branch(set_now, set_github_info, capsys
                 "name": "main",
                 "version": "2024.05.10.12.00.00",
                 "sha": "def456",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/example/branch-fallback/zip/main"
             }
         ]
@@ -351,7 +351,7 @@ async def test_tag_missing_and_branch_missing_logs_tag_error(set_now, set_github
             "readme": "https://raw.githubusercontent.com/example/no-tag-no-branch/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [],
         "branches": []
@@ -405,7 +405,7 @@ async def test_branch_missing_logs_branch_error(set_now, set_github_info, capsys
             "readme": "https://raw.githubusercontent.com/example/branch-missing/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [],
         "branches": []
@@ -459,7 +459,7 @@ async def test_branch_true_selects_default_branch(set_now, set_github_info):
             "readme": "https://raw.githubusercontent.com/example/branch-default/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [],
         "branches": [
@@ -467,14 +467,14 @@ async def test_branch_true_selects_default_branch(set_now, set_github_info):
                 "name": "dev",
                 "version": "2024.05.09.12.00.00",
                 "sha": "dev123",
-                "date": "2024-05-09 12:00:00",
+                "date": "2024-05-09T12:00:00Z",
                 "url": "https://codeload.github.com/example/branch-default/zip/dev"
             },
             {
                 "name": "main",
                 "version": "2024.05.10.12.00.00",
                 "sha": "main123",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/example/branch-default/zip/main"
             }
         ]
@@ -526,7 +526,7 @@ async def test_branch_specific_selects_named_branch(set_now, set_github_info):
             "readme": "https://raw.githubusercontent.com/example/branch-specific/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [],
         "branches": [
@@ -534,14 +534,14 @@ async def test_branch_specific_selects_named_branch(set_now, set_github_info):
                 "name": "main",
                 "version": "2024.05.09.12.00.00",
                 "sha": "main123",
-                "date": "2024-05-09 12:00:00",
+                "date": "2024-05-09T12:00:00Z",
                 "url": "https://codeload.github.com/example/branch-specific/zip/main"
             },
             {
                 "name": "troo",
                 "version": "2024.05.10.12.00.00",
                 "sha": "troo123",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/example/branch-specific/zip/troo"
             }
         ]
@@ -593,7 +593,7 @@ async def test_branch_specific_missing_does_not_fallback(set_now, set_github_inf
             "readme": "https://raw.githubusercontent.com/example/branch-specific-missing/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [],
         "branches": [
@@ -601,7 +601,7 @@ async def test_branch_specific_missing_does_not_fallback(set_now, set_github_inf
                 "name": "main",
                 "version": "2024.05.09.12.00.00",
                 "sha": "main123",
-                "date": "2024-05-09 12:00:00",
+                "date": "2024-05-09T12:00:00Z",
                 "url": "https://codeload.github.com/example/branch-specific-missing/zip/main"
             }
         ]
@@ -655,19 +655,19 @@ async def test_tag_true_includes_prerelease_and_final(set_now, set_github_info):
             "readme": "https://raw.githubusercontent.com/example/tag-prerelease-final/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [
             {
                 "name": "v1.0.1-beta.1",
                 "sha": "beta123",
-                "date": "2024-05-09 12:00:00",
+                "date": "2024-05-09T12:00:00Z",
                 "url": "https://codeload.github.com/example/tag-prerelease-final/zip/v1.0.1-beta.1"
             },
             {
                 "name": "v1.0.1",
                 "sha": "final123",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/example/tag-prerelease-final/zip/v1.0.1"
             }
         ],
@@ -676,7 +676,7 @@ async def test_tag_true_includes_prerelease_and_final(set_now, set_github_info):
                 "name": "main",
                 "version": "2024.05.10.12.00.00",
                 "sha": "main123",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/example/tag-prerelease-final/zip/main"
             }
         ]

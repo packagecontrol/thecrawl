@@ -213,7 +213,7 @@ def failing_since(pkg, berlin: bool):
     extra = ""
     if failing_since := pkg.get("failing_since"):
         try:
-            dt = datetime.strptime(failing_since, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+            dt = datetime.strptime(failing_since, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
             rel = relative_time(dt, berlin)
             extra = f"since {rel}"
         except Exception as e:
