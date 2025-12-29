@@ -205,18 +205,25 @@ function basePackage(pkg, stat) {
   })
 
   // Split releases with same sublime build and same platform set.
-  // As we're sorted, just keep the first one we see.
-  const seen = new Set()
+  // As we're sorted, keep the first one; if it's a pre-release, also keep the next stable.
+  const seen = new Map()
   const dedupedReleases = []
   const otherReleases = []
   for (const release of releases) {
     const key = `${release.sublime_text}|${[...release.platforms].sort().join('|')}`
+    const isPreRelease = (release.version ?? '').includes('-')
     if (!seen.has(key)) {
-      seen.add(key)
+      seen.set(key, { firstWasPreRelease: isPreRelease, keptStable: !isPreRelease })
       dedupedReleases.push(release)
     }
     else {
-      otherReleases.push(release)
+      const state = seen.get(key)
+      if (state.firstWasPreRelease && !state.keptStable && !isPreRelease) {
+        state.keptStable = true
+        dedupedReleases.push(release)
+      } else {
+        otherReleases.push(release)
+      }
     }
   }
 
