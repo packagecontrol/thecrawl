@@ -18,7 +18,7 @@ from .github import (
 )
 from .gitlab import fetch_gitlab_info, RepoInfo as GitlabRepoInfo
 from .codeberg import fetch_codeberg_info, RepoInfo as CodebergRepoInfo
-from .utils import next_run_in_a_day, parse_version, resolve_url, update_url
+from .utils import next_run, parse_version, resolve_url, update_url
 import traceback
 
 
@@ -337,9 +337,9 @@ async def crawl(
         elif age <= timedelta(days=90):
             next_crawl = now + timedelta(hours=2)
         elif age <= timedelta(days=365 * 4):
-            next_crawl = now + timedelta(hours=3)
+            next_crawl = next_run(out["name"], window=timedelta(hours=3), now=now)
         else:
-            next_crawl = next_run_in_a_day(out["name"], now=now)
+            next_crawl = next_run(out["name"], window=timedelta(days=1), now=now)
 
         out["next_crawl"] = next_crawl.strftime(UTC_FORMAT)
 

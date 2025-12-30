@@ -145,43 +145,61 @@ def is_semver(s: str) -> bool:
 SECONDS_PER_DAY = 24 * 60 * 60
 
 
-def next_run_in_a_day(name: str, *, now: datetime | None = None, seed: bytes = b"") -> datetime:
+def next_run(
+    name: str,
+    *,
+    window: timedelta = timedelta(days=1),
+    now: datetime | None = None,
+    seed: bytes = b""
+) -> datetime:
     """
-    Next run time: the next occurrence of that task's daily time-of-day (UTC).
+    Next run time: the next occurrence of that task's window time-of-day (UTC).
     """
     if now is None:
         now = datetime.now(timezone.utc)
     elif now.tzinfo is None:
         raise ValueError("now must be timezone-aware")
 
-    offset = seconds_since_midnight(name, seed=seed)
-    today_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    candidate = today_midnight + timedelta(seconds=offset)
+    window_seconds = int(window.total_seconds())
+    if window_seconds <= 0:
+        raise ValueError("window must be > 0")
+
+    offset = map_name_to_range(name, upper_bound=window_seconds, seed=seed)
+    epoch_seconds = int(now.timestamp())
+    window_start = epoch_seconds - (epoch_seconds % window_seconds)
+    candidate = datetime.fromtimestamp(window_start, tz=timezone.utc) + timedelta(seconds=offset)
 
     if candidate <= now:
-        candidate += timedelta(days=1)
+        candidate += timedelta(seconds=window_seconds)
 
     return candidate
 
 
-def seconds_since_midnight(
+def next_run_in_a_day(name: str, *, now: datetime | None = None, seed: bytes = b"") -> datetime:
+    """
+    Next run time: the next occurrence of that task's daily time-of-day (UTC).
+    """
+    return next_run(name, window=timedelta(days=1), now=now, seed=seed)
+
+
+def map_name_to_range(
     name: str,
     *,
-    day_seconds: int = SECONDS_PER_DAY,
+    upper_bound: int = SECONDS_PER_DAY,
     seed: bytes = b""
 ) -> int:
     """
-    Stable mapping: name -> [0, day_seconds).
+    Stable mapping: name -> [0, upper_bound).
     - name: unique task identifier (e.g. "Advanced CSV")
     - seed: optional global salt/seed to decouple from plain hashing
     """
-    if day_seconds <= 0:
-        raise ValueError("day_seconds must be > 0")
+    if upper_bound <= 0:
+        raise ValueError("upper_bound must be > 0")
 
     h = hashlib.blake2s(digest_size=8, key=seed)  # 64-bit output
     h.update(name.encode("utf-8"))
     x = int.from_bytes(h.digest(), "big")         # 0..2^64-1
 
     # Map to range with *minimal* modulo bias using multiply-high:
-    # floor(x * day_seconds / 2^64)
-    return (x * day_seconds) >> 64
+    # floor(x * upper_bound / 2^64)
+    return (x * upper_bound) >> 64
