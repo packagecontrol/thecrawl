@@ -9,23 +9,13 @@ from urllib.parse import urlparse, urlencode
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from .utils import drop_falsy, err
+from .utils import drop_falsy, err, normalize_tz_aware_datetime
 
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 type Url = str
 type Sha = str
 type IsoTimestamp = str
-
-
-UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-
-
-def normalize_codeberg_datetime(value: str) -> str:
-    if not value:
-        return value
-    dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    return dt.astimezone(timezone.utc).strftime(UTC_FORMAT)
 
 
 class RepoMetadata(TypedDict, total=False):
@@ -133,9 +123,9 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
             or data.get("stargazers_count")
             or data.get("watchers_count")
         ,
-        "created_at": normalize_codeberg_datetime(data.get("created_at") or ""),
+        "created_at": normalize_tz_aware_datetime(data.get("created_at") or ""),
         "archived_at":
-            normalize_codeberg_datetime(archived_at)
+            normalize_tz_aware_datetime(archived_at)
             if (
                 data.get("archived", False)
                 and (archived_at := data.get("archived_at"))
@@ -192,7 +182,7 @@ class TagPager:
                 name = tag.get("name") or ""
                 commit = tag.get("commit") or {}
                 # Common fields seen in Gitea/Forgejo: commit.id, commit.created, commit.timestamp
-                date = normalize_codeberg_datetime(
+                date = normalize_tz_aware_datetime(
                     commit.get("created") or commit.get("timestamp") or ""
                 )
                 sha = commit.get("id", "")
@@ -232,7 +222,7 @@ class BranchesPager:
             for branch in data:
                 name = branch.get("name") or ""
                 commit = branch.get("commit") or {}
-                date = normalize_codeberg_datetime(
+                date = normalize_tz_aware_datetime(
                     commit.get("created") or commit.get("timestamp") or ""
                 )
                 sha = commit.get("id", "")

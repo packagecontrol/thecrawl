@@ -1,5 +1,5 @@
 import pytest
-from scripts.utils import parse_version, VersionInfo, is_semver
+from scripts.utils import parse_version, VersionInfo, is_semver, normalize_tz_aware_datetime
 
 
 @pytest.mark.parametrize("input_str,expected", [
@@ -68,3 +68,15 @@ def test_version_is_a_prerelease(input_str, expected):
     v = parse_version(input_str)
     assert v is not None
     assert v.is_prerelease is expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("2024-03-22T00:13:15+01:00", "2024-03-21T23:13:15Z"),
+        ("2025-09-24T22:24:31+02:00", "2025-09-24T20:24:31Z"),
+        ("2025-09-22T23:07:52+02:00", "2025-09-22T21:07:52Z"),
+    ],
+)
+def test_normalize_tz_aware_datetime(value, expected):
+    assert normalize_tz_aware_datetime(value) == expected

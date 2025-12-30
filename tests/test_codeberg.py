@@ -1,18 +1,6 @@
 import pytest
 
-from scripts.codeberg import fetch_codeberg_info, normalize_codeberg_datetime
-
-
-@pytest.mark.parametrize(
-    ("value", "expected"),
-    [
-        ("2024-03-22T00:13:15+01:00", "2024-03-21T23:13:15Z"),
-        ("2025-09-24T22:24:31+02:00", "2025-09-24T20:24:31Z"),
-        ("2025-09-22T23:07:52+02:00", "2025-09-22T21:07:52Z"),
-    ],
-)
-def test_normalize_codeberg_datetime(value, expected):
-    assert normalize_codeberg_datetime(value) == expected
+from scripts.codeberg import fetch_codeberg_info
 
 
 @pytest.mark.asyncio

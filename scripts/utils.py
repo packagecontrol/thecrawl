@@ -97,6 +97,16 @@ def update_url(url: str) -> str:
     return url
 
 
+UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def normalize_tz_aware_datetime(value: str) -> str:
+    if not value:
+        return value
+    dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    return dt.astimezone(timezone.utc).strftime(UTC_FORMAT)
+
+
 class VersionInfo(NamedTuple):
     major: int
     minor: int
