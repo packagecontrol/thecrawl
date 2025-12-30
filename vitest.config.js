@@ -8,6 +8,6 @@ export default defineConfig({
       'eleventy.filters.mjs',
       'eleventy.util.mjs',
     ],
-    exclude: [...configDefaults.exclude, '_site/**'],
+    exclude: [...configDefaults.exclude, '_site/**', '.AFileIcon/**'],
   },
 })
