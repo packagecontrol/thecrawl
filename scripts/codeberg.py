@@ -173,12 +173,17 @@ class TagPager:
                 break
             new_tags: list[TagInfo] = []
             for tag in data:
-                name = tag.get("name") or ""
+                name = tag["name"]
                 commit = tag.get("commit") or {}
                 # Common fields seen in Gitea/Forgejo: commit.id, commit.created, commit.timestamp
-                date = normalize_tz_aware_datetime(
-                    commit.get("created") or commit.get("timestamp") or ""
-                )
+                raw_date = commit.get("created") or commit.get("timestamp") or ""
+                if not raw_date:
+                    err(
+                        f"Skip tag `{tag}` from https://codeberg.org/{self.owner}/{self.repo} "
+                        "which has no date"
+                    )
+                    continue
+                date = normalize_tz_aware_datetime(raw_date)
                 new_tags.append({
                     "name": name,
                     "url": f"https://codeberg.org/{self.owner}/{self.repo}/archive/{name}.zip",
@@ -212,11 +217,16 @@ class BranchesPager:
                 break
             new_branches: list[BranchInfo] = []
             for branch in data:
-                name = branch.get("name") or ""
+                name = branch["name"]
                 commit = branch.get("commit") or {}
-                date = normalize_tz_aware_datetime(
-                    commit.get("created") or commit.get("timestamp") or ""
-                )
+                raw_date = commit.get("created") or commit.get("timestamp") or ""
+                if not raw_date:
+                    err(
+                        f"Skip branch `{branch}` from https://codeberg.org/{self.owner}/{self.repo} "
+                        "which has no date"
+                    )
+                    continue
+                date = normalize_tz_aware_datetime(raw_date)
                 new_branches.append({
                     "name": name,
                     "url": f"https://codeberg.org/{self.owner}/{self.repo}/archive/{name}.zip",

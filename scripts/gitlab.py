@@ -150,16 +150,20 @@ class TagPager(_Pager):
 
         while self._next_url:
             data, headers = await fetch_(self._session, self._next_url)
-            new_tags = [
-                {
+            new_tags = []
+            for tag in data:
+                raw_date = tag.get("commit", {}).get("committed_date", "")
+                if not raw_date:
+                    err(
+                        f"Skip tag `{tag}` from https://gitlab.com/{self.owner}/{self.repo} "
+                        "which has no date"
+                    )
+                    continue
+                new_tags.append({
                     "name": tag["name"],
                     "url": tag.get("web_url") or f"https://gitlab.com/{self.owner}/{self.repo}/-/archive/{tag['name']}/{self.repo}-{tag['name']}.zip",
-                    "date": normalize_tz_aware_datetime(
-                        tag.get("commit", {}).get("committed_date", "")
-                    ),
-                }
-                for tag in data
-            ]
+                    "date": normalize_tz_aware_datetime(raw_date),
+                })
             self._cache.extend(new_tags)
             self._next_url = self._get_next_url(headers)
 
@@ -187,11 +191,16 @@ class BranchesPager(_Pager):
             new_branches = []
             for branch in data:
                 raw_date = branch.get("commit", {}).get("committed_date", "")
-                committed_date = normalize_tz_aware_datetime(raw_date)
+                if not raw_date:
+                    err(
+                        f"Skip branch `{branch}` from https://gitlab.com/{self.owner}/{self.repo} "
+                        "which has no date"
+                    )
+                    continue
                 new_branches.append({
                     "name": branch["name"],
                     "url": f"https://gitlab.com/{self.owner}/{self.repo}/-/tree/{branch['name']}",
-                    "date": committed_date,
+                    "date": normalize_tz_aware_datetime(raw_date),
                 })
             self._cache.extend(new_branches)
             self._next_url = self._get_next_url(headers)

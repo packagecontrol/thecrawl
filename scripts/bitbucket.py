@@ -141,14 +141,20 @@ class TagPager:
 
         while self._next_url:
             data = await fetch_json(self._session, self._next_url)
-            new_tags = [
-                {
+            new_tags = []
+            for tag in data.get("values", []):
+                raw_date = tag.get("target", {}).get("date", "")
+                if not raw_date:
+                    err(
+                        f"Skip tag `{tag}` from https://bitbucket.org/{self.owner}/{self.repo} "
+                        "which has no date"
+                    )
+                    continue
+                new_tags.append({
                     "name": tag["name"],
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{tag['name']}.zip",
-                    "date": normalize_tz_aware_datetime(tag["target"]["date"]),
-                }
-                for tag in data.get("values", [])
-            ]
+                    "date": normalize_tz_aware_datetime(raw_date),
+                })
             self._cache.extend(new_tags)
             self._next_url = data.get("next")
 
@@ -173,16 +179,20 @@ class BranchesPager:
 
         while self._next_url:
             data = await fetch_json(self._session, self._next_url)
-            new_branches = [
-                {
+            new_branches = []
+            for branch in data.get("values", []):
+                raw_date = branch.get("target", {}).get("date", "")
+                if not raw_date:
+                    err(
+                        f"Skip branch `{branch}` from https://bitbucket.org/{self.owner}/{self.repo} "
+                        "which has no date"
+                    )
+                    continue
+                new_branches.append({
                     "name": branch["name"],
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{branch['name']}.zip",
-                    "date": normalize_tz_aware_datetime(
-                        branch.get("target", {}).get("date", "")
-                    ),
-                }
-                for branch in data.get("values", [])
-            ]
+                    "date": normalize_tz_aware_datetime(raw_date),
+                })
             self._cache.extend(new_branches)
             self._next_url = data.get("next")
 
