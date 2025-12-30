@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlparse, quote
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from .utils import drop_falsy, err
+from .utils import drop_falsy, err, normalize_tz_aware_datetime
 
 QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 Url = str
@@ -105,7 +105,7 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "donate": None,  # Not available
         "default_branch": default_branch,
         "stars": data.get("star_count"),
-        "created_at": data.get("created_at")[:19] + "Z",
+        "created_at": normalize_tz_aware_datetime(data.get("created_at") or ""),
         "archived_at": None,  # GitLab exposes only a boolean 'archived'
     })
     return meta
@@ -158,7 +158,9 @@ class TagPager(_Pager):
                 {
                     "name": tag["name"],
                     "url": tag.get("web_url") or f"https://gitlab.com/{self.owner}/{self.repo}/-/archive/{tag['name']}/{self.repo}-{tag['name']}.zip",
-                    "date": tag.get("commit", {}).get("committed_date", "")[:19] + "Z",
+                    "date": normalize_tz_aware_datetime(
+                        tag.get("commit", {}).get("committed_date", "")
+                    ),
                     "sha": tag.get("commit", {}).get("id", ""),
                 }
                 for tag in data
@@ -187,16 +189,17 @@ class BranchesPager(_Pager):
         next_url = self._next_url
         while next_url:
             data, headers = await fetch_(self._session, next_url)
-            new_branches = [
-                {
+            new_branches = []
+            for branch in data:
+                raw_date = branch.get("commit", {}).get("committed_date", "")
+                committed_date = normalize_tz_aware_datetime(raw_date)
+                new_branches.append({
                     "name": branch["name"],
-                    "version": re.sub(r"\\D", ".", branch.get("commit", {}).get("committed_date", "")[:19] + "Z"),
+                    "version": re.sub(r"\D", ".", committed_date).rstrip("."),
                     "url": f"https://gitlab.com/{self.owner}/{self.repo}/-/tree/{branch['name']}",
-                    "date": branch.get("commit", {}).get("committed_date", "")[:19] + "Z",
+                    "date": committed_date,
                     "sha": branch.get("commit", {}).get("id", ""),
-                }
-                for branch in data
-            ]
+                })
             self._cache.extend(new_branches)
             self._next_url = self._get_next_url(headers)
 
