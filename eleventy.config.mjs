@@ -204,21 +204,7 @@ function basePackage(pkg, stat) {
     return dateB - dateA // Newest first
   })
 
-  // Split releases with same sublime build and same platform set.
-  // As we're sorted, just keep the first one we see.
-  const seen = new Set()
-  const dedupedReleases = []
-  const otherReleases = []
-  for (const release of releases) {
-    const key = `${release.sublime_text}|${[...release.platforms].sort().join('|')}`
-    if (!seen.has(key)) {
-      seen.add(key)
-      dedupedReleases.push(release)
-    }
-    else {
-      otherReleases.push(release)
-    }
-  }
+  const { mainReleases, otherReleases } = util.weightReleases(releases)
 
   const labels = pkg.labels?.slice() ?? []
   if (!supportsModernSublime) labels.push('ST2')
@@ -239,7 +225,7 @@ function basePackage(pkg, stat) {
     last_modified: pkg.last_modified,
     archived_at: pkg.archived_at,
     removed: pkg.removed,
-    releases: dedupedReleases,
+    releases: mainReleases,
     otherReleases,
     labels: labels,
     platforms: util.dedupePlatforms(releases),

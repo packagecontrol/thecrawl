@@ -14,9 +14,27 @@
 {% macro release(version, omit_requirements=false) %}
   <a class="download" href="{{ version.download_url or version.url }}" title="Download package">{{ version.version }}</a>
 
-  {% set requirement = version.sublime_text | format_requirement %}
-  {% if not omit_requirements and requirement and requirement != "*" %}
-    <span class="requirement" title="Required ST build">({{ requirement }})</span>
+  {% if not omit_requirements %}
+    {% set requirement -%}
+      {% set requirement_ = version.sublime_text | format_requirement %}
+      {% if requirement_ and requirement_ != "*" %}
+        <span title="Required ST build">{{ requirement_ }}</span>
+      {% endif %}
+    {%- endset %}
+
+    {% set pre -%}
+      {% set is_prerelease = version.version and '-' in version.version %}
+      {% if is_prerelease -%}
+        <span title="This is a pre-release">PRE</span>
+      {%- endif %}
+    {%- endset %}
+
+    {% set parts = [] %}
+    {% if pre | trim %}{% set parts = parts.concat([pre]) %}{% endif %}
+    {% if requirement | trim %}{% set parts = parts.concat([requirement]) %}{% endif %}
+    {% if parts | length > 0 %}
+      <span class="requirement">({{ parts | join(', ') | safe | trim }})</span>
+    {% endif %}
   {% endif %}
 
   {% set notes_separator = '·' %}
