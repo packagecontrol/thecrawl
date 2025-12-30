@@ -134,7 +134,6 @@ BRANCHES = (
         name
         target {
           ... on Commit{
-            oid
             committedDate
           }
         }
@@ -161,13 +160,11 @@ TAGS = (
           ... on Tag {
             target {
               ... on Commit {
-                oid
                 committedDate
               }
             }
           }
           ... on Commit {
-            oid
             committedDate
           }
         }
@@ -367,12 +364,13 @@ def grab_tags(repo: str, entries) -> list[TagInfo]:
         tag_name = node["name"]
         t = node["target"]
         commit = t.get("target", t)
-        if "oid" not in commit:
-            err(f"Skip tag `{node}` from https://github.com/{repo} which has no commit sha")
+        date = commit.get("committedDate")
+        if not date:
+            err(f"Skip tag `{node}` from https://github.com/{repo} which has no commit date")
             continue
         tags.append({
             "name": tag_name,
-            "date": commit["committedDate"][:19] + "Z",
+            "date": date[:19] + "Z",
             "url": f"https://codeload.github.com/{repo}/zip/{tag_name}"
         })
     return tags
