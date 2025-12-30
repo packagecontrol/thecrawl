@@ -212,14 +212,20 @@ def next_packages_to_crawl(
                 print(f"Next package runs in {round(delta.total_seconds())} seconds.")
 
 
-    return sorted(
-        packages_to_crawl,
-        key=lambda pkg: (
+    if presto:
+        key = lambda pkg: (
+            workspace["packages"]
+            .get(pkg["name"], {})
+            .get("last_seen", "0000-00-00T00:00:00Z")
+        )
+    else:
+        key = lambda pkg: (
             workspace["packages"]
             .get(pkg["name"], {})
             .get("next_crawl", now_string)
         )
-    )[:limit]
+
+    return sorted(packages_to_crawl, key=key)[:limit]
 
 
 def maintenance(registry: Registry, workspace: Workspace) -> None:
