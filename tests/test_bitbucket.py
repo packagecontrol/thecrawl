@@ -106,7 +106,6 @@ async def test_fetch_bitbucket_info_formats_datetimes(monkeypatch):
     assert branches_out == [
         {
             "name": "master",
-            "version": "2018.09.25.14.58.29",
             "url": "https://bitbucket.org/hxss/html2scss/get/master.zip",
             "date": "2018-09-25T14:58:29Z",
         }

@@ -58,7 +58,6 @@ class TagInfo(TypedDict):
 
 class BranchInfo(TypedDict):
     name: str
-    version: str  # fake version constructed from the date
     url: Url
     date: IsoTimestamp
 
@@ -384,7 +383,6 @@ def grab_branches(repo: str, entries) -> list[BranchInfo]:
         date = commit["committedDate"][:19] + "Z"
         branches.append({
             "name": branch_name,
-            "version": re.sub(r"\D", ".", date).rstrip("."),
             "date": date,
             "url": f"https://codeload.github.com/{repo}/zip/{branch_name}"
         })

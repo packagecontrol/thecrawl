@@ -90,7 +90,6 @@ async def test_fetch_codeberg_info_normalizes_datetimes(monkeypatch):
     assert branches_out == [
         {
             "name": "master",
-            "version": "2024.03.21.23.13.15",
             "url": "https://codeberg.org/ISSOtm/sublime-Bison/archive/master.zip",
             "date": "2024-03-21T23:13:15Z",
         }

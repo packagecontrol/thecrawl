@@ -3,7 +3,6 @@ import json
 import aiohttp
 import asyncio
 import os
-import re
 from urllib.parse import urlparse
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
@@ -39,7 +38,6 @@ class TagInfo(TypedDict):
 
 class BranchInfo(TypedDict):
     name: str
-    version: str
     url: Url
     date: IsoTimestamp
 
@@ -178,13 +176,6 @@ class BranchesPager:
             new_branches = [
                 {
                     "name": branch["name"],
-                    "version": re.sub(
-                        r"\D",
-                        ".",
-                        normalize_tz_aware_datetime(
-                            branch.get("target", {}).get("date", "")
-                        )
-                    ).rstrip("."),
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{branch['name']}.zip",
                     "date": normalize_tz_aware_datetime(
                         branch.get("target", {}).get("date", "")

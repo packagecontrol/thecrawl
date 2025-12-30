@@ -6,6 +6,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import json
 import os
+import re
 import sys
 from typing import Iterable, Literal, NotRequired, Required, TypedDict
 
@@ -479,7 +480,9 @@ async def crawl_package(
             async for branch in info["branches"]:
                 if branch["name"] == wanted_branch:
                     r.pop("branch", None)
-                    r |= pluck(branch, ("version", "url", "date"))  # type: ignore[arg-type]
+                    branch_version = re.sub(r"\D", ".", branch["date"]).rstrip(".")
+                    r |= pluck(branch, ("url", "date"))  # type: ignore[arg-type]
+                    r |= {"version": branch_version}
                     break
 
             if "version" in r:

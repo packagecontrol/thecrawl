@@ -38,7 +38,6 @@ class TagInfo(TypedDict):
 
 class BranchInfo(TypedDict):
     name: str
-    version: str
     url: Url
     date: IsoTimestamp
 
@@ -191,7 +190,6 @@ class BranchesPager(_Pager):
                 committed_date = normalize_tz_aware_datetime(raw_date)
                 new_branches.append({
                     "name": branch["name"],
-                    "version": re.sub(r"\D", ".", committed_date).rstrip("."),
                     "url": f"https://gitlab.com/{self.owner}/{self.repo}/-/tree/{branch['name']}",
                     "date": committed_date,
                 })

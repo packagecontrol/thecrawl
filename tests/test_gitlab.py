@@ -92,7 +92,6 @@ async def test_fetch_gitlab_info_formats_datetimes(monkeypatch):
     assert branches_out == [
         {
             "name": "master",
-            "version": "2023.02.13.18.08.53",
             "url": "https://gitlab.com/jiehong/sublime_jq/-/tree/master",
             "date": "2023-02-13T18:08:53Z",
         }

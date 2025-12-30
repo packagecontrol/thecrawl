@@ -3,8 +3,6 @@ import json
 import aiohttp
 import asyncio
 import os
-import re
-from datetime import datetime, timezone
 from urllib.parse import urlparse, urlencode
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
@@ -40,7 +38,6 @@ class TagInfo(TypedDict):
 
 class BranchInfo(TypedDict):
     name: str
-    version: str
     url: Url
     date: IsoTimestamp
 
@@ -222,7 +219,6 @@ class BranchesPager:
                 )
                 new_branches.append({
                     "name": name,
-                    "version": re.sub(r"\D", ".", date).rstrip("."),
                     "url": f"https://codeberg.org/{self.owner}/{self.repo}/archive/{name}.zip",
                     "date": date,
                 })
