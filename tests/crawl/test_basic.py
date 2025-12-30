@@ -177,6 +177,71 @@ async def test_drop_packagecontrolio_as_homepage(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("date_input", "date_expected"),
+    [
+        ("2024-05-10 12:00:00", "2024-05-10T12:00:00Z"),
+        ("2024-05-10 12:00", "2024-05-10T12:00:00Z"),
+        ("2024-05-10", "2024-05-10T00:00:00Z"),
+        ("2024-05-10T12:00:00Z", "2024-05-10T12:00:00Z"),
+    ],
+)
+async def test_accept_stylized_dates_for_static_releases(
+    date_input,
+    date_expected,
+    set_now,
+    set_github_info
+):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "StaticRelease",
+                "details": "https://github.com/example/static-release",
+                "releases": [
+                    {
+                        "sublime_text": "*",
+                        "version": "1.2.3",
+                        "url": "https://example.com/static-release.zip",
+                        "date": date_input
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}, "dependencies": []}
+
+    github_info = {
+        "metadata": {
+            "id": "R_staticrelease",
+            "name": "StaticRelease",
+            "description": "Fixture package with static release date",
+            "homepage": "https://github.com/example/static-release",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/static-release/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    }
+
+    set_now("2025-08-13T21:44:16Z")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("StaticRelease")
+    assert package is not None
+    release = package["releases"][0]
+    assert release["date"] == date_expected
+
+
+@pytest.mark.asyncio
 async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
