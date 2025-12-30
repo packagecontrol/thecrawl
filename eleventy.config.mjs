@@ -204,28 +204,7 @@ function basePackage(pkg, stat) {
     return dateB - dateA // Newest first
   })
 
-  // Split releases with same sublime build and same platform set.
-  // As we're sorted, keep the first one; if it's a pre-release, also keep the next stable.
-  const seen = new Map()
-  const dedupedReleases = []
-  const otherReleases = []
-  for (const release of releases) {
-    const key = `${release.sublime_text}|${[...release.platforms].sort().join('|')}`
-    const isPreRelease = (release.version ?? '').includes('-')
-    if (!seen.has(key)) {
-      seen.set(key, { firstWasPreRelease: isPreRelease, keptStable: !isPreRelease })
-      dedupedReleases.push(release)
-    }
-    else {
-      const state = seen.get(key)
-      if (state.firstWasPreRelease && !state.keptStable && !isPreRelease) {
-        state.keptStable = true
-        dedupedReleases.push(release)
-      } else {
-        otherReleases.push(release)
-      }
-    }
-  }
+  const { mainReleases, otherReleases } = util.weightReleases(releases)
 
   const labels = pkg.labels?.slice() ?? []
   if (!supportsModernSublime) labels.push('ST2')
@@ -246,7 +225,7 @@ function basePackage(pkg, stat) {
     last_modified: pkg.last_modified,
     archived_at: pkg.archived_at,
     removed: pkg.removed,
-    releases: dedupedReleases,
+    releases: mainReleases,
     otherReleases,
     labels: labels,
     platforms: util.dedupePlatforms(releases),

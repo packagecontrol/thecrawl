@@ -98,6 +98,35 @@ export function cleanAuthors(author) {
 }
 
 /**
+ * Split releases with same sublime build and same platform set.
+ * As we're sorted, keep the first one; if it's a pre-release, also keep the next stable.
+ */
+export function weightReleases(releases) {
+  const seen = new Map()
+  const mainReleases = []
+  const otherReleases = []
+  for (const release of releases) {
+    const platforms = [...(release.platforms ?? [])].sort().join('|')
+    const key = `${release.sublime_text}|${platforms}`
+    const isPreRelease = (release.version ?? '').includes('-')
+    if (!seen.has(key)) {
+      seen.set(key, { firstWasPreRelease: isPreRelease, keptStable: !isPreRelease })
+      mainReleases.push(release)
+    } else {
+      const state = seen.get(key)
+      if (state.firstWasPreRelease && !state.keptStable && !isPreRelease) {
+        state.keptStable = true
+        mainReleases.push(release)
+      } else {
+        otherReleases.push(release)
+      }
+    }
+  }
+
+  return { mainReleases, otherReleases }
+}
+
+/**
  * Convert links for the raw readme data to one for the file blob.
  */
 export function getReadmeUrl(readme) {
@@ -389,6 +418,39 @@ if (import.meta.vitest) {
       expect(simplifyPlatforms(ds, ['windows-x32', 'windows-x64', 'linux-x32', 'linux-x64', 'osx-x64']))
         .toEqual([])
       expect(simplifyPlatforms(ds, ['windows', 'linux', 'osx'])).toEqual([])
+    })
+  })
+
+  describe('weightReleases', () => {
+    it('keeps the prerelease and next stable for the same key', () => {
+      const releases = [
+        { version: '5.0.0-beta.1', sublime_text: '*', platforms: ['windows'] },
+        { version: '4.2.0', sublime_text: '*', platforms: ['windows'] },
+        { version: '4.1.0', sublime_text: '*', platforms: ['windows'] },
+      ]
+      const { mainReleases, otherReleases } = weightReleases(releases)
+      expect(mainReleases.map(r => r.version)).toEqual(['5.0.0-beta.1', '4.2.0'])
+      expect(otherReleases.map(r => r.version)).toEqual(['4.1.0'])
+    })
+
+    it('keeps only the first stable when the newest is stable', () => {
+      const releases = [
+        { version: '5.0.0', sublime_text: '*', platforms: ['linux', 'windows'] },
+        { version: '5.0.0-beta.1', sublime_text: '*', platforms: ['windows', 'linux'] },
+      ]
+      const { mainReleases, otherReleases } = weightReleases(releases)
+      expect(mainReleases.map(r => r.version)).toEqual(['5.0.0'])
+      expect(otherReleases.map(r => r.version)).toEqual(['5.0.0-beta.1'])
+    })
+
+    it('ensures platform order is irrelevant', () => {
+      const releases = [
+        { version: '4.2.0', sublime_text: '*', platforms: ['linux', 'windows'] },
+        { version: '4.1.0', sublime_text: '*', platforms: ['windows', 'linux'] },
+      ]
+      const { mainReleases, otherReleases } = weightReleases(releases)
+      expect(mainReleases.map(r => r.version)).toEqual(['4.2.0'])
+      expect(otherReleases.map(r => r.version)).toEqual(['4.1.0'])
     })
   })
 }
