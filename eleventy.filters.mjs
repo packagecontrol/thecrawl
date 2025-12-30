@@ -148,10 +148,15 @@ export function format_requirement(spec) {
   }
   if (trimmed.startsWith('>=')) {
     const base = Number.parseInt(trimmed.slice(2), 10)
+    if (base === 3000) return '*'
+    if (base === 4000) return '>ST4000'
     return `>ST${base - 1}`
   }
   if (trimmed.startsWith('>')) {
-    return `>ST${trimmed.slice(1)}`
+    const base = Number.parseInt(trimmed.slice(1), 10)
+    if (base === 2999) return '*'
+    if (base === 3999) return '>ST4000'
+    return `>ST${base}`
   }
   if (/^\d{4}-\d{4}$/.test(trimmed)) {
     const [low, high] = trimmed.split('-')
@@ -378,6 +383,23 @@ if (import.meta.vitest) {
       [[25], 5, 100, 25, 0],
     ])('axis_for(%j, %d, %d).y_for(%d) -> %s', (arr, target, height, val, expected) => {
       expect(axis_for(arr, target, height).y_for(val)).toBe(expected)
+    })
+  })
+
+  describe('format_requirement', () => {
+    it.each([
+      ['>2999', '*'], // invariant: >2999 implies any
+      ['>=3000', '*'], // invariant: >=3000 implies any
+      ['>3999', '>ST4000'], // invariant: avoid the 999's
+      ['>=4000', '>ST4000'], // invariant: avoid the 999's
+      ['>=4078', '>ST4077'],
+      ['>4078', '>ST4078'],
+      ['3092', 'ST3092'],
+      ['3092-4000', 'ST3092 - 4000'],
+      ['<3092', '<ST3092'],
+      ['<=3092', '<ST3093'],
+    ])('format_requirement(%s) -> %s', (input, expected) => {
+      expect(format_requirement(input)).toBe(expected)
     })
   })
 
