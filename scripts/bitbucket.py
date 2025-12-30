@@ -13,7 +13,6 @@ from .utils import drop_falsy, err, normalize_tz_aware_datetime
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 type Url = str
-type Sha = str
 type IsoTimestamp = str
 
 
@@ -36,7 +35,6 @@ class TagInfo(TypedDict):
     name: str
     url: Url
     date: IsoTimestamp
-    sha: Sha
 
 
 class BranchInfo(TypedDict):
@@ -44,7 +42,6 @@ class BranchInfo(TypedDict):
     version: str
     url: Url
     date: IsoTimestamp
-    sha: Sha
 
 
 class RepoInfo(TypedDict):
@@ -151,7 +148,6 @@ class TagPager:
                     "name": tag["name"],
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{tag['name']}.zip",
                     "date": normalize_tz_aware_datetime(tag["target"]["date"]),
-                    "sha": tag.get("target", {}).get("hash", ""),
                 }
                 for tag in data.get("values", [])
             ]
@@ -193,7 +189,6 @@ class BranchesPager:
                     "date": normalize_tz_aware_datetime(
                         branch.get("target", {}).get("date", "")
                     ),
-                    "sha": branch.get("target", {}).get("hash", ""),
                 }
                 for branch in data.get("values", [])
             ]

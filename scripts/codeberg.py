@@ -14,7 +14,6 @@ from .utils import drop_falsy, err, normalize_tz_aware_datetime
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 type Url = str
-type Sha = str
 type IsoTimestamp = str
 
 
@@ -37,7 +36,6 @@ class TagInfo(TypedDict):
     name: str
     url: Url
     date: IsoTimestamp
-    sha: Sha
 
 
 class BranchInfo(TypedDict):
@@ -45,7 +43,6 @@ class BranchInfo(TypedDict):
     version: str
     url: Url
     date: IsoTimestamp
-    sha: Sha
 
 
 class RepoInfo(TypedDict):
@@ -185,12 +182,10 @@ class TagPager:
                 date = normalize_tz_aware_datetime(
                     commit.get("created") or commit.get("timestamp") or ""
                 )
-                sha = commit.get("id", "")
                 new_tags.append({
                     "name": name,
                     "url": f"https://codeberg.org/{self.owner}/{self.repo}/archive/{name}.zip",
                     "date": date,
-                    "sha": sha,
                 })
             self._cache.extend(new_tags)
             self._page += 1
@@ -225,13 +220,11 @@ class BranchesPager:
                 date = normalize_tz_aware_datetime(
                     commit.get("created") or commit.get("timestamp") or ""
                 )
-                sha = commit.get("id", "")
                 new_branches.append({
                     "name": name,
                     "version": re.sub(r"\D", ".", date).rstrip("."),
                     "url": f"https://codeberg.org/{self.owner}/{self.repo}/archive/{name}.zip",
                     "date": date,
-                    "sha": sha,
                 })
             self._cache.extend(new_branches)
             self._page += 1

@@ -81,7 +81,6 @@ async def test_fetch_codeberg_info_normalizes_datetimes(monkeypatch):
             "name": "2.1.0",
             "url": "https://codeberg.org/ISSOtm/sublime-Bison/archive/2.1.0.zip",
             "date": "2024-03-21T23:13:15Z",
-            "sha": "f933f04316ee4e06a7fad150d7f90c14f7b275cb",
         }
     ]
 
@@ -94,6 +93,5 @@ async def test_fetch_codeberg_info_normalizes_datetimes(monkeypatch):
             "version": "2024.03.21.23.13.15",
             "url": "https://codeberg.org/ISSOtm/sublime-Bison/archive/master.zip",
             "date": "2024-03-21T23:13:15Z",
-            "sha": "f933f04316ee4e06a7fad150d7f90c14f7b275cb",
         }
     ]

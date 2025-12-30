@@ -97,7 +97,6 @@ async def test_fetch_bitbucket_info_formats_datetimes(monkeypatch):
             "name": "1.0.0",
             "url": "https://bitbucket.org/hxss/html2scss/get/1.0.0.zip",
             "date": "2018-09-02T12:17:34Z",
-            "sha": "7f2a2d93e28706f6c1dfd675bf011b8749c3ec63",
         }
     ]
 
@@ -110,6 +109,5 @@ async def test_fetch_bitbucket_info_formats_datetimes(monkeypatch):
             "version": "2018.09.25.14.58.29",
             "url": "https://bitbucket.org/hxss/html2scss/get/master.zip",
             "date": "2018-09-25T14:58:29Z",
-            "sha": "ea8e9f7ae19aa31e780c7d91e73782af4c4f419c",
         }
     ]

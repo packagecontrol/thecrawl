@@ -83,7 +83,6 @@ async def test_fetch_gitlab_info_formats_datetimes(monkeypatch):
                 "1.2.0/sublime_jq-1.2.0.zip"
             ),
             "date": "2023-02-13T18:08:53Z",
-            "sha": "2d387bc0897095a343d51483fb4e4a29e983337b",
         }
     ]
 
@@ -96,6 +95,5 @@ async def test_fetch_gitlab_info_formats_datetimes(monkeypatch):
             "version": "2023.02.13.18.08.53",
             "url": "https://gitlab.com/jiehong/sublime_jq/-/tree/master",
             "date": "2023-02-13T18:08:53Z",
-            "sha": "2d387bc0897095a343d51483fb4e4a29e983337b",
         }
     ]

@@ -24,7 +24,6 @@ type QueryStr = str
 type QueryVars = str
 type Query = QueryStr | tuple[QueryVars, QueryStr]
 type Url = str
-type Sha = str
 type IsoTimestamp = str
 
 
@@ -55,7 +54,6 @@ class TagInfo(TypedDict):
     name: str     # the ref-/ or tagname, e.g. v1.2.5
     url: Url
     date: IsoTimestamp
-    sha: Sha
 
 
 class BranchInfo(TypedDict):
@@ -63,7 +61,6 @@ class BranchInfo(TypedDict):
     version: str  # fake version constructed from the date
     url: Url
     date: IsoTimestamp
-    sha: Sha
 
 
 class RateLimitInfo(TypedDict):
@@ -375,7 +372,6 @@ def grab_tags(repo: str, entries) -> list[TagInfo]:
             continue
         tags.append({
             "name": tag_name,
-            "sha": commit["oid"],
             "date": commit["committedDate"][:19] + "Z",
             "url": f"https://codeload.github.com/{repo}/zip/{tag_name}"
         })
@@ -391,7 +387,6 @@ def grab_branches(repo: str, entries) -> list[BranchInfo]:
         branches.append({
             "name": branch_name,
             "version": re.sub(r'\D', '.', date),
-            "sha": commit["oid"],
             "date": date,
             "url": f"https://codeload.github.com/{repo}/zip/{branch_name}"
         })

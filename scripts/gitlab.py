@@ -12,7 +12,6 @@ from .utils import drop_falsy, err, normalize_tz_aware_datetime
 
 QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 Url = str
-Sha = str
 IsoTimestamp = str
 
 
@@ -35,7 +34,6 @@ class TagInfo(TypedDict):
     name: str
     url: Url
     date: IsoTimestamp
-    sha: Sha
 
 
 class BranchInfo(TypedDict):
@@ -43,7 +41,6 @@ class BranchInfo(TypedDict):
     version: str
     url: Url
     date: IsoTimestamp
-    sha: Sha
 
 
 class RepoInfo(TypedDict):
@@ -161,7 +158,6 @@ class TagPager(_Pager):
                     "date": normalize_tz_aware_datetime(
                         tag.get("commit", {}).get("committed_date", "")
                     ),
-                    "sha": tag.get("commit", {}).get("id", ""),
                 }
                 for tag in data
             ]
@@ -198,7 +194,6 @@ class BranchesPager(_Pager):
                     "version": re.sub(r"\D", ".", committed_date).rstrip("."),
                     "url": f"https://gitlab.com/{self.owner}/{self.repo}/-/tree/{branch['name']}",
                     "date": committed_date,
-                    "sha": branch.get("commit", {}).get("id", ""),
                 })
             self._cache.extend(new_branches)
             self._next_url = self._get_next_url(headers)
