@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from .utils import drop_falsy, err
+from .utils import drop_falsy, err, normalize_tz_aware_datetime
 
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
@@ -110,7 +110,7 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "donate": None,  # Not available
         "default_branch": default_branch,
         "stars": stars,
-        "created_at": data.get("created_on")[:19] + "Z",
+        "created_at": normalize_tz_aware_datetime(data.get("created_on") or ""),
         #                               ^^ funny, isn't it?
         "archived_at": None,  # Not available
     })
@@ -150,7 +150,7 @@ class TagPager:
                 {
                     "name": tag["name"],
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{tag['name']}.zip",
-                    "date": tag["target"]["date"][:19] + "Z",
+                    "date": normalize_tz_aware_datetime(tag["target"]["date"]),
                     "sha": tag.get("target", {}).get("hash", ""),
                 }
                 for tag in data.get("values", [])
@@ -185,10 +185,14 @@ class BranchesPager:
                     "version": re.sub(
                         r"\D",
                         ".",
-                        branch.get("target", {}).get("date", "")[:19] + "Z"
+                        normalize_tz_aware_datetime(
+                            branch.get("target", {}).get("date", "")
+                        )
                     ).rstrip("."),
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{branch['name']}.zip",
-                    "date": branch.get("target", {}).get("date", "")[:19] + "Z",
+                    "date": normalize_tz_aware_datetime(
+                        branch.get("target", {}).get("date", "")
+                    ),
                     "sha": branch.get("target", {}).get("hash", ""),
                 }
                 for branch in data.get("values", [])
