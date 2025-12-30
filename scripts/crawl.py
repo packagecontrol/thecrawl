@@ -83,7 +83,13 @@ def err(*args, **kwargs) -> None:
     print(*args, **kwargs, file=sys.stderr)
 
 
-async def main(registry: str, workspace: str, name: str | None, limit: int = 200) -> None:
+async def main(
+    registry: str,
+    workspace: str,
+    name: str | None,
+    limit: int = 200,
+    presto: bool = False
+) -> None:
     if not os.path.exists(registry):
         err(f"FATAL: Registry file '{registry}' does not exist.")
         sys.exit(1)
@@ -101,13 +107,19 @@ async def main(registry: str, workspace: str, name: str | None, limit: int = 200
         workspace_data = {"packages": {}, "dependencies": []}
 
     try:
-        await main_(registry_data, workspace_data, name, limit)
+        await main_(registry_data, workspace_data, name, limit, presto)
     finally:
         with open(workspace, 'w') as ws_file:
             json.dump(workspace_data, ws_file, indent=2)
 
 
-async def main_(registry: Registry, workspace: Workspace, name: str | None, limit: int) -> None:
+async def main_(
+    registry: Registry,
+    workspace: Workspace,
+    name: str | None,
+    limit: int,
+    presto: bool = False
+) -> None:
     name_requested = bool(name)
     if name:
         for entry in registry["packages"]:
@@ -119,7 +131,7 @@ async def main_(registry: Registry, workspace: Workspace, name: str | None, limi
             return
     else:
         maintenance(registry, workspace)
-        tocrawl = next_packages_to_crawl(registry, workspace, limit=limit)
+        tocrawl = next_packages_to_crawl(registry, workspace, limit=limit, presto=presto)
 
     async with aiohttp.ClientSession() as session:
         tasks = [
@@ -145,7 +157,7 @@ async def main_(registry: Registry, workspace: Workspace, name: str | None, limi
 
 
 def next_packages_to_crawl(
-    registry: Registry, workspace: Workspace, limit: int = 200
+    registry: Registry, workspace: Workspace, limit: int = 200, presto: bool = False
 ) -> list[PackageEntryV1]:
     """
     Returns a list of packages to crawl, sorted by next_crawl timestamp.
@@ -158,7 +170,7 @@ def next_packages_to_crawl(
         entry
         for entry in packages
         if not entry.get("tombstoned", False)
-        if (
+        if presto or (
             workspace["packages"]
             .get(entry["name"], {})
             .get("next_crawl", now_string)
@@ -663,6 +675,15 @@ def parse_args():
         default=200,
         help="Maximum number of packages to crawl (default: 200)")
     parser.add_argument(
+        "--presto",
+        action=argparse.BooleanOptionalAction,
+        default=env_flag("PRESTO_PRESTO_CRAWL", False),
+        help=(
+            "Bypass next_crawl scheduling and take up to --limit packages. "
+            "Defaults to PRESTO_PRESTO_CRAWL env var."
+        ),
+    )
+    parser.add_argument(
         "--wd",
         type=str,
         default=".",
@@ -671,10 +692,17 @@ def parse_args():
     return parser.parse_args()
 
 
+def env_flag(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 if __name__ == "__main__":
     args = parse_args()
     wd = os.path.abspath(args.wd)
     os.makedirs(wd, exist_ok=True)
     args.registry = os.path.normpath(os.path.join(wd, args.registry))
     args.workspace = os.path.normpath(os.path.join(wd, args.workspace))
-    asyncio.run(main(args.registry, args.workspace, args.name, args.limit))
+    asyncio.run(main(args.registry, args.workspace, args.name, args.limit, args.presto))

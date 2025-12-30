@@ -61,6 +61,8 @@ The meat.
 Crawls the package registry to update per-package release and metadata information, and
 stores it in a workspace file (`workspace.json`).
 Supports crawling all packages, or a single package via the `--name` option.
+Use `--presto` (or set `PRESTO_PRESTO_CRAWL=1`) to bypass `next_crawl` scheduling
+and fast-forward the workspace by crawling up to `--limit` packages.
 
 - Integrates with GitHub, GitLab, and Bitbucket APIs to fetch detailed info and releases.
 - Requires a valid `GITHUB_TOKEN` in your environment for GitHub API access because GitHub's GraphQl
