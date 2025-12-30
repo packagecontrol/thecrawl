@@ -47,7 +47,7 @@ async def test_repo_id_mismatch_same_url_is_fatal(set_now, set_github_info):
             "readme": "https://raw.githubusercontent.com/example/repo-takeover/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [],
         "branches": [
@@ -55,13 +55,13 @@ async def test_repo_id_mismatch_same_url_is_fatal(set_now, set_github_info):
                 "name": "main",
                 "version": "2024.05.10.12.00.00",
                 "sha": "main123",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/example/repo-takeover/zip/main"
             }
         ]
     }
 
-    set_now("2024-05-11 00:00:00")
+    set_now("2024-05-11T00:00:00Z")
     set_github_info(github_info)
 
     await main_(registry, workspace, None, 100)
@@ -114,7 +114,7 @@ async def test_repo_transfer_same_id_is_allowed(set_now, set_github_info):
             "readme": "https://raw.githubusercontent.com/user-b/repo-transfer/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [],
         "branches": [
@@ -122,13 +122,13 @@ async def test_repo_transfer_same_id_is_allowed(set_now, set_github_info):
                 "name": "main",
                 "version": "2024.05.10.12.00.00",
                 "sha": "main123",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/user-b/repo-transfer/zip/main"
             }
         ]
     }
 
-    set_now("2024-05-11 00:00:00")
+    set_now("2024-05-11T00:00:00Z")
     set_github_info(github_info)
 
     await main_(registry, workspace, None, 100)
@@ -183,7 +183,7 @@ async def test_registry_move_new_id_is_allowed(set_now, set_github_info):
             "readme": "https://raw.githubusercontent.com/new-owner/registry-move/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00"
+            "created_at": "2024-01-01T00:00:00Z"
         },
         "tags": [],
         "branches": [
@@ -191,13 +191,13 @@ async def test_registry_move_new_id_is_allowed(set_now, set_github_info):
                 "name": "main",
                 "version": "2024.05.10.12.00.00",
                 "sha": "main123",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/new-owner/registry-move/zip/main"
             }
         ]
     }
 
-    set_now("2024-05-11 00:00:00")
+    set_now("2024-05-11T00:00:00Z")
     set_github_info(github_info)
 
     await main_(registry, workspace, None, 100)

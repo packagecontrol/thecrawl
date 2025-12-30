@@ -43,7 +43,7 @@ async def test_hints_sent_to_fetcher(monkeypatch, set_now):
         raise RuntimeError("stop after verifying hints")
 
     monkeypatch.setattr("scripts.crawl.fetch_github_info", fake_fetch)
-    set_now("2024-05-11 00:00:00")
+    set_now("2024-05-11T00:00:00Z")
 
     await main_(registry, workspace, None, 100)
 
@@ -84,7 +84,7 @@ async def test_hints_persisted_from_metadata(set_now, set_github_info):
             "readme": "https://raw.githubusercontent.com/example/hints-pkg/main/README.md",
             "default_branch": "main",
             "stars": 0,
-            "created_at": "2024-01-01 00:00:00",
+            "created_at": "2024-01-01T00:00:00Z",
             "hints": ["too_many_files", "extra_hint"]
         },
         "tags": [],
@@ -93,13 +93,13 @@ async def test_hints_persisted_from_metadata(set_now, set_github_info):
                 "name": "main",
                 "version": "2024.05.10.12.00.00",
                 "sha": "main123",
-                "date": "2024-05-10 12:00:00",
+                "date": "2024-05-10T12:00:00Z",
                 "url": "https://codeload.github.com/example/hints-pkg/zip/main"
             }
         ]
     }
 
-    set_now("2024-05-11 00:00:00")
+    set_now("2024-05-11T00:00:00Z")
     set_github_info(github_info)
 
     await main_(registry, workspace, None, 100)

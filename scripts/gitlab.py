@@ -105,7 +105,7 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "donate": None,  # Not available
         "default_branch": default_branch,
         "stars": data.get("star_count"),
-        "created_at": data.get("created_at")[:19].replace('T', ' '),
+        "created_at": data.get("created_at")[:19] + "Z",
         "archived_at": None,  # GitLab exposes only a boolean 'archived'
     })
     return meta
@@ -158,7 +158,7 @@ class TagPager(_Pager):
                 {
                     "name": tag["name"],
                     "url": tag.get("web_url") or f"https://gitlab.com/{self.owner}/{self.repo}/-/archive/{tag['name']}/{self.repo}-{tag['name']}.zip",
-                    "date": tag.get("commit", {}).get("committed_date", "")[:19].replace('T', ' '),
+                    "date": tag.get("commit", {}).get("committed_date", "")[:19] + "Z",
                     "sha": tag.get("commit", {}).get("id", ""),
                 }
                 for tag in data
@@ -190,9 +190,9 @@ class BranchesPager(_Pager):
             new_branches = [
                 {
                     "name": branch["name"],
-                    "version": re.sub(r"\\D", ".", branch.get("commit", {}).get("committed_date", "")[:19].replace('T', ' ')),
+                    "version": re.sub(r"\\D", ".", branch.get("commit", {}).get("committed_date", "")[:19] + "Z"),
                     "url": f"https://gitlab.com/{self.owner}/{self.repo}/-/tree/{branch['name']}",
-                    "date": branch.get("commit", {}).get("committed_date", "")[:19].replace('T', ' '),
+                    "date": branch.get("commit", {}).get("committed_date", "")[:19] + "Z",
                     "sha": branch.get("commit", {}).get("id", ""),
                 }
                 for branch in data

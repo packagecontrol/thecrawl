@@ -351,9 +351,9 @@ async def fetch_github_info(
             "donate": (repo_data.get("fundingLinks") or [{}])[0].get("url"),
             "default_branch": default_branch,
             "stars": repo_data.get("stargazerCount"),
-            "created_at": repo_data.get("createdAt")[:19].replace('T', ' '),
+            "created_at": repo_data.get("createdAt")[:19] + "Z",
             "archived_at":
-                archived_at[:19].replace('T', ' ')
+                archived_at[:19] + "Z"
                 if (archived_at := repo_data.get("archivedAt"))
                 else None,
             "hints": ["too_many_files"] if len(entries) >= FILES_THRESHOLD else None,
@@ -376,7 +376,7 @@ def grab_tags(repo: str, entries) -> list[TagInfo]:
         tags.append({
             "name": tag_name,
             "sha": commit["oid"],
-            "date": commit["committedDate"][:19].replace('T', ' '),
+            "date": commit["committedDate"][:19] + "Z",
             "url": f"https://codeload.github.com/{repo}/zip/{tag_name}"
         })
     return tags
@@ -387,7 +387,7 @@ def grab_branches(repo: str, entries) -> list[BranchInfo]:
     for node in entries.get("nodes", []):
         commit = node["target"]
         branch_name = node["name"]
-        date = commit["committedDate"][:19].replace('T', ' ')
+        date = commit["committedDate"][:19] + "Z"
         branches.append({
             "name": branch_name,
             "version": re.sub(r'\D', '.', date),

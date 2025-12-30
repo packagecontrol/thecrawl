@@ -158,7 +158,7 @@ def normalize_package(pkg) -> Package | None:
             "platforms": platforms,
             "version": rel["version"],
             "url": rel["url"],
-            "date": rel["date"],
+            "date": format_utc_datetime(rel["date"]),
         })
     if not releases:
         err(f"Drop package {name} with no valid releases")
@@ -185,7 +185,7 @@ def normalize_package(pkg) -> Package | None:
     out: Package = {
         "name": pkg["name"],
         "author": author,
-        "last_modified": pkg["last_modified"],
+        "last_modified": format_utc_datetime(pkg["last_modified"]),
         "releases": releases,
 
         # mandatory with fallback
@@ -203,11 +203,17 @@ def normalize_package(pkg) -> Package | None:
     return out
 
 
+def format_utc_datetime(value: str) -> str:
+    if "T" not in value:
+        return value
+    return value[:19].replace("T", " ")
+
+
 def failing_since(pkg, berlin: bool):
     extra = ""
     if failing_since := pkg.get("failing_since"):
         try:
-            dt = datetime.strptime(failing_since, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+            dt = datetime.strptime(failing_since, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
             rel = relative_time(dt, berlin)
             extra = f"since {rel}"
         except Exception as e:
