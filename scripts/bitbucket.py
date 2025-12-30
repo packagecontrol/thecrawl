@@ -182,7 +182,11 @@ class BranchesPager:
             new_branches = [
                 {
                     "name": branch["name"],
-                    "version": re.sub(r"\D", ".", branch.get("target", {}).get("date", "")[:19] + "Z"),
+                    "version": re.sub(
+                        r"\D",
+                        ".",
+                        branch.get("target", {}).get("date", "")[:19] + "Z"
+                    ).rstrip("."),
                     "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{branch['name']}.zip",
                     "date": branch.get("target", {}).get("date", "")[:19] + "Z",
                     "sha": branch.get("target", {}).get("hash", ""),
