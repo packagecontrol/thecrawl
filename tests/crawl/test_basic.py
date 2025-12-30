@@ -177,6 +177,63 @@ async def test_drop_packagecontrolio_as_homepage(
 
 
 @pytest.mark.asyncio
+async def test_metadata_name_is_essentially_ignored_as_registry_name_has_precedence(set_now, set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "RegistryName",
+                "details": "https://github.com/example/name-ignored",
+                "releases": [
+                    {
+                        "sublime_text": "*",
+                        "branch": True
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}, "dependencies": []}
+
+    github_info = {
+        "metadata": {
+            "id": "SAME_ID",
+            "name": "MetadataName",
+            "description": "Fixture package with metadata name",
+            "homepage": "https://github.com/example/name-ignored",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/name-ignored/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [],
+        "branches": [
+            {
+                "name": "main",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/name-ignored/zip/main"
+            }
+        ]
+    }
+
+    set_now("2024-05-11T00:00:00Z")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("RegistryName")
+    assert package is not None
+    assert package.get("name") == "RegistryName"
+    assert workspace["packages"].get("MetadataName") is None
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("date_input", "date_expected"),
     [
