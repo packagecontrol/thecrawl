@@ -34,6 +34,11 @@ DEFAULT_REGISTRY = "./registry.json"
 DEFAULT_WORKSPACE = "./workspace.json"
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 STYLIZED_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+TRUSTED_SOURCES = {
+    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+    "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+    "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
+}
 
 type PackageName = str
 type Url = str
@@ -83,6 +88,11 @@ class Workspace(TypedDict):
 
 class HeartAttack(Exception):
     """Raised when a repository ID mismatch is detected."""
+    pass
+
+
+class DeniedUpdating(Exception):
+    """Raised when a package update is denied but should be recoverable."""
     pass
 
 
@@ -275,6 +285,9 @@ async def crawl(
             )
             fatal = "fatal: " if e.status == 404 else ""
             out["fail_reason"] = f"{fatal}{e.status} {e.message}"
+        elif isinstance(e, DeniedUpdating):
+            err(f"Denied update during crawl for {package['name']}: {e}")
+            out["fail_reason"] = f"denied: {e}"
         elif isinstance(e, HeartAttack):
             err(f"Heart attack during crawl for {package['name']}: {e}")
             out["fail_reason"] = f"fatal: {e}"
@@ -348,6 +361,16 @@ async def crawl_package(
     entry: PackageEntryV1,
     existing: PackageEntry
 ) -> PackageEntry:
+    if (
+        existing.get("source")
+        and entry.get("source")
+        and existing.get("source") != entry.get("source")
+        and entry.get("source") not in TRUSTED_SOURCES
+    ):
+        raise DeniedUpdating(
+            f"Repository source changed for *{entry.get('name')}* from "
+            f"{existing.get('source')} to untrusted {entry.get('source')}"
+        )
     out: PackageEntry = {**entry}  # type: ignore[typeddict-item]
     if "readme" in out:
         out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]

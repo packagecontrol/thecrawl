@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.crawl import main_
+from scripts.crawl import crawl, main_
 
 
 @pytest.mark.asyncio
@@ -206,3 +206,167 @@ async def test_registry_move_new_id_is_allowed(set_now, set_github_info):
     assert package.get("fail_reason") is None
     assert package.get("id") == "NEW_ID"
     assert package.get("details") == "https://github.com/new-owner/registry-move"
+
+
+@pytest.mark.asyncio
+async def test_move_to_untrusted_source_is_denied(set_now, set_github_info):
+    entry = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "releases": [
+            {
+                "sublime_text": "*",
+                "branch": True
+            }
+        ],
+        "source": "https://example.com/untrusted/new.json",
+        "schema_version": "3.0.0"
+    }
+
+    existing = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "id": "SAME_ID"
+    }
+
+    github_info = {
+        "metadata": {
+            "id": "SAME_ID",
+            "name": "SourceMoved",
+            "description": "Fixture package with source change",
+            "homepage": "https://github.com/example/source-moved",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/source-moved/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [],
+        "branches": [
+            {
+                "name": "main",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/source-moved/zip/main"
+            }
+        ]
+    }
+
+    set_now("2024-05-11T00:00:00Z")
+    set_github_info(github_info)
+
+    result = await crawl(object(), entry, existing)
+    assert result.get("fail_reason", "").startswith("denied:")
+    assert result.get("source") == existing["source"]
+
+
+@pytest.mark.asyncio
+async def test_move_between_untrusted_sources_is_denied(set_now, set_github_info):
+    entry = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "releases": [
+            {
+                "sublime_text": "*",
+                "branch": True
+            }
+        ],
+        "source": "https://example.com/untrusted/new.json",
+        "schema_version": "3.0.0"
+    }
+
+    existing = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "source": "https://example.com/untrusted/old.json",
+        "id": "SAME_ID"
+    }
+
+    github_info = {
+        "metadata": {
+            "id": "SAME_ID",
+            "name": "SourceMoved",
+            "description": "Fixture package with source move between untrusted",
+            "homepage": "https://github.com/example/source-moved",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/source-moved/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [],
+        "branches": [
+            {
+                "name": "main",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/source-moved/zip/main"
+            }
+        ]
+    }
+
+    set_now("2024-05-11T00:00:00Z")
+    set_github_info(github_info)
+
+    result = await crawl(object(), entry, existing)
+    assert result.get("fail_reason", "").startswith("denied:")
+    assert result.get("source") == existing["source"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "trusted_source",
+    [
+        "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+        "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
+    ],
+)
+async def test_move_to_trusted_source_is_allowed(set_now, set_github_info, trusted_source):
+    entry = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "releases": [
+            {
+                "sublime_text": "*",
+                "branch": True
+            }
+        ],
+        "source": trusted_source,
+        "schema_version": "3.0.0"
+    }
+
+    existing = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "source": "https://example.com/untrusted/old.json",
+        "id": "SAME_ID"
+    }
+
+    github_info = {
+        "metadata": {
+            "id": "SAME_ID",
+            "name": "SourceMoved",
+            "description": "Fixture package with source move to trusted",
+            "homepage": "https://github.com/example/source-moved",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/source-moved/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [],
+        "branches": [
+            {
+                "name": "main",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/source-moved/zip/main"
+            }
+        ]
+    }
+
+    set_now("2024-05-11T00:00:00Z")
+    set_github_info(github_info)
+
+    result = await crawl(object(), entry, existing)
+    assert result.get("fail_reason") is None
+    assert result.get("source") == entry["source"]
