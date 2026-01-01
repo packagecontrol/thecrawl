@@ -96,6 +96,11 @@ class DeniedUpdating(Exception):
     pass
 
 
+class SkipCrawling(Exception):
+    """Raised when a package crawl should be skipped while keeping prior state."""
+    pass
+
+
 def err(*args, **kwargs) -> None:
     print(*args, **kwargs, file=sys.stderr)
 
@@ -285,6 +290,8 @@ async def crawl(
             )
             fatal = "fatal: " if e.status == 404 else ""
             out["fail_reason"] = f"{fatal}{e.status} {e.message}"
+        elif isinstance(e, SkipCrawling):
+            err(f"skip *{package['name']}*: {e}")
         elif isinstance(e, DeniedUpdating):
             err(f"Denied update during crawl for {package['name']}: {e}")
             out["fail_reason"] = f"denied: {e}"
@@ -320,11 +327,6 @@ async def crawl(
 
     out["first_seen"] = existing.get("first_seen", now_string)
     out["last_seen"] = now_string
-    # TODO: We need to think about if "fatal" states can be recovered from.
-    #       The tendency is that 404's and `HeartAttack`s are final states.
-    if not out.get("fail_reason", "").startswith("fatal: "):
-        out.pop("failing_since", None)
-        out.pop("fail_reason", None)
 
     releases = out["releases"]
     if not releases:
@@ -361,6 +363,36 @@ async def crawl_package(
     entry: PackageEntryV1,
     existing: PackageEntry
 ) -> PackageEntry:
+    now = datetime.now(timezone.utc)
+    fail_reason = existing.get("fail_reason", "")
+    if fail_reason.startswith("fatal: "):
+        existing_details = existing.get("details")
+        entry_details = entry.get("details")
+        entry_source = entry.get("source")
+        resurrecting = (
+            existing_details
+            and entry_details
+            and existing_details != entry_details
+            and entry_source
+            and (
+                entry_source == existing.get("source")
+                or entry_source in TRUSTED_SOURCES
+            )
+        )
+        if not resurrecting:
+            if fail_reason.startswith("fatal: 404"):
+                if failing_since := existing.get("failing_since"):
+                    try:
+                        failing_since_dt = datetime.strptime(failing_since, UTC_FORMAT)
+                    except ValueError:
+                        pass
+                    else:
+                        failing_since_dt = failing_since_dt.replace(tzinfo=timezone.utc)
+                        if now - failing_since_dt >= timedelta(days=30):
+                            raise SkipCrawling(fail_reason)
+            else:
+                raise SkipCrawling(fail_reason)
+
     if (
         existing.get("source")
         and entry.get("source")
@@ -371,6 +403,7 @@ async def crawl_package(
             f"Repository source changed for *{entry.get('name')}* from "
             f"{existing.get('source')} to untrusted {entry.get('source')}"
         )
+
     out: PackageEntry = {**entry}  # type: ignore[typeddict-item]
     if "readme" in out:
         out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]
