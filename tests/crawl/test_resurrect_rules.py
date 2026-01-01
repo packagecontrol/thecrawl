@@ -1,7 +1,7 @@
 import pytest
 
 import scripts.crawl as crawl_mod
-from scripts.crawl import SkipCrawling, crawl
+from scripts.crawl import SkipCrawling, crawl, main_
 
 
 @pytest.mark.asyncio
@@ -102,6 +102,60 @@ async def test_crawl_keeps_fail_reason_on_404_skip(set_now):
 
     assert result.get("fail_reason") == existing["fail_reason"]
     assert result.get("failing_since") == existing["failing_since"]
+
+
+@pytest.mark.asyncio
+async def test_removed_package_is_resurrected_on_trusted_source(set_now, set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "Reappeared",
+                "details": "https://github.com/example/reappeared",
+                "releases": [{"sublime_text": "*", "branch": True}],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0",
+            }
+        ],
+    }
+    workspace = {
+        "packages": {
+            "Reappeared": {
+                "name": "Reappeared",
+                "removed": "2024-05-01T00:00:00Z",
+                "source": "https://example.com/untrusted/old.json",
+            }
+        },
+        "dependencies": [],
+    }
+
+    set_now("2024-06-01T00:00:00Z")
+    set_github_info({
+        "metadata": {
+            "id": "SAME_ID",
+            "name": "Reappeared",
+            "description": "Fixture reappeared package",
+            "homepage": "https://github.com/example/reappeared",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/reappeared/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z",
+        },
+        "tags": [],
+        "branches": [
+            {
+                "name": "main",
+                "date": "2024-05-31T00:00:00Z",
+                "url": "https://codeload.github.com/example/reappeared/zip/main",
+            }
+        ],
+    })
+    await main_(registry, workspace, None, 100)
+
+    assert "removed" not in workspace["packages"]["Reappeared"]
 
 
 @pytest.mark.asyncio
