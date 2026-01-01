@@ -364,45 +364,8 @@ async def crawl_package(
     existing: PackageEntry
 ) -> PackageEntry:
     now = datetime.now(timezone.utc)
-    fail_reason = existing.get("fail_reason", "")
-    if fail_reason.startswith("fatal: "):
-        existing_details = existing.get("details")
-        entry_details = entry.get("details")
-        entry_source = entry.get("source")
-        resurrecting = (
-            existing_details
-            and entry_details
-            and existing_details != entry_details
-            and entry_source
-            and (
-                entry_source == existing.get("source")
-                or entry_source in TRUSTED_SOURCES
-            )
-        )
-        if not resurrecting:
-            if fail_reason.startswith("fatal: 404"):
-                if failing_since := existing.get("failing_since"):
-                    try:
-                        failing_since_dt = datetime.strptime(failing_since, UTC_FORMAT)
-                    except ValueError:
-                        pass
-                    else:
-                        failing_since_dt = failing_since_dt.replace(tzinfo=timezone.utc)
-                        if now - failing_since_dt >= timedelta(days=30):
-                            raise SkipCrawling(fail_reason)
-            else:
-                raise SkipCrawling(fail_reason)
-
-    if (
-        existing.get("source")
-        and entry.get("source")
-        and existing.get("source") != entry.get("source")
-        and entry.get("source") not in TRUSTED_SOURCES
-    ):
-        raise DeniedUpdating(
-            f"Repository source changed for *{entry.get('name')}* from "
-            f"{existing.get('source')} to untrusted {entry.get('source')}"
-        )
+    maybe_skip_crawling(entry, existing, now)
+    ensure_secure_source(entry, existing)
 
     out: PackageEntry = {**entry}  # type: ignore[typeddict-item]
     if "readme" in out:
@@ -647,6 +610,57 @@ async def crawl_package(
             release_definitions.remove(r)
 
     return out
+
+
+def maybe_skip_crawling(
+    entry: PackageEntryV1,
+    existing: PackageEntry,
+    now: datetime
+) -> None:
+    fail_reason = existing.get("fail_reason", "")
+    if not fail_reason.startswith("fatal: "):
+        return
+    resurrecting = (
+        (existing_details := existing.get("details"))
+        and (entry_details := entry.get("details"))
+        and (entry_source := entry.get("source"))
+        and existing_details != entry_details
+        and (
+            entry_source == existing.get("source")
+            or entry_source in TRUSTED_SOURCES
+        )
+    )
+    if resurrecting:
+        return
+    if fail_reason.startswith("fatal: 404"):
+        # For 404's we have "auto-resurrection" aka retries for 30 days
+        if failing_since := existing.get("failing_since"):
+            try:
+                failing_since_dt = datetime.strptime(failing_since, UTC_FORMAT)
+            except ValueError:
+                pass
+            else:
+                failing_since_dt = failing_since_dt.replace(tzinfo=timezone.utc)
+                if now - failing_since_dt >= timedelta(days=30):
+                    raise SkipCrawling(fail_reason)
+    else:
+        raise SkipCrawling(fail_reason)
+
+
+def ensure_secure_source(
+    entry: PackageEntryV1,
+    existing: PackageEntry
+) -> None:
+    if (
+        existing.get("source")
+        and entry.get("source")
+        and existing.get("source") != entry.get("source")
+        and entry.get("source") not in TRUSTED_SOURCES
+    ):
+        raise DeniedUpdating(
+            f"Repository source changed for *{entry.get('name')}* from "
+            f"{existing.get('source')} to untrusted {entry.get('source')}"
+        )
 
 
 def pluck[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
