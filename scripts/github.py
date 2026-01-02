@@ -4,7 +4,6 @@ import json
 import os
 import aiohttp
 import asyncio
-import re
 import sys
 from time import time
 from urllib.parse import urlparse
@@ -387,11 +386,6 @@ def grab_branches(repo: str, entries) -> list[BranchInfo]:
             "url": f"https://codeload.github.com/{repo}/zip/{branch_name}"
         })
     return branches
-
-
-def strip_possible_prefix(version: str) -> str:
-    """Strip possible build prefixes from a tag."""
-    return re.sub(r'^(st\d+-|\d+-|v)', '', version)
 
 
 def find_readme_url(entries, owner, repo, branch) -> str | None:

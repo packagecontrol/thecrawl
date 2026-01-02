@@ -814,3 +814,102 @@ async def test_tag_true_includes_prerelease_and_final(set_now, set_github_info):
     assert len(releases) == 2
     versions = {r["version"] for r in releases}
     assert versions == {"1.0.1", "1.0.1-beta.1"}
+
+
+@pytest.mark.asyncio
+async def test_tag_prefixes_do_not_apply_when_tags_true(set_now, set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "CoffeeScript",
+                "details": "https://github.com/SublimeText/CoffeeScript",
+                "labels": [
+                    "language syntax",
+                    "linting",
+                    "snippets",
+                    "coffeescript"
+                ],
+                "previous_names": [
+                    "Better CoffeeScript"
+                ],
+                "releases": [
+                    {
+                        "sublime_text": ">=4143",
+                        "tags": "4143-"
+                    },
+                    {
+                        "sublime_text": "3143 - 4142",
+                        "tags": "3000-"
+                    },
+                    {
+                        "sublime_text": "<3000",
+                        "tags": True
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}, "dependencies": []}
+
+    github_info = {
+        "metadata": {
+            "id": "MDEwOlJlcG9zaXRvcnk3MjkxNTMw",
+            "name": "CoffeeScript",
+            "description": (
+                "Syntax highlighting and checking, commands, shortcuts, snippets, "
+                "watched compilation and more."
+            ),
+            "author": "SublimeText",
+            "readme": "https://raw.githubusercontent.com/SublimeText/CoffeeScript/master/README.md",
+            "default_branch": "master",
+            "stars": 442,
+            "created_at": "2012-12-22T23:33:44Z"
+        },
+        "tags": [
+            {
+                "name": "4143-2.4.8",
+                "date": "2026-01-02T19:57:17Z",
+                "url": "https://codeload.github.com/SublimeText/CoffeeScript/zip/4143-2.4.8"
+            },
+            {
+                "name": "3000-2.3.0",
+                "date": "2024-08-25T13:53:06Z",
+                "url": "https://codeload.github.com/SublimeText/CoffeeScript/zip/3000-2.3.0"
+            },
+            {
+                "name": "v0.6.32",
+                "date": "2013-02-03T00:13:32Z",
+                "url": "https://codeload.github.com/SublimeText/CoffeeScript/zip/v0.6.32"
+            }
+        ],
+        "branches": [
+            {
+                "name": "master",
+                "version": "2026.01.02.19.57.17",
+                "date": "2026-01-02T19:57:17Z",
+                "url": "https://codeload.github.com/SublimeText/CoffeeScript/zip/master"
+            }
+        ]
+    }
+
+    set_now("2026-01-02T22:30:46Z")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("CoffeeScript")
+    assert package is not None
+
+    releases = {r["sublime_text"]: r for r in package["releases"]}
+    assert releases[">=4143"]["version"] == "2.4.8"
+    assert releases[">=4143"]["url"].endswith("/4143-2.4.8")
+    assert releases["3143 - 4142"]["version"] == "2.3.0"
+    assert releases["3143 - 4142"]["url"].endswith("/3000-2.3.0")
+    assert releases["<3000"]["version"] == "0.6.32"
+    assert releases["<3000"]["url"].endswith("/v0.6.32")

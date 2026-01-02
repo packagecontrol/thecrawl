@@ -14,7 +14,7 @@ from typing import Iterable, Literal, NotRequired, Required, TypedDict
 from .bitbucket import fetch_bitbucket_info, RepoInfo as BitbucketRepoInfo
 from .generate_registry import Registry, PackageEntry as PackageEntryV1
 from .github import (
-    fetch_github_info, rate_limit_info, strip_possible_prefix,
+    fetch_github_info, rate_limit_info,
     QueryScope, RepoInfo as GithubRepoInfo
 )
 from .gitlab import fetch_gitlab_info, RepoInfo as GitlabRepoInfo
@@ -454,7 +454,7 @@ async def crawl_package(
                         and (version_string := (
                             tag["name"].removeprefix(tag_prefix)
                             if tag_prefix
-                            else strip_possible_prefix(tag["name"])
+                            else tag["name"].removeprefix("v")
                         ))
                         and (version := parse_version(version_string))
                     ):
