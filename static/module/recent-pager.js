@@ -27,12 +27,12 @@ const RECENT_PAGER_STYLES = `
       transition: background .1s;
 
       > h2 {
-        padding-top: 8px;
-        margin-bottom: 12px;
+        padding-top: 5px;
+        margin-bottom: 9px;
       }
 
       & .pager-pagination {
-        top: -14px;
+        top: -11px;
       }
     }
 
@@ -71,10 +71,6 @@ const RECENT_PAGER_STYLES = `
         margin-left: 0.5rem;
         color: var(--foreground-3);
         font-size: 14px;
-
-        @media (max-width: 479px) {
-          padding-bottom: 11px;
-        }
       }
     }
   }

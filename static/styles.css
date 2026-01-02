@@ -260,7 +260,7 @@ section {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 
   > h2 {
     margin: 0;
@@ -268,7 +268,6 @@ section {
 
     @media (width <= 400px) {
       font-size: 21px;
-      margin-bottom: -6px;
     }
   }
 
@@ -277,15 +276,15 @@ section {
     color: var(--foreground-3);
     font-size: 14px;
     align-self: end;
-    padding-bottom: 8px;
+    padding-bottom: 4px;
+
+    @media (width <= 400px) {
+      padding-bottom: 6px;
+    }
 
     &[hidden] {
       display: inherit;  /* Ensure hidden elements still take up space */
       visibility: hidden;
-    }
-
-    @media (width <= 400px) {
-      padding-bottom: 6px;
     }
   }
 
