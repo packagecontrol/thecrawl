@@ -228,7 +228,7 @@ function basePackage(pkg, stat) {
     releases: mainReleases,
     otherReleases,
     labels: labels,
-    platforms: util.dedupePlatforms(releases),
+    platforms: util.dedupePlatforms(releases).sort(),
     outdated: !supportsModernSublime,
     st3_only: supportsModernSublime && doesNotSupportNewestSublime,
   }

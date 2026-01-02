@@ -7,7 +7,7 @@ const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV
  */
 export function cleanPlatforms(platforms) {
   return platforms
-    .map(platform => platform === 'osx' ? 'macos' : platform)
+    .map(platform => platform.replace('osx', 'macos'))
     .map(platform => platform === '*' ? 'any' : platform)
 }
 
