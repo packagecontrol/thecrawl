@@ -186,32 +186,35 @@ html.status main {
 
 .status-notes {
   background: var(--background-1);
-  border-radius: 8px;
-  padding: 1.4rem 1.6rem;
-  box-shadow:
-    0 1px 0 rgb(from var(--background-5) r g b / 0.35),
-    0 18px 36px -24px rgb(from var(--foreground-1) r g b / 0.35);
+  border-radius: 6px;
+  padding: var(--grid-line) calc(var(--side-padding) * 2);
+  max-width: var(--max-line);
 
-  p,
-  ul,
-  ol {
-    max-width: var(--max-line);
-  }
-
-  pre {
-    background: var(--background-2);
-    border-radius: 6px;
-    padding: 0.9rem 1rem;
-    overflow-x: auto;
+  &, p, ol, ul, summary {
+    /*font-family: "IBM Plex Mono", monospace;*/
+    font-size: 15px;
+    line-height: 24px;
   }
 
   code {
     background: var(--highlight);
   }
 
-  ul,
-  ol {
-    padding-left: 1.2rem;
+  pre {
+    border-radius: 6px;
+    background: var(--highlight);
+    overflow-x: auto;
+  }
+  pre code {
+    background: transparent;
+  }
+
+  p, ul, ol, summary {
+    padding-top: 0;
+    margin-bottom: 12px; /* half a gridline */
+    ul, ol {
+      margin-bottom: 0;
+    }
   }
 
   a {
@@ -219,6 +222,6 @@ html.status main {
   }
 
   hr {
-    margin: 2em 0 1em;
+    margin: 24px 0;
   }
 }

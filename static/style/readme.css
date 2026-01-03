@@ -1,6 +1,6 @@
 .readme {
-  margin-top: 42px; /* 1.5 grid lines */
-  padding: 28px calc(var(--side-padding) * 3.5);
+  margin-top: calc(var(--grid-line) * 1.5);
+  padding: var(--grid-line) calc(var(--side-padding) * 3.5);
   border-radius: 6px;
   background: var(--background-1);
 
