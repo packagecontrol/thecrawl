@@ -3,12 +3,12 @@ html.status {
 }
 
 html.status main {
-  margin-top: 3em;
+  margin-top: calc(var(--grid-line) * 1.5);
   min-height: 66vh;
 }
 
 .status-page {
-  margin-top: 0.5rem;
+  margin-top: var(--grid-line);
   max-width: var(--max-line);
   margin-left: auto;
   margin-right: auto;
@@ -31,7 +31,7 @@ html.status main {
   position: relative;
   width: 100%;
   height: 380px;
-  margin: 0 auto 2rem;
+  margin: 0 auto calc(var(--grid-line) * 1.5) auto;
   max-width: var(--max-content);
 
   svg {
@@ -128,12 +128,12 @@ html.status main {
   gap: 0.5rem;
   margin: 0;
   font-size: 14px;
-  line-height: 20px;
+  line-height: var(--grid-line);
   font-weight: 700;
   color: var(--foreground-4);
   border-radius: 6px;
-  padding: 2px 9px;
-  margin-bottom: 5px;
+  padding: 0 8px;
+  margin-bottom: 17px;
 }
 
 .status-label {
