@@ -122,13 +122,6 @@ html.status main {
   }
 }
 
-.status-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
 .status-heading {
   display: flex;
   align-items: center;
@@ -147,20 +140,6 @@ html.status main {
   color: var(--foreground-2);
   text-transform: capitalize;
   font-weight: 400;
-}
-
-.status-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.9rem;
-  margin-bottom: -5px;
-}
-
-.status-date {
-  color: var(--foreground-3);
-  font-size: 14px;
-  align-self: center;
-  padding-bottom: 10px;
 }
 
 .status-badge {
@@ -203,32 +182,6 @@ html.status main {
   background: var(--background-3);
   color: var(--foreground-2);
   border-color: transparent;
-}
-
-.status-pagination {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-
-  .button-group {
-    display: flex;
-    gap: 0.2ex;
-    font-size: 24px;
-  }
-
-  .button {
-    background: transparent;
-    &:enabled:hover,
-    &:enabled:focus-visible {
-      background: var(--background-4);
-    }
-
-    .pager-nav-symbol {
-      display: inline-block;
-      position: relative;
-      top: -0.07em;
-    }
-  }
 }
 
 .status-notes {

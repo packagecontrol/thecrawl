@@ -9,26 +9,24 @@ description: "Latest crawler runs and notes."
 </div>
 
 <section class="status-page">
-  <div class="pager-header status-header">
+  <div class="pager-header">
     <div class="status-heading" role="heading" aria-level="2">
       <span class="status-badge status-badge-muted" data-status-badge></span>
       <span class="status-label" data-status-label></span>
     </div>
 
-    <div class="status-right">
-      <span class="status-date" data-status-date></span>
-      <div class="pager-pagination status-pagination" aria-label="Log navigation">
-        <div class="button-group">
-          <button type="button" class="button" data-control="prev" aria-label="Previous entry" disabled>
-            <span class="pager-nav-symbol">‹</span>
-          </button>
-          <button type="button" class="button" data-control="next" aria-label="Next entry" disabled>
-            <span class="pager-nav-symbol">›</span>
-          </button>
-          <button type="button" class="button" data-control="last" aria-label="Newest entry" disabled>
-            <span class="pager-nav-symbol">»</span>
-          </button>
-        </div>
+    <div class="pager-pagination" aria-label="Log navigation">
+      <span class="date-indicator" data-status-date></span>
+      <div class="button-group">
+        <button type="button" class="button" data-control="prev" aria-label="Previous entry" disabled>
+          <span class="pager-nav-symbol">‹</span>
+        </button>
+        <button type="button" class="button" data-control="next" aria-label="Next entry" disabled>
+          <span class="pager-nav-symbol">›</span>
+        </button>
+        <button type="button" class="button" data-control="last" aria-label="Newest entry" disabled>
+          <span class="pager-nav-symbol">»</span>
+        </button>
       </div>
     </div>
   </div>

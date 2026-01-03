@@ -28,3 +28,51 @@
 .pagination-ellipsis {
   padding: 0 1ex;
 }
+
+
+/* horizontal pager << < > >> , with date/month indicator */
+
+.pager-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pager-pagination {
+  display: flex;
+  align-items: center;
+  align-self: end;
+  gap: 1rem;
+  position: relative;
+  top: -16px;
+
+  .button-group {
+    display: flex;
+    gap: 0.2ex;
+    font-size: 24px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .button {
+    background: transparent;
+
+    &:enabled:hover,
+    &:enabled:focus-visible {
+      background: var(--background-4);
+    }
+
+    .pager-nav-symbol {
+      display: inline-block;
+      position: relative;
+      top: -0.07em;
+    }
+  }
+
+  .date-indicator {
+    margin-left: 0.5rem;
+    color: var(--foreground-3);
+    font-size: 14px;
+  }
+}
