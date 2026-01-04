@@ -57,7 +57,7 @@ h1 {
 
 h2 {
   font-size: 28px;     /* 1.33^2 * 16, rounded */
-  line-height: 42px;   /* 1.5 grid line */
+  line-height: calc(var(--grid-line) * 1.5);
   padding-top: 28px;   /* 1 grid line */
   margin-bottom: 14px; /* 0.5 grid line */
   padding-bottom: 0;
@@ -66,7 +66,7 @@ h2 {
 
 h3, h4 {
   font-size: 21px;    /* 1.33 * 16, rounded */
-  line-height: 28px;  /* one grid line */
+  line-height: var(--grid-line);  /* one grid line */
   padding-top: 10px;  /* 10+18 = 1 grid line */
   margin-bottom: 18px;
   padding-bottom: 0;
@@ -96,7 +96,7 @@ ul, ol {
 }
 
 blockquote {
-  margin: 0 var(--side-padding) 14px var(--side-padding);
+  margin: 0 var(--side-padding) 14px 0;
   padding: 0 0 0 var(--side-padding);
   border-left: 2px solid var(--background-4);
 }

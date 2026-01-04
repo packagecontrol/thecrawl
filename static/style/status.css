@@ -185,6 +185,7 @@ html.status main {
 }
 
 .status-notes {
+  --grid-line: 24px;
   background: var(--background-1);
   border-radius: 6px;
   padding: var(--grid-line) calc(var(--side-padding) * 2);
@@ -223,9 +224,5 @@ html.status main {
 
   a {
     word-break: break-word;
-  }
-
-  hr {
-    margin: 24px 0;
   }
 }
