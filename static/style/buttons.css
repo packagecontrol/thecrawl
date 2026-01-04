@@ -1,11 +1,11 @@
 /* utility classes for consistent buttons */
 .button-group {
   display: flex;
-  gap: 1ex;
+  gap: 7px;
   padding-left: 0;
-  line-height: 26px;
-  padding-top: 4px;
-  margin-bottom: 16px;
+  line-height: 28px;
+  padding-top: 3px;
+  margin-bottom: 25px;
   flex-wrap: wrap;
   list-style: none;
 
@@ -28,6 +28,7 @@
   gap: 1ex;
   margin: 0;
   padding: 3px 8px;
+  line-height: 22px;
   border-radius: 3px;
   background: var(--background-3);
   color: var(--foreground-2);

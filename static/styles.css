@@ -19,8 +19,10 @@ html {
   --max-line: 52rem; /* limit paragraph line length for readability at 2/3 of 78 */
   --side-padding: 1rem;
   @media (min-width: var(--max-content)) {
-    --side-padding: 1.6rem;
+    --side-padding: 1.75rem;
   }
+
+  --grid-line: 28px; /* one normal line height */
 
   /* while initializing search, hide package listings */
   &.initializing {
@@ -49,7 +51,7 @@ main {
   max-width: var(--max-content);
   margin: 0 auto;
   min-height: 44vh;
-  padding: 0 var(--side-padding) 3.2rem var(--side-padding);
+  padding: 0 var(--side-padding) 3.5rem var(--side-padding);
 
   html.about-faq & {
     max-width: var(--max-line);
@@ -121,8 +123,9 @@ pre {
   white-space: break-spaces;
   overflow-x: auto;
   background: var(--background-3);
+  margin-block: 14px 14px;
   &:not(.fallback) {
-    padding: 1rem;
+    padding: 14px;
   }
   code {
     background: revert;
@@ -135,6 +138,11 @@ pre {
 
 h2 {
   color: var(--foreground-2);
+}
+
+hr {
+  margin: var(--grid-line) 0;
+  color: var(--foreground-3);
 }
 
 .screenreader-only {
@@ -239,10 +247,10 @@ human-date[clickable] {
 }
 
 section {
-  margin-bottom: 1.6rem;
+  margin-bottom: 28px;
 
-  &[data-list-target] {
-    padding-top: 16px;
+  &[data-list-target]:not(.readme) {
+    padding-top: 14px;
     > h2:first-child {
       padding-top: 0;
     }
@@ -259,16 +267,14 @@ section {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 
-  > h1,
   > h2 {
     margin: 0;
     padding-top: 0;
 
     @media (width <= 400px) {
-      font-size: 22px;
-      margin-bottom: -6px;
+      font-size: 21px;
     }
   }
 
@@ -277,15 +283,15 @@ section {
     color: var(--foreground-3);
     font-size: 14px;
     align-self: end;
-    padding-bottom: 8px;
+    padding-bottom: 4px;
+
+    @media (width <= 400px) {
+      padding-bottom: 6px;
+    }
 
     &[hidden] {
       display: inherit;  /* Ensure hidden elements still take up space */
       visibility: hidden;
-    }
-
-    @media (width <= 400px) {
-      padding-bottom: 6px;
     }
   }
 

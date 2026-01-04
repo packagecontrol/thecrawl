@@ -1,11 +1,28 @@
 .readme {
-  margin-top: 3.2rem;
-  padding: var(--side-padding) calc(var(--side-padding) * 2);
+  margin-top: calc(var(--grid-line) * 1.5);
+  padding: var(--grid-line) calc(var(--side-padding) * 3.5);
   border-radius: 6px;
   background: var(--background-1);
 
+  max-width: var(--max-line);
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 800px) {
+    padding: 14px calc(var(--side-padding) * 2);
+  }
+
   &:empty {
     display: none;
+  }
+
+  /* increase density around paragraphs */
+  p, ul, ol, summary {
+    padding-top: 0;
+    margin-bottom: 14px; /* half a gridline */
+    ul, ol {
+      margin-bottom: 0;
+    }
   }
 
   img, video {
@@ -19,10 +36,10 @@
 
   pre {
     border-radius: 6px;
-    background: var(--background-2);
+    background: var(--highlight);
   }
   pre code {
-    background: var(--background-2);
+    background: transparent;
   }
 
   kbd {
@@ -33,5 +50,20 @@
     padding: 0px 4px;
     box-shadow: inset 0px -1px 0px var(--foreground-4);
     background: var(--highlight);
+  }
+
+  table {
+    border-spacing: 0px;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+
+    tr:nth-child(2n) {
+      background: rgb(from var(--background-2) r g b / 0.3);
+    }
+
+    td {
+      border: 1px solid var(--background-3);
+      padding: 6px 13px;
+    }
   }
 }

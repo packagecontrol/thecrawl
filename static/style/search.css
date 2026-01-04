@@ -56,9 +56,9 @@ input {
   border: 1px solid var(--background-3);
   border-radius: 3px;
   padding: 8px;
-  margin-bottom: 11px;
-  font-size: 1em;
-  line-height: 1.6;
+  margin-bottom: 14px;
+  font-size: 1rem;
+  line-height: 24px;
   transition: background .1s;
 }
 
@@ -69,9 +69,9 @@ select {
   color: var(--foreground-1);
   border: 1px solid var(--background-3);
   border-radius: 3px;
-  padding: 8px;
-  font-size: 1em;
-  line-height: 1.6;
+  padding: 7px;
+  font-size: 1rem;
+  line-height: 24px;
   cursor: pointer;
   transition: background .1s, color .1s;
 }
@@ -79,7 +79,7 @@ select {
 .search-controls {
   display: flex;
   align-items: center;
-  margin-bottom: 11px;
+  margin-bottom: 13px;
   background: var(--background-1);
   border-radius: 3px;
   border: 1px solid var(--background-3);

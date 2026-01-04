@@ -1,6 +1,6 @@
 .package-title {
-  padding-top: 13px;
-  margin-bottom: 13px;
+  padding-top: 12px;
+  margin-bottom: 16px;
   display: inline-table;
 
   h1 {
@@ -23,8 +23,8 @@
 
 .description {
   font-size: 21px;
-  line-height: 26px;
-  padding-top: 6px;
+  line-height: 28px;
+  padding-top: 8px;
   margin-bottom: 20px;
   font-style: italic;
 
@@ -73,7 +73,7 @@ ul.stats {
   gap: 1em;
   align-content: center;
   align-items: center;
-  line-height: 26px;
+  line-height: 28px;
   padding-left: 0;
   color: var(--foreground-2);
 

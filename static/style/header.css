@@ -2,12 +2,12 @@ header {
   display: flex;
   position: relative;
   margin: 0 auto 16px auto;
-  padding: 11px var(--side-padding) 0 var(--side-padding);
+  padding: 10px var(--side-padding) 0 var(--side-padding);
   max-width: var(--max-content);
   color: var(--foreground-3);
 
   &:has(h1) {
-    margin-bottom: 56px;
+    margin-bottom: 51px;
   }
 
   @media (max-width: 479px) {
@@ -35,7 +35,7 @@ header {
     padding: 0;
     font-weight: bold;
     font-size: 21px;
-    line-height: 26px;
+    line-height: 28px;
     color: var(--foreground-2);
 
     a {
@@ -44,7 +44,7 @@ header {
 
     @media (min-width: 480px) {
       font-size: 28px;
-      line-height: 38px;
+      line-height: 42px;
     }
 
     + .tagline {

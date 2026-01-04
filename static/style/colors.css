@@ -12,7 +12,7 @@
   --background-4: hsl(0 0% 87%);  /* ..    */
   --background-5: hsl(0 0% 82%);  /* grey  */
 
-  --highlight: hsl(0 0% 87% / 0.3); /* inline code */
+  --highlight: rgb(from var(--background-4) r g b / 0.3); /* inline code */
 
   --foreground-1: hsl(240 5% 29%); /* black */
   --foreground-2: hsl(240 4% 40%); /* ..    */
@@ -45,7 +45,7 @@
   --background-4: hsl(211 12% 35%);
   --background-5: hsl(210 11% 40%);
 
-  --highlight: hsl(210 14% 46% / 0.16); /* inline code */
+  --highlight: rgb(from var(--background-4) r g b / 0.3); /* inline code */
 
   --foreground-1: hsl(60 10% 84%);
   --foreground-2: hsl(60 5% 71%);

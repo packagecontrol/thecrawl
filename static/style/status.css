@@ -3,12 +3,12 @@ html.status {
 }
 
 html.status main {
-  margin-top: 3em;
+  margin-top: calc(var(--grid-line) * 1.5);
   min-height: 66vh;
 }
 
 .status-page {
-  margin-top: 0.5rem;
+  margin-top: var(--grid-line);
   max-width: var(--max-line);
   margin-left: auto;
   margin-right: auto;
@@ -31,7 +31,7 @@ html.status main {
   position: relative;
   width: 100%;
   height: 380px;
-  margin: 0 auto 2rem;
+  margin: 0 auto calc(var(--grid-line) * 1.5) auto;
   max-width: var(--max-content);
 
   svg {
@@ -122,45 +122,24 @@ html.status main {
   }
 }
 
-.status-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
 .status-heading {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin: 0;
   font-size: 14px;
-  line-height: 20px;
+  line-height: var(--grid-line);
   font-weight: 700;
   color: var(--foreground-4);
   border-radius: 6px;
-  padding: 2px 9px;
-  margin-bottom: 5px;
+  padding: 0 8px;
+  margin-bottom: 17px;
 }
 
 .status-label {
   color: var(--foreground-2);
   text-transform: capitalize;
   font-weight: 400;
-}
-
-.status-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.9rem;
-  margin-bottom: -5px;
-}
-
-.status-date {
-  color: var(--foreground-3);
-  font-size: 14px;
-  align-self: center;
-  padding-bottom: 10px;
 }
 
 .status-badge {
@@ -205,67 +184,45 @@ html.status main {
   border-color: transparent;
 }
 
-.status-pagination {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-
-  .button-group {
-    display: flex;
-    gap: 0.2ex;
-    font-size: 24px;
-  }
-
-  .button {
-    background: transparent;
-    &:enabled:hover,
-    &:enabled:focus-visible {
-      background: var(--background-4);
-    }
-
-    .pager-nav-symbol {
-      display: inline-block;
-      position: relative;
-      top: -0.07em;
-    }
-  }
-}
-
 .status-notes {
+  --grid-line: 24px;
   background: var(--background-1);
-  border-radius: 8px;
-  padding: 1.4rem 1.6rem;
-  box-shadow:
-    0 1px 0 rgb(from var(--background-5) r g b / 0.35),
-    0 18px 36px -24px rgb(from var(--foreground-1) r g b / 0.35);
+  border-radius: 6px;
+  padding: var(--grid-line) calc(var(--side-padding) * 2);
+  max-width: var(--max-line);
 
-  p,
-  ul,
-  ol {
-    max-width: var(--max-line);
-  }
-
-  pre {
-    background: var(--background-2);
-    border-radius: 6px;
-    padding: 0.9rem 1rem;
-    overflow-x: auto;
+  &, p, ol, ul, summary {
+    /*font-family: "IBM Plex Mono", monospace;*/
+    font-size: 15px;
+    line-height: 24px;
   }
 
   code {
     background: var(--highlight);
   }
 
-  ul,
-  ol {
-    padding-left: 1.2rem;
+  pre {
+    border-radius: 6px;
+    background: var(--highlight);
+    overflow-x: auto;
+  }
+  pre code {
+    background: transparent;
+  }
+
+  p, ul, ol, summary {
+    padding-top: 0;
+    margin-bottom: 12px; /* half a gridline */
+    ul, ol {
+      margin-bottom: 0;
+    }
+  }
+
+  ul, ol {
+    padding-left: 1.2em;
   }
 
   a {
     word-break: break-word;
-  }
-
-  hr {
-    margin: 2em 0 1em;
   }
 }

@@ -5,11 +5,6 @@ const pagerRegistry = []
 
 const RECENT_PAGER_STYLES = `
   .pager-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-
     > h2 {
       padding-top: 0;
     }
@@ -27,55 +22,12 @@ const RECENT_PAGER_STYLES = `
       transition: background .1s;
 
       > h2 {
-        padding-top: 4px;
-        margin-bottom: 8px;  /* 2px up (10 is the default for our h2) */
+        padding-top: 5px;
+        margin-bottom: 9px;
       }
 
       & .pager-pagination {
-        top: 4px;           /* 2px down */
-      }
-    }
-
-    .pager-pagination {
-      display: flex;
-      align-items: center;
-      align-self: end;
-      gap: 1rem;
-      font-size: 1.3rem;
-      position: relative;
-      top: 2px;
-
-      .button-group {
-        display: flex;
-        gap: 0.2ex;
-        font-size: 24px;
-      }
-
-      .button {
-        background: transparent;
-
-        &:enabled:hover,
-        &:enabled:focus-visible {
-          background: var(--background-4);
-        }
-
-        .pager-nav-symbol {
-          display: inline-block;
-          position: relative;
-          top: -0.07em;
-        }
-      }
-
-      .month-indicator {
-        margin-left: 0.5rem;
-        color: var(--foreground-3);
-        font-size: 14px;
-        align-self: center;
-        padding-bottom: 10px;
-
-        @media (max-width: 479px) {
-          padding-bottom: 11px;
-        }
+        top: -11px;
       }
     }
   }
@@ -85,7 +37,7 @@ const HEADER_TEMPLATE_HTML = `
   <div class="pager-header">
     <slot class="h2-slot"></slot>
     <div class="pager-pagination">
-      <span class="month-indicator"></span>
+      <span class="date-indicator"></span>
       <div class="button-group">
         <button type="button" class="button" data-control="first" aria-label="First page" title="First">
           <span class="pager-nav-symbol">«</span>
@@ -183,7 +135,7 @@ class RecentPager {
     const header = headerTemplate.content.firstElementChild.cloneNode(true)
     const slot = header.querySelector('slot.h2-slot')
     const pagination = header.querySelector('.pager-pagination')
-    const month = pagination.querySelector('.month-indicator')
+    const month = pagination.querySelector('.date-indicator')
     const first = pagination.querySelector('[data-control="first"]')
     const prev = pagination.querySelector('[data-control="prev"]')
     const next = pagination.querySelector('[data-control="next"]')
