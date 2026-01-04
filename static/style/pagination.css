@@ -46,6 +46,7 @@
   gap: 1rem;
   position: relative;
   top: -16px;
+  line-height: var(--grid-line);
 
   .button-group {
     display: flex;
