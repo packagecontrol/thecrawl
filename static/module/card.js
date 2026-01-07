@@ -34,8 +34,8 @@ export class Card {
     const labels = this.clone.querySelector('ul.labels')
     // clear the placeholder then fill with data
     labels.innerHTML = ''
-    this.platforms(labels)
     this.labels(labels)
+    this.platforms()
     this.stats()
 
     return this.clone
@@ -170,16 +170,47 @@ export class Card {
     })
   }
 
-  platforms(parent) {
-    let os = this.pkg.platforms
+  platforms() {
+    const os = this.pkg.platforms
+    const parent = this.clone.querySelector('ul.stats')
 
     if (os.length < 1 || os.includes('any')) {
+      // this runs on anything
       return
     }
 
-    os.split(',').forEach((item) => {
-      parent.appendChild(this.button(item))
-    })
+    const oses = os.split(',')
+    if (oses.length === 1) {
+      parent.appendChild(this.platformButton(oses[0], true, `Only runs on ${oses[0]}`))
+      return
+    }
+
+    if (!os.includes('macos')) {
+      parent.appendChild(this.platformButton('macos', false, `Does not run on macos`))
+    }
+    if (!os.includes('windows')) {
+      parent.appendChild(this.platformButton('windows', false, `Does not run on windows`))
+    }
+    if (!os.includes('linux')) {
+      parent.appendChild(this.platformButton('linux', false, `Does not run on linux`))
+    }
+  }
+
+  platformButton(name, works = true, tooltip = null) {
+    const li = document.createElement('li')
+    const a = document.createElement('a')
+    a.classList.add('platform', 'platform-' + name)
+    if (!works) {
+      a.classList.add('platform-unsupported')
+    }
+    a.setAttribute('href', searchQueryFor('platform', name))
+    if (tooltip) {
+      a.setAttribute('title', tooltip)
+    }
+    a.appendChild(document.createTextNode(name))
+    li.appendChild(a)
+
+    return li
   }
 
   labels(parent) {
@@ -213,27 +244,21 @@ export class Card {
     const li = document.createElement('li')
     const a = document.createElement('a')
 
-    if (name.startsWith('linux') || name.startsWith('macos') || name.startsWith('windows')) {
-      a.classList.add('button', 'platform', 'platform-' + name)
-      a.setAttribute('href', searchQueryFor('platform', name))
-    }
-    else {
-      a.classList.add('button', 'label')
-      a.setAttribute('href', searchQueryFor('label', name))
+    a.classList.add('button', 'label')
+    a.setAttribute('href', searchQueryFor('label', name))
 
-      const iconId = resolveLabelIconId(name)
-      if (iconId) {
-        const svgNS = 'http://www.w3.org/2000/svg'
-        const svg = document.createElementNS(svgNS, 'svg')
-        const canonical = iconId.replace(/^label-icon-/, '')
-        const tint = resolveLabelIconTint(canonical)
-        svg.setAttribute('class', `label-icon${tint ? ' label-icon--' + tint : ''}`)
-        svg.setAttribute('aria-hidden', 'true')
-        const use = document.createElementNS(svgNS, 'use')
-        use.setAttribute('href', `${this.staticBase}label-icons.svg#${iconId}`)
-        svg.appendChild(use)
-        a.appendChild(svg)
-      }
+    const iconId = resolveLabelIconId(name)
+    if (iconId) {
+      const svgNS = 'http://www.w3.org/2000/svg'
+      const svg = document.createElementNS(svgNS, 'svg')
+      const canonical = iconId.replace(/^label-icon-/, '')
+      const tint = resolveLabelIconTint(canonical)
+      svg.setAttribute('class', `label-icon${tint ? ' label-icon--' + tint : ''}`)
+      svg.setAttribute('aria-hidden', 'true')
+      const use = document.createElementNS(svgNS, 'use')
+      use.setAttribute('href', `${this.staticBase}label-icons.svg#${iconId}`)
+      svg.appendChild(use)
+      a.appendChild(svg)
     }
 
     if (['ST2', 'RIP'].includes(name)) {
@@ -269,7 +294,7 @@ const searchQueryFor = (field, rawValue) => {
   return '/?q=' + encodeURIComponent(filter)
 }
 
-function resolveLabelIconId(label) {
+const resolveLabelIconId = (label) => {
   if (typeof label !== 'string') return null
   const normalized = label.trim().toLowerCase()
   if (!normalized) return null
@@ -290,10 +315,11 @@ function resolveLabelIconId(label) {
   return `label-icon-${canonical}`
 }
 
-function resolveLabelIconTint(canonical) {
+const resolveLabelIconTint = (canonical) => {
   const tints = window.__LABEL_ICON_TINTS__ ?? {}
   return tints[canonical]
 }
+
 const toFinite = (value) => {
   const num = Number(value)
   return Number.isFinite(num) ? num : null

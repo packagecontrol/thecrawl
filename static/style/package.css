@@ -85,6 +85,13 @@ ul.stats {
   svg {
     margin-right: 1ex;
   }
+
+  a {
+    color: inherit;
+  }
+  .platform-unsupported {
+    text-decoration: line-through;
+  }
 }
 
 .other-releases {
