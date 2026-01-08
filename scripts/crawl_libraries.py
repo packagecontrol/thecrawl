@@ -11,7 +11,7 @@ from functools import partial
 from pathlib import Path
 
 import aiohttp
-from .github import fetch_github_info
+from .github import fetch_github_info, ReleaseAssetInfo
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
@@ -811,7 +811,10 @@ def download_info_from_latest_versions(
     return output
 
 
-def match_release_asset(pattern: re.Pattern, assets: list[dict]) -> dict | None:
+def match_release_asset(
+    pattern: re.Pattern,
+    assets: list[ReleaseAssetInfo]
+) -> ReleaseAssetInfo | None:
     for asset in assets:
         name = asset.get("name") or ""
         if pattern.match(name):
@@ -826,13 +829,12 @@ async def download_info_from_github_releases(
 ) -> list[dict]:
     if not concrete_defs:
         return []
-    info = await fetch_github_info(session, base_url, ("RELEASES",))
-    releases = [release async for release in info["releases"]]
+    gh_info = await fetch_github_info(session, base_url, ("RELEASES",))
 
     output = []
     for concrete, tag_prefix in concrete_defs:
         spec_set = SpecifierSet(concrete.version) if concrete.version else None
-        for release in releases:
+        async for release in gh_info["releases"]:
             if release.get("is_draft"):
                 continue
             tag_match = match_tag_version(release["tag_name"], tag_prefix)
@@ -849,13 +851,13 @@ async def download_info_from_github_releases(
             else:
                 continue
 
-            info = {
+            release_info = {
                 "url": asset["url"],
                 "version": version_str,
                 "date": normalize_timestamp(release["date"]),
             }
-            info.update(normalize_output_constraints(concrete))
-            output.append(info)
+            release_info.update(normalize_output_constraints(concrete))
+            output.append(release_info)
             if is_final_version(version):
                 break
 
@@ -1042,15 +1044,15 @@ async def resolve_github_tags(
     output: list[dict] = []
 
     for base_url, defs in github_tag_defs.items():
-        info = await fetch_github_info(session, base_url, ("TAGS",))
-        tags = [tag async for tag in info["tags"]]
+        gh_info = await fetch_github_info(session, base_url, ("TAGS",))
+
         for release in defs:
             normalized = normalize_release_def(release)
             tag_prefix = parse_tag_prefix(normalized.get("tags"))
             version_spec = normalized.get("version")
             spec_set = SpecifierSet(version_spec) if version_spec else None
             tagged_versions = []
-            for tag in tags:
+            async for tag in gh_info["tags"]:
                 match = match_tag_version(tag["name"], tag_prefix)
                 if not match:
                     continue
@@ -1075,9 +1077,9 @@ async def resolve_github_tags(
             concrete_defs = concretize_release_def(normalized, auto_assets=False)
             for concrete in concrete_defs:
                 for download in downloads:
-                    info = download.copy()
-                    info.update(normalize_output_constraints(concrete))
-                    output.append(info)
+                    release_info = download.copy()
+                    release_info.update(normalize_output_constraints(concrete))
+                    output.append(release_info)
 
     return output
 
