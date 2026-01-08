@@ -26,6 +26,10 @@ from rich.progress import (
 
 
 CACHE_TTL_SECONDS = 600
+DEFAULT_REPO_URL = (
+    "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/"
+    "repository.json"
+)
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
 PYPI_META_LOCK = asyncio.Lock()
 type VersionString = str
@@ -80,6 +84,15 @@ def parse_args() -> argparse.Namespace:
         default="repository.json",
         help="Path to repository to crawl (default: repository.json)",
     )
+    parser.add_argument(
+        "--fetch-repo",
+        nargs="?",
+        const=DEFAULT_REPO_URL,
+        help=(
+            "Fetch repository.json from a URL before crawling "
+            f"(default: {DEFAULT_REPO_URL})"
+        ),
+    )
     parser.add_argument("--name", help="Library name from repository to crawl")
     parser.add_argument(
         "--explain",
@@ -117,6 +130,8 @@ def main() -> None:
 async def run() -> int:
     args = parse_args()
     repo_path = Path(args.repo)
+    if args.fetch_repo is not None:
+        await fetch_repository(args.fetch_repo, repo_path)
     if not repo_path.exists():
         raise FileNotFoundError(f"{repo_path} not found.")
 
@@ -260,6 +275,23 @@ def parse_last_crawl(value: str | None) -> datetime:
         return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError:
         return datetime.min
+
+
+async def fetch_repository(url: str, path: Path) -> None:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            response.raise_for_status()
+            body = await response.text()
+            try:
+                data = json.loads(body)
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"Fetched repository at {url} is not valid JSON."
+                ) from exc
+    if not isinstance(data, dict):
+        raise ValueError("Fetched repository JSON must be an object.")
+    dump_json(path, data)
+    print(f"Fetched {url} and stored as {path}.")
 
 
 def load_json(path: Path) -> dict:
