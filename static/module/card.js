@@ -179,35 +179,39 @@ export class Card {
       return
     }
 
-    const oses = os.split(',')
-    if (oses.length === 1) {
-      parent.appendChild(this.platformButton(oses[0], true, `Only runs on ${oses[0]}`))
-      return
-    }
-
-    if (!os.includes('macos')) {
-      parent.appendChild(this.platformButton('macos', false, `Does not run on macos`))
-    }
-    if (!os.includes('windows')) {
-      parent.appendChild(this.platformButton('windows', false, `Does not run on windows`))
-    }
-    if (!os.includes('linux')) {
-      parent.appendChild(this.platformButton('linux', false, `Does not run on linux`))
-    }
+    parent.appendChild(this.platformButton(os.split(',')))
   }
 
-  platformButton(name, works = true, tooltip = null) {
+  capitalizePlatform(phrase) {
+    return phrase
+      .replace('linux', 'Linux')
+      .replace('windows', 'Windows')
+      .replace('macos', 'macOS')
+  }
+
+  platformButton(oses) {
     const li = document.createElement('li')
     const a = document.createElement('a')
-    a.classList.add('platform', 'platform-' + name)
-    if (!works) {
-      a.classList.add('platform-unsupported')
+
+    if (oses.length === 1) {
+      a.appendChild(document.createTextNode(this.capitalizePlatform(`Only for ${oses[0]}`)))
+      a.setAttribute('href', searchQueryFor('platform', oses[0]))
+      a.setAttribute('title', this.capitalizePlatform(`Find more packages for ${oses[0]}`))
+    } else if (!oses.includes('macos')) {
+      a.appendChild(document.createTextNode(this.capitalizePlatform('Not for macos')))
+      a.setAttribute('href', searchQueryFor('platform', 'macos'))
+      a.setAttribute('title', this.capitalizePlatform('Find packages for macos'))
+    } else if (!oses.includes('windows')) {
+      a.appendChild(document.createTextNode(this.capitalizePlatform('Not for windows')))
+      a.setAttribute('href', searchQueryFor('platform', 'windows'))
+      a.setAttribute('title', this.capitalizePlatform('Find packages for windows'))
+    } else if (!oses.includes('linux')) {
+      a.appendChild(document.createTextNode(this.capitalizePlatform('Not for linux')))
+      a.setAttribute('href', searchQueryFor('platform', 'linux'))
+      a.setAttribute('title', this.capitalizePlatform('Find packages for linux'))
     }
-    a.setAttribute('href', searchQueryFor('platform', name))
-    if (tooltip) {
-      a.setAttribute('title', tooltip)
-    }
-    a.appendChild(document.createTextNode(name))
+
+    li.classList.add('platform')
     li.appendChild(a)
 
     return li

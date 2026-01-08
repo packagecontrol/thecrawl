@@ -89,27 +89,14 @@ ul.stats {
   a {
     color: inherit;
   }
-  .platform-macos {
-    color: var(--blue-1);
-    &:hover {
-      color: var(--blue-2);
-    }
-  }
-  .platform-windows {
-    color: var(--orange-1);
-    &:hover {
-      color: var(--orange-2);
-    }
-  }
-  .platform-linux {
-    color: var(--green-1);
-    &:hover {
-      color: var(--green-2);
-    }
-  }
-  .platform-unsupported {
-    color: inherit;
-    text-decoration: line-through;
+
+  .platform {
+    position: absolute;
+    right: 0;
+    top: 1.75em;
+    width: auto;
+    white-space: nowrap;
+    text-align: right;
   }
 }
 
