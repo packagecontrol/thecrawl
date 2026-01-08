@@ -45,8 +45,7 @@
   align-self: end;
   gap: 1rem;
   position: relative;
-  top: -16px;
-  line-height: var(--grid-line);
+  top: -15px;
 
   .button-group {
     display: flex;
@@ -67,7 +66,7 @@
     .pager-nav-symbol {
       display: inline-block;
       position: relative;
-      top: -0.07em;
+      top: -2px;
     }
   }
 
