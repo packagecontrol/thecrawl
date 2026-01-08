@@ -1,0 +1,54 @@
+{
+  "releases": {
+    "6.0.2": [
+      {
+        "filename": "lxml-6.0.2-cp313-cp313-win_amd64.whl",
+        "packagetype": "bdist_wheel",
+        "requires_python": ">=3.8",
+        "yanked": false,
+        "upload_time": "2025-09-22T04:04:28",
+        "url": "https://files.pythonhosted.org/packages/71/de/07b7b1249acbecbf48f7e42c3ce87a657af6ff38e30f12a1ad81f16010f2/lxml-6.0.2-cp313-cp313-win_amd64.whl",
+        "digests": {
+          "sha256": "995e783eb0374c120f528f807443ad5a83a656a8624c467ea73781fc5f8a8304"
+        }
+      }
+    ],
+    "4.2.6": [
+      {
+        "filename": "lxml-4.2.6-cp33-cp33m-win_amd64.whl",
+        "packagetype": "bdist_wheel",
+        "requires_python": ">=3.3",
+        "yanked": false,
+        "upload_time": "2018-05-09T04:37:59",
+        "url": "https://files.pythonhosted.org/packages/2b/64/2bf7fdc3977344031f95df072db1710307d2c21cfd9e1df0c77eb21f74cf/lxml-4.2.6-cp33-cp33m-win_amd64.whl",
+        "digests": {
+          "sha256": "87b76196cafe7002290107c92080e141dd7b7c6c1d9818fbb7674c59d9b1fc7f"
+        }
+      }
+    ],
+    "4.2.1": [
+      {
+        "filename": "lxml-4.2.1-cp33-cp33m-macosx_10_6_x86_64.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl",
+        "packagetype": "bdist_wheel",
+        "requires_python": ">=3.3",
+        "yanked": false,
+        "upload_time": "2018-02-08T16:54:32",
+        "url": "https://files.pythonhosted.org/packages/07/15/63f1f4adf7c99ec5be47f9e4b83e3cabb391c73be7fe6605fbccf3a14449/lxml-4.2.1-cp33-cp33m-macosx_10_6_x86_64.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl",
+        "digests": {
+          "sha256": "2c55a7c306b5fc09f4be300f5185ae78d25590c26f5fd0ebc17c77b2b5ff04a7"
+        }
+      },
+      {
+        "filename": "lxml-4.2.1-cp33-cp33m-win_amd64.whl",
+        "packagetype": "bdist_wheel",
+        "requires_python": ">=3.3",
+        "yanked": false,
+        "upload_time": "2018-02-08T16:54:42",
+        "url": "https://files.pythonhosted.org/packages/2c/9b/cca45f0b6f8e21d0d92e0f639f06a3c3c08b6413ec80343fe2f85216a51e/lxml-4.2.1-cp33-cp33m-win_amd64.whl",
+        "digests": {
+          "sha256": "8b5127a2a32a1925d7e8d3720a8e0c5f2f8892c6de189fce3b8fca6b0a728ef7"
+        }
+      }
+    ]
+  }
+}
