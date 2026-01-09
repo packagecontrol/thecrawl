@@ -151,6 +151,7 @@ async def run() -> int:
         return 0
 
     timestamp = now_timestamp()
+    updated_names: list[str] = []
 
     crawl_path = Path(args.crawl_db)
     crawl_db = load_crawl_db(crawl_path)
@@ -165,7 +166,6 @@ async def run() -> int:
         if not library:
             raise ValueError(f'Library "{args.name}" not found in {repo_path.name}.')
 
-        updated_names: list[str] = []
         try:
             async with aiohttp.ClientSession() as aio_session:
                 info, sources = await resolve_library(
@@ -210,7 +210,6 @@ async def run() -> int:
             name.lower(),
         )
 
-    updated_names: list[str] = []
     selected = sorted(repo_names, key=sort_key)[:args.limit]
     libraries = {lib.get("name"): lib for lib in repo.get("libraries", [])}
     selected_libs = [
