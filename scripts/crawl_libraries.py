@@ -261,7 +261,6 @@ async def run() -> int:
                 version_label = f" {latest_version}" if latest_version else ""
                 print(f"Resolved {name}{version_label} using {source_label}.")
 
-
     dump_output()
     dump_meta_db()
     print(format_updated_message(updated_names))
@@ -759,7 +758,7 @@ def match_tag_version(
     if tag_prefix:
         if not tag_name.startswith(tag_prefix):
             return None
-        version_str = tag_name[len(tag_prefix) :]
+        version_str = tag_name[len(tag_prefix):]
     else:
         version_str = tag_name.removeprefix("v")
 
@@ -1064,13 +1063,11 @@ async def resolve_github_tags(
             tagged_versions.sort(key=lambda item: item[0], reverse=True)
             downloads = []
             for version, version_str, tag in tagged_versions:
-                downloads.append(
-                    {
-                        "url": tag["url"],
-                        "version": version_str,
-                        "date": normalize_timestamp(tag["date"]),
-                    }
-                )
+                downloads.append({
+                    "url": tag["url"],
+                    "version": version_str,
+                    "date": normalize_timestamp(tag["date"]),
+                })
                 if is_final_version(version):
                     break
 
