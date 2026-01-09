@@ -34,10 +34,13 @@ Each library entry contains metadata and a list of release definitions:
 
 Fields:
 - `name` (string, required): Library identifier used by Package Control.
-- `description` (string, required): Short human-readable description.
-- `author` (string, required): Library author/maintainer.
-- `issues` (string, required): Issue tracker URL.
+- `description` (string, optional): Short human-readable description.
+- `author` (string, optional): Library author/maintainer.
+- `issues` (string, optional): Issue tracker URL.
 - `releases` (list, required): One or more release definitions (see below).
+
+If `description`, `author`, or `issues` are missing, they are resolved from
+Pypi or GitHub metadata, whereby Pypi is preferred.
 
 ## Release definitions
 
