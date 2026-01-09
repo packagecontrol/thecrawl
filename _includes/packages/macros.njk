@@ -55,7 +55,7 @@
 {% endmacro %}
 
 {% macro labels(pkg, with_icons=false) %}
-  {% set platforms = pkg.platforms %}
+  {% set platforms = pkg.platforms | default([]) %}
   {% if 'any' in platforms %}
     {% set platforms = [] %}
   {% endif %}
