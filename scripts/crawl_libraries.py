@@ -381,10 +381,10 @@ def find_library(repo: dict, name: str) -> dict | None:
     return None
 
 
-def name_and_version(url: str) -> tuple[str | None, str | None]:
+def name_and_version(url: str) -> tuple[str, str | None] | tuple[None, None]:
     match = re.match(r"^https?://pypi\.org/project/([^/#?]+)(?:/([^/#?]+?)|/?)$", url)
     if match:
-        return match.groups()
+        return match.groups()  # type: ignore[return-value]
     return (None, None)
 
 
