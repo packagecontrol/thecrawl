@@ -12,6 +12,7 @@ from pathlib import Path
 
 import aiohttp
 from .github import fetch_github_info, ReleaseAssetInfo
+from .utils import drop_falsy
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
@@ -997,18 +998,22 @@ async def resolve_library(
     if not output_releases:
         raise ValueError("No matching releases found.")
 
-    pypi_info = next((data.get("info", {}) for data in pypi_data_by_name.values()), {})
-    info = {
-        "name": library["name"],
-        "description": library.get("description") or pypi_info.get("summary"),
-        "author": library.get("author") or pypi_info.get("author"),
+    pypi_info: dict = next((data.get("info", {}) for data in pypi_data_by_name.values()), {})
+    lib_info_from_pypi = drop_falsy({
+        "description": pypi_info.get("summary"),
+        "author": pypi_info.get("author"),
         "issues": (
-            library.get("issues")
-            or pypi_info.get("bugtrack_url")
+            pypi_info.get("bugtrack_url")
             or (pypi_info.get("project_urls") or {}).get("Issues")
         ),
+    })
+    info = lib_info_from_pypi | drop_falsy({
+        "name": library["name"],
+        "description": library.get("description"),
+        "author": library.get("author"),
+        "issues": library.get("issues"),
         "releases": sort_releases(combine_releases(output_releases)),
-    }
+    })
 
     for key in ("description", "author", "issues"):
         if not info.get(key):
