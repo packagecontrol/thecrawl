@@ -11,7 +11,7 @@ from functools import partial
 from pathlib import Path
 
 import aiohttp
-from .github import fetch_github_info, ReleaseAssetInfo
+from .github import fetch_github_info, ReleaseAssetInfo, RepoMetadata
 from .utils import drop_falsy
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
@@ -41,6 +41,7 @@ type Url = str
 type ReleaseDef = dict
 # NormalizedReleaseDef is a ReleaseDef with defaults applied and list-ified values.
 type NormalizedReleaseDef = dict
+type IncludeMetadata = bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -829,10 +830,14 @@ async def download_info_from_github_releases(
     session: aiohttp.ClientSession,
     base_url: str,
     concrete_defs: list[tuple[ConcreteReleaseDef, str | None]],
-) -> list[dict]:
+    *,
+    include_metadata: IncludeMetadata = False,
+) -> tuple[list[dict], RepoMetadata]:
     if not concrete_defs:
-        return []
-    gh_info = await fetch_github_info(session, base_url, ("RELEASES",))
+        return [], {}
+    scopes = ("RELEASES", "METADATA") if include_metadata else ("RELEASES",)
+    gh_info = await fetch_github_info(session, base_url, scopes)
+    metadata = gh_info.get("metadata", {})
 
     output = []
     for concrete, tag_prefix in concrete_defs:
@@ -864,7 +869,7 @@ async def download_info_from_github_releases(
             if is_final_version(version):
                 break
 
-    return output
+    return output, metadata
 
 
 def sort_releases(releases: list[dict]) -> list[dict]:
@@ -936,21 +941,22 @@ async def resolve_library(
 
     output_releases: list[dict] = []
     sources: set[str] = set()
-    pypi_data_by_name: dict[str, dict] = {}
+    pypi_data_by_name: dict[str, dict] = {}  # Cache PyPI JSON per project name.
+    included_github_metadata = False
 
-    pypi_bases: dict[str, list[ReleaseDef]] = {}
-    github_asset_defs: dict[str, list[ReleaseDef]] = {}
-    github_tag_defs: dict[str, list[ReleaseDef]] = {}
+    pypi_bases: dict[Url, list[ReleaseDef]] = defaultdict(list)
+    github_asset_defs: dict[Url, list[tuple[ReleaseDef, IncludeMetadata]]] = defaultdict(list)
+    github_tag_defs: dict[Url, list[tuple[ReleaseDef, IncludeMetadata]]] = defaultdict(list)
 
     for release in library.get("releases", []):
         base_url = release.get("base")
         if "pypi.org/project/" in base_url:
-            pypi_bases.setdefault(base_url, []).append(release)
+            pypi_bases[base_url].append(release)
         elif "github.com/" in base_url:
-            if release.get("asset"):
-                github_asset_defs.setdefault(base_url, []).append(release)
-            else:
-                github_tag_defs.setdefault(base_url, []).append(release)
+            container = github_asset_defs if "asset" in release else github_tag_defs
+            container[base_url].append((release, not included_github_metadata))
+            if not included_github_metadata:
+                included_github_metadata = True
 
     if pypi_bases:
         for base_url, rel_defs in pypi_bases.items():
@@ -974,30 +980,36 @@ async def resolve_library(
                     base_version, concrete_defs, releases
                 )
             else:
-                downloads = download_info_from_latest_versions(
-                    concrete_defs, releases
-                )
+                downloads = download_info_from_latest_versions(concrete_defs, releases)
             output_releases.extend(downloads)
 
     if github_asset_defs or github_tag_defs:
         if not os.getenv("GITHUB_TOKEN"):
             raise RuntimeError("GITHUB_TOKEN env var is required for GitHub access.")
 
+    github_metadata: RepoMetadata = {}
     if github_asset_defs:
-        downloads = await resolve_github_releases(aio_session, github_asset_defs)
+        downloads, metadata = await resolve_github_releases(aio_session, github_asset_defs)
         if downloads:
             output_releases.extend(downloads)
             sources.add("github:releases")
+        github_metadata |= metadata
 
     if github_tag_defs:
-        downloads = await resolve_github_tags(aio_session, github_tag_defs)
+        downloads, metadata = await resolve_github_tags(aio_session, github_tag_defs)
         if downloads:
             output_releases.extend(downloads)
             sources.add("github:tags")
+        github_metadata |= metadata
 
     if not output_releases:
         raise ValueError("No matching releases found.")
 
+    lib_info_from_github = drop_falsy({
+        "description": github_metadata.get("description"),
+        "author": github_metadata.get("author"),
+        "issues": github_metadata.get("issues"),
+    })
     pypi_info: dict = next((data.get("info", {}) for data in pypi_data_by_name.values()), {})
     lib_info_from_pypi = drop_falsy({
         "description": pypi_info.get("summary"),
@@ -1007,7 +1019,7 @@ async def resolve_library(
             or (pypi_info.get("project_urls") or {}).get("Issues")
         ),
     })
-    info = lib_info_from_pypi | drop_falsy({
+    info = lib_info_from_github | lib_info_from_pypi | drop_falsy({
         "name": library["name"],
         "description": library.get("description"),
         "author": library.get("author"),
@@ -1024,36 +1036,46 @@ async def resolve_library(
 
 async def resolve_github_releases(
     session: aiohttp.ClientSession,
-    github_asset_defs: dict[str, list[ReleaseDef]],
-) -> list[dict]:
+    github_asset_defs: dict[str, list[tuple[ReleaseDef, IncludeMetadata]]],
+) -> tuple[list[dict], RepoMetadata]:
     output: list[dict] = []
+    metadata: RepoMetadata = {}
 
     for base_url, defs in github_asset_defs.items():
+        include_metadata = any(include for _, include in defs)
         concrete_defs: list[tuple[ConcreteReleaseDef, str | None]] = []
-        for release in defs:
+        for release, _ in defs:
             normalized = normalize_release_def(release)
             tag_prefix = parse_tag_prefix(normalized.get("tags"))
             for concrete in concretize_release_def(normalized, auto_assets=False):
                 concrete_defs.append((concrete, tag_prefix))
 
-        downloads = await download_info_from_github_releases(
-            session, base_url, concrete_defs
+        downloads, new_metadata = await download_info_from_github_releases(
+            session,
+            base_url,
+            concrete_defs,
+            include_metadata=include_metadata,
         )
         output.extend(downloads)
+        metadata |= new_metadata
 
-    return output
+    return output, metadata
 
 
 async def resolve_github_tags(
     session: aiohttp.ClientSession,
-    github_tag_defs: dict[str, list[ReleaseDef]],
-) -> list[dict]:
+    github_tag_defs: dict[str, list[tuple[ReleaseDef, IncludeMetadata]]],
+) -> tuple[list[dict], RepoMetadata]:
     output: list[dict] = []
+    metadata: RepoMetadata = {}
 
     for base_url, defs in github_tag_defs.items():
-        gh_info = await fetch_github_info(session, base_url, ("TAGS",))
+        include_metadata = any(include for _, include in defs)
+        scopes = ("TAGS", "METADATA") if include_metadata else ("TAGS",)
+        gh_info = await fetch_github_info(session, base_url, scopes)
+        metadata |= gh_info.get("metadata", {})
 
-        for release in defs:
+        for release, _ in defs:
             normalized = normalize_release_def(release)
             tag_prefix = parse_tag_prefix(normalized.get("tags"))
             version_spec = normalized.get("version")
@@ -1086,7 +1108,7 @@ async def resolve_github_tags(
                     release_info.update(normalize_output_constraints(concrete))
                     output.append(release_info)
 
-    return output
+    return output, metadata
 
 
 if __name__ == "__main__":
