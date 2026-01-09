@@ -952,8 +952,8 @@ async def resolve_library(
                 github_tag_defs.setdefault(base_url, []).append(release)
 
     if pypi_bases:
-        for base_url, releases in pypi_bases.items():
-            concrete_defs = concretize_release_defs(releases, auto_assets=True)
+        for base_url, rel_defs in pypi_bases.items():
+            concrete_defs = concretize_release_defs(rel_defs, auto_assets=True)
             base_name, base_version = name_and_version(base_url)
             if not base_name:
                 raise ValueError(f'Invalid PyPI base URL "{base_url}".')
