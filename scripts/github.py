@@ -362,7 +362,7 @@ async def fetch_github_info(
     owner, repo = parse_owner_repo(github_url)
 
     final_scopes: list[str] = list(scopes)
-    if "METADATA" in final_scopes and "too_many_files" not in hints:
+    if "METADATA" in final_scopes and not {"too_many_files", "no_readme"} & set(hints):
         final_scopes.append("FILES")
     query = build_query(scope_to_query[scope] for scope in final_scopes)
     variables = {
@@ -374,8 +374,11 @@ async def fetch_github_info(
 
     rest_entries = (
         await fetch_root_entries_per_rest_api(session, owner, repo)
-        if "METADATA" in final_scopes and "too_many_files" in hints
-        else []
+        if (
+            "METADATA" in final_scopes
+            and "too_many_files" in hints
+            and "no_readme" not in hints
+        ) else []
     )
 
     repo_data = data["repository"]

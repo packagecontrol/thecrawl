@@ -836,7 +836,7 @@ async def download_info_from_github_releases(
     if not concrete_defs:
         return [], {}
     scopes = ("RELEASES", "METADATA") if include_metadata else ("RELEASES",)
-    gh_info = await fetch_github_info(session, base_url, scopes)
+    gh_info = await fetch_github_info(session, base_url, scopes, hints=["no_readme"])
     metadata = gh_info.get("metadata", {})
 
     output = []
@@ -1072,7 +1072,7 @@ async def resolve_github_tags(
     for base_url, defs in github_tag_defs.items():
         include_metadata = any(include for _, include in defs)
         scopes = ("TAGS", "METADATA") if include_metadata else ("TAGS",)
-        gh_info = await fetch_github_info(session, base_url, scopes)
+        gh_info = await fetch_github_info(session, base_url, scopes, hints=["no_readme"])
         metadata |= gh_info.get("metadata", {})
 
         for release, _ in defs:
