@@ -54,6 +54,8 @@ class ConcreteReleaseDef:
 
 # ReleaseInfo is the output release entry we emit into the output JSON.
 type ReleaseInfo = dict
+type ResolvedLibraryInfo = dict
+type SourceInfo = str  # Labels like "pypi:cache" or "github:tags" for provenance.
 type PypiAssetInfo = dict
 type PypiReleases = dict[VersionString, list[PypiAssetInfo]]
 SUPPORTED_PLATFORMS = [
@@ -234,7 +236,9 @@ async def run() -> int:
     ) as progress:
         task_id = progress.add_task("Crawling Libraries", total=len(selected_libs))
         async with aiohttp.ClientSession() as aio_session:
-            async def _resolve_named(library: dict) -> tuple[str, object]:
+            async def _resolve_named(
+                library: dict,
+            ) -> tuple[str, tuple[ResolvedLibraryInfo, list[SourceInfo]] | Exception]:
                 name = library["name"]
                 task = resolve_library(library, Path(args.cache_dir), aio_session)
                 try:
@@ -927,7 +931,7 @@ def format_updated_message(names: list[str]) -> str:
 
 async def resolve_library(
     library: dict, cache_dir: Path, aio_session: aiohttp.ClientSession
-) -> tuple[dict, list[str]]:
+) -> tuple[ResolvedLibraryInfo, list[SourceInfo]]:
     validate_library(library)
 
     output_releases: list[dict] = []
