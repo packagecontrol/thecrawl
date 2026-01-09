@@ -19,7 +19,7 @@ from .utils import drop_falsy, normalize_tz_aware_datetime
 # "tags", "branches", and "releases" are lazy fetched, unless you provide their
 # scopes as initial QueryScope, until exhausted. (Ref: TagPager/BranchesPager)
 
-type QueryScope = Literal["METADATA", "TAGS", "BRANCHES", "RELEASES"]
+type QueryScope = str  # Literal["METADATA", "TAGS", "BRANCHES", "RELEASES"]
 type QueryStr = str
 type QueryVars = str
 type Query = QueryStr | tuple[QueryVars, QueryStr]
