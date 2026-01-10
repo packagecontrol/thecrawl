@@ -4,21 +4,22 @@ import json
 import os
 import aiohttp
 import asyncio
+import re
 import sys
 from time import time
 from urllib.parse import urlparse
 
-from typing import AsyncIterable, Literal, Iterable, TypedDict
+from typing import AsyncIterable, Iterable, Literal, TypedDict
 
 from .utils import drop_falsy, normalize_tz_aware_datetime
 
 # This module exposes a single entrypoint
 # fetch_repo_info(Url, Iterable[QueryScope]) -> RepoInfo
 # fetch_repo_info("https://github.com/timbrel/GitSavvy", ("METADATA", "TAGS"))
-# "tags" and "branches" are lazy fetched, unless you provide TAGS or BRANCHES as
-# initial QueryScope, until exhausted. (Ref: TagPager and BranchesPager)
+# "tags", "branches", and "releases" are lazy fetched, unless you provide their
+# scopes as initial QueryScope, until exhausted. (Ref: TagPager/BranchesPager)
 
-type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
+type QueryScope = str  # Literal["METADATA", "TAGS", "BRANCHES", "RELEASES"]
 type QueryStr = str
 type QueryVars = str
 type Query = QueryStr | tuple[QueryVars, QueryStr]
@@ -30,6 +31,7 @@ class RepoInfo(TypedDict):
     metadata: RepoMetadata
     tags: AsyncIterable[TagInfo]
     branches: AsyncIterable[BranchInfo]
+    releases: AsyncIterable[ReleaseInfo]
     rate_limit_info: RateLimitInfo
 
 
@@ -59,6 +61,23 @@ class BranchInfo(TypedDict):
     name: str
     url: Url
     date: IsoTimestamp
+
+
+class ReleaseAssetInfo(TypedDict):
+    name: str
+    url: Url
+    size: int | None
+    content_type: str | None
+
+
+class ReleaseInfo(TypedDict):
+    name: str | None
+    tag_name: str
+    url: Url
+    date: IsoTimestamp
+    is_prerelease: bool
+    is_draft: bool
+    assets: list[ReleaseAssetInfo]
 
 
 class RateLimitInfo(TypedDict):
@@ -117,7 +136,7 @@ FILES = (
     """
 )
 BRANCHES = (
-    '$branches_after: String',
+    "$branches_after: String",
     """
     branches: refs(
       refPrefix: "refs/heads/",
@@ -140,7 +159,7 @@ BRANCHES = (
     """
 )
 TAGS = (
-    '$tags_after: String',
+    "$tags_after: String",
     """
     tags: refs(
       refPrefix: "refs/tags/"
@@ -173,11 +192,44 @@ TAGS = (
     }
     """
 )
+RELEASES = (
+    "$releases_after: String",
+    """
+    releases: releases(
+      first: 100
+      after: $releases_after
+      orderBy: {field: CREATED_AT, direction: DESC}
+    ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        name
+        tagName
+        createdAt
+        publishedAt
+        isDraft
+        isPrerelease
+        url
+        releaseAssets(first: 100) {
+          nodes {
+            name
+            downloadUrl
+            size
+            contentType
+          }
+        }
+      }
+    }
+    """
+)
 scope_to_query: dict[str, Query] = {
     "METADATA": METADATA,
     "FILES": FILES,
     "TAGS": TAGS,
     "BRANCHES": BRANCHES,
+    "RELEASES": RELEASES,
 }
 
 
@@ -310,7 +362,7 @@ async def fetch_github_info(
     owner, repo = parse_owner_repo(github_url)
 
     final_scopes: list[str] = list(scopes)
-    if "METADATA" in final_scopes and "too_many_files" not in hints:
+    if "METADATA" in final_scopes and not {"too_many_files", "no_readme"} & set(hints):
         final_scopes.append("FILES")
     query = build_query(scope_to_query[scope] for scope in final_scopes)
     variables = {
@@ -322,8 +374,11 @@ async def fetch_github_info(
 
     rest_entries = (
         await fetch_root_entries_per_rest_api(session, owner, repo)
-        if "METADATA" in final_scopes and "too_many_files" in hints
-        else []
+        if (
+            "METADATA" in final_scopes
+            and "too_many_files" in hints
+            and "no_readme" not in hints
+        ) else []
     )
 
     repo_data = data["repository"]
@@ -355,6 +410,7 @@ async def fetch_github_info(
         }) if "METADATA" in final_scopes else {},
         "tags": TagPager(session, owner, repo, initial_data=repo_data.get("tags")),
         "branches": BranchesPager(session, owner, repo, initial_data=repo_data.get("branches")),
+        "releases": ReleasesPager(session, owner, repo, initial_data=repo_data.get("releases")),
         "rate_limit_info": data["rate_limit_info"],
     }
 
@@ -394,6 +450,40 @@ def grab_branches(repo: str, entries) -> list[BranchInfo]:
             "url": f"https://codeload.github.com/{repo}/zip/{branch_name}"
         })
     return branches
+
+
+def grab_releases(repo: str, entries) -> list[ReleaseInfo]:
+    releases: list[ReleaseInfo] = []
+    for node in entries.get("nodes", []):
+        tag_name = node.get("tagName")
+        if not tag_name:
+            err(f"Skip release without tagName from https://github.com/{repo}")
+            continue
+        date = node.get("publishedAt") or node.get("createdAt")
+        if not date:
+            err(f"Skip release `{tag_name}` from https://github.com/{repo} with no date")
+            continue
+
+        assets: list[ReleaseAssetInfo] = [
+            {
+                "name": asset.get("name"),
+                "url": asset.get("downloadUrl"),
+                "size": asset.get("size"),
+                "content_type": asset.get("contentType"),
+            }
+            for asset in node.get("releaseAssets", {}).get("nodes", [])
+            if asset.get("downloadUrl")
+        ]
+        releases.append({
+            "name": node.get("name"),
+            "tag_name": tag_name,
+            "url": node.get("url"),
+            "date": date[:19] + "Z",
+            "is_prerelease": bool(node.get("isPrerelease")),
+            "is_draft": bool(node.get("isDraft")),
+            "assets": assets,
+        })
+    return releases
 
 
 def find_readme_url(entries, owner, repo, branch) -> str | None:
@@ -513,6 +603,62 @@ class BranchesPager:
 
     async def prefetch(self):
         """Optional: Eagerly load all branches."""
+        async for _ in self:
+            pass
+
+
+class ReleasesPager:
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        owner: str,
+        repo: str,
+        initial_data: dict | None = None,
+    ):
+        self._session = session
+        self.owner = owner
+        self.repo = repo
+        self._cache: list[ReleaseInfo] = []
+        self._fetched_all = False
+        self._next_cursor: str | None = None
+
+        if initial_data:
+            self._process_release_data(initial_data)
+
+    def _process_release_data(self, release_data: dict) -> list[ReleaseInfo]:
+        releases = grab_releases(f"{self.owner}/{self.repo}", release_data)
+        self._cache.extend(releases)
+        page_info = release_data.get("pageInfo", {})
+        self._fetched_all = not page_info.get("hasNextPage", False)
+        self._next_cursor = page_info.get("endCursor")
+        return releases
+
+    def __aiter__(self):
+        return self._generator()
+
+    async def _generator(self):
+        for release in self._cache:
+            yield release
+
+        while True:
+            if self._fetched_all:
+                break
+
+            query = build_query([RELEASES])
+            variables = {
+                "owner": self.owner,
+                "name": self.repo,
+                "releases_after": self._next_cursor,
+            }
+            result = await make_graphql_query(self._session, query, variables)
+            release_data = result["repository"]["releases"]
+            new_releases = self._process_release_data(release_data)
+
+            for release in new_releases:
+                yield release
+
+    async def prefetch(self):
+        """Optional: Eagerly load all releases."""
         async for _ in self:
             pass
 

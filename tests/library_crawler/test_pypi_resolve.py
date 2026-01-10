@@ -1,0 +1,111 @@
+import json
+from pathlib import Path
+
+from scripts.crawl_libraries import (
+    concretize_release_def,
+    download_info_from_fixed_version,
+    download_info_from_latest_versions,
+    normalize_release_def,
+)
+
+FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
+
+
+def load_releases(name: str):
+    return json.loads((FIXTURES_DIR / f"{name}.json").read_text())["releases"]
+
+
+def make_concrete(release: dict, auto_assets: bool = True):
+    return concretize_release_def(normalize_release_def(release), auto_assets=auto_assets)
+
+
+def resolve_latest(release: dict, fixture: str):
+    return download_info_from_latest_versions(
+        make_concrete(release), load_releases(fixture)
+    )
+
+
+def test_pypi_latest_cp313_picks_6_0_2():
+    release = {
+        "base": "https://pypi.org/project/lxml",
+        "platforms": "windows-x64",
+        "python_versions": "3.13",
+    }
+    info = resolve_latest(release, "lxml")
+
+    assert len(info) == 1
+    assert info[0]["version"] == "6.0.2"
+    assert info[0]["url"].endswith("lxml-6.0.2-cp313-cp313-win_amd64.whl")
+
+
+def test_pypi_cp33_macos_multitag_filename():
+    release = {
+        "base": "https://pypi.org/project/lxml",
+        "platforms": "osx-x64",
+        "python_versions": "3.3",
+    }
+    concrete_defs = make_concrete(release)
+    info = download_info_from_fixed_version("4.2.1", concrete_defs, load_releases("lxml"))
+
+    assert len(info) == 1
+    assert info[0]["version"] == "4.2.1"
+    assert info[0]["url"].endswith(
+        "lxml-4.2.1-cp33-cp33m-macosx_10_6_x86_64.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl"
+    )
+
+
+def test_pypi_cp33_windows_latest():
+    release = {
+        "base": "https://pypi.org/project/lxml",
+        "platforms": "windows-x64",
+        "python_versions": "3.3",
+    }
+    info = resolve_latest(release, "lxml")
+
+    assert len(info) == 1
+    assert info[0]["version"] == "4.2.6"
+    assert info[0]["url"].endswith("lxml-4.2.6-cp33-cp33m-win_amd64.whl")
+
+
+def test_pypi_version_spec_exact_pin():
+    release = {
+        "base": "https://pypi.org/project/lxml",
+        "platforms": ["osx-x64", "windows-x64"],
+        "python_versions": "3.3",
+        "version": "4.2.1",
+    }
+    info = resolve_latest(release, "lxml")
+    by_platform = {item["platforms"][0]: item for item in info}
+
+    assert len(info) == 2
+    assert set(by_platform) == {"osx-x64", "windows-x64"}
+    assert all(item["version"] == "4.2.1" for item in by_platform.values())
+
+
+def test_pypi_version_spec_wildcard():
+    release = {
+        "base": "https://pypi.org/project/lxml",
+        "platforms": ["osx-x64", "windows-x64"],
+        "python_versions": "3.3",
+        "version": "4.2.*",
+    }
+    info = resolve_latest(release, "lxml")
+    by_platform = {item["platforms"][0]: item for item in info}
+
+    assert len(info) == 2
+    assert by_platform["osx-x64"]["version"] == "4.2.1"
+    assert by_platform["windows-x64"]["version"] == "4.2.6"
+
+
+def test_pypi_backrefs_post_release_py38():
+    release = {
+        "base": "https://pypi.org/project/backrefs",
+        "asset": "backrefs-*-py${py_version}-none-any.whl",
+        "platforms": "windows-x64",
+        "python_versions": "3.8",
+    }
+    info = resolve_latest(release, "backrefs")
+
+    assert len(info) == 1
+    assert info[0]["version"] == "5.7.post1"
+    assert info[0]["url"].endswith("backrefs-5.7.post1-py38-none-any.whl")

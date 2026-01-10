@@ -104,6 +104,26 @@ Finally produces compressed output for either
 
 ---
 
+### 5. `crawl_libraries.py`
+
+Resolves library release info from a `repository.json` and writes
+`libraries.json` plus a crawl meta database (`libraries-metadb.json`).
+
+Use `--name` to crawl a single library or `--explain` to print the concretized
+release definitions it would use.
+
+Add `--fetch-repo` to refresh `repository.json` from a URL before crawling.
+Defaults to the standard channel at https://github.com/packagecontrol/channel.
+
+```bash
+$ uv run -m scripts.crawl_libraries --name lxml
+$ uv run -m scripts.crawl_libraries --explain lxml
+$ uv run -m scripts.crawl_libraries --fetch-repo
+$ uv run -m scripts.crawl_libraries --fetch-repo https://example.com/repository.json
+```
+
+---
+
 ### `accumulate_stats.py`
 
 `scripts/accumulate_stats.py` turns the raw install totals from https://stats.sublimetext.io into rolling daily, weekly, and yearly deltas that we publish alongside the crawler output.
