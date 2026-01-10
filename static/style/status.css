@@ -108,6 +108,10 @@ html.status main {
     pointer-events: none;
   }
 
+  .x-label-month {
+    fill: var(--foreground-1);
+  }
+
   .x-callout {
     stroke: var(--background-3);
     stroke-width: 1;

@@ -411,7 +411,7 @@ class StatusChart {
 
       if (isMonthStart || isFiveDayTick || i === 0) {
         const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-        label.setAttribute('class', 'x-label')
+        label.setAttribute('class', isMonthStart ? 'x-label x-label-month' : 'x-label')
         label.setAttribute('x', x)
         label.setAttribute('y', this.height)
         label.textContent = isMonthStart
