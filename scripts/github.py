@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 from typing import AsyncIterable, Literal, Iterable, TypedDict
 
-from .utils import drop_falsy
+from .utils import drop_falsy, normalize_tz_aware_datetime
 
 # This module exposes a single entrypoint
 # fetch_repo_info(Url, Iterable[QueryScope]) -> RepoInfo
@@ -156,6 +156,9 @@ TAGS = (
         name
         target {
           ... on Tag {
+            tagger {
+              date
+            }
             target {
               ... on Commit {
                 committedDate
@@ -361,14 +364,19 @@ def grab_tags(repo: str, entries) -> list[TagInfo]:
     for node in entries["nodes"]:
         tag_name = node["name"]
         t = node["target"]
-        commit = t.get("target", t)
-        date = commit.get("committedDate")
+        date = (
+            t.get("tagger", {}).get("date")
+            or t.get("target", t).get("committedDate")
+        )
         if not date:
-            err(f"Skip tag `{node}` from https://github.com/{repo} which has no commit date")
+            err(
+                f"Skip tag `{node}` from https://github.com/{repo} "
+                "which has no tag or commit date"
+            )
             continue
         tags.append({
             "name": tag_name,
-            "date": date[:19] + "Z",
+            "date": normalize_tz_aware_datetime(date),
             "url": f"https://codeload.github.com/{repo}/zip/{tag_name}"
         })
     return tags
