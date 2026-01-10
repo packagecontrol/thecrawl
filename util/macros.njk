@@ -83,10 +83,16 @@
     {% if verbose %}
       {% import "packages/macros.njk" as pack %}
       {% set shortcuts = {
-        platforms: ['linux','macos','windows'],
         labels: ['language syntax','snippets','linting','auto-complete','color scheme','theme', '…']
       } %}
-      {{ pack.labels(shortcuts) }}
+      <div class="search-shortcuts">
+        {{ pack.labels(shortcuts) }}
+        <ul class="button-group search-shortcuts-links">
+          <li>
+            <a class="button" href="/libraries">Libraries</a>
+          </li>
+        </ul>
+      </div>
     {% endif %}
   </form>
 {% endmacro %}

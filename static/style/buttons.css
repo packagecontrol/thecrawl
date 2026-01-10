@@ -80,6 +80,9 @@
     padding-left: 0;
     padding-right: 0;
     background: none;
+    @media (width < 732px) {
+      padding-left: 6px;   /* these 6px come from packages.css: .labels a! */
+    }
   }
   &.label-more:hover {
     color: var(--orange-2);

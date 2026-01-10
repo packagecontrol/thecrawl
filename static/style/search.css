@@ -40,6 +40,49 @@ form[name='search'] {
   margin-left: auto;
   margin-right: auto;
   max-width: calc(var(--max-content) * 2/3);
+
+  &:has(.button-group.labels) .search-controls {
+    margin-bottom: 4px;
+  }
+
+  .button-group.labels {
+    padding-top: 0;
+
+    a.button:not(:hover):not(:focus-visible):not(.is-active) {
+      background: transparent;
+    }
+  }
+
+  .search-shortcuts {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 1.5em;
+    margin-bottom: 37px;
+
+    .button-group {
+      padding-top: 0;
+      margin-bottom: 0;
+    }
+
+    .button-group.labels {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .search-shortcuts-links {
+      margin-left: auto;
+      align-self: flex-start;
+      flex: 0 0 auto;
+
+      a.button:not(:hover):not(:focus-visible):not(.is-active) {
+        background: transparent;
+        @media (width < 732px) {
+            background: var(--background-3);
+        }
+      }
+    }
+  }
 }
 
 section[name="labels"] a.button.label svg.label-icon {
