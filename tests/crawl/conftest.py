@@ -37,6 +37,8 @@ def mock_github(info):
             info["tags"] = AsyncList(info["tags"])
         if "branches" in info:
             info["branches"] = AsyncList(info["branches"])
+        if "releases" in info:
+            info["releases"] = AsyncList(info["releases"])
         return info
 
     return wrapper
