@@ -306,7 +306,10 @@ function badgeFor(conclusion) {
  * @param {string} text
  */
 function normalizeNotes(text) {
-  return text.replace(/\r\n?/g, '\n')
+  return text
+    .replace(/\r\n?/g, '\n')
+    // Added 2026-01-11; delete after 2026-02-12
+    .replace(/\*\*currently failing\*\*:\s*\n/gi, '#### Currently failing\n')
 }
 
 function clamp(value, min, max) {
@@ -646,7 +649,7 @@ function annotateChanges(entries) {
 function extractCurrentlyFailing(notes) {
   if (!notes) return false
   const normalized = normalizeNotes(notes)
-  const marker = '**currently failing**:\n'
+  const marker = '#### currently failing\n'
   const lower = normalized.toLowerCase()
   const idx = lower.indexOf(marker)
   if (idx === -1) return ''
