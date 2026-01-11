@@ -391,10 +391,6 @@ def name_and_version(url: str) -> tuple[str, str | None] | tuple[None, None]:
 
 
 def validate_release_def(release: ReleaseDef) -> None:
-    base = release.get("base")
-    if not isinstance(base, str) or not base:
-        raise ValueError("Missing base URL in release.")
-
     for key in ("platforms", "python_versions", "sublime_text", "asset"):
         value = release.get(key)
         if value is None:
@@ -408,6 +404,22 @@ def validate_release_def(release: ReleaseDef) -> None:
     version_spec = release.get("version")
     if version_spec is not None and not isinstance(version_spec, str):
         raise ValueError("Invalid version value in release.")
+
+    url = release.get("url")
+    if url is not None:
+        if not isinstance(url, str) or not url:
+            raise ValueError("Invalid url value in release.")
+        if not isinstance(version_spec, str) or not version_spec.strip():
+            raise ValueError("Static releases must include a version string.")
+        if url.startswith("http://") and not release.get("sha256"):
+            raise ValueError("Static http releases must include a sha256 hash.")
+        if release.get("base"):
+            raise ValueError("Static releases must not include a base URL.")
+        return
+
+    base = release.get("base")
+    if not isinstance(base, str) or not base:
+        raise ValueError("Missing base URL in release.")
 
     if "pypi.org/project/" in base:
         if release.get("branch") or release.get("url"):
@@ -943,6 +955,7 @@ async def resolve_library(
     validate_library(library)
 
     output_releases: list[dict] = []
+    static_releases: list[dict] = []
     sources: set[str] = set()
     pypi_data_by_name: dict[str, dict] = {}  # Cache PyPI JSON per project name.
     included_github_metadata = False
@@ -953,9 +966,12 @@ async def resolve_library(
 
     for release in library.get("releases", []):
         base_url = release.get("base")
-        if "pypi.org/project/" in base_url:
+        if release.get("url") and not base_url:
+            static_releases.append(release.copy())
+            continue
+        if base_url and "pypi.org/project/" in base_url:
             pypi_bases[base_url].append(release)
-        elif "github.com/" in base_url:
+        elif base_url and "github.com/" in base_url:
             container = github_asset_defs if "asset" in release else github_tag_defs
             container[base_url].append((release, not included_github_metadata))
             if not included_github_metadata:
@@ -1005,7 +1021,7 @@ async def resolve_library(
             sources.add("github:tags")
         github_metadata |= metadata
 
-    if not output_releases:
+    if not output_releases and not static_releases:
         raise ValueError("No matching releases found.")
 
     lib_info_from_github = drop_falsy({
@@ -1027,7 +1043,7 @@ async def resolve_library(
         "description": library.get("description"),
         "author": library.get("author"),
         "issues": library.get("issues"),
-        "releases": sort_releases(combine_releases(output_releases)),
+        "releases": sort_releases(combine_releases(output_releases + static_releases)),
     })
 
     for key in ("description", "author", "issues"):
