@@ -195,6 +195,10 @@ html.status main {
   padding: var(--grid-line) calc(var(--side-padding) * 2);
   max-width: var(--max-line);
 
+  h4 {
+    font-size: 16px;
+  }
+
   &, p, ol, ul, summary {
     /*font-family: "IBM Plex Mono", monospace;*/
     font-size: 15px;
@@ -224,6 +228,10 @@ html.status main {
 
   ul, ol {
     padding-left: 1.2em;
+  }
+
+  li {
+    margin-bottom: 6px;
   }
 
   a {
