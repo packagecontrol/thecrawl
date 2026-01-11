@@ -1,5 +1,8 @@
 # thecrawl
 
+[![CI](https://github.com/packagecontrol/thecrawl/actions/workflows/ci.yml/badge.svg)](https://github.com/packagecontrol/thecrawl/actions/workflows/ci.yml)
+[![Crawler](https://github.com/packagecontrol/thecrawl/actions/workflows/crawl.yml/badge.svg)](https://github.com/packagecontrol/thecrawl/releases)
+
 _“The Crawl”_ is a fully transparent crawler for the Sublime Text package ecosystem.
 It fetches and verifies package metadata from registered channels, builds a reproducible
 registry, and generates a `channel.json` suitable for Package Control.
