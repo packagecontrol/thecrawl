@@ -908,8 +908,11 @@ def combine_releases(releases: list[dict]) -> list[dict]:
         for entry in entries:
             merged |= entry
 
-        merged["platforms"] = platform_list
-        merged["python_versions"] = list(python_versions)
+        if platform_list:
+            merged["platforms"] = platform_list
+
+        if python_versions:
+            merged["python_versions"] = list(python_versions)
 
         output.append(merged)
 
