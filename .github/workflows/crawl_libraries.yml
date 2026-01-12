@@ -37,7 +37,6 @@ jobs:
           path: |
             .pypi-cache
             libraries.json
-            libraries-metadb.json
             repository.json
           key: lib-cache-${{ github.run_id }}
           fail-on-cache-miss: false
@@ -59,6 +58,5 @@ jobs:
           name: libraries-backup
           path: |
             libraries.json
-            libraries-metadb.json
             repository.json
           retention-days: 30

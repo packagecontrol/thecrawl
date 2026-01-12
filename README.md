@@ -110,7 +110,7 @@ Finally produces compressed output for either
 ### 5. `crawl_libraries.py`
 
 Resolves library release info from a `repository.json` and writes
-`libraries.json` plus a crawl meta database (`libraries-metadb.json`).
+`libraries.json`.
 
 Use `--name` to crawl a single library or `--explain` to print the concretized
 release definitions it would use.

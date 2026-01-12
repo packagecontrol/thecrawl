@@ -114,11 +114,6 @@ def parse_args() -> argparse.Namespace:
         help="Path to output JSON (default: libraries.json)",
     )
     parser.add_argument(
-        "--crawl-db",
-        default="libraries-metadb.json",
-        help="Path to crawl meta database (default: libraries-metadb.json)",
-    )
-    parser.add_argument(
         "--cache-dir",
         default=".pypi-cache",
         help="PyPI cache directory (default: .pypi-cache)",
@@ -154,13 +149,10 @@ async def run() -> int:
     timestamp = now_timestamp()
     updated_names: list[str] = []
 
-    crawl_path = Path(args.crawl_db)
-    crawl_db = load_crawl_db(crawl_path)
-    dump_meta_db = partial(dump_json, crawl_path, crawl_db, sort_keys=True)
-
     output_path = Path(args.output)
     output_data = load_output(output_path)
     dump_output = partial(dump_json, output_path, output_data)
+    library_entries = output_data["libraries"]
 
     if args.name:
         library = find_library(repo, args.name)
@@ -173,45 +165,53 @@ async def run() -> int:
                     library, Path(args.cache_dir), aio_session
                 )
 
-            output_data["libraries"][args.name] = info
-            dump_output()
-
+            entry = library_entries.get(args.name, {}).copy()
+            entry.update(info)
+            mark_added(entry, timestamp)
             latest_version = latest_version_from_releases(info["releases"])
-            if mark_success(crawl_db, args.name, timestamp, latest_version):
+            if mark_success(entry, timestamp, latest_version):
                 updated_names.append(args.name)
-            dump_meta_db()
+            library_entries[args.name] = entry
+            dump_output()
 
             source_label = ", ".join(sources) if sources else "cache"
             version_label = f" {latest_version}" if latest_version else ""
-            print(json.dumps(info, indent=2, ensure_ascii=True))
+            print(json.dumps(entry, indent=2, ensure_ascii=True))
             print(f"Resolved {args.name}{version_label} using {source_label}.")
             print(format_updated_message(updated_names))
             return 0
         except Exception as exc:
-            mark_failure(crawl_db, args.name, timestamp, str(exc))
-            dump_meta_db()
+            if args.name in library_entries:
+                mark_failure(library_entries[args.name], timestamp, str(exc))
+                dump_output()
             raise
 
     repo_names = {
         lib.get("name") for lib in repo.get("libraries", []) if lib.get("name")
     }
 
-    removed = set(output_data["libraries"]) - repo_names
+    removed = set(library_entries) - repo_names
     for name in removed:
-        output_data["libraries"].pop(name, None)
-        mark_removed(crawl_db, name, timestamp)
+        entry = library_entries.get(name)
+        if entry:
+            mark_removed(entry, timestamp)
 
     for name in repo_names:
-        if name not in crawl_db or crawl_db.get(name, {}).get("removed"):
-            mark_added(crawl_db, name, timestamp)
+        if name in library_entries:
+            mark_added(library_entries[name], timestamp)
 
     def sort_key(name: str):
+        entry = library_entries.get(name, {})
         return (
-            parse_last_crawl(crawl_db.get(name, {}).get("last_crawl")),
+            parse_last_crawl(entry.get("last_crawl")),
             name.lower(),
         )
 
-    selected = sorted(repo_names, key=sort_key)[:args.limit]
+    selected = [
+        name
+        for name in sorted(repo_names, key=sort_key)
+        if not library_entries.get(name, {}).get("removed")
+    ][:args.limit]
     libraries = {lib.get("name"): lib for lib in repo.get("libraries", [])}
     selected_libs = [
         library
@@ -252,21 +252,24 @@ async def run() -> int:
                 progress.advance(task_id)
 
                 if isinstance(result, Exception):
-                    mark_failure(crawl_db, name, timestamp, str(result))
+                    if name in library_entries:
+                        mark_failure(library_entries[name], timestamp, str(result))
                     print(f"Failed {name}: {result}")
                     continue
 
                 info, sources = result
-                output_data["libraries"][name] = info
+                entry = library_entries.get(name, {}).copy()
+                entry.update(info)
+                mark_added(entry, timestamp)
                 latest_version = latest_version_from_releases(info["releases"])
-                if mark_success(crawl_db, name, timestamp, latest_version):
+                if mark_success(entry, timestamp, latest_version):
                     updated_names.append(name)
+                library_entries[name] = entry
                 source_label = ", ".join(sources) if sources else "cache"
                 version_label = f" {latest_version}" if latest_version else ""
                 err(f"Resolved {name}{version_label} using {source_label}.")
 
     dump_output()
-    dump_meta_db()
     print(f"Crawled {len(selected_libs)} libraries.")
     print(format_updated_message(updated_names))
     return 0
@@ -327,32 +330,14 @@ def load_output(path: Path) -> dict:
     return data
 
 
-def load_crawl_db(path: Path) -> dict:
-    if not path.exists():
-        return {}
-    data = load_json(path)
-    if not isinstance(data, dict):
-        raise ValueError(f"{path.name} must be a JSON object.")
-    return data
-
-
-def mark_added(crawl_db: dict, name: str, timestamp: str) -> None:
-    entry = crawl_db.setdefault(name, {})
+def mark_added(entry: dict, timestamp: str) -> None:
     if entry.get("removed"):
         entry.pop("removed", None)
     if "added" not in entry:
         entry["added"] = timestamp
 
 
-def mark_removed(crawl_db: dict, name: str, timestamp: str) -> None:
-    entry = crawl_db.setdefault(name, {})
-    entry["removed"] = timestamp
-
-
-def mark_success(
-    crawl_db: dict, name: str, timestamp: str, latest_version: str | None
-) -> bool:
-    entry = crawl_db.setdefault(name, {})
+def mark_success(entry: dict, timestamp: str, latest_version: str | None) -> bool:
     previous_version = entry.get("latest_version")
     entry["last_crawl"] = timestamp
     updated = False
@@ -368,8 +353,11 @@ def mark_success(
     return updated
 
 
-def mark_failure(crawl_db: dict, name: str, timestamp: str, reason: str) -> None:
-    entry = crawl_db.setdefault(name, {})
+def mark_removed(entry: dict, timestamp: str) -> None:
+    entry["removed"] = timestamp
+
+
+def mark_failure(entry: dict, timestamp: str, reason: str) -> None:
     entry["last_crawl"] = timestamp
     if "failing_since" not in entry:
         entry["failing_since"] = timestamp
