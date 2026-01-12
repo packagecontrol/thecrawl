@@ -4,21 +4,29 @@ import asyncio
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
+from itertools import product
 import json
 import os
 import re
 import sys
 from typing import Iterable, Literal, NotRequired, Required, TypedDict
+from packaging.specifiers import SpecifierSet
 
 
 from .bitbucket import fetch_bitbucket_info, RepoInfo as BitbucketRepoInfo
 from .generate_registry import Registry, PackageEntry as PackageEntryV1
 from .github import (
     fetch_github_info, rate_limit_info,
-    QueryScope, RepoInfo as GithubRepoInfo
+    QueryScope, RepoInfo as GithubRepoInfo, ReleaseAssetInfo
 )
 from .gitlab import fetch_gitlab_info, RepoInfo as GitlabRepoInfo
 from .codeberg import fetch_codeberg_info, RepoInfo as CodebergRepoInfo
+from .crawl_libraries import (
+    match_tag_version,
+    normalize_st_build,
+    normalize_version_spec,
+    parse_tag_prefix,
+)
 from .utils import next_run, parse_version, resolve_url, update_url
 import traceback
 
@@ -376,7 +384,6 @@ async def crawl_package(
     details = out.get("details")
     release_definitions: list[ReleaseDescription] = out.get("releases", [])  # type: ignore[assignment]
     migrate_release_definitions_from_v2(release_definitions)
-    reject_asset_definitions_from_v4(release_definitions)
     normalize_release_definition(release_definitions, out["source"], details)
 
     uow: defaultdict[Url, set[QueryScope]] = defaultdict(set)
@@ -392,6 +399,8 @@ async def crawl_package(
                 uow[base].add("TAGS")
             if "branch" in r:
                 uow[base].add("BRANCHES")
+            if "asset" in r:
+                uow[base].add("RELEASES")
 
     type HubRepoInfo = GithubRepoInfo | BitbucketRepoInfo | GitlabRepoInfo | CodebergRepoInfo
     for url, scopes in uow.items():
@@ -437,6 +446,85 @@ async def crawl_package(
             if is_fulfilled_release_definition(r):
                 continue
             if r.get("base") != url:
+                continue
+
+            if asset_pattern := r.get("asset"):
+                if "releases" not in info:
+                    err(f"Release assets are not supported for {url}")
+                    release_definitions.remove(r)
+                    continue
+
+                st_builds = r.get("sublime_text", "*")
+                if isinstance(st_builds, str):
+                    st_builds = [st_builds]
+                platforms = r.get("platforms", ["*"])
+                targets = list(product(platforms, st_builds))
+
+                tag_definition = r.get("tags", True)
+                tag_prefix = "" if tag_definition is True else tag_definition
+
+                spec_set = None
+                if version_spec := r.get("version"):
+                    normalized_spec = normalize_version_spec(version_spec)
+                    spec_set = SpecifierSet(normalized_spec) if normalized_spec else None
+
+                resolved_releases: list[dict] = []
+                async for release in info["releases"]:  # type: ignore[typeddict-item]  # sad, isn't it
+                    if release.get("is_draft"):
+                        continue
+                    tag_name = release.get("tag_name")
+                    if not tag_name:
+                        continue
+                    tag_match = match_tag_version(tag_name, tag_prefix)
+                    if not tag_match:
+                        continue
+                    version, version_str = tag_match
+                    if spec_set and not spec_set.contains(version, prereleases=True):
+                        continue
+                    assets = release.get("assets", [])
+
+                    for platform, st_build in targets[:]:
+                        if asset := match_release_asset_pattern(
+                            assets,
+                            asset_pattern,
+                            version_str,
+                            normalize_st_build(st_build),
+                            "any" if platform == "*" else platform
+                        ):
+                            r_ = {
+                                "sublime_text": st_build,
+                                "platforms": [platform],
+                                "version": version_str,
+                                "url": asset["url"],
+                                "date": release["date"],
+                            }
+                            resolved_releases.append(r_)
+                            targets.remove((platform, st_build))
+
+                    if not targets:
+                        break
+
+                if targets:
+                    missing_formatted = (
+                        f"({platform}, st_build={build})"
+                        for platform, st_build in sorted(targets)
+                        if (
+                            build := st_build
+                            if st_build == "*" or st_build.isnumeric()
+                            else repr(st_build)
+                        )
+                    )
+                    err(f"Missing release assets for {url} for: {', '.join(missing_formatted)}")
+
+                if resolved_releases:
+                    first = resolved_releases[0]
+                    r.clear()
+                    r.update(first)
+                    for extra in resolved_releases[1:]:
+                        release_definitions.append(extra)
+                else:
+                    err(f"No matching release asset found for {url}")
+                    release_definitions.remove(r)
                 continue
 
             tag_error = None
@@ -538,16 +626,6 @@ def pluck[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
     }
 
 
-def reject_asset_definitions_from_v4(releases: list[ReleaseDescription]):
-    for r in releases[:]:
-        if "asset" in r:
-            err(
-                "asset is a v4 thing and not supported right now "
-                "(the official registry is still v3)"
-            )
-            releases.remove(r)
-
-
 def missing_from_release_definition(release: ReleaseDescription) -> set[str]:
     return {"sublime_text", "platforms", "version", "url", "date"} - release.keys()
 
@@ -570,6 +648,12 @@ def normalize_release_definition(
         if isinstance(r["platforms"], str):
             r["platforms"] = [r["platforms"]]
 
+        r.setdefault("sublime_text", "*")
+        if isinstance(r["sublime_text"], list):
+            if "asset" not in r:
+                err(f"sublime_text as a list is only valid in conjunction with 'asset', {repo_url}")
+                releases.remove(r)
+
         if base := r.get("base", details):
             r["base"] = resolve_url(repo_url, base)
 
@@ -582,6 +666,36 @@ def normalize_release_definition(
             except ValueError:
                 err(f"date {r['date']} is not formatted correctly, {repo_url}")
                 releases.remove(r)
+
+
+def compile_release_asset_pattern(
+    pattern: str,
+    version: str,
+    st_build: str,
+    platform: str,
+) -> re.Pattern:
+    pattern = pattern.replace("${version}", version)
+    pattern = pattern.replace("${st_build}", st_build)
+    pattern = pattern.replace("${platform}", platform)
+    pattern = pattern.replace(".", r"\.")
+    pattern = pattern.replace("?", r".")
+    pattern = pattern.replace("*", r".*?")
+    return re.compile(pattern)
+
+
+def match_release_asset_pattern(
+    assets: list[ReleaseAssetInfo],
+    pattern: str,
+    version: str,
+    st_build: str,
+    platform: str,
+) -> ReleaseAssetInfo | None:
+    re_pattern = compile_release_asset_pattern(pattern, version, st_build, platform)
+    for asset in assets:
+        asset_name = asset.get("name")
+        if asset_name and re_pattern.match(asset_name):
+            return asset
+    return None
 
 
 def normalize_datetime_str(dt_str: str) -> str:
@@ -618,10 +732,6 @@ def migrate_release_definitions_from_v2(releases: list[ReleaseDescription]) -> s
     #           "base": "https://github.com/Andr3as/Sublime-SurroundWith"
     #       }
     for r in releases[:]:
-        if "sublime_text" not in r:
-            err("'sublime_text' key not present {r}")
-            releases.remove(r)
-
         if details := r.pop("details", None):
             match which_hub(details):
                 case "github":
