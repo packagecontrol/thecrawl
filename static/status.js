@@ -316,6 +316,41 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
 
+function roundedElbowPath(startX, startY, elbowX, endY, endX, radius) {
+  const vdir = endY >= startY ? 1 : -1
+  const hdist = Math.abs(elbowX - startX)
+  const vdist = Math.abs(endY - startY)
+  const r = Math.min(radius, hdist, vdist / 2)
+  if (r <= 0) {
+    return `M ${startX} ${startY} L ${elbowX} ${startY} L ${elbowX} ${endY} L ${endX} ${endY}`
+  }
+  // Q = https://svg-tutorial.com/editor/quadratic-bezier
+  return [
+    `M ${startX} ${startY}`,
+    `L ${elbowX + r} ${startY}`,
+    `Q ${elbowX} ${startY} ${elbowX} ${startY + vdir * r}`,
+    `L ${elbowX} ${endY - vdir * r}`,
+    `Q ${elbowX} ${endY} ${elbowX + r} ${endY}`,
+    `L ${endX} ${endY}`,
+  ].join(' ')
+}
+
+function roundedCornerToLimit(startX, startY, elbowX, limitY, radius) {
+  const vdir = limitY >= startY ? 1 : -1
+  const hdist = Math.abs(elbowX - startX)
+  const vdist = Math.abs(limitY - startY)
+  const r = Math.min(radius, hdist, vdist)
+  if (r <= 0) {
+    return `M ${startX} ${startY} L ${elbowX} ${startY} L ${elbowX} ${limitY}`
+  }
+  return [
+    `M ${startX} ${startY}`,
+    `L ${elbowX + r} ${startY}`,
+    `Q ${elbowX} ${startY} ${elbowX} ${startY + vdir * r}`,
+    `L ${elbowX} ${limitY}`,
+  ].join(' ')
+}
+
 function radiusForEntry(entry, fallbackRadius) {
   const crawledPackages = extractPackagesCrawled(entry.notes || '')
   const MIN_RADIUS = 2
@@ -584,6 +619,7 @@ class StatusChart {
 
   drawGlitchLinks(positions) {
     const OFFSET = 4
+    const CORNER_RADIUS = 2
     this.entries.forEach((entry, idx) => {
       const startIndex = entry.glitchStartIndex
       if (typeof startIndex !== 'number' || startIndex <= idx) return
@@ -605,21 +641,13 @@ class StatusChart {
       if (startPos.dayIndex !== endPos.dayIndex) {
         const older = { x: startX, y: startY, leftX: startLeftX, limitY: bottomY }
         const newer = { x: endX, y: endY, leftX: endLeftX, limitY: topY }
-        path.setAttribute(
-          'd',
-          [
-            `M ${older.x} ${older.y}`,
-            `L ${older.leftX} ${older.y}`,
-            `L ${older.leftX} ${older.limitY}`,
-            `M ${newer.x} ${newer.y}`,
-            `L ${newer.leftX} ${newer.y}`,
-            `L ${newer.leftX} ${newer.limitY}`,
-          ].join(' ')
-        )
+        const olderPath = roundedCornerToLimit(older.x, older.y, older.leftX, older.limitY, CORNER_RADIUS)
+        const newerPath = roundedCornerToLimit(newer.x, newer.y, newer.leftX, newer.limitY, CORNER_RADIUS)
+        path.setAttribute('d', `${olderPath} ${newerPath}`)
       }
       else {
         const leftX = Math.min(startLeftX, endLeftX)
-        path.setAttribute('d', `M ${startX} ${startY} L ${leftX} ${startY} L ${leftX} ${endY} L ${endX} ${endY}`)
+        path.setAttribute('d', roundedElbowPath(startX, startY, leftX, endY, endX, CORNER_RADIUS))
       }
       this.glitchLayer.appendChild(path)
     })
