@@ -18,6 +18,7 @@ html.status main {
   --status-dot: hsl(222.25deg 15.62% 63.35%);
   --status-dot-active-fill: hsl(273.7deg 12.38% 32.69%);
   --status-dot-active-stroke: hsl(282.55deg 11.03% 41.72%);
+  --status-glitch-link: hsl(215.72deg 42.37% 38.38% / 32%);
 
   --status-error-dot: hsl(7deg 90.45% 50.1%);
 
@@ -25,6 +26,7 @@ html.status main {
     --status-dot: hsl(245deg 34.8% 64.47%);
     --status-dot-active-fill: hsl(273.7deg 48.28% 87.52%);
     --status-dot-active-stroke: hsl(282.55deg 60.41% 75.84%);
+    --status-glitch-link: hsl(253.48deg 32.4% 48.82% / 69%);
     --status-error-dot: var(--red-2);
   }
 
@@ -96,11 +98,10 @@ html.status main {
 
   .glitch-link {
     fill: none;
-    stroke: var(--orange-2);
+    stroke: var(--status-glitch-link);
     stroke-width: 1;
     stroke-linecap: round;
     stroke-linejoin: round;
-    opacity: 0.35;
     pointer-events: none;
   }
 
