@@ -542,10 +542,13 @@ class StatusChart {
     const crawledPackages = extractPackagesCrawled(entry.notes || '')
     const MIN_RADIUS = 2
     const MAX_RADIUS = 3
+    const n = 100
+    const m = 400
     const radius = crawledPackages === null
       ? this.radius
       : clamp(
-          MIN_RADIUS + (Math.min(crawledPackages, 500) / 500) * (MAX_RADIUS - MIN_RADIUS),
+          // Map n-m packages to 0-1 for radius scaling.
+          MIN_RADIUS + ((crawledPackages - n) / (m - n)) * (MAX_RADIUS - MIN_RADIUS),
           MIN_RADIUS,
           MAX_RADIUS,
         )
