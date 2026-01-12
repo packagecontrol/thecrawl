@@ -237,38 +237,6 @@ def next_packages_to_crawl(
 
 
 def maintenance(registry: Registry, workspace: Workspace) -> None:
-    fields = (
-        "removed",
-        "first_seen",
-        "last_seen",
-        "next_crawl",
-        "last_modified",
-        "failing_since",
-        # hub specific data
-        "created_at",
-        "archived_at",
-    )
-    for pkg in workspace["packages"].values():
-        for field in fields:
-            if value := pkg.get(field):
-                if isinstance(value, str) and "T" not in value:
-                    try:
-                        datetime.strptime(value, STYLIZED_DATETIME_FORMAT)
-                    except ValueError:
-                        ...
-                    else:
-                        pkg[field] = value.replace(" ", "T") + "Z"  # type: ignore[literal-required]
-
-            for r in pkg.get("releases", []):
-                if value := r.get("date"):
-                    if isinstance(value, str) and "T" not in value:
-                        try:
-                            datetime.strptime(value, STYLIZED_DATETIME_FORMAT)
-                        except ValueError:
-                            ...
-                        else:
-                            r["date"] = value.replace(" ", "T") + "Z"
-
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
     now = datetime.now(timezone.utc)
