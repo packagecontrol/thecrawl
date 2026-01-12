@@ -31,7 +31,7 @@ REGISTRY = """
 """
 
 WORKSPACE = """
-    {"packages": {}, "dependencies": []}
+    {"packages": {}}
 """
 
 GITHUB_INFO = """
@@ -114,8 +114,7 @@ EXPECTED = """
       "last_modified": "2025-06-25T14:14:09Z",
       "next_crawl": "2025-08-13T23:44:16Z"
     }
-  },
-  "dependencies": []
+  }
 }
 """
 
@@ -198,7 +197,7 @@ async def test_metadata_name_is_essentially_ignored_as_registry_name_has_precede
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -271,7 +270,7 @@ async def test_accept_stylized_dates_for_static_releases(
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -320,7 +319,7 @@ async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_i
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -396,7 +395,7 @@ async def test_tag_missing_falls_back_to_branch(set_now, set_github_info, capsys
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -461,7 +460,7 @@ async def test_tag_missing_and_branch_missing_logs_tag_error(set_now, set_github
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -515,7 +514,7 @@ async def test_branch_missing_logs_branch_error(set_now, set_github_info, capsys
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -569,7 +568,7 @@ async def test_branch_true_selects_default_branch(set_now, set_github_info):
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -636,7 +635,7 @@ async def test_branch_specific_selects_named_branch(set_now, set_github_info):
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -703,7 +702,7 @@ async def test_branch_specific_missing_does_not_fallback(set_now, set_github_inf
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -765,7 +764,7 @@ async def test_tag_true_includes_prerelease_and_final(set_now, set_github_info):
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {
@@ -855,7 +854,7 @@ async def test_tag_prefixes_do_not_apply_when_tags_true(set_now, set_github_info
         ]
     }
 
-    workspace = {"packages": {}, "dependencies": []}
+    workspace = {"packages": {}}
 
     github_info = {
         "metadata": {

@@ -79,7 +79,6 @@ class PackageEntry(TypedDict, total=False):
 
 class Workspace(TypedDict):
     packages: dict[PackageName, PackageEntry]
-    dependencies: list[PackageEntry]
 
 
 class HeartAttack(Exception):
@@ -112,7 +111,7 @@ async def main(
         with open(workspace, 'r') as ws_file:
             workspace_data = json.load(ws_file)
     else:
-        workspace_data = {"packages": {}, "dependencies": []}
+        workspace_data = {"packages": {}}
 
     try:
         await main_(registry_data, workspace_data, name, limit, presto)
@@ -237,6 +236,8 @@ def next_packages_to_crawl(
 
 
 def maintenance(registry: Registry, workspace: Workspace) -> None:
+    workspace.pop("dependencies", None)
+
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
     now = datetime.now(timezone.utc)
