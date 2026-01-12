@@ -94,6 +94,16 @@ html.status main {
     }
   }
 
+  .glitch-link {
+    fill: none;
+    stroke: var(--orange-2);
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
   .y-label {
     fill: var(--foreground-3);
     font-size: 9px;
