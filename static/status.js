@@ -13,7 +13,7 @@ const nextButton = document.querySelector('[data-control="next"]')
 /** @type {HTMLButtonElement | null} */
 const lastButton = document.querySelector('[data-control="last"]')
 
-/** @typedef {{ date: string, run_id?: string, notes?: string, conclusion?: string, failuresChanged?: boolean }} LogEntry */
+/** @typedef {{ date: string, run_id?: string, notes?: string, conclusion?: string, failuresChanged?: boolean, glitchStartIndex?: number | null }} LogEntry */
 
 /** @type {LogEntry[]} */
 let logs = []
@@ -316,6 +316,56 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
 
+function roundedElbowPath(startX, startY, elbowX, endY, endX, radius) {
+  const vdir = endY >= startY ? 1 : -1
+  const hdist = Math.abs(elbowX - startX)
+  const vdist = Math.abs(endY - startY)
+  const r = Math.min(radius, hdist, vdist / 2)
+  if (r <= 0) {
+    return `M ${startX} ${startY} L ${elbowX} ${startY} L ${elbowX} ${endY} L ${endX} ${endY}`
+  }
+  // Q = https://svg-tutorial.com/editor/quadratic-bezier
+  return [
+    `M ${startX} ${startY}`,
+    `L ${elbowX + r} ${startY}`,
+    `Q ${elbowX} ${startY} ${elbowX} ${startY + vdir * r}`,
+    `L ${elbowX} ${endY - vdir * r}`,
+    `Q ${elbowX} ${endY} ${elbowX + r} ${endY}`,
+    `L ${endX} ${endY}`,
+  ].join(' ')
+}
+
+function roundedCornerToLimit(startX, startY, elbowX, limitY, radius) {
+  const vdir = limitY >= startY ? 1 : -1
+  const hdist = Math.abs(elbowX - startX)
+  const vdist = Math.abs(limitY - startY)
+  const r = Math.min(radius, hdist, vdist)
+  if (r <= 0) {
+    return `M ${startX} ${startY} L ${elbowX} ${startY} L ${elbowX} ${limitY}`
+  }
+  return [
+    `M ${startX} ${startY}`,
+    `L ${elbowX + r} ${startY}`,
+    `Q ${elbowX} ${startY} ${elbowX} ${startY + vdir * r}`,
+    `L ${elbowX} ${limitY}`,
+  ].join(' ')
+}
+
+function radiusForEntry(entry, fallbackRadius) {
+  const crawledPackages = extractPackagesCrawled(entry.notes || '')
+  const MIN_RADIUS = 2
+  const MAX_RADIUS = 3
+  const MIN_PACKAGES = 100
+  const MAX_PACKAGES = 400
+  if (crawledPackages === null) return fallbackRadius
+  return clamp(
+    // Map MIN_PACKAGES-MAX_PACKAGES to 0-1 for radius scaling.
+    MIN_RADIUS + ((crawledPackages - MIN_PACKAGES) / (MAX_PACKAGES - MIN_PACKAGES)) * (MAX_RADIUS - MIN_RADIUS),
+    MIN_RADIUS,
+    MAX_RADIUS,
+  )
+}
+
 /**
  * @param {LogEntry} entry
  */
@@ -353,9 +403,12 @@ class StatusChart {
     this.gridLayer.setAttribute('class', 'grid')
     this.labelLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.labelLayer.setAttribute('class', 'labels')
+    this.glitchLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.glitchLayer.setAttribute('class', 'glitch-links')
     this.dotLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.svg.appendChild(this.gridLayer)
     this.svg.appendChild(this.labelLayer)
+    this.svg.appendChild(this.glitchLayer)
     this.svg.appendChild(this.dotLayer)
 
     // Fixed chart constants
@@ -495,6 +548,7 @@ class StatusChart {
   redrawDots() {
     this.points = []
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
+    while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
 
     if (!this.entries.length) return
 
@@ -504,8 +558,9 @@ class StatusChart {
 
     const neutralNodes = []
     const otherNodes = []
+    const positions = new Array(this.entries.length).fill(null)
 
-    this.entries.forEach((entry) => {
+    this.entries.forEach((entry, idx) => {
       const ts = Date.parse(entry.date || 0)
       if (!Number.isFinite(ts)) return
       const d = new Date(ts)
@@ -516,13 +571,17 @@ class StatusChart {
       const hour = d.getHours() + d.getMinutes() / 60
       const x = crisp(this.padding.left + (this.days - 1 - diffDays + 0.5) * this.barWidth)
       const y = this.yForHour(hour)
-      const node = this.makeDot(entry, x, y)
+      const radius = radiusForEntry(entry, this.radius)
+      const node = this.makeDot(entry, x, y, radius)
+      positions[idx] = { x, y, radius, dayIndex: diffDays }
 
       const cls = classForEntry(entry)
       const isNeutral = cls === '' || cls === 'muted'
       const target = isNeutral ? neutralNodes : otherNodes
       target.push({ entry, node })
     })
+
+    this.drawGlitchLinks(positions)
 
     // Append neutral first, then everything else on top
     neutralNodes.forEach(({ entry, node }) => {
@@ -535,20 +594,10 @@ class StatusChart {
     })
   }
 
-  makeDot(entry, x, y) {
+  makeDot(entry, x, y, radius) {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
     circle.setAttribute('cx', x)
     circle.setAttribute('cy', y)
-    const crawledPackages = extractPackagesCrawled(entry.notes || '')
-    const MIN_RADIUS = 2
-    const MAX_RADIUS = 3
-    const radius = crawledPackages === null
-      ? this.radius
-      : clamp(
-          MIN_RADIUS + (Math.min(crawledPackages, 500) / 500) * (MAX_RADIUS - MIN_RADIUS),
-          MIN_RADIUS,
-          MAX_RADIUS,
-        )
     circle.setAttribute('r', radius)
     circle.dataset.key = (entry.run_id || '') + '|' + (entry.date || '')
     const classes = ['dot', classForEntry(entry), entry.notes ? '' : 'no-notes']
@@ -566,6 +615,42 @@ class StatusChart {
       }
     })
     return circle
+  }
+
+  drawGlitchLinks(positions) {
+    const OFFSET = 4
+    const CORNER_RADIUS = 2
+    this.entries.forEach((entry, idx) => {
+      const startIndex = entry.glitchStartIndex
+      if (typeof startIndex !== 'number' || startIndex <= idx) return
+      const startPos = positions[startIndex]
+      const endPos = positions[idx]
+      if (!startPos || !endPos) return
+
+      const startX = startPos.x - startPos.radius
+      const startY = startPos.y
+      const endX = endPos.x - endPos.radius
+      const endY = endPos.y
+      const startLeftX = startX - OFFSET
+      const endLeftX = endX - OFFSET
+      const topY = crisp(this.padding.top)
+      const bottomY = crisp(this.height - this.padding.bottom)
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      path.setAttribute('class', 'glitch-link')
+      if (startPos.dayIndex !== endPos.dayIndex) {
+        const older = { x: startX, y: startY, leftX: startLeftX, limitY: bottomY }
+        const newer = { x: endX, y: endY, leftX: endLeftX, limitY: topY }
+        const olderPath = roundedCornerToLimit(older.x, older.y, older.leftX, older.limitY, CORNER_RADIUS)
+        const newerPath = roundedCornerToLimit(newer.x, newer.y, newer.leftX, newer.limitY, CORNER_RADIUS)
+        path.setAttribute('d', `${olderPath} ${newerPath}`)
+      }
+      else {
+        const leftX = Math.min(startLeftX, endLeftX)
+        path.setAttribute('d', roundedElbowPath(startX, startY, leftX, endY, endX, CORNER_RADIUS))
+      }
+      this.glitchLayer.appendChild(path)
+    })
   }
 
   yForHour(hour) {
@@ -636,13 +721,45 @@ function updateUrl(entry) {
 }
 
 function annotateChanges(entries) {
+  // entries are sorted newest-first; "lookback" walks forward in the array to go back in time.
   const sections = entries.map(entry => extractCurrentlyFailing(entry.notes || ''))
+  const LOOKBACK = 10
   return entries.map((entry, idx) => {
-    const section = sections[idx] || ''
+    // For the following: "false" means: no notes at all were present
+    /** @type {false | string} */
+    const rawSection = sections[idx]
+    // '' (falsy) meaqns: no currently failing section was present
+    /** @type {string} */
+    const section = rawSection || ''
     const nextSection = sections[idx + 1]
     const hasNext = typeof nextSection !== 'undefined' && nextSection !== false
+    // Keep nextSection un-normalized so false (no notes) differs from '' (notes, no failing section).
     const failuresChanged = hasNext && section !== nextSection
-    return { ...entry, failuresChanged }
+    let glitchStartIndex = null
+
+    // Find "glitches"; a glitch is a temporary, self-healing change in the failing section.
+    if (failuresChanged && rawSection !== false) {
+      const maxIdx = Math.min(sections.length - 1, idx + LOOKBACK)
+      // 1. Try to find an entry with the same failing section
+      let matchIndex = null
+      for (let i = idx + 1; i <= maxIdx; i += 1) {
+        const candidate = sections[i]
+        if (candidate === false) continue
+        if ((candidate || '') === section) {
+          matchIndex = i
+          break
+        }
+      }
+      // 2. If we have one, the entry after that introduced the "glitch".
+      if (matchIndex !== null) {
+        const startIndex = matchIndex - 1
+        if (startIndex >= idx && sections[startIndex] !== false) {
+          glitchStartIndex = startIndex
+        }
+      }
+    }
+
+    return { ...entry, failuresChanged, glitchStartIndex }
   })
 }
 
