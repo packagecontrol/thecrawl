@@ -20,6 +20,7 @@ let logs = []
 let index = 0
 /** @type {StatusChart | null} */
 let chart = null
+let emptyStateMessage = ''
 
 function filterEntriesToWindow(entries, days) {
   const now = new Date()
@@ -59,7 +60,12 @@ function init() {
       return
     }
     chart?.setData(logs)
-    render(resolveIndexFromUrl())
+    const resolved = resolveIndexFromUrl()
+    if (resolved.hasRunId && !resolved.found) {
+      renderEmptyState(missingRunMessage(resolved.runId))
+      return
+    }
+    render(resolved.index)
   }).catch((err) => {
     console.error('Failed to load logs:', err)
     renderEmptyState('Failed to load logs. Please try again later.')
@@ -140,12 +146,19 @@ function findClosestByTimestamp(targetTs) {
 }
 
 function resolveIndexFromUrl() {
-  if (!logs.length || typeof window === 'undefined') return 0
+  if (!logs.length || typeof window === 'undefined') {
+    return { index: 0, hasRunId: false, found: false, runId: null }
+  }
   const url = new URL(window.location.href)
   const runId = url.searchParams.get('run_id')
-  if (!runId) return 0
+  if (!runId) {
+    return { index: 0, hasRunId: false, found: false, runId: null }
+  }
   const found = logs.findIndex(entry => entry.run_id && String(entry.run_id) === runId)
-  return found >= 0 ? found : 0
+  if (found >= 0) {
+    return { index: found, hasRunId: true, found: true, runId }
+  }
+  return { index: 0, hasRunId: true, found: false, runId }
 }
 
 const ASSET_URL = 'https://repackager.sublimetext.io/logs.json'
@@ -186,6 +199,7 @@ function render(targetIndex) {
   index = clamp(targetIndex, 0, logs.length - 1)
   const entry = logs[index]
   if (!entry) return
+  emptyStateMessage = ''
 
   updateHeading(entry)
   renderNotes(entry)
@@ -201,7 +215,12 @@ function refreshLogs() {
     const visibleEntries = typeof days === 'number' ? filterEntriesToWindow(entries, days) : entries
     logs = annotateChanges(visibleEntries)
     chart?.setData(logs)
-    render(resolveIndexFromUrl())
+    const resolved = resolveIndexFromUrl()
+    if (resolved.hasRunId && !resolved.found) {
+      renderEmptyState(missingRunMessage(resolved.runId))
+      return
+    }
+    render(resolved.index)
   }).catch((err) => {
     console.error('Failed to refresh logs:', err)
   })
@@ -254,9 +273,10 @@ function updateButtons() {
 
 function renderEmptyState(message) {
   dateEl.textContent = ''
-  badgeEl.textContent = '¯\\_(ツ)_/¯'
+  badgeLabelEl.textContent = '¯\\_(ツ)_/¯'
   badgeEl.className = 'status-badge status-badge-muted'
   notesEl.innerHTML = `<p>${message}</p>`
+  emptyStateMessage = message
 
   ;[prevButton, nextButton, lastButton].forEach((btn) => {
     if (btn) btn.disabled = true
@@ -394,6 +414,10 @@ function showHoverPreview(entry) {
 }
 
 function restoreActiveEntry() {
+  if (emptyStateMessage) {
+    renderEmptyState(emptyStateMessage)
+    return
+  }
   render(index)
 }
 
@@ -716,10 +740,15 @@ function formatHourLabel(hour) {
   return `${h}:00`
 }
 
-function linkToRun(runId) {
+function linkToRun(runId, label = 'logs') {
   if (!runId) return ''
   const href = `https://github.com/packagecontrol/thecrawl/actions/runs/${runId}`
-  return `<a href="${href}">logs</a>`
+  return `<a href="${href}">${label}</a>`
+}
+
+function missingRunMessage(runId) {
+  const link = linkToRun(runId, 'GitHub')
+  return `No data for this run_id. Maybe it is still on ${link}.`
 }
 
 /**
