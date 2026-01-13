@@ -21,6 +21,20 @@ let index = 0
 /** @type {StatusChart | null} */
 let chart = null
 
+function filterEntriesToWindow(entries, days) {
+  const now = new Date()
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const msInDay = 24 * 60 * 60 * 1000
+  return entries.filter((entry) => {
+    const ts = safeDate(entry.date)
+    if (!ts) return false
+    const d = new Date(ts)
+    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+    const diffDays = Math.floor((todayStart - dayStart) / msInDay)
+    return diffDays >= 0 && diffDays < days
+  })
+}
+
 function init() {
   if (!notesEl || !dateEl || !badgeEl) {
     return
@@ -37,7 +51,9 @@ function init() {
   bindControls()
   bindKeyboard()
   loadLogs().then((entries) => {
-    logs = annotateChanges(entries)
+    const days = chart?.days
+    const visibleEntries = typeof days === 'number' ? filterEntriesToWindow(entries, days) : entries
+    logs = annotateChanges(visibleEntries)
     if (!logs.length) {
       renderEmptyState('No log entries found.')
       return
@@ -181,7 +197,9 @@ function render(targetIndex) {
 function refreshLogs() {
   loadLogs().then((entries) => {
     if (!entries.length) return
-    logs = annotateChanges(entries)
+    const days = chart?.days
+    const visibleEntries = typeof days === 'number' ? filterEntriesToWindow(entries, days) : entries
+    logs = annotateChanges(visibleEntries)
     chart?.setData(logs)
     render(resolveIndexFromUrl())
   }).catch((err) => {
