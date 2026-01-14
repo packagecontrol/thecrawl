@@ -1,6 +1,5 @@
 import json
-import os
-import sys
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -31,14 +30,13 @@ def make_channel(path: Path, repositories: list[Path]):
     path.write_text(json.dumps(channel_data))
 
 
-def make_repository(path: Path, package_names: list[str], tombstoned: bool = False):
+def make_repository(path: Path, package_names: list[str]):
     repo_data = {
         "schema_version": "3.0.0",
         "packages": [
             {
                 "name": name,
                 "details": f"https://github.com/example/{name}",
-                **({"tombstoned": True} if tombstoned else {})
             }
             for name in package_names
         ],
@@ -152,13 +150,13 @@ async def test_main_with_failing_repo_logs_error(tmp_path, capsys):
 
 
 @pytest.mark.asyncio
-async def test_main_with_failing_repo_and_last_run_sets_tombstoned(tmp_path):
-    # Simulate previous run's package db with a non-tombstoned package
+async def test_main_with_failing_repo_and_last_run_sets_fetching_source_failed(tmp_path):
+    # Simulate previous run's package db with a package missing a failure marker
     repo_path = tmp_path / "nonexistent.json"
     channel_path = tmp_path / "channel.json"
     make_channel(channel_path, [repo_path])
     output_file = tmp_path / "output.json"
-    # Write previous db with a non-tombstoned package to output.json (as would be from a previous run)
+    # Write previous db with a package missing fetching_source_failed
     prev_db = {
         "repositories": [repo_path.as_uri()],
         "packages": [{
@@ -175,19 +173,18 @@ async def test_main_with_failing_repo_and_last_run_sets_tombstoned(tmp_path):
     await main(str(output_file), [channel_path.as_uri()])
     with output_file.open() as f:
         result = json.load(f)
-    # Package should survive and be tombstoned (tombstoned should be set to True)
-    assert result["packages"][0]["tombstoned"]
+    # Package should survive and be marked as failed with a timestamp
+    failed_at = result["packages"][0]["fetching_source_failed"]
+    datetime.strptime(failed_at, "%Y-%m-%dT%H:%M:%SZ")
 
 
 @pytest.mark.asyncio
-async def test_main_with_successful_repo_and_last_run_unsets_tombstoned(tmp_path):
-    # Create a repo with a package that was previously tombstoned
-    repo_path = tmp_path / "repo1.json"
-    make_repository(repo_path, ["RecoveredPackage"])
+async def test_main_with_failing_repo_preserves_fetching_source_failed_timestamp(tmp_path):
+    # Simulate previous run's package db with an existing failure timestamp
+    repo_path = tmp_path / "nonexistent.json"
     channel_path = tmp_path / "channel.json"
     make_channel(channel_path, [repo_path])
     output_file = tmp_path / "output.json"
-    # Write previous db with tombstoned package
     prev_db = {
         "repositories": [repo_path.as_uri()],
         "packages": [{
@@ -195,7 +192,36 @@ async def test_main_with_successful_repo_and_last_run_unsets_tombstoned(tmp_path
             "schema_version": "3.0.0",
             "name": "LostPackage",
             "details": "https://github.com/example/LostPackage",
-            "tombstoned": True
+            "fetching_source_failed": "2024-01-01T00:00:00Z"
+        }],
+        "libraries": []
+    }
+    output_file.write_text(json.dumps(prev_db))
+
+    # Call main with previous db present
+    await main(str(output_file), [channel_path.as_uri()])
+    with output_file.open() as f:
+        result = json.load(f)
+    assert result["packages"][0]["fetching_source_failed"] == "2024-01-01T00:00:00Z"
+
+
+@pytest.mark.asyncio
+async def test_main_with_successful_repo_and_last_run_clears_fetching_source_failed(tmp_path):
+    # Create a repo with a package that was previously marked failed
+    repo_path = tmp_path / "repo1.json"
+    make_repository(repo_path, ["RecoveredPackage"])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+    output_file = tmp_path / "output.json"
+    # Write previous db with fetching_source_failed package
+    prev_db = {
+        "repositories": [repo_path.as_uri()],
+        "packages": [{
+            "source": repo_path.as_uri(),
+            "schema_version": "3.0.0",
+            "name": "LostPackage",
+            "details": "https://github.com/example/LostPackage",
+            "fetching_source_failed": "2024-01-01T00:00:00Z"
         }],
         "libraries": []
     }
@@ -205,5 +231,5 @@ async def test_main_with_successful_repo_and_last_run_unsets_tombstoned(tmp_path
     await main(str(output_file), [channel_path.as_uri()])
     with output_file.open() as f:
         result = json.load(f)
-    # Package should not be tombstoned anymore
-    assert "tombstoned" not in result["packages"][0]
+    # Package should no longer have fetching_source_failed
+    assert "fetching_source_failed" not in result["packages"][0]

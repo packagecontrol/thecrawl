@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import aiohttp
+from datetime import datetime, timezone
 from functools import partial
 import json
 import os
@@ -23,8 +24,10 @@ DEFAULT_CHANNEL = (
 )
 MAX_CONCURRENCY = 32
 GLOBAL_TIMEOUT = 60  # seconds
+UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 type Url = str
+type IsoTimestamp = str
 
 
 class PackageEntry(TypedDict, total=False):
@@ -32,7 +35,7 @@ class PackageEntry(TypedDict, total=False):
     schema_version: str
     name: str
     details: NotRequired[str]
-    tombstoned: NotRequired[bool]
+    fetching_source_failed: NotRequired[IsoTimestamp]
 
 
 class Registry(TypedDict):
@@ -69,6 +72,7 @@ async def main(output_file: str, channels: list[str]) -> None:
 async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
     print("Fetching registered packages...")
     now = time.monotonic()
+    now_string = datetime.now(timezone.utc).strftime(UTC_FORMAT)
 
     async with aiohttp.ClientSession() as session:
         # Fetch repositories from all channels in parallel
@@ -130,15 +134,15 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
 
         elif db:
             # recreate the repo from db
-            tombstoned: PackageEntry
-            tombstoned = {"tombstoned": True}
+            fail_info: PackageEntry
+            fail_info = {"fetching_source_failed": now_string}
             for pkg in db.get("packages", []):
                 if pkg.get("source") == url:
-                    add_package(pkg | tombstoned)
+                    add_package(fail_info | pkg)
 
             for library in db.get("libraries", []):
                 if library.get("source") == url:
-                    add_library(library | tombstoned)
+                    add_library(fail_info | library)
 
     print(
         f"Found {len(packages)} packages "

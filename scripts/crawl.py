@@ -63,7 +63,7 @@ class PackageEntry(TypedDict, total=False):
     source: Url
     schema_version: str
 
-    tombstoned: NotRequired[bool]       # fetching the repository failed
+    fetching_source_failed: NotRequired[IsoTimestamp]  # fetching repo source failed
     removed: NotRequired[IsoTimestamp]  # not listed in the registry anymore
     invalid: NotRequired[bool]
     first_seen: IsoTimestamp
@@ -176,7 +176,7 @@ def next_packages_to_crawl(
     packages_to_crawl = [
         entry
         for entry in packages
-        if not entry.get("tombstoned", False)
+        if not entry.get("fetching_source_failed")
         if presto or (
             workspace["packages"]
             .get(entry["name"], {})
@@ -193,7 +193,7 @@ def next_packages_to_crawl(
             (
                 entry
                 for entry in packages
-                if not entry.get("tombstoned", False)
+                if not entry.get("fetching_source_failed")
             ),
             key=lambda pkg: (
                 workspace["packages"]
