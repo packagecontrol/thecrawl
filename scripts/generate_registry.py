@@ -38,14 +38,14 @@ class PackageEntry(TypedDict, total=False):
 class Registry(TypedDict):
     repositories: list[str]
     packages: list[PackageEntry]
-    dependencies: list[PackageEntry]
+    libraries: list[PackageEntry]
 
 
 class RepositorySchema(TypedDict):
     self: Url
     schema_version: str
     packages: list[PackageEntry]
-    dependencies: list[PackageEntry]
+    libraries: list[PackageEntry]
 
 
 async def main(output_file: str, channels: list[str]) -> None:
@@ -90,7 +90,7 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
             if not repo.get("schema_version", "1.").startswith("1.")
         }
 
-    # Flatten packages and dependencies, adding source, schema_version, and
+    # Flatten packages and libraries, adding source, schema_version, and
     # ensuring a unique name.
 
     def add_unique_(container: list[PackageEntry], kind: str) -> Callable[[PackageEntry], None]:
@@ -112,9 +112,9 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
         return add
 
     packages: list[PackageEntry] = []
-    dependencies: list[PackageEntry] = []
+    libraries: list[PackageEntry] = []
     add_package = add_unique_(packages, "Package")
-    add_dependency = add_unique_(dependencies, "Dependency")
+    add_library = add_unique_(libraries, "Library")
     for url in repos:
         if repo := result.get(url):
             repo_info: PackageEntry
@@ -125,8 +125,8 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
             for pkg in repo["packages"]:
                 add_package(pkg | repo_info)
 
-            for dep in repo["dependencies"]:
-                add_dependency(dep | repo_info)
+            for library in repo["libraries"]:
+                add_library(library | repo_info)
 
         elif db:
             # recreate the repo from db
@@ -136,13 +136,13 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
                 if pkg.get("source") == url:
                     add_package(pkg | tombstoned)
 
-            for dep in db.get("dependencies", []):
-                if dep.get("source") == url:
-                    add_dependency(dep | tombstoned)
+            for library in db.get("libraries", []):
+                if library.get("source") == url:
+                    add_library(library | tombstoned)
 
     print(
         f"Found {len(packages)} packages "
-        f"and {len(dependencies)} dependencies "
+        f"and {len(libraries)} libraries "
         f"in {len(result)} repositories."
     )
     elapsed = time.monotonic() - now
@@ -150,7 +150,7 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
     return {
         "repositories": repos,
         "packages": packages,
-        "dependencies": dependencies,
+        "libraries": libraries,
     }
 
 
@@ -206,7 +206,7 @@ async def fetch_repository(
         "self": location,
         "schema_version": result.get("schema_version", "3.0.0"),
         "packages": result.get("packages", []),
-        "dependencies": result.get("dependencies", []),
+        "libraries": result.get("libraries", []),
     }
     if includes := result.get("includes"):
         for result in await asyncio.gather(*[
@@ -214,7 +214,7 @@ async def fetch_repository(
             for include in unseen(resolve_urls(location, includes))
         ]):
             repository["packages"].extend(result.get("packages", []))
-            repository["dependencies"].extend(result.get("dependencies", []))
+            repository["libraries"].extend(result.get("libraries", []))
     return repository
 
 

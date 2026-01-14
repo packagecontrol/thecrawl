@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from scripts.generate_registry import main
 
 
@@ -43,7 +42,7 @@ def make_repository(path: Path, package_names: list[str], tombstoned: bool = Fal
             }
             for name in package_names
         ],
-        "dependencies": []
+        "libraries": []
     }
     path.write_text(json.dumps(repo_data))
 
@@ -168,7 +167,7 @@ async def test_main_with_failing_repo_and_last_run_sets_tombstoned(tmp_path):
             "name": "LostPackage",
             "details": "https://github.com/example/LostPackage"
         }],
-        "dependencies": []
+        "libraries": []
     }
     output_file.write_text(json.dumps(prev_db))
 
@@ -198,7 +197,7 @@ async def test_main_with_successful_repo_and_last_run_unsets_tombstoned(tmp_path
             "details": "https://github.com/example/LostPackage",
             "tombstoned": True
         }],
-        "dependencies": []
+        "libraries": []
     }
     output_file.write_text(json.dumps(prev_db))
 
