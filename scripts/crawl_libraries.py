@@ -37,7 +37,7 @@ type VersionString = str
 type AssetPattern = str
 type AssetPatterns = list[AssetPattern]
 type Url = str
-# ReleaseDef is a raw release definition as specified in repository.json.
+# ReleaseDef is a raw release definition as specified in registry.json.
 type ReleaseDef = dict
 # NormalizedReleaseDef is a ReleaseDef with defaults applied and list-ified values.
 type NormalizedReleaseDef = dict
@@ -66,6 +66,9 @@ class ResolvedLibraryInfo(TypedDict, total=False):
     homepage: Url
     issues: Url
 
+    source: Url
+    schema_version: str
+
 
 type SourceInfo = str  # Labels like "pypi:cache" or "github:tags" for provenance.
 type PypiAssetInfo = dict
@@ -91,23 +94,15 @@ PLATFORM_TAG_PATTERNS = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Resolve a single library (PyPI or GitHub) from repository.json."
+        description="Resolve a single library (PyPI or GitHub) from registry.json."
     )
     parser.add_argument(
-        "--repo",
-        default="repository.json",
-        help="Path to repository to crawl (default: repository.json)",
+        "--registry",
+        "-r",
+        default="registry.json",
+        help="Path to registry to crawl (default: registry.json)",
     )
-    parser.add_argument(
-        "--fetch-repo",
-        nargs="?",
-        const=DEFAULT_REPO_URL,
-        help=(
-            "Fetch repository.json from a URL before crawling "
-            f"(default: {DEFAULT_REPO_URL})"
-        ),
-    )
-    parser.add_argument("--name", help="Library name from repository to crawl")
+    parser.add_argument("--name", help="Library name from registry to crawl")
     parser.add_argument(
         "--explain",
         help="Library name to print resolved release definitions for",
@@ -138,21 +133,21 @@ def main() -> None:
 
 async def run() -> int:
     args = parse_args()
-    repo_path = Path(args.repo)
-    if args.fetch_repo is not None:
-        await fetch_repository(args.fetch_repo, repo_path)
-    if not repo_path.exists():
-        raise FileNotFoundError(f"{repo_path} not found.")
+    registry_path = Path(args.registry)
+    if not registry_path.exists():
+        raise FileNotFoundError(f"{registry_path} not found.")
 
     if args.explain and args.name:
         raise ValueError("Use either --name or --explain, not both.")
 
-    repo = load_json(repo_path)
+    registry = load_json(registry_path)
 
     if args.explain:
-        library = find_library(repo, args.explain)
+        library = find_library(registry, args.explain)
         if not library:
-            raise ValueError(f'Library "{args.explain}" not found in {repo_path.name}.')
+            raise ValueError(
+                f'Library "{args.explain}" not found in {registry_path.name}.'
+            )
         concrete_defs = explain_library(library)
         print(json.dumps(concrete_defs, indent=2, ensure_ascii=True))
         return 0
@@ -166,9 +161,9 @@ async def run() -> int:
     library_entries = output_data["libraries"]
 
     if args.name:
-        library = find_library(repo, args.name)
+        library = find_library(registry, args.name)
         if not library:
-            raise ValueError(f'Library "{args.name}" not found in {repo_path.name}.')
+            raise ValueError(f'Library "{args.name}" not found in {registry_path.name}.')
 
         try:
             async with aiohttp.ClientSession() as aio_session:
@@ -197,17 +192,17 @@ async def run() -> int:
                 dump_output()
             raise
 
-    repo_names = {
-        lib.get("name") for lib in repo.get("libraries", []) if lib.get("name")
+    registry_names = {
+        lib.get("name") for lib in registry.get("libraries", []) if lib.get("name")
     }
 
-    removed = set(library_entries) - repo_names
+    removed = set(library_entries) - registry_names
     for name in removed:
         entry = library_entries.get(name)
         if entry:
             mark_removed(entry, timestamp)
 
-    for name in repo_names:
+    for name in registry_names:
         if name in library_entries:
             mark_added(library_entries[name], timestamp)
 
@@ -220,10 +215,10 @@ async def run() -> int:
 
     selected = [
         name
-        for name in sorted(repo_names, key=sort_key)
+        for name in sorted(registry_names, key=sort_key)
         if not library_entries.get(name, {}).get("removed")
     ][:args.limit]
-    libraries = {lib.get("name"): lib for lib in repo.get("libraries", [])}
+    libraries = {lib.get("name"): lib for lib in registry.get("libraries", [])}
     selected_libs = [
         library
         for name in selected
@@ -293,23 +288,6 @@ def parse_last_crawl(value: str | None) -> datetime:
         return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError:
         return datetime.min
-
-
-async def fetch_repository(url: str, path: Path) -> None:
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            response.raise_for_status()
-            body = await response.text()
-            try:
-                data = json.loads(body)
-            except json.JSONDecodeError as exc:
-                raise ValueError(
-                    f"Fetched repository at {url} is not valid JSON."
-                ) from exc
-    if not isinstance(data, dict):
-        raise ValueError("Fetched repository JSON must be an object.")
-    dump_json(path, data)
-    print(f"Fetched {url} and stored as {path}.")
 
 
 def load_json(path: Path) -> dict:

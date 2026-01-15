@@ -16,7 +16,7 @@ def read_json(path):
 
 def make_args(
     tmp_path,
-    repo_path,
+    registry_path,
     output_path,
     *,
     name=None,
@@ -24,8 +24,7 @@ def make_args(
     limit=10,
 ):
     return argparse.Namespace(
-        repo=str(repo_path),
-        fetch_repo=None,
+        registry=str(registry_path),
         name=name,
         explain=explain,
         limit=limit,
@@ -55,7 +54,7 @@ def make_resolver(calls, version="1.0.0"):
 
 @pytest.mark.asyncio
 async def test_creates_output_with_only_libraries_key_if_not_present(monkeypatch, tmp_path):
-    repo_path = tmp_path / "repository.json"
+    repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "alpha"}]})
     output_path = tmp_path / "libraries.json"
     args = make_args(tmp_path, repo_path, output_path)
@@ -78,7 +77,7 @@ async def test_creates_output_with_only_libraries_key_if_not_present(monkeypatch
 
 @pytest.mark.asyncio
 async def test_preserves_existing_output_keys(monkeypatch, tmp_path):
-    repo_path = tmp_path / "repository.json"
+    repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "alpha"}]})
     output_path = tmp_path / "libraries.json"
     write_json(output_path, {"packages": {"x": 1}, "other": "keep"})
@@ -100,7 +99,7 @@ async def test_preserves_existing_output_keys(monkeypatch, tmp_path):
 
 @pytest.mark.asyncio
 async def test_record_last_crawl_and_added(monkeypatch, tmp_path):
-    repo_path = tmp_path / "repository.json"
+    repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "alpha"}]})
     output_path = tmp_path / "libraries.json"
     args = make_args(tmp_path, repo_path, output_path)
@@ -131,7 +130,7 @@ async def test_record_last_crawl_and_added(monkeypatch, tmp_path):
 
 @pytest.mark.asyncio
 async def test_record_failures_and_clear_failures(monkeypatch, tmp_path):
-    repo_path = tmp_path / "repository.json"
+    repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "alpha"}]})
     output_path = tmp_path / "libraries.json"
     write_json(
@@ -176,7 +175,7 @@ async def test_record_failures_and_clear_failures(monkeypatch, tmp_path):
 
 @pytest.mark.asyncio
 async def test_record_removed_and_preserve_all_entry_fields(monkeypatch, tmp_path):
-    repo_path = tmp_path / "repository.json"
+    repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "stay"}]})
     output_path = tmp_path / "libraries.json"
     write_json(
@@ -207,7 +206,7 @@ async def test_record_removed_and_preserve_all_entry_fields(monkeypatch, tmp_pat
 
 @pytest.mark.asyncio
 async def test_removed_library_is_not_crawled(monkeypatch, tmp_path):
-    repo_path = tmp_path / "repository.json"
+    repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "stay"}]})
     output_path = tmp_path / "libraries.json"
     write_json(
@@ -234,7 +233,7 @@ async def test_removed_library_is_not_crawled(monkeypatch, tmp_path):
 
 @pytest.mark.asyncio
 async def test_removed_library_can_resurrect(monkeypatch, tmp_path):
-    repo_path = tmp_path / "repository.json"
+    repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "phoenix"}]})
     output_path = tmp_path / "libraries.json"
     write_json(
@@ -269,7 +268,7 @@ async def test_removed_library_can_resurrect(monkeypatch, tmp_path):
 
 @pytest.mark.asyncio
 async def test_name_and_explain_reject_removed_library(monkeypatch, tmp_path):
-    repo_path = tmp_path / "repository.json"
+    repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "stay"}]})
     output_path = tmp_path / "libraries.json"
     write_json(

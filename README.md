@@ -109,20 +109,19 @@ Finally produces compressed output for either
 
 ### 5. `crawl_libraries.py`
 
-Resolves library release info from a `repository.json` and writes
+Resolves library release info from a `registry.json` and writes
 `libraries.json`.
 
 Use `--name` to crawl a single library or `--explain` to print the concretized
 release definitions it would use.
 
-Add `--fetch-repo` to refresh `repository.json` from a URL before crawling.
-Defaults to the standard channel at https://github.com/packagecontrol/channel.
+Generate a registry from the standard libraries repository, then crawl it.
+Use `--registry/-r` if the registry has a different name.
 
 ```bash
+$ uv run -m scripts.generate_registry --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json
 $ uv run -m scripts.crawl_libraries --name lxml
 $ uv run -m scripts.crawl_libraries --explain lxml
-$ uv run -m scripts.crawl_libraries --fetch-repo
-$ uv run -m scripts.crawl_libraries --fetch-repo https://example.com/repository.json
 ```
 
 ---
