@@ -37,14 +37,19 @@ jobs:
           path: |
             .pypi-cache
             libraries.json
-            repository.json
+            registry.json
           key: lib-cache-${{ github.run_id }}
           fail-on-cache-miss: false
           restore-keys: |
             lib-cache-
 
+      - name: Generate registry
+        run: >
+          uv run -m scripts.generate_registry
+          --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json
+
       - name: Run library crawler
-        run: uv run -m scripts.crawl_libraries --fetch-repo --limit 150
+        run: uv run -m scripts.crawl_libraries --workspace libraries.json --limit 150
 
       - name: Update release assets
         run: |
@@ -58,5 +63,5 @@ jobs:
           name: libraries-backup
           path: |
             libraries.json
-            repository.json
+            registry.json
           retention-days: 30
