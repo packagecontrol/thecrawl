@@ -50,6 +50,29 @@ class RepositorySchema(TypedDict):
     libraries: list[PackageEntry]
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Generate a registry of Sublime Text packages."
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=DEFAULT_OUTPUT_FILE,
+        help=f"Output file path (default: {DEFAULT_OUTPUT_FILE}).",
+    )
+    parser.add_argument(
+        "--channel",
+        "-c",
+        action="append",
+        help=(
+            "URL to a Channel or Repository to pull from (can be used multiple times). "
+            "If not given, uses the official channel from wbond/package_control_channel."
+        ),
+    )
+    return parser.parse_args()
+
+
 async def main(output_file: str, channels: list[str]) -> None:
     # Try to read previous db if it exists
     try:
@@ -289,29 +312,6 @@ class Unseen[T]:
         self._seen.update(items)
         return rv
     __call__ = extend
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Generate a registry of Sublime Text packages."
-    )
-    parser.add_argument(
-        "--output",
-        "-o",
-        type=str,
-        default=DEFAULT_OUTPUT_FILE,
-        help=f"Output file path (default: {DEFAULT_OUTPUT_FILE}).",
-    )
-    parser.add_argument(
-        "--channel",
-        "-c",
-        action="append",
-        help=(
-            "Channel or Repository URL to pull from (can be used multiple times). "
-            "If not given, uses the official channel from wbond/package_control_channel."
-        ),
-    )
-    return parser.parse_args()
 
 
 if __name__ == "__main__":
