@@ -28,7 +28,7 @@ def make_args(
         name=name,
         explain=explain,
         limit=limit,
-        output=str(output_path),
+        workspace=str(output_path),
         cache_dir=str(tmp_path / "cache"),
     )
 

@@ -27,12 +27,12 @@ from rich.progress import (
 )
 
 
-CACHE_TTL_SECONDS = 600
-DEFAULT_REPO_URL = (
-    "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json"
-)
+DEFAULT_REGISTRY = "./registry.json"
+DEFAULT_WORKSPACE = "./workspace.json"
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
+CACHE_TTL_SECONDS = 600
 PYPI_META_LOCK = asyncio.Lock()
+
 type VersionString = str
 type AssetPattern = str
 type AssetPatterns = list[AssetPattern]
@@ -99,8 +99,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--registry",
         "-r",
-        default="registry.json",
-        help="Path to registry to crawl (default: registry.json)",
+        default=DEFAULT_REGISTRY,
+        help=f"Path to registry to crawl (default: {DEFAULT_REGISTRY})",
     )
     parser.add_argument("--name", help="Library name from registry to crawl")
     parser.add_argument(
@@ -114,10 +114,10 @@ def parse_args() -> argparse.Namespace:
         help="Number of libraries to crawl when --name/--explain is omitted (default: 10)",
     )
     parser.add_argument(
-        "--output",
+        "--workspace",
         "-o",
-        default="libraries.json",
-        help="Path to output JSON (default: libraries.json)",
+        default=DEFAULT_WORKSPACE,
+        help=f"Path to workspace JSON (default: {DEFAULT_WORKSPACE})",
     )
     parser.add_argument(
         "--cache-dir",
@@ -133,7 +133,7 @@ def main() -> None:
 
 async def run() -> int:
     args = parse_args()
-    registry_path = Path(args.registry)
+    registry_path = Path(os.path.abspath(args.registry))
     if not registry_path.exists():
         raise FileNotFoundError(f"{registry_path} not found.")
 
@@ -155,10 +155,10 @@ async def run() -> int:
     timestamp = now_timestamp()
     updated_names: list[str] = []
 
-    output_path = Path(args.output)
-    output_data = load_output(output_path)
-    dump_output = partial(dump_json, output_path, output_data)
-    library_entries = output_data["libraries"]
+    workspace_path = Path(os.path.abspath(args.workspace))
+    workspace_data = load_output(workspace_path)
+    dump_output = partial(dump_json, workspace_path, workspace_data)
+    library_entries = workspace_data["libraries"]
 
     if args.name:
         library = find_library(registry, args.name)
