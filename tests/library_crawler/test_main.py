@@ -22,9 +22,13 @@ def make_args(
     name=None,
     explain=None,
     limit=10,
+    allowed_source=None,
 ):
+    if allowed_source is None:
+        allowed_source = []
     return argparse.Namespace(
         registry=str(registry_path),
+        allowed_source=allowed_source,
         name=name,
         explain=explain,
         limit=limit,
@@ -126,6 +130,80 @@ async def test_record_last_crawl_and_added(monkeypatch, tmp_path):
     entry = data["libraries"]["alpha"]
     assert entry["added"] == "2026-01-01T00:00:00Z"
     assert entry["last_crawl"] == "2026-01-02T00:00:00Z"
+
+
+@pytest.mark.asyncio
+async def test_allowed_source_filters_registry_and_reports(monkeypatch, tmp_path, capsys):
+    registry_path = tmp_path / "registry.json"
+    write_json(
+        registry_path,
+        {
+            "libraries": [
+                {"name": "allowed", "source": "https://allowed.example"},
+                {"name": "denied", "source": "https://denied.example"},
+                {"name": "missing-source"},
+            ]
+        },
+    )
+    output_path = tmp_path / "libraries.json"
+    calls = []
+    args = make_args(
+        tmp_path,
+        registry_path,
+        output_path,
+        allowed_source=["https://allowed.example"],
+    )
+
+    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
+    monkeypatch.setattr(
+        crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
+    )
+    monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver(calls))
+    monkeypatch.setenv("CI", "true")
+
+    await crawl_libraries.run()
+
+    assert calls == ["allowed"]
+    captured = capsys.readouterr()
+    assert "Ignoring 1 libraries from https://denied.example" in captured.out
+    assert "Ignoring 1 libraries without a source." in captured.out
+    assert "Crawled 1 libraries." in captured.out
+    assert "Nothing new." in captured.out
+
+
+@pytest.mark.asyncio
+async def test_allowed_source_blocks_named_library(monkeypatch, tmp_path, capsys):
+    registry_path = tmp_path / "registry.json"
+    write_json(
+        registry_path,
+        {"libraries": [{"name": "denied", "source": "https://denied.example"}]},
+    )
+    output_path = tmp_path / "libraries.json"
+    calls = []
+    args = make_args(
+        tmp_path,
+        registry_path,
+        output_path,
+        name="denied",
+        allowed_source=["https://allowed.example"],
+    )
+
+    async def resolver(library, cache_dir, session):
+        calls.append(library["name"])
+        return make_info(library["name"]), ["stub"]
+
+    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
+    monkeypatch.setattr(
+        crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
+    )
+    monkeypatch.setattr(crawl_libraries, "resolve_library", resolver)
+    monkeypatch.setenv("CI", "true")
+
+    await crawl_libraries.run()
+
+    assert calls == []
+    captured = capsys.readouterr()
+    assert "Library is not on an allowed source." in captured.out
 
 
 @pytest.mark.asyncio

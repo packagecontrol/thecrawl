@@ -102,6 +102,13 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_REGISTRY,
         help=f"Path to registry to crawl (default: {DEFAULT_REGISTRY})",
     )
+    parser.add_argument(
+        "--allowed-source",
+        action="append",
+        default=[],
+        metavar="URL",
+        help="Allow only libraries with a source matching this URL (repeatable).",
+    )
     parser.add_argument("--name", help="Library name from registry to crawl")
     parser.add_argument(
         "--explain",
@@ -131,6 +138,13 @@ def main() -> None:
     raise SystemExit(asyncio.run(run()))
 
 
+def is_allowed_source(library: dict, allowed_sources: set[str]) -> bool:
+    if not allowed_sources:
+        return True
+    source = library.get("source")
+    return bool(source) and source in allowed_sources
+
+
 async def run() -> int:
     args = parse_args()
     registry_path = Path(os.path.abspath(args.registry))
@@ -141,6 +155,7 @@ async def run() -> int:
         raise ValueError("Use either --name or --explain, not both.")
 
     registry = load_json(registry_path)
+    allowed_sources = set(args.allowed_source)
 
     if args.explain:
         library = find_library(registry, args.explain)
@@ -165,13 +180,17 @@ async def run() -> int:
         if not library:
             raise ValueError(f'Library "{args.name}" not found in {registry_path.name}.')
 
+        entry = library_entries.get(args.name, {}).copy()
+        if not is_allowed_source(library, allowed_sources):
+            print("Library is not on an allowed source.")
+            return 0
+
         try:
             async with aiohttp.ClientSession() as aio_session:
                 info, sources = await resolve_library(
                     library, Path(args.cache_dir), aio_session
                 )
 
-            entry = library_entries.get(args.name, {}).copy()
             entry.update(info)
             mark_added(entry, timestamp)
             latest_version = latest_version_from_releases(info["releases"])
@@ -192,11 +211,28 @@ async def run() -> int:
                 dump_output()
             raise
 
-    registry_names = {
+    ignored_by_source: dict[str | None, int] = defaultdict(int)
+    if allowed_sources:
+        for library in registry.get("libraries", []):
+            source = library.get("source", "")
+            ignored_by_source[source] += 1
+        for source, count in sorted(ignored_by_source.items()):
+            if source:
+                print(f"Ignoring {count} libraries from {source}")
+            else:
+                print(f"Ignoring {count} libraries without a source.")
+
+    all_registry_names = {
         lib.get("name") for lib in registry.get("libraries", []) if lib.get("name")
     }
+    registry_names = {
+        lib.get("name")
+        for lib in registry.get("libraries", [])
+        if lib.get("name")
+        if is_allowed_source(lib, allowed_sources)
+    }
 
-    removed = set(library_entries) - registry_names
+    removed = set(library_entries) - all_registry_names
     for name in removed:
         entry = library_entries.get(name)
         if entry:
