@@ -28,8 +28,7 @@ from rich.progress import (
 
 CACHE_TTL_SECONDS = 600
 DEFAULT_REPO_URL = (
-    "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/"
-    "repository.json"
+    "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json"
 )
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
 PYPI_META_LOCK = asyncio.Lock()

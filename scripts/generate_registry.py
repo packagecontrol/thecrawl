@@ -19,8 +19,7 @@ from .utils import resolve_urls, update_url
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
 DEFAULT_CHANNEL = (
-    "https://raw.githubusercontent.com/wbond/package_control_channel"
-    "/refs/heads/master/channel.json"
+    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/channel.json"
 )
 MAX_CONCURRENCY = 32
 GLOBAL_TIMEOUT = 60  # seconds
