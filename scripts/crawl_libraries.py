@@ -12,7 +12,7 @@ from pathlib import Path
 
 import aiohttp
 from .github import fetch_github_info, ReleaseAssetInfo, RepoMetadata
-from .utils import drop_falsy
+from .utils import drop_falsy, err
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
@@ -222,7 +222,7 @@ async def run() -> int:
         print("Nothing to crawl.")
         return 0
 
-    console = Console()
+    console = Console(stderr=True)
     disable_progress = not console.is_terminal or os.environ.get("CI") == "true"
     with Progress(
         TextColumn("[bold blue]Crawling Libraries:"),
@@ -263,10 +263,11 @@ async def run() -> int:
                     updated_names.append(name)
                 source_label = ", ".join(sources) if sources else "cache"
                 version_label = f" {latest_version}" if latest_version else ""
-                print(f"Resolved {name}{version_label} using {source_label}.")
+                err(f"Resolved {name}{version_label} using {source_label}.")
 
     dump_output()
     dump_meta_db()
+    print(f"Crawled {len(selected_libs)} libraries.")
     print(format_updated_message(updated_names))
     return 0
 
