@@ -87,6 +87,36 @@ async def test_static_release_passes_through_python_versions(tmp_path):
     ]
 
 
+@pytest.mark.asyncio
+async def test_static_release_copies_extra_fields(tmp_path):
+    library = {
+        "name": "extra-fields",
+        "author": "Example Author",
+        "description": "Has extra metadata.",
+        "homepage": "https://example.com/extra-fields",
+        "issues": "https://example.com/extra-fields/issues",
+        "labels": ["featured", "stable"],
+        "funding": {"type": "github", "url": "https://example.com/funding"},
+        "releases": [
+            {
+                "platforms": ["linux-x64"],
+                "version": "1.0.0",
+                "url": "https://example.com/extra-fields-1.0.0.whl",
+            }
+        ],
+    }
+
+    async with aiohttp.ClientSession() as session:
+        info, sources = await crawl_libraries.resolve_library(
+            library, tmp_path / "cache", session
+        )
+
+    assert sources == []
+    assert info["homepage"] == "https://example.com/extra-fields"
+    assert info["labels"] == ["featured", "stable"]
+    assert info["funding"] == {"type": "github", "url": "https://example.com/funding"}
+
+
 def test_static_release_requires_version():
     with pytest.raises(ValueError, match="must include a version"):
         crawl_libraries.validate_release_def({

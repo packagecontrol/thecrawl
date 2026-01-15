@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
+from typing import Required, TypedDict
 
 import aiohttp
 from .github import fetch_github_info, ReleaseAssetInfo, RepoMetadata
@@ -55,7 +56,17 @@ class ConcreteReleaseDef:
 
 # ReleaseInfo is the output release entry we emit into the output JSON.
 type ReleaseInfo = dict
-type ResolvedLibraryInfo = dict
+
+
+class ResolvedLibraryInfo(TypedDict, total=False):
+    name: Required[str]
+    description: str
+    author: Required[str]
+    releases: Required[list[dict]]
+    homepage: Url
+    issues: Url
+
+
 type SourceInfo = str  # Labels like "pypi:cache" or "github:tags" for provenance.
 type PypiAssetInfo = dict
 type PypiReleases = dict[VersionString, list[PypiAssetInfo]]
@@ -1026,13 +1037,12 @@ async def resolve_library(
             or (pypi_info.get("project_urls") or {}).get("Issues")
         ),
     })
-    info = lib_info_from_github | lib_info_from_pypi | drop_falsy({
-        "name": library["name"],
-        "description": library.get("description"),
-        "author": library.get("author"),
-        "issues": library.get("issues"),
-        "releases": sort_releases(combine_releases(output_releases + static_releases)),
-    })
+    info: ResolvedLibraryInfo = (
+        lib_info_from_github
+        | lib_info_from_pypi
+        | library
+        | {"releases": sort_releases(combine_releases(output_releases + static_releases))}
+    )
 
     for key in ("description", "author", "issues"):
         if not info.get(key):
