@@ -111,6 +111,11 @@ def parse_args() -> argparse.Namespace:
         help="Library name to print resolved release definitions for",
     )
     parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Write the resolved library entry to the workspace when using --name.",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=10,
@@ -197,8 +202,9 @@ async def run() -> int:
             latest_version = latest_version_from_releases(info["releases"])
             if mark_success(entry, timestamp, latest_version):
                 updated_names.append(args.name)
-            workspace_entries[args.name] = entry
-            dump_workspace()
+            if args.write:
+                workspace_entries[args.name] = entry
+                dump_workspace()
 
             source_label = ", ".join(sources) if sources else "cache"
             version_label = f" {latest_version}" if latest_version else ""
@@ -207,7 +213,7 @@ async def run() -> int:
             print(format_updated_message(updated_names))
             return 0
         except Exception as exc:
-            if args.name in workspace_entries:
+            if args.write and args.name in workspace_entries:
                 mark_failure(workspace_entries[args.name], timestamp, str(exc))
                 dump_workspace()
             raise
