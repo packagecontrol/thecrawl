@@ -51,7 +51,7 @@ class ConcreteReleaseDef:
     platform: str
     python_version: str
     sublime_text: str
-    version: str
+    version: SpecifierSet
 
 
 class ResolvedLibraryInfo(TypedDict, total=False):
@@ -249,7 +249,7 @@ def concretize_release_def(
                         platform=platform,
                         python_version=py_ver,
                         sublime_text=st_specifier,
-                        version=version_spec,
+                        version=SpecifierSet(version_spec),
                     )
                 )
     return output
@@ -280,7 +280,7 @@ def explain_library(library: RegistryEntry) -> list[dict]:
                 "platform": concrete.platform,
                 "python_version": concrete.python_version,
                 "sublime_text": concrete.sublime_text,
-                "version": concrete.version,
+                "version": str(concrete.version) or "*",
             }
             tags = normalized.get("tags")
             if tags is not None:
@@ -638,27 +638,22 @@ async def fetch_pypi_json(
 
 
 def download_info_from_fixed_version(
-    version: VersionString,
+    version_string: VersionString,
     concrete_defs: list[ConcreteReleaseDef],
     releases: PypiReleases,
 ) -> list[ReleaseInfo]:
-    assets = releases.get(version, [])
+    try:
+        version = Version(version_string)
+    except InvalidVersion:
+        return []
+
+    assets = releases.get(version_string, [])
     return [
         info
         for concrete in concrete_defs
-        if matches_version_spec(version, concrete.version)
-        if (info := find_release_info(concrete, version, assets))
+        if concrete.version.contains(version, prereleases=True)
+        if (info := find_release_info(concrete, version_string, assets))
     ]
-
-
-def matches_version_spec(version: str, specifier: str | None) -> bool:
-    if not specifier:
-        return True
-    try:
-        parsed = Version(version)
-    except InvalidVersion:
-        return False
-    return SpecifierSet(specifier).contains(parsed, prereleases=True)
 
 
 def download_info_from_latest_versions(
@@ -673,12 +668,10 @@ def download_info_from_latest_versions(
 
     output = []
     for concrete in concrete_defs:
-        specifier = concrete.version
-        spec_set = SpecifierSet(specifier) if specifier else None
         for version, version_string in sorted(versions, reverse=True):
             if version.is_prerelease or version.is_devrelease:
                 continue
-            if spec_set and not spec_set.contains(version, prereleases=True):
+            if not concrete.version.contains(version, prereleases=True):
                 continue
             assets = releases[version_string]
             info = find_release_info(concrete, version_string, assets)
@@ -732,7 +725,6 @@ async def download_info_from_github_releases(
 
     output = []
     for concrete, tag_prefix in concrete_defs:
-        spec_set = SpecifierSet(concrete.version) if concrete.version else None
         async for release in gh_info["releases"]:
             if release.get("is_draft"):
                 continue
@@ -740,7 +732,7 @@ async def download_info_from_github_releases(
             if not tag_match:
                 continue
             version, version_str = tag_match
-            if spec_set and not spec_set.contains(version, prereleases=True):
+            if not concrete.version.contains(version, prereleases=True):
                 continue
 
             for re_pattern in compile_asset_patterns(concrete, version_str):

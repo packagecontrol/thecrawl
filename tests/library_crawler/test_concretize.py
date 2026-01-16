@@ -1,3 +1,4 @@
+from packaging.specifiers import SpecifierSet
 from scripts._resolve_lib import (
     SUPPORTED_PLATFORMS,
     combine_releases,
@@ -41,7 +42,7 @@ def test_concretize_matrix_expansion():
     concrete_defs = make_concrete(release, auto_assets=True)
 
     assert len(concrete_defs) == 8
-    assert {item.version for item in concrete_defs} == {"==5.*"}
+    assert {item.version for item in concrete_defs} == {SpecifierSet("==5.*")}
     assert {item.platform for item in concrete_defs} == {"windows-x32", "linux-x64"}
     assert {item.python_version for item in concrete_defs} == {"3.8", "3.13"}
     assert {item.sublime_text for item in concrete_defs} == {"3154 - 4069", ">=4070"}
