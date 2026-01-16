@@ -1,4 +1,4 @@
-from scripts.crawl_libraries import (
+from scripts._resolve_lib import (
     SUPPORTED_PLATFORMS,
     combine_releases,
     concretize_release_def,

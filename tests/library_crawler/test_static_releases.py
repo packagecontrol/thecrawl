@@ -1,7 +1,7 @@
 import aiohttp
 import pytest
 
-import scripts.crawl_libraries as crawl_libraries
+import scripts._resolve_lib as resolve_lib
 
 
 @pytest.mark.asyncio
@@ -22,7 +22,7 @@ async def test_static_release_passes_through_sha256(tmp_path):
     }
 
     async with aiohttp.ClientSession() as session:
-        info, sources = await crawl_libraries.resolve_library(
+        info, sources = await resolve_lib.resolve_library(
             library, tmp_path / "cache", session
         )
 
@@ -64,7 +64,7 @@ async def test_static_release_passes_through_python_versions(tmp_path):
     }
 
     async with aiohttp.ClientSession() as session:
-        info, sources = await crawl_libraries.resolve_library(
+        info, sources = await resolve_lib.resolve_library(
             library, tmp_path / "cache", session
         )
 
@@ -107,7 +107,7 @@ async def test_static_release_copies_extra_fields(tmp_path):
     }
 
     async with aiohttp.ClientSession() as session:
-        info, sources = await crawl_libraries.resolve_library(
+        info, sources = await resolve_lib.resolve_library(
             library, tmp_path / "cache", session
         )
 
@@ -119,7 +119,7 @@ async def test_static_release_copies_extra_fields(tmp_path):
 
 def test_static_release_requires_version():
     with pytest.raises(ValueError, match="must include a version"):
-        crawl_libraries.validate_release_def({
+        resolve_lib.validate_release_def({
             "url": "https://example.com/pkg.whl",
             "platforms": ["windows-x64"],
         })
@@ -127,14 +127,14 @@ def test_static_release_requires_version():
 
 def test_static_http_release_requires_sha256():
     with pytest.raises(ValueError, match="sha256"):
-        crawl_libraries.validate_release_def({
+        resolve_lib.validate_release_def({
             "url": "http://example.com/pkg.whl",
             "version": "1.2.3",
         })
 
 
 def test_static_https_release_allows_no_sha256():
-    crawl_libraries.validate_release_def({
+    resolve_lib.validate_release_def({
         "url": "https://example.com/pkg.whl",
         "version": "1.2.3",
     })

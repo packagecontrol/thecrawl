@@ -1,7 +1,7 @@
 import aiohttp
 import pytest
 
-import scripts.crawl_libraries as crawl_libraries
+import scripts._resolve_lib as resolve_lib
 
 
 def build_pypi_data(summary: str, author: str, issues: str):
@@ -58,9 +58,9 @@ async def test_library_metadata_always_wins(monkeypatch, tmp_path):
             "issues": "https://gh/issues",
         }
 
-    monkeypatch.setattr(crawl_libraries, "fetch_pypi_json", fake_fetch_pypi_json)
+    monkeypatch.setattr(resolve_lib, "fetch_pypi_json", fake_fetch_pypi_json)
     monkeypatch.setattr(
-        crawl_libraries, "resolve_github_releases", fake_resolve_github_releases
+        resolve_lib, "resolve_github_releases", fake_resolve_github_releases
     )
     monkeypatch.setenv("GITHUB_TOKEN", "token")
 
@@ -71,7 +71,7 @@ async def test_library_metadata_always_wins(monkeypatch, tmp_path):
     }
 
     async with aiohttp.ClientSession() as session:
-        info, _sources = await crawl_libraries.resolve_library(
+        info, _sources = await resolve_lib.resolve_library(
             library, tmp_path / "cache", session
         )
 
@@ -92,16 +92,16 @@ async def test_pypi_metdata_overwrites_github(monkeypatch, tmp_path):
             "issues": None,
         }
 
-    monkeypatch.setattr(crawl_libraries, "fetch_pypi_json", fake_fetch_pypi_json)
+    monkeypatch.setattr(resolve_lib, "fetch_pypi_json", fake_fetch_pypi_json)
     monkeypatch.setattr(
-        crawl_libraries, "resolve_github_releases", fake_resolve_github_releases
+        resolve_lib, "resolve_github_releases", fake_resolve_github_releases
     )
     monkeypatch.setenv("GITHUB_TOKEN", "token")
 
     library = build_library()
 
     async with aiohttp.ClientSession() as session:
-        info, _sources = await crawl_libraries.resolve_library(
+        info, _sources = await resolve_lib.resolve_library(
             library, tmp_path / "cache", session
         )
 

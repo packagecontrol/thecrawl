@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from scripts.crawl_libraries import (
+from scripts._resolve_lib import (
     concretize_release_def,
     download_info_from_fixed_version,
     download_info_from_latest_versions,

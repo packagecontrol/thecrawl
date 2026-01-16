@@ -21,7 +21,7 @@ from .github import (
 )
 from .gitlab import fetch_gitlab_info, RepoInfo as GitlabRepoInfo
 from .codeberg import fetch_codeberg_info, RepoInfo as CodebergRepoInfo
-from .crawl_libraries import (
+from ._resolve_lib import (
     match_tag_version,
     normalize_st_build,
     normalize_version_spec,
