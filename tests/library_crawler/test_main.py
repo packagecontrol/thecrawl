@@ -1,4 +1,3 @@
-import argparse
 import json
 
 import pytest
@@ -23,17 +22,19 @@ def make_args(
     explain=None,
     limit=10,
     allowed_source=None,
+    write=False,
 ):
     if allowed_source is None:
         allowed_source = []
-    return argparse.Namespace(
-        registry=str(registry_path),
-        allowed_source=allowed_source,
+    return crawl_libraries.Args(
+        registry=registry_path,
+        allowed_sources=set(allowed_source),
         name=name,
         explain=explain,
+        write=write,
         limit=limit,
-        workspace=str(output_path),
-        cache_dir=str(tmp_path / "cache"),
+        workspace=output_path,
+        cache_dir=tmp_path / "cache",
     )
 
 
@@ -63,13 +64,12 @@ async def test_creates_output_with_only_libraries_key_if_not_present(monkeypatch
     output_path = tmp_path / "libraries.json"
     args = make_args(tmp_path, repo_path, output_path)
 
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
     )
     monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver([]))
 
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     data = read_json(output_path)
     assert set(data.keys()) == {"libraries"}
@@ -87,13 +87,12 @@ async def test_preserves_existing_output_keys(monkeypatch, tmp_path):
     write_json(output_path, {"packages": {"x": 1}, "other": "keep"})
     args = make_args(tmp_path, repo_path, output_path)
 
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
     )
     monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver([]))
 
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     data = read_json(output_path)
     assert data["packages"] == {"x": 1}
@@ -108,13 +107,12 @@ async def test_record_last_crawl_and_added(monkeypatch, tmp_path):
     output_path = tmp_path / "libraries.json"
     args = make_args(tmp_path, repo_path, output_path)
 
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver([]))
 
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
     )
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     data = read_json(output_path)
     entry = data["libraries"]["alpha"]
@@ -124,7 +122,7 @@ async def test_record_last_crawl_and_added(monkeypatch, tmp_path):
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-02T00:00:00Z"
     )
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     data = read_json(output_path)
     entry = data["libraries"]["alpha"]
@@ -154,14 +152,13 @@ async def test_allowed_source_filters_registry_and_reports(monkeypatch, tmp_path
         allowed_source=["https://allowed.example"],
     )
 
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
     )
     monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver(calls))
     monkeypatch.setenv("CI", "true")
 
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     assert calls == ["allowed"]
     captured = capsys.readouterr()
@@ -192,14 +189,13 @@ async def test_allowed_source_blocks_named_library(monkeypatch, tmp_path, capsys
         calls.append(library["name"])
         return make_info(library["name"]), ["stub"]
 
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
     )
     monkeypatch.setattr(crawl_libraries, "resolve_library", resolver)
     monkeypatch.setenv("CI", "true")
 
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     assert calls == []
     captured = capsys.readouterr()
@@ -221,8 +217,6 @@ async def test_record_failures_and_clear_failures(monkeypatch, tmp_path):
     )
     args = make_args(tmp_path, repo_path, output_path)
 
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
-
     async def fail_resolver(library, cache_dir, session):
         raise RuntimeError("boom")
 
@@ -230,7 +224,7 @@ async def test_record_failures_and_clear_failures(monkeypatch, tmp_path):
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
     )
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     data = read_json(output_path)
     entry = data["libraries"]["alpha"]
@@ -242,7 +236,7 @@ async def test_record_failures_and_clear_failures(monkeypatch, tmp_path):
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-02T00:00:00Z"
     )
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     data = read_json(output_path)
     entry = data["libraries"]["alpha"]
@@ -267,13 +261,12 @@ async def test_record_removed_and_preserve_all_entry_fields(monkeypatch, tmp_pat
     )
     args = make_args(tmp_path, repo_path, output_path)
 
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
     )
     monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver([]))
 
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     data = read_json(output_path)
     gone = data["libraries"]["gone"]
@@ -298,13 +291,12 @@ async def test_removed_library_is_not_crawled(monkeypatch, tmp_path):
     args = make_args(tmp_path, repo_path, output_path)
     calls = []
 
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
     )
     monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver(calls))
 
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     assert calls == ["stay"]
 
@@ -329,13 +321,12 @@ async def test_removed_library_can_resurrect(monkeypatch, tmp_path):
     args = make_args(tmp_path, repo_path, output_path)
     calls = []
 
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     monkeypatch.setattr(
         crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
     )
     monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver(calls))
 
-    await crawl_libraries.run()
+    await crawl_libraries.run(args)
 
     data = read_json(output_path)
     entry = data["libraries"]["phoenix"]
@@ -359,11 +350,9 @@ async def test_name_and_explain_reject_removed_library(monkeypatch, tmp_path):
     )
 
     args = make_args(tmp_path, repo_path, output_path, name="gone")
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     with pytest.raises(ValueError, match="not found"):
-        await crawl_libraries.run()
+        await crawl_libraries.run(args)
 
     args = make_args(tmp_path, repo_path, output_path, explain="gone")
-    monkeypatch.setattr(crawl_libraries, "parse_args", lambda: args)
     with pytest.raises(ValueError, match="not found"):
-        await crawl_libraries.run()
+        await crawl_libraries.run(args)

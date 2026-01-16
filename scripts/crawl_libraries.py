@@ -5,6 +5,7 @@ import asyncio
 import json
 import os
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
@@ -88,7 +89,19 @@ class WorkspaceEntry(_Entry, total=False):
     last_update_at: IsoTimestamp
 
 
-def parse_args() -> argparse.Namespace:
+@dataclass
+class Args:
+    registry: Path
+    allowed_sources: set[str]
+    name: str | None
+    explain: str | None
+    write: bool
+    limit: int
+    workspace: Path
+    cache_dir: Path
+
+
+def parse_args() -> Args:
     parser = argparse.ArgumentParser(
         description="Resolve a single library (PyPI or GitHub) from registry.json."
     )
@@ -132,11 +145,31 @@ def parse_args() -> argparse.Namespace:
         default=".pypi-cache",
         help="PyPI cache directory (default: .pypi-cache)",
     )
-    return parser.parse_args()
+    ns = parser.parse_args()
+
+    if ns.explain and ns.name:
+        parser.error("Use either --name or --explain, not both.")
+    if ns.limit < 1:
+        parser.error("--limit must be a positive integer.")
+
+    registry_path = Path(os.path.abspath(ns.registry))
+    if not registry_path.exists():
+        parser.error(f"{registry_path} not found.")
+
+    return Args(
+        registry=registry_path,
+        allowed_sources=set(ns.allowed_source),
+        name=ns.name,
+        explain=ns.explain,
+        write=ns.write,
+        limit=ns.limit,
+        workspace=Path(os.path.abspath(ns.workspace)),
+        cache_dir=Path(os.path.abspath(ns.cache_dir)),
+    )
 
 
 def main() -> None:
-    raise SystemExit(asyncio.run(run()))
+    raise SystemExit(asyncio.run(run(parse_args())))
 
 
 def is_allowed_source(library: RegistryEntry, allowed_sources: set[str]) -> bool:
@@ -146,80 +179,28 @@ def is_allowed_source(library: RegistryEntry, allowed_sources: set[str]) -> bool
     return bool(source) and source in allowed_sources
 
 
-async def run() -> int:
-    args = parse_args()
-    registry_path = Path(os.path.abspath(args.registry))
-    if not registry_path.exists():
-        raise FileNotFoundError(f"{registry_path} not found.")
-
-    if args.explain and args.name:
-        raise ValueError("Use either --name or --explain, not both.")
-
-    registry: Registry = load_json(registry_path)  # type: ignore[assignment]
-    allowed_sources = set(args.allowed_source)
+async def run(args: Args) -> int:
+    if args.name:
+        return await handle_name(args.name, args)
 
     if args.explain:
-        library = find_library(registry, args.explain)
-        if not library:
-            raise ValueError(
-                f'Library "{args.explain}" not found in {registry_path.name}.'
-            )
-        concrete_defs = explain_library(library)
-        print(json.dumps(concrete_defs, indent=2, ensure_ascii=False))
-        return 0
+        return await handle_explain(args.explain, args)
+
+    registry: Registry = load_json(args.registry)  # type: ignore[assignment]
 
     timestamp = now_timestamp()
     updated_names: list[str] = []
 
-    workspace_path = Path(os.path.abspath(args.workspace))
-    workspace: Workspace = load_workspace(workspace_path)
-    dump_workspace = partial(dump_json, workspace_path, workspace)  # type: ignore[arg-type]
+    workspace: Workspace = load_workspace(args.workspace)
+    dump_workspace = partial(dump_json, args.workspace, workspace)  # type: ignore[arg-type]
     workspace_entries = workspace["libraries"]
     registered_entries = {
         lib["name"]: lib
         for lib in registry["libraries"]
     }
 
-    if args.name:
-        library = find_library(registry, args.name)
-        if not library:
-            raise ValueError(f'Library "{args.name}" not found in {registry_path.name}.')
-
-        if not is_allowed_source(library, allowed_sources):
-            print("Library is not on an allowed source.")
-            return 0
-
-        try:
-            async with aiohttp.ClientSession() as aio_session:
-                info, sources = await resolve_library(
-                    library, Path(args.cache_dir), aio_session
-                )
-
-            entry: WorkspaceEntry = \
-                workspace_entries.get(args.name, {"name": args.name}).copy()
-            entry.update(info)
-            mark_added(entry, timestamp)
-            latest_version = latest_version_from_releases(info["releases"])
-            if mark_success(entry, timestamp, latest_version):
-                updated_names.append(args.name)
-            if args.write:
-                workspace_entries[args.name] = entry
-                dump_workspace()
-
-            source_label = ", ".join(sources) if sources else "cache"
-            version_label = f" {latest_version}" if latest_version else ""
-            print(json.dumps(entry, indent=2, ensure_ascii=False))
-            print(f"Resolved {args.name}{version_label} using {source_label}.")
-            print(format_updated_message(updated_names))
-            return 0
-        except Exception as exc:
-            if args.write and args.name in workspace_entries:
-                mark_failure(workspace_entries[args.name], timestamp, str(exc))
-                dump_workspace()
-            raise
-
     ignored_by_source: dict[str, int] = defaultdict(int)
-    if allowed_sources:
+    if args.allowed_sources:
         for library in registry.get("libraries", []):
             source = library.get("source", "")
             ignored_by_source[source] += 1
@@ -231,18 +212,18 @@ async def run() -> int:
 
     removed = set(workspace_entries) - set(registered_entries)
     for name in removed:
-        if entry := workspace_entries.get(name):  # type: ignore[assignment]
+        if entry := workspace_entries.get(name):
             mark_removed(entry, timestamp)
 
     for name, lib in registered_entries.items():
-        if is_allowed_source(lib, allowed_sources):
-            if entry := workspace_entries.get(name):  # type: ignore[assignment]
+        if is_allowed_source(lib, args.allowed_sources):
+            if entry := workspace_entries.get(name):
                 mark_added(entry, timestamp)
 
     active_libs = (
         entry
         for name, entry in registered_entries.items()
-        if is_allowed_source(entry, allowed_sources)
+        if is_allowed_source(entry, args.allowed_sources)
         if not workspace_entries.get(name, {}).get("removed")  # type: ignore[call-overload]
     )
 
@@ -280,7 +261,7 @@ async def run() -> int:
                 library: RegistryEntry,
             ) -> tuple[str, tuple[ResolvedLibraryInfo, list[SourceInfo]] | Exception]:
                 name = library["name"]
-                task = resolve_library(library, Path(args.cache_dir), aio_session)
+                task = resolve_library(library, args.cache_dir, aio_session)
                 try:
                     return name, await task
                 except Exception as exc:
@@ -312,6 +293,66 @@ async def run() -> int:
     dump_workspace()
     print(f"Crawled {len(selected_libs)} libraries.")
     print(format_updated_message(updated_names))
+    return 0
+
+
+async def handle_name(name: str, args: Args) -> int:
+    registry: Registry = load_json(args.registry)  # type: ignore[assignment]
+
+    library = find_library(registry, name)
+    if not library:
+        raise ValueError(f'Library "{name}" not found in {args.registry.name}.')
+
+    if not is_allowed_source(library, args.allowed_sources):
+        print("Library is not on an allowed source.")
+        return 0
+
+    timestamp = now_timestamp()
+    updated_names: list[str] = []
+
+    workspace: Workspace = load_workspace(args.workspace)
+    dump_workspace = partial(dump_json, args.workspace, workspace)  # type: ignore[arg-type]
+    workspace_entries = workspace["libraries"]
+
+    try:
+        async with aiohttp.ClientSession() as aio_session:
+            info, sources = await resolve_library(
+                library, args.cache_dir, aio_session
+            )
+
+        entry: WorkspaceEntry = \
+            workspace_entries.get(name, {"name": name}).copy()
+        entry.update(info)
+        mark_added(entry, timestamp)
+        latest_version = latest_version_from_releases(info["releases"])
+        if mark_success(entry, timestamp, latest_version):
+            updated_names.append(name)
+        if args.write:
+            workspace_entries[name] = entry
+            dump_workspace()
+
+        source_label = ", ".join(sources) if sources else "cache"
+        version_label = f" {latest_version}" if latest_version else ""
+        print(json.dumps(entry, indent=2, ensure_ascii=False))
+        print(f"Resolved {args.name}{version_label} using {source_label}.")
+        print(format_updated_message(updated_names))
+        return 0
+    except Exception as exc:
+        if args.write and args.name in workspace_entries:
+            mark_failure(workspace_entries[args.name], timestamp, str(exc))
+            dump_workspace()
+        raise
+
+
+async def handle_explain(name: str, args: Args) -> int:
+    registry: Registry = load_json(args.registry)  # type: ignore[assignment]
+    library = find_library(registry, name)
+    if not library:
+        raise ValueError(
+            f'Library "{name}" not found in {args.registry.name}.'
+        )
+    concrete_defs = explain_library(library)
+    print(json.dumps(concrete_defs, indent=2, ensure_ascii=False))
     return 0
 
 
