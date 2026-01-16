@@ -65,6 +65,12 @@ class ResolvedLibraryInfo(TypedDict, total=False):
     ...
 
 
+class ReleaseConstraints(TypedDict):
+    sublime_text: str
+    platforms: list[str]
+    python_versions: list[str]
+
+
 class ReleaseInfo(TypedDict, total=False):
     sublime_text: str
     platforms: list[str]
@@ -450,7 +456,7 @@ def create_release_info_from_asset(
     return info  # type: ignore[return-value]
 
 
-def normalize_output_constraints(concrete: ConcreteReleaseDef) -> ReleaseInfo:
+def normalize_output_constraints(concrete: ConcreteReleaseDef) -> ReleaseConstraints:
     return {
         "platforms": [concrete.platform],
         "python_versions": [concrete.python_version],
