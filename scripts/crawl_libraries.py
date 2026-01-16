@@ -1,3 +1,4 @@
+from __future__ import annotations
 import argparse
 import asyncio
 import json
@@ -9,7 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
-from typing import Required, TypedDict
+from typing import NotRequired, Required, TypedDict
 
 import aiohttp
 from .github import fetch_github_info, ReleaseAssetInfo, RepoMetadata
@@ -33,10 +34,56 @@ PYPI_BASE = "https://pypi.org/pypi/{}/json"
 CACHE_TTL_SECONDS = 600
 PYPI_META_LOCK = asyncio.Lock()
 
+type Name = str
+type Url = str
+type IsoTimestamp = str
+
+
+class _Entry(TypedDict, total=False):
+    name: Required[str]
+    description: str
+    author: Required[str]
+    homepage: Url
+    issues: Url
+
+    source: Url
+    schema_version: str
+
+
+class RegistryEntry(_Entry, total=False):
+    releases: Required[list[ReleaseDef]]
+
+
+class WorkspaceEntry(_Entry, total=False):
+    releases: Required[list[ReleaseInfo]]
+
+    added: IsoTimestamp
+    removed: IsoTimestamp
+    last_crawl: IsoTimestamp
+
+    failing_since: IsoTimestamp
+    fail_reason: str
+
+    latest_version: VersionString
+    last_update: str
+    last_update_at: IsoTimestamp
+
+
+class Registry(TypedDict, total=False):
+    repositories: list[Url]
+    packages: list[RegistryEntry]
+    libraries: list[RegistryEntry]
+
+
+class Workspace(TypedDict, total=False):
+    packages: dict[Name, WorkspaceEntry]
+    libraries: dict[Name, WorkspaceEntry]
+
+
+type ResolvedLibraryInfo = WorkspaceEntry
 type VersionString = str
 type AssetPattern = str
 type AssetPatterns = list[AssetPattern]
-type Url = str
 # ReleaseDef is a raw release definition as specified in registry.json.
 type ReleaseDef = dict
 # NormalizedReleaseDef is a ReleaseDef with defaults applied and list-ified values.
@@ -54,20 +101,14 @@ class ConcreteReleaseDef:
     version: str
 
 
-# ReleaseInfo is the output release entry we emit into the output JSON.
-type ReleaseInfo = dict
-
-
-class ResolvedLibraryInfo(TypedDict, total=False):
-    name: Required[str]
-    description: str
-    author: Required[str]
-    releases: Required[list[dict]]
-    homepage: Url
-    issues: Url
-
-    source: Url
-    schema_version: str
+class ReleaseInfo(TypedDict, total=False):
+    sublime_text: str
+    platforms: list[str]
+    python_versions: list[str]
+    url: str
+    version: str
+    date: IsoTimestamp
+    sha256: NotRequired[str]
 
 
 type SourceInfo = str  # Labels like "pypi:cache" or "github:tags" for provenance.
@@ -138,7 +179,7 @@ def main() -> None:
     raise SystemExit(asyncio.run(run()))
 
 
-def is_allowed_source(library: dict, allowed_sources: set[str]) -> bool:
+def is_allowed_source(library: RegistryEntry, allowed_sources: set[str]) -> bool:
     if not allowed_sources:
         return True
     source = library.get("source")
@@ -154,7 +195,7 @@ async def run() -> int:
     if args.explain and args.name:
         raise ValueError("Use either --name or --explain, not both.")
 
-    registry = load_json(registry_path)
+    registry: Registry = load_json(registry_path)  # type: ignore[assignment]
     allowed_sources = set(args.allowed_source)
 
     if args.explain:
@@ -171,16 +212,19 @@ async def run() -> int:
     updated_names: list[str] = []
 
     workspace_path = Path(os.path.abspath(args.workspace))
-    workspace_data = load_output(workspace_path)
-    dump_output = partial(dump_json, workspace_path, workspace_data)
-    library_entries = workspace_data["libraries"]
+    workspace: Workspace = load_workspace(workspace_path)
+    dump_workspace = partial(dump_json, workspace_path, workspace)  # type: ignore[arg-type]
+    workspace_entries = workspace["libraries"]
+    registered_entries = {
+        lib["name"]: lib
+        for lib in registry["libraries"]
+    }
 
     if args.name:
         library = find_library(registry, args.name)
         if not library:
             raise ValueError(f'Library "{args.name}" not found in {registry_path.name}.')
 
-        entry = library_entries.get(args.name, {}).copy()
         if not is_allowed_source(library, allowed_sources):
             print("Library is not on an allowed source.")
             return 0
@@ -191,13 +235,15 @@ async def run() -> int:
                     library, Path(args.cache_dir), aio_session
                 )
 
+            entry: WorkspaceEntry = \
+                workspace_entries.get(args.name, {}).copy()  # type: ignore[assignment]
             entry.update(info)
             mark_added(entry, timestamp)
             latest_version = latest_version_from_releases(info["releases"])
             if mark_success(entry, timestamp, latest_version):
                 updated_names.append(args.name)
-            library_entries[args.name] = entry
-            dump_output()
+            workspace_entries[args.name] = entry
+            dump_workspace()
 
             source_label = ", ".join(sources) if sources else "cache"
             version_label = f" {latest_version}" if latest_version else ""
@@ -206,12 +252,12 @@ async def run() -> int:
             print(format_updated_message(updated_names))
             return 0
         except Exception as exc:
-            if args.name in library_entries:
-                mark_failure(library_entries[args.name], timestamp, str(exc))
-                dump_output()
+            if args.name in workspace_entries:
+                mark_failure(workspace_entries[args.name], timestamp, str(exc))
+                dump_workspace()
             raise
 
-    ignored_by_source: dict[str | None, int] = defaultdict(int)
+    ignored_by_source: dict[str, int] = defaultdict(int)
     if allowed_sources:
         for library in registry.get("libraries", []):
             source = library.get("source", "")
@@ -222,44 +268,35 @@ async def run() -> int:
             else:
                 print(f"Ignoring {count} libraries without a source.")
 
-    all_registry_names = {
-        lib.get("name") for lib in registry.get("libraries", []) if lib.get("name")
-    }
-    registry_names = {
-        lib.get("name")
-        for lib in registry.get("libraries", [])
-        if lib.get("name")
-        if is_allowed_source(lib, allowed_sources)
-    }
-
-    removed = set(library_entries) - all_registry_names
+    removed = set(workspace_entries) - set(registered_entries)
     for name in removed:
-        entry = library_entries.get(name)
-        if entry:
+        if entry := workspace_entries.get(name):  # type: ignore[assignment]
             mark_removed(entry, timestamp)
 
-    for name in registry_names:
-        if name in library_entries:
-            mark_added(library_entries[name], timestamp)
+    for name, lib in registered_entries.items():
+        if is_allowed_source(lib, allowed_sources):
+            if entry := workspace_entries.get(name):  # type: ignore[assignment]
+                mark_added(entry, timestamp)
 
-    def sort_key(name: str):
-        entry = library_entries.get(name, {})
+    active_libs = (
+        entry
+        for name, entry in registered_entries.items()
+        if is_allowed_source(entry, allowed_sources)
+        if not workspace_entries.get(name, {}).get("removed")  # type: ignore[call-overload]
+    )
+
+    def sorter(name: Name):
         return (
-            parse_last_crawl(entry.get("last_crawl")),
-            name.lower(),
+            workspace_entries  # type: ignore[call-overload]
+            .get(name, {})
+            .get("last_crawl", "0000-00-00T00:00:00Z"),
+            name.lower()
         )
 
-    selected = [
-        name
-        for name in sorted(registry_names, key=sort_key)
-        if not library_entries.get(name, {}).get("removed")
-    ][:args.limit]
-    libraries = {lib.get("name"): lib for lib in registry.get("libraries", [])}
-    selected_libs = [
-        library
-        for name in selected
-        if (library := libraries.get(name))
-    ]
+    selected_libs = sorted(
+        active_libs,
+        key=lambda entry: sorter(entry["name"])
+    )[:args.limit]
     if not selected_libs:
         print("Nothing to crawl.")
         return 0
@@ -279,7 +316,7 @@ async def run() -> int:
         task_id = progress.add_task("Crawling Libraries", total=len(selected_libs))
         async with aiohttp.ClientSession() as aio_session:
             async def _resolve_named(
-                library: dict,
+                library: RegistryEntry,
             ) -> tuple[str, tuple[ResolvedLibraryInfo, list[SourceInfo]] | Exception]:
                 name = library["name"]
                 task = resolve_library(library, Path(args.cache_dir), aio_session)
@@ -294,24 +331,24 @@ async def run() -> int:
                 progress.advance(task_id)
 
                 if isinstance(result, Exception):
-                    if name in library_entries:
-                        mark_failure(library_entries[name], timestamp, str(result))
+                    if name in workspace_entries:
+                        mark_failure(workspace_entries[name], timestamp, str(result))
                     print(f"Failed {name}: {result}")
                     continue
 
                 info, sources = result
-                entry = library_entries.get(name, {}).copy()
+                entry = workspace_entries.get(name, {}).copy()  # type: ignore[assignment]
                 entry.update(info)
                 mark_added(entry, timestamp)
                 latest_version = latest_version_from_releases(info["releases"])
                 if mark_success(entry, timestamp, latest_version):
                     updated_names.append(name)
-                library_entries[name] = entry
+                workspace_entries[name] = entry
                 source_label = ", ".join(sources) if sources else "cache"
                 version_label = f" {latest_version}" if latest_version else ""
                 err(f"Resolved {name}{version_label} using {source_label}.")
 
-    dump_output()
+    dump_workspace()
     print(f"Crawled {len(selected_libs)} libraries.")
     print(format_updated_message(updated_names))
     return 0
@@ -342,10 +379,10 @@ def now_timestamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def load_output(path: Path) -> dict:
+def load_workspace(path: Path) -> Workspace:
     if not path.exists():
         return {"libraries": {}}
-    data = load_json(path)
+    data: Workspace = load_json(path)  # type: ignore[assignment]
     if not isinstance(data, dict):
         raise ValueError(f"{path.name} must be a JSON object.")
     if "libraries" not in data:
@@ -355,42 +392,46 @@ def load_output(path: Path) -> dict:
     return data
 
 
-def mark_added(entry: dict, timestamp: str) -> None:
-    if entry.get("removed"):
-        entry.pop("removed", None)
-    if "added" not in entry:
-        entry["added"] = timestamp
+def mark_added(entry: WorkspaceEntry, timestamp: IsoTimestamp) -> None:
+    entry.pop("removed", None)
+    entry.setdefault("added", timestamp)
 
 
-def mark_success(entry: dict, timestamp: str, latest_version: str | None) -> bool:
-    previous_version = entry.get("latest_version")
+def mark_success(
+    entry: WorkspaceEntry,
+    timestamp: IsoTimestamp,
+    latest_version: VersionString | None
+) -> bool:
     entry["last_crawl"] = timestamp
-    updated = False
-    if latest_version:
-        entry["latest_version"] = latest_version
-        if previous_version and previous_version != latest_version:
-            entry["last_update"] = f"{previous_version} -> {latest_version}"
-            entry["last_update_at"] = timestamp
-            updated = True
     entry.pop("failing_since", None)
     entry.pop("fail_reason", None)
     entry.pop("removed", None)
+    previous_version = entry.get("latest_version")
+    if latest_version:
+        entry["latest_version"] = latest_version
+
+    if updated := bool(
+        previous_version
+        and latest_version
+        and previous_version != latest_version
+    ):
+        entry["last_update"] = f"{previous_version} -> {latest_version}"
+        entry["last_update_at"] = timestamp
     return updated
 
 
-def mark_removed(entry: dict, timestamp: str) -> None:
+def mark_removed(entry: WorkspaceEntry, timestamp: IsoTimestamp) -> None:
     entry["removed"] = timestamp
 
 
-def mark_failure(entry: dict, timestamp: str, reason: str) -> None:
+def mark_failure(entry: WorkspaceEntry, timestamp: IsoTimestamp, reason: str) -> None:
     entry["last_crawl"] = timestamp
-    if "failing_since" not in entry:
-        entry["failing_since"] = timestamp
+    entry.setdefault("failing_since", timestamp)
     entry["fail_reason"] = reason
 
 
-def find_library(repo: dict, name: str) -> dict | None:
-    for library in repo.get("libraries", []):
+def find_library(registry: Registry, name: str) -> RegistryEntry | None:
+    for library in registry.get("libraries", []):
         if library.get("name") == name:
             return library
     return None
@@ -455,7 +496,7 @@ def validate_normalized_release_def(release: NormalizedReleaseDef) -> None:
                 raise ValueError(f"Unsupported platform for auto assets: {platform}")
 
 
-def validate_library(library: dict) -> None:
+def validate_library(library: RegistryEntry) -> None:
     for release in library.get("releases", []):
         validate_release_def(release)
 
@@ -600,7 +641,7 @@ def concretize_release_defs(
     ]
 
 
-def explain_library(library: dict) -> list[dict]:
+def explain_library(library: RegistryEntry) -> list[dict]:
     validate_library(library)
     output: list[dict] = []
     for release in library.get("releases", []):
@@ -734,10 +775,10 @@ def create_release_info_from_asset(
         "sha256": asset["digests"]["sha256"],
     }
     info.update(output_constraints)
-    return info
+    return info  # type: ignore[return-value]
 
 
-def normalize_output_constraints(concrete: ConcreteReleaseDef) -> dict:
+def normalize_output_constraints(concrete: ConcreteReleaseDef) -> ReleaseInfo:
     return {
         "platforms": [concrete.platform],
         "python_versions": [concrete.python_version],
@@ -857,7 +898,7 @@ async def download_info_from_github_releases(
     concrete_defs: list[tuple[ConcreteReleaseDef, str | None]],
     *,
     include_metadata: IncludeMetadata = False,
-) -> tuple[list[dict], RepoMetadata]:
+) -> tuple[list[ReleaseInfo], RepoMetadata]:
     if not concrete_defs:
         return [], {}
     scopes = ("RELEASES", "METADATA") if include_metadata else ("RELEASES",)
@@ -884,7 +925,7 @@ async def download_info_from_github_releases(
             else:
                 continue
 
-            release_info = {
+            release_info: ReleaseInfo = {
                 "url": asset["url"],
                 "version": version_str,
                 "date": normalize_timestamp(release["date"]),
@@ -910,8 +951,8 @@ def sort_releases(releases: list[dict]) -> list[dict]:
     return sorted(releases, key=key, reverse=True)
 
 
-def combine_releases(releases: list[dict]) -> list[dict]:
-    grouped: dict[tuple[str, str], list[dict]] = defaultdict(list)
+def combine_releases(releases: list[ReleaseInfo]) -> list[dict]:
+    grouped: dict[tuple[str, str], list[ReleaseInfo]] = defaultdict(list)
     for release in releases:
         sublime_text = release.get("sublime_text", "*")
         url = release.get("url")
@@ -944,7 +985,7 @@ def combine_releases(releases: list[dict]) -> list[dict]:
     return output
 
 
-def latest_version_from_releases(releases: list[dict]) -> str | None:
+def latest_version_from_releases(releases: list[ReleaseInfo]) -> str | None:
     if not releases:
         return None
     newest = sorted(releases, key=lambda rel: rel.get("date") or "")[-1]
@@ -963,12 +1004,12 @@ def format_updated_message(names: list[str]) -> str:
 
 
 async def resolve_library(
-    library: dict, cache_dir: Path, aio_session: aiohttp.ClientSession
+    library: RegistryEntry, cache_dir: Path, aio_session: aiohttp.ClientSession
 ) -> tuple[ResolvedLibraryInfo, list[SourceInfo]]:
     validate_library(library)
 
-    output_releases: list[dict] = []
-    static_releases: list[dict] = []
+    output_releases: list[ReleaseInfo] = []
+    static_releases: list[ReleaseInfo] = []
     sources: set[str] = set()
     pypi_data_by_name: dict[str, dict] = {}  # Cache PyPI JSON per project name.
     included_github_metadata = False
@@ -980,7 +1021,7 @@ async def resolve_library(
     for release in library.get("releases", []):
         base_url = release.get("base")
         if release.get("url") and not base_url:
-            static_releases.append(release.copy())
+            static_releases.append(release.copy())  # type: ignore[arg-type]
             continue
         if base_url and "pypi.org/project/" in base_url:
             pypi_bases[base_url].append(release)
@@ -1068,8 +1109,8 @@ async def resolve_library(
 async def resolve_github_releases(
     session: aiohttp.ClientSession,
     github_asset_defs: dict[str, list[tuple[ReleaseDef, IncludeMetadata]]],
-) -> tuple[list[dict], RepoMetadata]:
-    output: list[dict] = []
+) -> tuple[list[ReleaseInfo], RepoMetadata]:
+    output: list[ReleaseInfo] = []
     metadata: RepoMetadata = {}
 
     for base_url, defs in github_asset_defs.items():
@@ -1096,8 +1137,8 @@ async def resolve_github_releases(
 async def resolve_github_tags(
     session: aiohttp.ClientSession,
     github_tag_defs: dict[str, list[tuple[ReleaseDef, IncludeMetadata]]],
-) -> tuple[list[dict], RepoMetadata]:
-    output: list[dict] = []
+) -> tuple[list[ReleaseInfo], RepoMetadata]:
+    output: list[ReleaseInfo] = []
     metadata: RepoMetadata = {}
 
     for base_url, defs in github_tag_defs.items():
@@ -1122,7 +1163,7 @@ async def resolve_github_tags(
                 tagged_versions.append((version, version_str, tag))
 
             tagged_versions.sort(key=lambda item: item[0], reverse=True)
-            downloads = []
+            downloads: list[ReleaseInfo] = []
             for version, version_str, tag in tagged_versions:
                 downloads.append({
                     "url": tag["url"],
