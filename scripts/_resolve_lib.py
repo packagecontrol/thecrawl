@@ -34,13 +34,18 @@ class RegistryEntry(TypedDict, total=False):
     ...
 
 
+class NormalizedRegistryEntry(TypedDict, total=False):
+    name: Required[str]
+    releases: Required[list[NormalizedReleaseDef]]
+    ...
+
+
+type ReleaseDef = dict
+type NormalizedReleaseDef = dict
+
 type VersionString = str
 type AssetPattern = str
 type AssetPatterns = list[AssetPattern]
-# ReleaseDef is a raw release definition as specified in registry.json.
-type ReleaseDef = dict
-# NormalizedReleaseDef is a ReleaseDef with defaults applied and list-ified values.
-type NormalizedReleaseDef = dict
 type IncludeMetadata = bool
 
 
@@ -122,6 +127,21 @@ def name_and_version(url: str) -> tuple[str, str | None] | tuple[None, None]:
     return (None, None)
 
 
+def normalize_library(library: RegistryEntry) -> NormalizedRegistryEntry:
+    validate_library(library)
+    normalized: NormalizedRegistryEntry = library.copy()
+    normalized["releases"] = [
+        normalize_release_def(release)
+        for release in library.get("releases", [])
+    ]
+    return normalized
+
+
+def validate_library(library: RegistryEntry) -> None:
+    for release in library.get("releases", []):
+        validate_release_def(release)
+
+
 def validate_release_def(release: ReleaseDef) -> None:
     for key in ("platforms", "python_versions", "sublime_text", "asset"):
         value = release.get(key)
@@ -153,34 +173,14 @@ def validate_release_def(release: ReleaseDef) -> None:
     if not isinstance(base, str) or not base:
         raise ValueError("Missing base URL in release.")
 
-    if "pypi.org/project/" in base:
-        if release.get("branch") or release.get("url"):
-            raise ValueError("Branch/url releases are not supported in this script.")
-    elif "github.com/" in base:
-        if release.get("branch") or release.get("url"):
-            raise ValueError("Branch/url releases are not supported in this script.")
-        parse_tag_prefix(release.get("tags"))
-        if not release.get("asset") and "tags" not in release:
-            raise ValueError("GitHub releases must use tags or asset patterns.")
-    else:
-        raise ValueError(f'Unsupported base "{base}" found in releases.')
-
-
-def validate_normalized_release_def(release: NormalizedReleaseDef) -> None:
-    base = release["base"]
-    if "pypi.org/project/" in base and not release.get("asset"):
-        for platform in release["platforms"]:
-            if platform not in PLATFORM_TAG_PATTERNS:
-                raise ValueError(f"Unsupported platform for auto assets: {platform}")
-
-
-def validate_library(library: RegistryEntry) -> None:
-    for release in library.get("releases", []):
-        validate_release_def(release)
-
 
 def normalize_release_def(release: ReleaseDef) -> NormalizedReleaseDef:
+    is_static = "url" in release
     normalized = release.copy()
+
+    base = normalized.get("base")
+    if isinstance(base, str):
+        normalized["base"] = normalize_base_url(base)
 
     platforms = normalized.get("platforms")
     if platforms is None:
@@ -200,25 +200,63 @@ def normalize_release_def(release: ReleaseDef) -> NormalizedReleaseDef:
         python_versions = SUPPORTED_PYTHON_VERSIONS
     normalized["python_versions"] = python_versions
 
-    sublime_text = normalized.get("sublime_text")
-    if sublime_text is None:
-        sublime_text = ["*"]
-    elif isinstance(sublime_text, str):
-        sublime_text = [sublime_text]
-    normalized["sublime_text"] = sublime_text
+    if is_static:
+        normalized["sublime_text"] = normalized.get("sublime_text", "*")
+    else:
+        sublime_text = normalized.get("sublime_text")
+        if sublime_text is None:
+            sublime_text = ["*"]
+        elif isinstance(sublime_text, str):
+            sublime_text = [sublime_text]
+        normalized["sublime_text"] = sublime_text
 
     asset = normalized.get("asset")
     if isinstance(asset, str):
         normalized["asset"] = [asset]
 
-    version_spec = normalized.get("version")
-    if isinstance(version_spec, str):
-        normalized["version"] = normalize_version_spec(version_spec)
-    elif version_spec is None:
-        normalized["version"] = ""
+    if not is_static:
+        version_spec = normalized.get("version")
+        if isinstance(version_spec, str):
+            normalized["version"] = normalize_version_spec(version_spec)
+        elif version_spec is None:
+            normalized["version"] = ""
 
     validate_normalized_release_def(normalized)
     return normalized
+
+
+def normalize_base_url(base: str) -> str:
+    if base.startswith("pypi:"):
+        name = base[len("pypi:"):].lstrip("/")
+        if not name:
+            raise ValueError("Missing PyPI project name in base.")
+        return f"https://pypi.org/project/{name}"
+    if base.startswith("github:"):
+        repo = base[len("github:"):].lstrip("/")
+        if not repo:
+            raise ValueError("Missing GitHub repo in base.")
+        return f"https://github.com/{repo}"
+    return base
+
+
+def validate_normalized_release_def(release: NormalizedReleaseDef) -> None:
+    if "base" in release:
+        base = release["base"]
+        if "pypi.org/project/" in base:
+            if not release.get("asset"):
+                for platform in release["platforms"]:
+                    if platform not in PLATFORM_TAG_PATTERNS:
+                        raise ValueError(f"Unsupported platform for auto assets: {platform}")
+            if release.get("branch") or release.get("url"):
+                raise ValueError("Branch/url releases are not supported in this script.")
+        elif "github.com/" in base:
+            if release.get("branch") or release.get("url"):
+                raise ValueError("Branch/url releases are not supported in this script.")
+            parse_tag_prefix(release.get("tags"))
+            if not release.get("asset") and "tags" not in release:
+                raise ValueError("GitHub releases must use tags or asset patterns.")
+        else:
+            raise ValueError(f'Unsupported base "{base}" found in releases.')
 
 
 def concretize_release_def(
@@ -256,24 +294,24 @@ def concretize_release_def(
 
 
 def concretize_release_defs(
-    releases: list[ReleaseDef], *, auto_assets: bool
+    releases: list[NormalizedReleaseDef], *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
-    normalized_defs = [normalize_release_def(release) for release in releases]
     return [
         concrete
-        for normalized in normalized_defs
-        for concrete in concretize_release_def(normalized, auto_assets=auto_assets)
+        for release in releases
+        for concrete in concretize_release_def(release, auto_assets=auto_assets)
     ]
 
 
 def explain_library(library: RegistryEntry) -> list[dict]:
-    validate_library(library)
+    normalized_library = normalize_library(library)
     output: list[dict] = []
-    for release in library.get("releases", []):
-        normalized = normalize_release_def(release)
-        base = normalized.get("base", "")
-        auto_assets = "pypi.org/project/" in base and normalized.get("asset") is None
-        for concrete in concretize_release_def(normalized, auto_assets=auto_assets):
+    for release in normalized_library.get("releases", []):
+        base = release.get("base")
+        if not base:
+            continue
+        auto_assets = "pypi.org/project/" in base and release.get("asset") is None
+        for concrete in concretize_release_def(release, auto_assets=auto_assets):
             entry = {
                 "base": concrete.base,
                 "asset": concrete.asset_patterns,
@@ -282,7 +320,7 @@ def explain_library(library: RegistryEntry) -> list[dict]:
                 "sublime_text": concrete.sublime_text,
                 "version": str(concrete.version) or "*",
             }
-            tags = normalized.get("tags")
+            tags = release.get("tags")
             if tags is not None:
                 entry["tags"] = tags
             output.append(entry)
@@ -437,7 +475,7 @@ def parse_tag_prefix(value) -> str | None:
 async def resolve_library(
     library: RegistryEntry, cache_dir: Path, aio_session: aiohttp.ClientSession
 ) -> tuple[ResolvedLibraryInfo, list[SourceInfo]]:
-    validate_library(library)
+    normalized_library = normalize_library(library)
 
     output_releases: list[ReleaseInfo] = []
     static_releases: list[ReleaseInfo] = []
@@ -445,11 +483,13 @@ async def resolve_library(
     pypi_data_by_name: dict[str, dict] = {}  # Cache PyPI JSON per project name.
     included_github_metadata = False
 
-    pypi_bases: dict[Url, list[ReleaseDef]] = defaultdict(list)
-    github_asset_defs: dict[Url, list[tuple[ReleaseDef, IncludeMetadata]]] = defaultdict(list)
-    github_tag_defs: dict[Url, list[tuple[ReleaseDef, IncludeMetadata]]] = defaultdict(list)
+    type ByUrl[T] = dict[Url, list[T]]
 
-    for release in library.get("releases", []):
+    pypi_bases: ByUrl[NormalizedReleaseDef] = defaultdict(list)
+    github_asset_defs: ByUrl[tuple[NormalizedReleaseDef, IncludeMetadata]] = defaultdict(list)
+    github_tag_defs: ByUrl[tuple[NormalizedReleaseDef, IncludeMetadata]] = defaultdict(list)
+
+    for release in normalized_library.get("releases", []):
         base_url = release.get("base")
         if release.get("url") and not base_url:
             static_releases.append(release.copy())  # type: ignore[arg-type]
@@ -528,7 +568,7 @@ async def resolve_library(
     info: ResolvedLibraryInfo = (
         lib_info_from_github
         | lib_info_from_pypi
-        | library
+        | normalized_library
         | {"releases": sort_releases(combine_releases(output_releases + static_releases))}
     )
 
@@ -697,7 +737,7 @@ def download_info_from_latest_versions(
 
 async def resolve_github_releases(
     session: aiohttp.ClientSession,
-    github_asset_defs: dict[str, list[tuple[ReleaseDef, IncludeMetadata]]],
+    github_asset_defs: dict[str, list[tuple[NormalizedReleaseDef, IncludeMetadata]]],
 ) -> tuple[list[ReleaseInfo], RepoMetadata]:
     output: list[ReleaseInfo] = []
     metadata: RepoMetadata = {}
@@ -706,9 +746,8 @@ async def resolve_github_releases(
         include_metadata = any(include for _, include in defs)
         concrete_defs: list[tuple[ConcreteReleaseDef, str | None]] = []
         for release, _ in defs:
-            normalized = normalize_release_def(release)
-            tag_prefix = parse_tag_prefix(normalized.get("tags"))
-            for concrete in concretize_release_def(normalized, auto_assets=False):
+            tag_prefix = parse_tag_prefix(release.get("tags"))
+            for concrete in concretize_release_def(release, auto_assets=False):
                 concrete_defs.append((concrete, tag_prefix))
 
         downloads, new_metadata = await download_info_from_github_releases(
@@ -803,7 +842,7 @@ def is_final_version(version: Version) -> bool:
 
 async def resolve_github_tags(
     session: aiohttp.ClientSession,
-    github_tag_defs: dict[str, list[tuple[ReleaseDef, IncludeMetadata]]],
+    github_tag_defs: dict[str, list[tuple[NormalizedReleaseDef, IncludeMetadata]]],
 ) -> tuple[list[ReleaseInfo], RepoMetadata]:
     output: list[ReleaseInfo] = []
     metadata: RepoMetadata = {}
@@ -816,10 +855,10 @@ async def resolve_github_tags(
             metadata |= {"homepage": base_url} | gh_info.get("metadata", {})
 
         for release, _ in defs:
-            normalized = normalize_release_def(release)
-            tag_prefix = parse_tag_prefix(normalized.get("tags"))
-            version_spec = normalized.get("version")
+            tag_prefix = parse_tag_prefix(release.get("tags"))
+            version_spec = release.get("version")
             spec_set = SpecifierSet(version_spec) if version_spec else None
+
             tagged_versions = []
             async for tag in gh_info["tags"]:
                 match = match_tag_version(tag["name"], tag_prefix)
@@ -831,21 +870,17 @@ async def resolve_github_tags(
                 tagged_versions.append((version, version_str, tag))
 
             tagged_versions.sort(key=lambda item: item[0], reverse=True)
-            downloads: list[ReleaseInfo] = []
             for version, version_str, tag in tagged_versions:
-                downloads.append({
+                download_info: ReleaseInfo = {
                     "url": tag["url"],
                     "version": version_str,
                     "date": normalize_timestamp(tag["date"]),
-                })
+                }
+                for concrete in concretize_release_def(release, auto_assets=False):
+                    release_info = download_info | normalize_output_constraints(concrete)
+                    output.append(release_info)
+
                 if is_final_version(version):
                     break
-
-            concrete_defs = concretize_release_def(normalized, auto_assets=False)
-            for concrete in concrete_defs:
-                for download in downloads:
-                    release_info = download.copy()
-                    release_info.update(normalize_output_constraints(concrete))
-                    output.append(release_info)
 
     return output, metadata
