@@ -149,6 +149,8 @@ def parse_args() -> Args:
 
     if ns.explain and ns.name:
         parser.error("Use either --name or --explain, not both.")
+    if ns.write and not ns.name:
+        parser.error("--write requires --name.")
     if ns.limit < 1:
         parser.error("--limit must be a positive integer.")
 
