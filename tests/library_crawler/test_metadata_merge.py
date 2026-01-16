@@ -65,6 +65,7 @@ async def test_library_metadata_always_wins(monkeypatch, tmp_path):
     monkeypatch.setenv("GITHUB_TOKEN", "token")
 
     library = build_library() | {
+        "homepage": "lib homepage",
         "description": "lib desc",
         "author": "lib author",
         "issues": "https://lib/issues",
@@ -75,6 +76,7 @@ async def test_library_metadata_always_wins(monkeypatch, tmp_path):
             library, tmp_path / "cache", session
         )
 
+    assert info["homepage"] == "lib homepage"
     assert info["description"] == "lib desc"
     assert info["author"] == "lib author"
     assert info["issues"] == "https://lib/issues"
@@ -83,7 +85,9 @@ async def test_library_metadata_always_wins(monkeypatch, tmp_path):
 @pytest.mark.asyncio
 async def test_pypi_metdata_overwrites_github(monkeypatch, tmp_path):
     async def fake_fetch_pypi_json(name, cache_dir, aio_session, ttl_seconds=0):
-        return build_pypi_data("pypi desc", "pypi author", "https://pypi/issues"), "network"
+        pypi_data = build_pypi_data("pypi desc", "pypi author", "https://pypi/issues")
+        pypi_data["info"]["project_urls"] = {"Homepage": "Homepage URL"}
+        return pypi_data, "network"
 
     async def fake_resolve_github_releases(session, github_asset_defs):
         return [], {
@@ -105,6 +109,7 @@ async def test_pypi_metdata_overwrites_github(monkeypatch, tmp_path):
             library, tmp_path / "cache", session
         )
 
+    assert info["homepage"] == "Homepage URL"
     assert info["description"] == "pypi desc"
     assert info["author"] == "pypi author"
     assert info["issues"] == "https://pypi/issues"

@@ -513,6 +513,7 @@ async def resolve_library(
         "description": github_metadata.get("description"),
         "author": github_metadata.get("author"),
         "issues": github_metadata.get("issues"),
+        "homepage": github_metadata.get("homepage"),
     })
     pypi_info: dict = next((data.get("info", {}) for data in pypi_data_by_name.values()), {})
     lib_info_from_pypi = drop_falsy({
@@ -522,6 +523,7 @@ async def resolve_library(
             pypi_info.get("bugtrack_url")
             or (pypi_info.get("project_urls") or {}).get("Issues")
         ),
+        "homepage": pypi_homepage(pypi_info),
     })
     info: ResolvedLibraryInfo = (
         lib_info_from_github
@@ -535,6 +537,17 @@ async def resolve_library(
             raise ValueError(f'Missing required "{key}" value.')
 
     return info, sorted(sources)
+
+
+def pypi_homepage(info: dict) -> str | None:
+    project_urls = info.get("project_urls") or {}  # project_urls can be None!
+    return (
+        project_urls.get("Homepage")
+        or project_urls.get("homepage")
+        or info.get("home_page")
+        or info.get("project_url")
+        or info.get("package_url")
+    )
 
 
 def sort_releases(releases: list[dict]) -> list[dict]:
@@ -721,7 +734,9 @@ async def download_info_from_github_releases(
         return [], {}
     scopes = ("RELEASES", "METADATA") if include_metadata else ("RELEASES",)
     gh_info = await fetch_github_info(session, base_url, scopes, hints=["no_readme"])
-    metadata = gh_info.get("metadata", {})
+    metadata: RepoMetadata = {}
+    if include_metadata:
+        metadata = {"homepage": base_url} | gh_info.get("metadata", {})
 
     output = []
     for concrete, tag_prefix in concrete_defs:
@@ -797,7 +812,8 @@ async def resolve_github_tags(
         include_metadata = any(include for _, include in defs)
         scopes = ("TAGS", "METADATA") if include_metadata else ("TAGS",)
         gh_info = await fetch_github_info(session, base_url, scopes, hints=["no_readme"])
-        metadata |= gh_info.get("metadata", {})
+        if include_metadata:
+            metadata |= {"homepage": base_url} | gh_info.get("metadata", {})
 
         for release, _ in defs:
             normalized = normalize_release_def(release)
