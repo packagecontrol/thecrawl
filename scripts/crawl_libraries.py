@@ -160,7 +160,7 @@ async def run() -> int:
                 f'Library "{args.explain}" not found in {registry_path.name}.'
             )
         concrete_defs = explain_library(library)
-        print(json.dumps(concrete_defs, indent=2, ensure_ascii=True))
+        print(json.dumps(concrete_defs, indent=2, ensure_ascii=False))
         return 0
 
     timestamp = now_timestamp()
@@ -202,7 +202,7 @@ async def run() -> int:
 
             source_label = ", ".join(sources) if sources else "cache"
             version_label = f" {latest_version}" if latest_version else ""
-            print(json.dumps(entry, indent=2, ensure_ascii=True))
+            print(json.dumps(entry, indent=2, ensure_ascii=False))
             print(f"Resolved {args.name}{version_label} using {source_label}.")
             print(format_updated_message(updated_names))
             return 0
