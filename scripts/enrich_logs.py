@@ -117,9 +117,9 @@ def load_json(path: Path) -> Any:
 def save_json(path: Path, data: Any, *, pretty: bool):
     with path.open("w", encoding="utf-8") as handle:
         if pretty:
-            json.dump(data, handle, indent=2)
+            json.dump(data, handle, indent=2, ensure_ascii=True)
         else:
-            json.dump(data, handle, separators=(",", ":"))
+            json.dump(data, handle, separators=(",", ":"), ensure_ascii=True)
 
 
 if __name__ == "__main__":

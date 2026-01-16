@@ -140,9 +140,9 @@ def load_logs(path: Path) -> list[dict[str, Any]]:
 def save_logs(path: Path, entries: list[dict[str, Any]], *, pretty: bool = False):
     with path.open("w", encoding="utf-8") as handle:
         if pretty:
-            json.dump(entries, handle, indent=2)
+            json.dump(entries, handle, indent=2, ensure_ascii=True)
         else:
-            json.dump(entries, handle, separators=(",", ":"))
+            json.dump(entries, handle, separators=(",", ":"), ensure_ascii=True)
 
 
 if __name__ == "__main__":

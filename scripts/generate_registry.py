@@ -85,7 +85,7 @@ async def main(output_file: str, channels: list[str]) -> None:
         async with asyncio.timeout(GLOBAL_TIMEOUT):
             db = await fetch_packages(channels, prev_db)
             with open(output_file, 'w') as f:
-                json.dump(db, f, indent=2)
+                json.dump(db, f, indent=2, ensure_ascii=True)
             print(f"Saved registry as {output_file}")
     except asyncio.TimeoutError:
         print(f"Timeout: script took more than {GLOBAL_TIMEOUT} seconds")

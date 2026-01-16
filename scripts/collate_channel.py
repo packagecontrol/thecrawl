@@ -68,9 +68,9 @@ async def main(
 
     with open(output_file, "w") as f:
         if pretty:
-            json.dump(channel, f, indent=2)
+            json.dump(channel, f, indent=2, ensure_ascii=True)
         else:
-            json.dump(channel, f, separators=(',', ':'))
+            json.dump(channel, f, separators=(',', ':'), ensure_ascii=True)
 
     print(f"Wrote {output_file}")
     print(

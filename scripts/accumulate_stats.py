@@ -168,9 +168,9 @@ def load_json(path: str) -> dict | None:
 def save_json(path: str, data: dict, pretty: bool = False):
     with open(path, "w", encoding="utf-8") as f:
         if pretty:
-            json.dump(data, f, indent=2)
+            json.dump(data, f, indent=2, ensure_ascii=True)
         else:
-            json.dump(data, f, separators=(",", ":"))
+            json.dump(data, f, separators=(",", ":"), ensure_ascii=True)
 
 
 def parse_args():

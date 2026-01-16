@@ -117,7 +117,7 @@ async def main(
         await main_(registry_data, workspace_data, name, limit, presto)
     finally:
         with open(workspace, 'w') as ws_file:
-            json.dump(workspace_data, ws_file, indent=2)
+            json.dump(workspace_data, ws_file, indent=2, ensure_ascii=True)
 
 
 async def main_(
