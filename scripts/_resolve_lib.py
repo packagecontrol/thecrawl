@@ -179,59 +179,6 @@ def validate_library(library: RegistryEntry) -> None:
         validate_release_def(release)
 
 
-async def fetch_pypi_json(
-    name: str,
-    cache_dir: Path,
-    aio_session: aiohttp.ClientSession,
-    ttl_seconds: int = CACHE_TTL_SECONDS,
-) -> tuple[dict, str]:
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_path = cache_dir / f"{name}.json"
-    has_cache = cache_path.exists()
-    meta_path = cache_dir / "meta.json"
-
-    now = time.time()
-    async with PYPI_META_LOCK:
-        meta = load_json(meta_path) if meta_path.exists() else {}
-        entry = meta.get(name, {})
-        if has_cache:
-            fetched_at = entry.get("fetched_at")
-            if fetched_at and now - fetched_at < ttl_seconds:
-                return load_json(cache_path), "cache"
-
-    headers = {}
-    if has_cache:
-        if entry.get("etag"):
-            headers["If-None-Match"] = entry["etag"]
-        if entry.get("last_modified"):
-            headers["If-Modified-Since"] = entry["last_modified"]
-
-    url = PYPI_BASE.format(name)
-    async with aio_session.get(url, headers=headers) as resp:
-        if resp.status == 304:
-            async with PYPI_META_LOCK:
-                meta = load_json(meta_path) if meta_path.exists() else {}
-                entry = meta.get(name, {})
-                entry["fetched_at"] = now
-                meta[name] = entry
-                dump_json(meta_path, meta)
-            return load_json(cache_path), "cache-304"
-        resp.raise_for_status()
-        text = await resp.text()
-        data = json.loads(text)
-
-        cache_path.write_text(text, encoding="utf-8")
-        async with PYPI_META_LOCK:
-            meta = load_json(meta_path) if meta_path.exists() else {}
-            meta[name] = {
-                "etag": resp.headers.get("ETag"),
-                "last_modified": resp.headers.get("Last-Modified"),
-                "fetched_at": now,
-            }
-            dump_json(meta_path, meta)
-        return data, "network"
-
-
 def normalize_release_def(release: ReleaseDef) -> NormalizedReleaseDef:
     normalized = release.copy()
 
@@ -473,20 +420,6 @@ def normalize_version_spec(specifier: str) -> str:
     return f"=={specifier}"
 
 
-def matches_version_spec(version: str, specifier: str | None) -> bool:
-    if not specifier:
-        return True
-    try:
-        parsed = Version(version)
-    except InvalidVersion:
-        return False
-    return SpecifierSet(specifier).contains(parsed, prereleases=True)
-
-
-def is_final_version(version: Version) -> bool:
-    return not (version.is_prerelease or version.is_devrelease)
-
-
 def normalize_timestamp(timestamp: str) -> str:
     if not timestamp:
         return timestamp
@@ -499,168 +432,6 @@ def parse_tag_prefix(value) -> str | None:
     if isinstance(value, str):
         return value
     raise ValueError("Invalid tags value; must be true or a prefix string.")
-
-
-def match_tag_version(
-    tag_name: str, tag_prefix: str | None
-) -> tuple[Version, str] | None:
-    if tag_prefix:
-        if not tag_name.startswith(tag_prefix):
-            return None
-        version_str = tag_name[len(tag_prefix):]
-    else:
-        version_str = tag_name.removeprefix("v")
-
-    try:
-        return Version(version_str), version_str
-    except InvalidVersion:
-        return None
-
-
-def download_info_from_fixed_version(
-    version: VersionString,
-    concrete_defs: list[ConcreteReleaseDef],
-    releases: PypiReleases,
-) -> list[ReleaseInfo]:
-    assets = releases.get(version, [])
-    return [
-        info
-        for concrete in concrete_defs
-        if matches_version_spec(version, concrete.version)
-        if (info := find_release_info(concrete, version, assets))
-    ]
-
-
-def download_info_from_latest_versions(
-    concrete_defs: list[ConcreteReleaseDef], releases: PypiReleases
-) -> list[ReleaseInfo]:
-    versions = []
-    for version_string in releases:
-        try:
-            versions.append((Version(version_string), version_string))
-        except InvalidVersion:
-            continue
-
-    output = []
-    for concrete in concrete_defs:
-        specifier = concrete.version
-        spec_set = SpecifierSet(specifier) if specifier else None
-        for version, version_string in sorted(versions, reverse=True):
-            if version.is_prerelease or version.is_devrelease:
-                continue
-            if spec_set and not spec_set.contains(version, prereleases=True):
-                continue
-            assets = releases[version_string]
-            info = find_release_info(concrete, version_string, assets)
-            if info:
-                output.append(info)
-                break
-
-    return output
-
-
-def match_release_asset(
-    pattern: re.Pattern,
-    assets: list[ReleaseAssetInfo]
-) -> ReleaseAssetInfo | None:
-    for asset in assets:
-        name = asset.get("name") or ""
-        if pattern.match(name):
-            return asset
-    return None
-
-
-async def download_info_from_github_releases(
-    session: aiohttp.ClientSession,
-    base_url: str,
-    concrete_defs: list[tuple[ConcreteReleaseDef, str | None]],
-    *,
-    include_metadata: IncludeMetadata = False,
-) -> tuple[list[ReleaseInfo], RepoMetadata]:
-    if not concrete_defs:
-        return [], {}
-    scopes = ("RELEASES", "METADATA") if include_metadata else ("RELEASES",)
-    gh_info = await fetch_github_info(session, base_url, scopes, hints=["no_readme"])
-    metadata = gh_info.get("metadata", {})
-
-    output = []
-    for concrete, tag_prefix in concrete_defs:
-        spec_set = SpecifierSet(concrete.version) if concrete.version else None
-        async for release in gh_info["releases"]:
-            if release.get("is_draft"):
-                continue
-            tag_match = match_tag_version(release["tag_name"], tag_prefix)
-            if not tag_match:
-                continue
-            version, version_str = tag_match
-            if spec_set and not spec_set.contains(version, prereleases=True):
-                continue
-
-            for re_pattern in compile_asset_patterns(concrete, version_str):
-                asset = match_release_asset(re_pattern, release.get("assets", []))
-                if asset:
-                    break
-            else:
-                continue
-
-            release_info: ReleaseInfo = {
-                "url": asset["url"],
-                "version": version_str,
-                "date": normalize_timestamp(release["date"]),
-            }
-            release_info.update(normalize_output_constraints(concrete))
-            output.append(release_info)
-            if is_final_version(version):
-                break
-
-    return output, metadata
-
-
-def sort_releases(releases: list[dict]) -> list[dict]:
-    def key(item: dict):
-        version = item.get("version", "")
-        try:
-            parsed = Version(version)
-        except InvalidVersion:
-            parsed = Version("0")
-        platforms = item.get("platforms", [])
-        return (parsed, platforms)
-
-    return sorted(releases, key=key, reverse=True)
-
-
-def combine_releases(releases: list[ReleaseInfo]) -> list[dict]:
-    grouped: dict[tuple[str, str], list[ReleaseInfo]] = defaultdict(list)
-    for release in releases:
-        sublime_text = release.get("sublime_text", "*")
-        url = release.get("url")
-        if not url:
-            raise ValueError("Release entry missing url.")
-        grouped[(sublime_text, url)].append(release)
-
-    output = []
-    for (sublime_text, url), entries in grouped.items():
-        platforms = {p for entry in entries for p in entry.get("platforms", [])}
-        platform_list = sorted(platforms)
-        if platforms == set(SUPPORTED_PLATFORMS):
-            platform_list = ["*"]
-        python_versions = {
-            p for entry in entries for p in entry.get("python_versions", [])
-        }
-
-        merged: dict = {}
-        for entry in entries:
-            merged |= entry
-
-        if platform_list:
-            merged["platforms"] = platform_list
-
-        if python_versions:
-            merged["python_versions"] = list(python_versions)
-
-        output.append(merged)
-
-    return output
 
 
 async def resolve_library(
@@ -766,6 +537,158 @@ async def resolve_library(
     return info, sorted(sources)
 
 
+def sort_releases(releases: list[dict]) -> list[dict]:
+    def key(item: dict):
+        version = item.get("version", "")
+        try:
+            parsed = Version(version)
+        except InvalidVersion:
+            parsed = Version("0")
+        platforms = item.get("platforms", [])
+        return (parsed, platforms)
+
+    return sorted(releases, key=key, reverse=True)
+
+
+def combine_releases(releases: list[ReleaseInfo]) -> list[dict]:
+    grouped: dict[tuple[str, str], list[ReleaseInfo]] = defaultdict(list)
+    for release in releases:
+        sublime_text = release.get("sublime_text", "*")
+        url = release.get("url")
+        if not url:
+            raise ValueError("Release entry missing url.")
+        grouped[(sublime_text, url)].append(release)
+
+    output = []
+    for (sublime_text, url), entries in grouped.items():
+        platforms = {p for entry in entries for p in entry.get("platforms", [])}
+        platform_list = sorted(platforms)
+        if platforms == set(SUPPORTED_PLATFORMS):
+            platform_list = ["*"]
+        python_versions = {
+            p for entry in entries for p in entry.get("python_versions", [])
+        }
+
+        merged: dict = {}
+        for entry in entries:
+            merged |= entry
+
+        if platform_list:
+            merged["platforms"] = platform_list
+
+        if python_versions:
+            merged["python_versions"] = list(python_versions)
+
+        output.append(merged)
+
+    return output
+
+
+async def fetch_pypi_json(
+    name: str,
+    cache_dir: Path,
+    aio_session: aiohttp.ClientSession,
+    ttl_seconds: int = CACHE_TTL_SECONDS,
+) -> tuple[dict, str]:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"{name}.json"
+    has_cache = cache_path.exists()
+    meta_path = cache_dir / "meta.json"
+
+    now = time.time()
+    async with PYPI_META_LOCK:
+        meta = load_json(meta_path) if meta_path.exists() else {}
+        entry = meta.get(name, {})
+        if has_cache:
+            fetched_at = entry.get("fetched_at")
+            if fetched_at and now - fetched_at < ttl_seconds:
+                return load_json(cache_path), "cache"
+
+    headers = {}
+    if has_cache:
+        if entry.get("etag"):
+            headers["If-None-Match"] = entry["etag"]
+        if entry.get("last_modified"):
+            headers["If-Modified-Since"] = entry["last_modified"]
+
+    url = PYPI_BASE.format(name)
+    async with aio_session.get(url, headers=headers) as resp:
+        if resp.status == 304:
+            async with PYPI_META_LOCK:
+                meta = load_json(meta_path) if meta_path.exists() else {}
+                entry = meta.get(name, {})
+                entry["fetched_at"] = now
+                meta[name] = entry
+                dump_json(meta_path, meta)
+            return load_json(cache_path), "cache-304"
+        resp.raise_for_status()
+        text = await resp.text()
+        data = json.loads(text)
+
+        cache_path.write_text(text, encoding="utf-8")
+        async with PYPI_META_LOCK:
+            meta = load_json(meta_path) if meta_path.exists() else {}
+            meta[name] = {
+                "etag": resp.headers.get("ETag"),
+                "last_modified": resp.headers.get("Last-Modified"),
+                "fetched_at": now,
+            }
+            dump_json(meta_path, meta)
+        return data, "network"
+
+
+def download_info_from_fixed_version(
+    version: VersionString,
+    concrete_defs: list[ConcreteReleaseDef],
+    releases: PypiReleases,
+) -> list[ReleaseInfo]:
+    assets = releases.get(version, [])
+    return [
+        info
+        for concrete in concrete_defs
+        if matches_version_spec(version, concrete.version)
+        if (info := find_release_info(concrete, version, assets))
+    ]
+
+
+def matches_version_spec(version: str, specifier: str | None) -> bool:
+    if not specifier:
+        return True
+    try:
+        parsed = Version(version)
+    except InvalidVersion:
+        return False
+    return SpecifierSet(specifier).contains(parsed, prereleases=True)
+
+
+def download_info_from_latest_versions(
+    concrete_defs: list[ConcreteReleaseDef], releases: PypiReleases
+) -> list[ReleaseInfo]:
+    versions = []
+    for version_string in releases:
+        try:
+            versions.append((Version(version_string), version_string))
+        except InvalidVersion:
+            continue
+
+    output = []
+    for concrete in concrete_defs:
+        specifier = concrete.version
+        spec_set = SpecifierSet(specifier) if specifier else None
+        for version, version_string in sorted(versions, reverse=True):
+            if version.is_prerelease or version.is_devrelease:
+                continue
+            if spec_set and not spec_set.contains(version, prereleases=True):
+                continue
+            assets = releases[version_string]
+            info = find_release_info(concrete, version_string, assets)
+            if info:
+                output.append(info)
+                break
+
+    return output
+
+
 async def resolve_github_releases(
     session: aiohttp.ClientSession,
     github_asset_defs: dict[str, list[tuple[ReleaseDef, IncludeMetadata]]],
@@ -792,6 +715,83 @@ async def resolve_github_releases(
         metadata |= new_metadata
 
     return output, metadata
+
+
+async def download_info_from_github_releases(
+    session: aiohttp.ClientSession,
+    base_url: str,
+    concrete_defs: list[tuple[ConcreteReleaseDef, str | None]],
+    *,
+    include_metadata: IncludeMetadata = False,
+) -> tuple[list[ReleaseInfo], RepoMetadata]:
+    if not concrete_defs:
+        return [], {}
+    scopes = ("RELEASES", "METADATA") if include_metadata else ("RELEASES",)
+    gh_info = await fetch_github_info(session, base_url, scopes, hints=["no_readme"])
+    metadata = gh_info.get("metadata", {})
+
+    output = []
+    for concrete, tag_prefix in concrete_defs:
+        spec_set = SpecifierSet(concrete.version) if concrete.version else None
+        async for release in gh_info["releases"]:
+            if release.get("is_draft"):
+                continue
+            tag_match = match_tag_version(release["tag_name"], tag_prefix)
+            if not tag_match:
+                continue
+            version, version_str = tag_match
+            if spec_set and not spec_set.contains(version, prereleases=True):
+                continue
+
+            for re_pattern in compile_asset_patterns(concrete, version_str):
+                asset = match_release_asset(re_pattern, release.get("assets", []))
+                if asset:
+                    break
+            else:
+                continue
+
+            release_info: ReleaseInfo = {
+                "url": asset["url"],
+                "version": version_str,
+                "date": normalize_timestamp(release["date"]),
+            }
+            release_info.update(normalize_output_constraints(concrete))
+            output.append(release_info)
+            if is_final_version(version):
+                break
+
+    return output, metadata
+
+
+def match_release_asset(
+    pattern: re.Pattern,
+    assets: list[ReleaseAssetInfo]
+) -> ReleaseAssetInfo | None:
+    for asset in assets:
+        name = asset.get("name") or ""
+        if pattern.match(name):
+            return asset
+    return None
+
+
+def match_tag_version(
+    tag_name: str, tag_prefix: str | None
+) -> tuple[Version, str] | None:
+    if tag_prefix:
+        if not tag_name.startswith(tag_prefix):
+            return None
+        version_str = tag_name[len(tag_prefix):]
+    else:
+        version_str = tag_name.removeprefix("v")
+
+    try:
+        return Version(version_str), version_str
+    except InvalidVersion:
+        return None
+
+
+def is_final_version(version: Version) -> bool:
+    return not (version.is_prerelease or version.is_devrelease)
 
 
 async def resolve_github_tags(
