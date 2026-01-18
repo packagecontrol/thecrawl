@@ -55,21 +55,7 @@
 {% endmacro %}
 
 {% macro labels(pkg, with_icons=false) %}
-  {% set platforms = pkg.platforms | default([]) %}
-  {% if 'any' in platforms %}
-    {% set platforms = [] %}
-  {% endif %}
-
   {% set buttons -%}
-    {%- for platform in platforms %}
-      {% set q = searchQueryFor('platform', platform) %}
-      <li>
-        <a class="button platform platform-{{ platform }}" href="/?q={{ q }}">
-          {{ platform }}
-        </a>
-      </li>
-    {% endfor -%}
-
     {%- for label in pkg.labels %}
       {% set q = searchQueryFor('label', label) %}
       <li>
@@ -116,6 +102,37 @@
   {% endif %}
 {% endmacro %}
 
+{% macro platforms(platforms) %}
+  {% if platforms | length < 1 or 'any' in platforms %}
+    {# everything works, display nothing #}
+  {% else %}
+    {% if platforms | length == 1 %}
+      {% set label %}Only for {{ platforms | first }}{% endset %}
+      {% set title %}Find more packages for {{ platforms | first }}{% endset %}
+      {% set query = platforms | first %}
+    {% elif 'macos' not in platforms %}
+      {% set label %}Not for macOS{% endset %}
+      {% set title %}Find packages for macOS{% endset %}
+      {% set query = 'macos' %}
+    {% elif 'windows' not in platforms %}
+      {% set label %}Not for Windows{% endset %}
+      {% set title %}Find packages for Windows{% endset %}
+      {% set query = 'windows' %}
+    {% elif 'linux' not in platforms %}
+      {% set label %}Not for Linux{% endset %}
+      {% set title %}Find packages for Linux{% endset %}
+      {% set query = 'linux' %}
+    {% endif %}
+  {% endif %}
+
+  {% set q = searchQueryFor('platform', query) %}
+  <li class="platform">
+    <a href="/?q={{ q }}" title="{{ title }}">
+      {{ label }}
+    </a>
+  </li>
+{% endmacro %}
+
 {% macro stars(count, pretty=false) %}
   {% if count > 0 %}
     <li class="stars" title="{{ count }} {{ 'star' if count < 2 else 'stars' }} on GitHub">
@@ -160,6 +177,7 @@
     <ul class="stats">
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
+      {{ platforms(pkg.platforms) }}
     </ul>
     {{ labels(pkg, true) }}
   </div>
