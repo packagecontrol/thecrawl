@@ -4,10 +4,13 @@ const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV
 
 /**
  * Rename osx -> macos, * -> any
+ * and capitalize
  */
 export function cleanPlatforms(platforms) {
   return platforms
-    .map(platform => platform.replace('osx', 'macos'))
+    .map(platform => platform.replace('osx', 'macOS'))
+    .map(platform => platform.replace('linux', 'Linux'))
+    .map(platform => platform.replace('windows', 'Windows'))
     .map(platform => platform === '*' ? 'any' : platform)
 }
 

@@ -172,43 +172,33 @@ export class Card {
 
   platforms() {
     const os = this.pkg.platforms
-    const parent = this.clone.querySelector('ul.stats')
+    const li = this.clone.querySelector('ul.stats .platform')
 
     if (os.length < 1 || os.includes('any')) {
       // this runs on anything
+      li.remove()
       return
     }
 
-    parent.appendChild(this.platformButton(os.split(',')))
-  }
-
-  capitalizePlatform(phrase) {
-    return phrase
-      .replace('linux', 'Linux')
-      .replace('windows', 'Windows')
-      .replace('macos', 'macOS')
-  }
-
-  platformButton(oses) {
-    const li = document.createElement('li')
+    const oses = os.split(',')
     const a = document.createElement('a')
 
     if (oses.length === 1) {
-      a.appendChild(document.createTextNode(this.capitalizePlatform(`Only for ${oses[0]}`)))
+      a.appendChild(document.createTextNode(`Only for ${oses[0]}`))
       a.setAttribute('href', searchQueryFor('platform', oses[0]))
-      a.setAttribute('title', this.capitalizePlatform(`Find more packages for ${oses[0]}`))
-    } else if (!oses.includes('macos')) {
-      a.appendChild(document.createTextNode(this.capitalizePlatform('Not for macos')))
-      a.setAttribute('href', searchQueryFor('platform', 'macos'))
-      a.setAttribute('title', this.capitalizePlatform('Find packages for macos'))
-    } else if (!oses.includes('windows')) {
-      a.appendChild(document.createTextNode(this.capitalizePlatform('Not for windows')))
-      a.setAttribute('href', searchQueryFor('platform', 'windows'))
-      a.setAttribute('title', this.capitalizePlatform('Find packages for windows'))
-    } else if (!oses.includes('linux')) {
-      a.appendChild(document.createTextNode(this.capitalizePlatform('Not for linux')))
-      a.setAttribute('href', searchQueryFor('platform', 'linux'))
-      a.setAttribute('title', this.capitalizePlatform('Find packages for linux'))
+      a.setAttribute('title', `Find more packages for ${oses[0]}`)
+    } else if (!oses.includes('macOS')) {
+      a.appendChild(document.createTextNode('Not for macOS'))
+      a.setAttribute('href', searchQueryFor('platform', 'macOS'))
+      a.setAttribute('title', 'Find packages for macOS')
+    } else if (!oses.includes('Windows')) {
+      a.appendChild(document.createTextNode('Not for Windows'))
+      a.setAttribute('href', searchQueryFor('platform', 'Windows'))
+      a.setAttribute('title', 'Find packages for Windows')
+    } else if (!oses.includes('Linux')) {
+      a.appendChild(document.createTextNode('Not for Linux'))
+      a.setAttribute('href', searchQueryFor('platform', 'Linux'))
+      a.setAttribute('title', 'Find packages for Linux')
     }
 
     li.classList.add('platform')
