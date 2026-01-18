@@ -172,7 +172,7 @@ export class Card {
 
   platforms() {
     const os = this.pkg.platforms
-    const li = this.clone.querySelector('ul.stats .platform')
+    const li = this.clone.querySelector('ul.stats .platforms')
 
     if (os.length < 1 || os.includes('any')) {
       // this runs on anything
@@ -182,6 +182,7 @@ export class Card {
 
     const oses = os.split(',')
     const a = document.createElement('a')
+    a.classList.add('platform')
 
     if (oses.length === 1) {
       a.appendChild(document.createTextNode(`Only for ${oses[0]}`))

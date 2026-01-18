@@ -138,7 +138,7 @@ section[name="labels"] .grid {
       flex-direction: row-reverse;
       gap: 1em;
 
-      .platform {
+      .platforms {
         position: absolute;
         right: 0;
         top: 1.75em;
