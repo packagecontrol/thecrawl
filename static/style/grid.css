@@ -137,6 +137,15 @@ section[name="labels"] .grid {
     @media (min-width: 480px) {
       flex-direction: row-reverse;
       gap: 1em;
+
+      .platform {
+        position: absolute;
+        right: 0;
+        top: 1.75em;
+        width: auto;
+        white-space: nowrap;
+        text-align: right;
+      }
     }
   }
 

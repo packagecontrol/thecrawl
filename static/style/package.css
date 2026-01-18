@@ -89,15 +89,6 @@ ul.stats {
   a {
     color: inherit;
   }
-
-  .platform {
-    position: absolute;
-    right: 0;
-    top: 1.75em;
-    width: auto;
-    white-space: nowrap;
-    text-align: right;
-  }
 }
 
 .other-releases {
