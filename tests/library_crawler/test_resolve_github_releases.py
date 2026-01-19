@@ -1,4 +1,3 @@
-import aiohttp
 import pytest
 
 import scripts._resolve_lib as resolve_lib
@@ -52,10 +51,10 @@ async def test_resolve_releases_matches_default_tags(
 
     monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
 
-    async with aiohttp.ClientSession() as session:
-        downloads, metadata = await resolve_lib.resolve_github_releases(
-            session, github_asset_defs
-        )
+    session = object()
+    downloads, metadata = await resolve_lib.resolve_github_releases(
+        session, github_asset_defs
+    )
 
     assert metadata == {}
     assert len(downloads) == 1
@@ -111,10 +110,10 @@ async def test_resolve_releases_matches_prefix_tags(monkeypatch):
 
     monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
 
-    async with aiohttp.ClientSession() as session:
-        downloads, _metadata = await resolve_lib.resolve_github_releases(
-            session, github_asset_defs
-        )
+    session = object()
+    downloads, _metadata = await resolve_lib.resolve_github_releases(
+        session, github_asset_defs
+    )
 
     assert len(downloads) == 1
     info = downloads[0]
@@ -166,10 +165,10 @@ async def test_resolve_releases_respects_version_spec(monkeypatch):
 
     monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
 
-    async with aiohttp.ClientSession() as session:
-        downloads, _metadata = await resolve_lib.resolve_github_releases(
-            session, github_asset_defs
-        )
+    session = object()
+    downloads, _metadata = await resolve_lib.resolve_github_releases(
+        session, github_asset_defs
+    )
 
     assert len(downloads) == 1
     info = downloads[0]
@@ -212,10 +211,10 @@ async def test_resolve_releases_includes_metadata(monkeypatch):
 
     monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
 
-    async with aiohttp.ClientSession() as session:
-        downloads, metadata = await resolve_lib.resolve_github_releases(
-            session, github_asset_defs
-        )
+    session = object()
+    downloads, metadata = await resolve_lib.resolve_github_releases(
+        session, github_asset_defs
+    )
 
     assert metadata["homepage"] == BASE_URL
     assert metadata["description"] == "Repo desc"

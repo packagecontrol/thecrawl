@@ -1,4 +1,3 @@
-import aiohttp
 import pytest
 
 import scripts._resolve_lib as resolve_lib
@@ -71,10 +70,10 @@ async def test_library_metadata_always_wins(monkeypatch, tmp_path):
         "issues": "https://lib/issues",
     }
 
-    async with aiohttp.ClientSession() as session:
-        info, _sources = await resolve_lib.resolve_library(
-            library, tmp_path / "cache", session
-        )
+    session = object()
+    info, _sources = await resolve_lib.resolve_library(
+        library, tmp_path / "cache", session
+    )
 
     assert info["homepage"] == "lib homepage"
     assert info["description"] == "lib desc"
@@ -104,10 +103,10 @@ async def test_pypi_metdata_overwrites_github(monkeypatch, tmp_path):
 
     library = build_library()
 
-    async with aiohttp.ClientSession() as session:
-        info, _sources = await resolve_lib.resolve_library(
-            library, tmp_path / "cache", session
-        )
+    session = object()
+    info, _sources = await resolve_lib.resolve_library(
+        library, tmp_path / "cache", session
+    )
 
     assert info["homepage"] == "Homepage URL"
     assert info["description"] == "pypi desc"

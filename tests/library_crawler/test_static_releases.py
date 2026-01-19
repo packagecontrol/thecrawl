@@ -1,4 +1,3 @@
-import aiohttp
 import pytest
 
 import scripts._resolve_lib as resolve_lib
@@ -22,10 +21,10 @@ async def test_static_release_passes_through_sha256(tmp_path):
         ],
     }
 
-    async with aiohttp.ClientSession() as session:
-        info, sources = await resolve_lib.resolve_library(
-            library, tmp_path / "cache", session
-        )
+    session = object()
+    info, sources = await resolve_lib.resolve_library(
+        library, tmp_path / "cache", session
+    )
 
     assert sources == []
     assert info["name"] == "ssl-linux"
@@ -66,10 +65,10 @@ async def test_static_release_passes_through_python_versions(tmp_path):
         ],
     }
 
-    async with aiohttp.ClientSession() as session:
-        info, sources = await resolve_lib.resolve_library(
-            library, tmp_path / "cache", session
-        )
+    session = object()
+    info, sources = await resolve_lib.resolve_library(
+        library, tmp_path / "cache", session
+    )
 
     assert sources == []
     assert info["name"] == "coverage"
@@ -110,10 +109,10 @@ async def test_static_release_copies_extra_fields(tmp_path):
         ],
     }
 
-    async with aiohttp.ClientSession() as session:
-        info, sources = await resolve_lib.resolve_library(
-            library, tmp_path / "cache", session
-        )
+    session = object()
+    info, sources = await resolve_lib.resolve_library(
+        library, tmp_path / "cache", session
+    )
 
     assert sources == []
     assert info["homepage"] == "https://example.com/extra-fields"
