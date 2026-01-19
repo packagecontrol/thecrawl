@@ -7,6 +7,7 @@ import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass
+from itertools import product
 from pathlib import Path
 from typing import NotRequired, Required, TypedDict
 
@@ -105,6 +106,27 @@ PLATFORM_TAG_PATTERNS = {
     "osx-arm64": ["macosx_*_arm64", "macosx_*_universal2"],
     "linux-x64": ["manylinux*_x86_64"],
     "linux-arm64": ["manylinux*_aarch64"],
+}
+
+
+def build_default_asset_patterns(platform_tags: list[str]) -> list[AssetPattern]:
+    version_var = "${version}"
+    py_var = "${py_version}"
+    py_tag = f"cp{py_var}"
+    abi_tags = [f"cp{py_var}m", f"cp{py_var}"]
+
+    patterns = []
+
+    for platform_tag, abi_tag in product(platform_tags, abi_tags):
+        patterns.append(f"*-{version_var}-{py_tag}-{abi_tag}-{platform_tag}.whl")
+    patterns.append(f"*-{version_var}-py3-none-any.whl")
+    patterns.append(f"*-{version_var}-py2.py3-none-any.whl")
+    return patterns
+
+
+DEFAULT_ASSET_PATTERNS: dict[str, AssetPatterns] = {
+    platform: build_default_asset_patterns(platform_tags)
+    for platform, platform_tags in PLATFORM_TAG_PATTERNS.items()
 }
 
 
@@ -241,17 +263,14 @@ def concretize_release_def(
     version_spec = release.get("version") or ""
     asset_patterns = release.get("asset")
 
-    platform_patterns: dict[str, AssetPatterns] = {}
-    if not asset_patterns and auto_assets:
-        for platform in platforms:
-            tag_patterns = PLATFORM_TAG_PATTERNS[platform]
-            platform_patterns[platform] = build_auto_asset_patterns(tag_patterns)
-
     output: list[ConcreteReleaseDef] = []
     for st_specifier in sublime_text:
         for py_ver in python_versions:
             for platform in platforms:
-                patterns = asset_patterns or platform_patterns.get(platform, [])
+                patterns = asset_patterns or (
+                    DEFAULT_ASSET_PATTERNS.get(platform, [])
+                    if auto_assets else []
+                )
                 output.append(
                     ConcreteReleaseDef(
                         base=base,
@@ -263,21 +282,6 @@ def concretize_release_def(
                     )
                 )
     return output
-
-
-def build_auto_asset_patterns(platform_tags: list[str]) -> list[AssetPattern]:
-    version_var = "${version}"
-    py_var = "${py_version}"
-    py_tag = f"cp{py_var}"
-    abi_tags = [f"cp{py_var}m", f"cp{py_var}"]
-
-    patterns = []
-    for platform_tag in platform_tags:
-        for abi_tag in abi_tags:
-            patterns.append(f"*-{version_var}-{py_tag}-{abi_tag}-{platform_tag}.whl")
-    patterns.append(f"*-{version_var}-py3-none-any.whl")
-    patterns.append(f"*-{version_var}-py2.py3-none-any.whl")
-    return patterns
 
 
 def explain_library(library: RegistryEntry) -> list[dict]:
