@@ -5,11 +5,84 @@ import sys
 from urllib.parse import urljoin
 
 from datetime import datetime, timedelta, timezone
-from typing import Iterable, Iterator, NamedTuple, Optional, overload
+from typing import Callable, Iterable, Iterator, Mapping, NamedTuple, Optional, overload
 
 
 def err(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
+
+
+# FUNC UTILS
+
+
+def pipe(v, *fns):
+    for fn in fns:
+        v = fn(v)
+    return v
+
+
+def lcompose(fns):
+    def lcompose_(rv):
+        for fn in fns:
+            rv = fn(rv)
+        return rv
+    return lcompose_
+
+
+def compose(fns):
+    return lcompose(reversed(fns))
+
+
+def apply(v, fn):
+    return fn(v)
+
+
+def pick[K, V](keys: Iterable[K], d: Mapping[K, V]) -> Mapping[K, V]:
+    return {
+        k: v
+        for k, v in d.items()
+        if k in keys
+    }
+
+
+def pick_and_map[K, V, Q](
+    d: Mapping[K, V], keys: Iterable[K], lift: Callable[[V], Q]
+) -> Mapping[K, Q]:
+    return {
+        k: lift(v)
+        for k, v in d.items()
+        if k in keys
+    }
+
+
+def mapval[K, V, P](mapfn: Callable[[V], P], d: Mapping[K, V]) -> Mapping[K, P]:
+    return {
+        k: mapfn(v)
+        for k, v in d.items()
+    }
+
+
+def mapkey[K, V, P](mapfn: Callable[[K], P], d: Mapping[K, V]) -> Mapping[P, V]:
+    return {
+        mapfn(k): v
+        for k, v in d.items()
+    }
+
+
+def filtermap[K, V](predicate: Callable[[V], bool], d: Mapping[K, V]) -> Mapping[K, V]:
+    return {
+        k: v
+        for k, v in d.items()
+        if predicate(v)
+    }
+
+
+def filterkey[K, V](predicate: Callable[[K], bool], d: Mapping[K, V]) -> Mapping[K, V]:
+    return {
+        k: v
+        for k, v in d.items()
+        if predicate(k)
+    }
 
 
 @overload
@@ -41,6 +114,9 @@ def drop_falsy[T](it: Iterable[T | None]) -> Iterable[T]:  # noqa: E302
     elif isinstance(it, set):
         return set(rv)
     return rv
+
+
+#
 
 
 def resolve_urls(root_url: str, uris: list[str]) -> Iterator[str]:

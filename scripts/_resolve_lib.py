@@ -9,14 +9,14 @@ from collections import defaultdict
 from dataclasses import dataclass
 from itertools import product
 from pathlib import Path
-from typing import NotRequired, Required, TypedDict
+from typing import Literal, Mapping, NotRequired, Required, Sequence, TypedDict, final
 
 import aiohttp
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 
 from .github import fetch_github_info, ReleaseAssetInfo, RepoMetadata
-from .utils import drop_falsy
+from .utils import drop_falsy, pipe
 
 
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
@@ -32,33 +32,14 @@ type IsoTimestamp = str
 
 class RegistryEntry(TypedDict, total=False):
     name: Required[str]
-    releases: Required[list[ReleaseDef]]
+    releases: Required[list[ReleasePartial]]
     ...
 
 
 class NormalizedRegistryEntry(TypedDict, total=False):
     name: Required[str]
-    releases: Required[list[NormalizedReleaseDef]]
+    releases: Required[list[ReleaseDef]]
     ...
-
-
-type ReleaseDef = dict
-type NormalizedReleaseDef = dict
-
-type VersionString = str
-type AssetPattern = str
-type AssetPatterns = list[AssetPattern]
-type IncludeMetadata = bool
-
-
-@dataclass(frozen=True, slots=True)
-class ConcreteReleaseDef:
-    base: Url
-    asset_patterns: AssetPatterns
-    platform: str
-    python_version: str
-    sublime_text: str
-    version: SpecifierSet
 
 
 class ResolvedLibraryInfo(TypedDict, total=False):
@@ -72,20 +53,103 @@ class ResolvedLibraryInfo(TypedDict, total=False):
     ...
 
 
+# `ReleasePartial` is the sparse/partial info in the registry
+type ReleasePartial = StaticPartial | AssetPartial | TagsPartial
+
+
+@final
+class StaticPartial(TypedDict):
+    url: Url
+    version: str
+    date: NotRequired[IsoTimestamp]
+    sha256: NotRequired[str]
+
+    sublime_text: NotRequired[str]
+    platforms: NotRequired[str | list[str]]
+    python_versions: NotRequired[str | list[str]]
+
+
+class _UnsatisfiedPartial(TypedDict):
+    base: str
+
+    sublime_text: NotRequired[str | list[str]]
+    platforms: NotRequired[str | list[str]]
+    python_versions: NotRequired[str | list[str]]
+
+    version: NotRequired[VersionSpecString]
+    tags: NotRequired[Literal[True] | str]
+
+
+@final
+class AssetPartial(_UnsatisfiedPartial):
+    asset: NotRequired[AssetPattern | list[AssetPattern]]
+
+
+@final
+class TagsPartial(_UnsatisfiedPartial):
+    ...
+
+
+# `ReleaseDef` is the normalized info
+type ReleaseDef = Release | UnresolvedRelease
+
+
 class ReleaseConstraints(TypedDict):
     sublime_text: str
     platforms: list[str]
     python_versions: list[str]
 
 
-class ReleaseInfo(TypedDict, total=False):
-    sublime_text: str
+@final
+class Release(ReleaseConstraints):
+    """An actual Release info; final and static"""
+    url: Url
+    version: str
+    date: NotRequired[IsoTimestamp]
+    sha256: NotRequired[str]
+
+
+type ReleaseInfo = Release
+
+
+class _UnresolvedRelease(TypedDict):
+    base: Url
+
+    sublime_text: list[str]
     platforms: list[str]
     python_versions: list[str]
-    url: str
-    version: str
-    date: IsoTimestamp
-    sha256: NotRequired[str]
+
+    version: VersionSpecString
+    tags: Literal[True] | str
+
+
+@final
+class AssetBasedRelease(_UnresolvedRelease):
+    asset: list[AssetPattern]
+
+
+@final
+class TagsBasedRelease(_UnresolvedRelease):
+    ...
+
+
+type UnresolvedRelease = AssetBasedRelease | TagsBasedRelease
+
+type VersionString = str
+type VersionSpecString = str
+type AssetPattern = str
+type AssetPatterns = list[AssetPattern]
+type IncludeMetadata = bool
+
+
+@dataclass(frozen=True, slots=True)
+class ConcreteReleaseDef:
+    base: Url
+    asset_patterns: AssetPatterns
+    platform: str
+    python_version: str
+    sublime_text: str
+    version: SpecifierSet
 
 
 type SourceInfo = str  # Labels like "pypi:cache" or "github:tags" for provenance.
@@ -150,84 +214,92 @@ def name_and_version(url: str) -> tuple[str, str | None] | tuple[None, None]:
     return (None, None)
 
 
-def normalize_release_def(release: ReleaseDef) -> NormalizedReleaseDef:
-    is_static = "url" in release
-    normalized = release.copy()
-
-    base = normalized.get("base")
-    if isinstance(base, str):
-        normalized["base"] = normalize_base_url(base)
-
-    platforms = normalized.get("platforms")
-    if platforms is None:
-        platforms = SUPPORTED_PLATFORMS
-    elif isinstance(platforms, str):
-        platforms = [platforms]
-    if "*" in platforms:
-        platforms = SUPPORTED_PLATFORMS
-    normalized["platforms"] = platforms
-
-    python_versions = normalized.get("python_versions")
-    if python_versions is None:
-        python_versions = SUPPORTED_PYTHON_VERSIONS
-    elif isinstance(python_versions, str):
-        python_versions = [python_versions]
-    if "*" in python_versions:
-        python_versions = SUPPORTED_PYTHON_VERSIONS
-    normalized["python_versions"] = python_versions
-
-    if is_static:
-        normalized["sublime_text"] = normalized.get("sublime_text", "*")
-    else:
-        sublime_text = normalized.get("sublime_text")
-        if sublime_text is None:
-            sublime_text = ["*"]
-        elif isinstance(sublime_text, str):
-            sublime_text = [sublime_text]
-        normalized["sublime_text"] = sublime_text
-
-    asset = normalized.get("asset")
-    if isinstance(asset, str):
-        normalized["asset"] = [asset]
-
-    if not is_static:
-        version_spec = normalized.get("version")
-        if isinstance(version_spec, str):
-            normalized["version"] = normalize_version_spec(version_spec)
-        elif version_spec is None:
-            normalized["version"] = ""
-
-    validate_normalized_release_def(normalized)
-    return normalized
+ALL_BUILDS = "*"
+ALL_MARKER = ["*"]
 
 
-def normalize_base_url(base: str) -> str:
-    if base.startswith("pypi:"):
-        name = base[len("pypi:"):].lstrip("/")
-        if not name:
-            raise ValueError("Missing PyPI project name in base.")
-        return f"https://pypi.org/project/{name}"
-    if base.startswith("github:"):
-        repo = base[len("github:"):].lstrip("/")
-        if not repo:
-            raise ValueError("Missing GitHub repo in base.")
-        return f"https://github.com/{repo}"
-    return base
+def normalize_release_def(definition: ReleasePartial) -> ReleaseDef:
+    if "url" in definition:
+        defaults = {
+            "sublime_text": ALL_BUILDS,
+            "platforms": SUPPORTED_PLATFORMS,
+            "python_versions": SUPPORTED_PYTHON_VERSIONS
+        }
+        return defaults | transform(  # type: ignore[return-value]
+            definition,
+            ["sublime_text"],
+            ["platforms", ensure_list, unpack_star(SUPPORTED_PLATFORMS)],
+            ["python_versions", ensure_list, unpack_star(SUPPORTED_PYTHON_VERSIONS)],
+            ["url"],
+            ["version"],
+            ["date"],
+            ["sha256"],
+        )
+
+    if "base" in definition:
+        defaults = {
+            "sublime_text": [ALL_BUILDS],
+            "platforms": SUPPORTED_PLATFORMS,
+            "python_versions": SUPPORTED_PYTHON_VERSIONS,
+            "version": "",
+            "tags": True,  # type: ignore[dict-item]
+        }
+        return defaults | transform(  # type: ignore[return-value]
+            definition,
+            ["sublime_text", ensure_list],
+            ["platforms", ensure_list, unpack_star(SUPPORTED_PLATFORMS)],
+            ["python_versions", ensure_list, unpack_star(SUPPORTED_PYTHON_VERSIONS)],
+            ["base", normalize_base_url],
+            ["asset", ensure_list],
+            ["tags"],
+            ["version", normalize_version_spec],
+        )
 
 
 def normalize_version_spec(specifier: str) -> str:
     specifier = specifier.strip()
-    if not specifier or specifier == "*":
+    if specifier in ("*", ""):
         return ""
     if specifier[0] in "<>=!~":
         return specifier
     return f"=={specifier}"
 
 
-def validate_normalized_release_def(release: NormalizedReleaseDef) -> None:
+def normalize_base_url(base: str) -> str:
+    if base.startswith("pypi:"):
+        _, name = base.split(":", 1)
+        return f"https://pypi.org/project/{name}"
+    if base.startswith("github:"):
+        _, repo = base.split(":", 1)
+        return f"https://github.com/{repo}"
+    return base
+
+
+def transform(d: Mapping, *specs) -> dict:
+    rv = {}
+    for s in specs:
+        key, fns = s[0], s[1:]
+        if key in d:
+            rv[key] = pipe(d.get(key), *fns)
+    return rv
+
+
+def ensure_list[T](v: T | list[T]) -> list[T]:
+    if not isinstance(v, list):
+        return [v]
+    return v
+
+
+def unpack_star(replacement, marker=ALL_MARKER):
+    def unpack_star_(val):
+        return replacement if val == marker else val
+    return unpack_star_
+
+
+def validate_normalized_release_def(release: ReleaseDef) -> None:
     if (
         (base := release.get("base"))
-        and "pypi.org/project/" in base
+        and "pypi.org/project/" in base  # type: ignore[operator]
         and not release.get("asset")
     ):
         for platform in release["platforms"]:
@@ -236,7 +308,7 @@ def validate_normalized_release_def(release: NormalizedReleaseDef) -> None:
 
 
 def concretize_release_defs(
-    releases: list[NormalizedReleaseDef], *, auto_assets: bool
+    releases: Sequence[UnresolvedRelease], *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
     return [
         concrete
@@ -246,14 +318,14 @@ def concretize_release_defs(
 
 
 def concretize_release_def(
-    release: NormalizedReleaseDef, *, auto_assets: bool
+    release: AssetBasedRelease | TagsBasedRelease, *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
     base = release["base"]
     platforms = release["platforms"]
     python_versions = release["python_versions"]
     sublime_text = release["sublime_text"]
     version_spec = release.get("version") or ""
-    asset_patterns = release.get("asset")
+    asset_patterns: list[AssetPattern] | None = release.get("asset", [])  # type: ignore[assignment]
 
     output: list[ConcreteReleaseDef] = []
     for st_specifier in sublime_text:
@@ -280,12 +352,12 @@ def explain_library(library: RegistryEntry) -> list[dict]:
     releases = list(map(normalize_release_def, library.get("releases", [])))
     output: list[dict] = []
     for release in releases:
-        base = release.get("base")
-        if not base:
+        if "url" in release:
             continue
+        base = release.get("base")
         auto_assets = "pypi.org/project/" in base and release.get("asset") is None
         for concrete in concretize_release_def(release, auto_assets=auto_assets):
-            entry = {
+            entry: dict[str, object] = {
                 "base": concrete.base,
                 "asset": concrete.asset_patterns,
                 "platform": concrete.platform,
@@ -432,18 +504,19 @@ async def resolve_library(
 
     type ByUrl[T] = dict[Url, list[T]]
 
-    pypi_bases: ByUrl[NormalizedReleaseDef] = defaultdict(list)
-    github_asset_defs: ByUrl[tuple[NormalizedReleaseDef, IncludeMetadata]] = defaultdict(list)
-    github_tag_defs: ByUrl[tuple[NormalizedReleaseDef, IncludeMetadata]] = defaultdict(list)
+    pypi_bases: ByUrl[AssetBasedRelease] = defaultdict(list)
+    github_asset_defs: ByUrl[tuple[AssetBasedRelease, IncludeMetadata]] = defaultdict(list)
+    github_tag_defs: ByUrl[tuple[TagsBasedRelease, IncludeMetadata]] = defaultdict(list)
 
     releases = map(normalize_release_def, library.get("releases", []))
     for release in releases:
-        base_url = release.get("base")
-        if release.get("url") and not base_url:
-            static_releases.append(release.copy())  # type: ignore[arg-type]
+        if "url" in release:
+            static_releases.append(release.copy())
             continue
-        if base_url and "pypi.org/project/" in base_url:
-            pypi_bases[base_url].append(release)
+
+        base_url = release.get("base")
+        if "pypi.org/project/" in base_url:
+            pypi_bases[base_url].append(release)  # type: ignore[arg-type]
         elif base_url and "github.com/" in base_url:
             container = github_asset_defs if "asset" in release else github_tag_defs
             container[base_url].append((release, not included_github_metadata))
@@ -697,7 +770,7 @@ def download_info_from_latest_versions(
 
 async def resolve_github_releases(
     session: aiohttp.ClientSession,
-    github_asset_defs: dict[str, list[tuple[NormalizedReleaseDef, IncludeMetadata]]],
+    github_asset_defs: dict[str, list[tuple[AssetBasedRelease, IncludeMetadata]]],
 ) -> tuple[list[ReleaseInfo], RepoMetadata]:
     output: list[ReleaseInfo] = []
     metadata: RepoMetadata = {}
@@ -756,7 +829,7 @@ async def download_info_from_github_releases(
             else:
                 continue
 
-            release_info: ReleaseInfo = {
+            release_info: ReleaseInfo = {  # type: ignore[typeddict-item]
                 "url": asset["url"],
                 "version": version_str,
                 "date": normalize_timestamp(release["date"]),
@@ -782,7 +855,7 @@ def match_release_asset(
 
 async def resolve_github_tags(
     session: aiohttp.ClientSession,
-    github_tag_defs: dict[str, list[tuple[NormalizedReleaseDef, IncludeMetadata]]],
+    github_tag_defs: dict[str, list[tuple[TagsBasedRelease, IncludeMetadata]]],
 ) -> tuple[list[ReleaseInfo], RepoMetadata]:
     output: list[ReleaseInfo] = []
     metadata: RepoMetadata = {}
@@ -811,7 +884,7 @@ async def resolve_github_tags(
 
             tagged_versions.sort(key=lambda item: item[0], reverse=True)
             for version, version_str, tag in tagged_versions:
-                download_info: ReleaseInfo = {
+                download_info: ReleaseInfo = {  # type: ignore[typeddict-item]
                     "url": tag["url"],
                     "version": version_str,
                     "date": normalize_timestamp(tag["date"]),

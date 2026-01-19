@@ -2,13 +2,13 @@
 import pytest
 from packaging.specifiers import SpecifierSet
 
-from scripts._lib_transformation import (
+from scripts._resolve_lib import (
     ALL_BUILDS,
     SUPPORTED_PLATFORMS,
     SUPPORTED_PYTHON_VERSIONS,
-    normalize_release_definition,
+    normalize_release_def,
+    validate_normalized_release_def
 )
-from scripts._resolve_lib import validate_normalized_release_def
 
 
 BASE_STATIC_DEFINITION = {
@@ -35,7 +35,7 @@ class TestNormalizeReleaseDefinitionStaticReleases:
         if value is not MISSING:
             definition["sublime_text"] = value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         assert result["sublime_text"] == expected
 
@@ -54,7 +54,7 @@ class TestNormalizeReleaseDefinitionStaticReleases:
         if value is not MISSING:
             definition["platforms"] = value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         assert result["platforms"] == expected
 
@@ -73,7 +73,7 @@ class TestNormalizeReleaseDefinitionStaticReleases:
         if value is not MISSING:
             definition["python_versions"] = value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         assert result["python_versions"] == expected
 
@@ -93,7 +93,7 @@ class TestNormalizeReleaseDefinitionStaticReleases:
         if sha_value is not MISSING:
             definition["sha256"] = sha_value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         assert result["url"] == BASE_STATIC_DEFINITION["url"]
         assert result["version"] == BASE_STATIC_DEFINITION["version"]
@@ -120,7 +120,7 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
             "base": value,
         }
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         assert result["base"] == expected
 
@@ -139,7 +139,7 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
         if value is not MISSING:
             definition["sublime_text"] = value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         assert result["sublime_text"] == expected
 
@@ -158,7 +158,7 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
         if value is not MISSING:
             definition["platforms"] = value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         assert result["platforms"] == expected
 
@@ -177,7 +177,7 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
         if value is not MISSING:
             definition["python_versions"] = value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         assert result["python_versions"] == expected
 
@@ -194,7 +194,7 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
         if value is not MISSING:
             definition["asset"] = value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         if expected is MISSING:
             assert "asset" not in result
@@ -212,7 +212,7 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
         definition = dict(BASE_UNSATISFIED_DEFINITION)
         definition["tags"] = value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
         assert result["tags"] == expected
 
@@ -229,9 +229,8 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
         definition = dict(BASE_UNSATISFIED_DEFINITION)
         definition["version"] = value
 
-        result = normalize_release_definition(definition)
+        result = normalize_release_def(definition)
 
-        assert isinstance(result["version"], SpecifierSet)
         assert str(result["version"]) == expected
 
 
