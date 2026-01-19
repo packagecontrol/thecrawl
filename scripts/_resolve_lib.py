@@ -510,7 +510,6 @@ async def resolve_library(
     library: RegistryEntry, cache_dir: Path, aio_session: aiohttp.ClientSession
 ) -> tuple[ResolvedLibraryInfo, list[SourceInfo]]:
     output_releases: list[ReleaseInfo] = []
-    static_releases: list[ReleaseInfo] = []
     sources: set[str] = set()
     pypi_metadata: dict = {}
 
@@ -523,7 +522,7 @@ async def resolve_library(
     releases = map(normalize_release_def, library.get("releases", []))
     for release in releases:
         if "url" in release:
-            static_releases.append(release.copy())
+            output_releases.append(release.copy())
             continue
 
         base_url = release.get("base")
@@ -572,7 +571,7 @@ async def resolve_library(
             sources.add("github:tags")
         github_metadata |= metadata
 
-    if not output_releases and not static_releases:
+    if not output_releases:
         raise ValueError("No matching releases found.")
 
     lib_info_from_github = drop_falsy({
@@ -594,7 +593,7 @@ async def resolve_library(
         lib_info_from_github
         | lib_info_from_pypi
         | library
-        | {"releases": sort_releases(combine_releases(output_releases + static_releases))}
+        | {"releases": sort_releases(combine_releases(output_releases))}
     )
 
     for key in ("description", "author", "issues"):
