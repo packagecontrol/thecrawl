@@ -879,12 +879,15 @@ async def resolve_github_tags(
                 if spec_set and not spec_set.contains(version, prereleases=True):
                     continue
 
-                for concrete in concretize_release_def(release, auto_assets=False):
-                    download_info: ReleaseInfo = {  # type: ignore[assignment]
+                for st_build in release["sublime_text"]:
+                    download_info: ReleaseInfo = {
                         "url": tag["url"],
                         "version": version_str,
                         "date": normalize_timestamp(tag["date"]),
-                    } | normalize_output_constraints(concrete)
+                        "sublime_text": st_build,
+                        "platforms": release["platforms"],
+                        "python_versions": release["python_versions"]
+                    }
                     output.append(download_info)
 
                 if is_final_version(version):
