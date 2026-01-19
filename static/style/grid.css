@@ -103,9 +103,9 @@ section[name="labels"] .grid {
     align-items: flex-end;
     padding: 0;
     margin: 0;
-    line-height: 1.6;
+    line-height: 18px;
     position: absolute;
-    top: 24px;
+    top: 18px;
     right: 1rem;
     gap: 0;
     font-size: 12px;
