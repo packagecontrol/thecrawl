@@ -8,6 +8,7 @@ from scripts._lib_transformation import (
     SUPPORTED_PYTHON_VERSIONS,
     normalize_release_definition,
 )
+from scripts._resolve_lib import validate_normalized_release_def
 
 
 BASE_STATIC_DEFINITION = {
@@ -232,3 +233,16 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
 
         assert isinstance(result["version"], SpecifierSet)
         assert str(result["version"]) == expected
+
+
+class TestValidateNormalizedReleaseDef:
+    def test_rejects_unknown_platform_for_pypi_default_assets(self):
+        with pytest.raises(
+            ValueError, match="Can't provide default assets for platform: not-a-platform"
+        ):
+            validate_normalized_release_def(
+                {
+                    "base": "https://pypi.org/project/example",
+                    "platforms": ["not-a-platform"],
+                }
+            )

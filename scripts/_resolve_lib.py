@@ -128,50 +128,12 @@ def name_and_version(url: str) -> tuple[str, str | None] | tuple[None, None]:
 
 
 def normalize_library(library: RegistryEntry) -> NormalizedRegistryEntry:
-    validate_library(library)
     normalized: NormalizedRegistryEntry = library.copy()
     normalized["releases"] = [
         normalize_release_def(release)
         for release in library.get("releases", [])
     ]
     return normalized
-
-
-def validate_library(library: RegistryEntry) -> None:
-    for release in library.get("releases", []):
-        validate_release_def(release)
-
-
-def validate_release_def(release: ReleaseDef) -> None:
-    for key in ("platforms", "python_versions", "sublime_text", "asset"):
-        value = release.get(key)
-        if value is None:
-            continue
-        if isinstance(value, str):
-            continue
-        if isinstance(value, list) and all(isinstance(item, str) for item in value):
-            continue
-        raise ValueError(f"Invalid {key} value in release.")
-
-    version_spec = release.get("version")
-    if version_spec is not None and not isinstance(version_spec, str):
-        raise ValueError("Invalid version value in release.")
-
-    url = release.get("url")
-    if url is not None:
-        if not isinstance(url, str) or not url:
-            raise ValueError("Invalid url value in release.")
-        if not isinstance(version_spec, str) or not version_spec.strip():
-            raise ValueError("Static releases must include a version string.")
-        if url.startswith("http://") and not release.get("sha256"):
-            raise ValueError("Static http releases must include a sha256 hash.")
-        if release.get("base"):
-            raise ValueError("Static releases must not include a base URL.")
-        return
-
-    base = release.get("base")
-    if not isinstance(base, str) or not base:
-        raise ValueError("Missing base URL in release.")
 
 
 def normalize_release_def(release: ReleaseDef) -> NormalizedReleaseDef:
@@ -249,23 +211,14 @@ def normalize_version_spec(specifier: str) -> str:
 
 
 def validate_normalized_release_def(release: NormalizedReleaseDef) -> None:
-    if "base" in release:
-        base = release["base"]
-        if "pypi.org/project/" in base:
-            if not release.get("asset"):
-                for platform in release["platforms"]:
-                    if platform not in PLATFORM_TAG_PATTERNS:
-                        raise ValueError(f"Unsupported platform for auto assets: {platform}")
-            if release.get("branch") or release.get("url"):
-                raise ValueError("Branch/url releases are not supported in this script.")
-        elif "github.com/" in base:
-            if release.get("branch") or release.get("url"):
-                raise ValueError("Branch/url releases are not supported in this script.")
-            parse_tag_prefix(release.get("tags"))
-            if not release.get("asset") and "tags" not in release:
-                raise ValueError("GitHub releases must use tags or asset patterns.")
-        else:
-            raise ValueError(f'Unsupported base "{base}" found in releases.')
+    if (
+        (base := release.get("base"))
+        and "pypi.org/project/" in base
+        and not release.get("asset")
+    ):
+        for platform in release["platforms"]:
+            if platform not in PLATFORM_TAG_PATTERNS:
+                raise ValueError(f"Can't provide default assets for platform: {platform}")
 
 
 def concretize_release_defs(

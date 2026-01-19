@@ -120,26 +120,3 @@ async def test_static_release_copies_extra_fields(tmp_path):
     assert info["labels"] == ["featured", "stable"]
     assert info["funding"] == {"type": "github", "url": "https://example.com/funding"}
 
-
-def test_static_release_requires_version():
-    with pytest.raises(ValueError, match="must include a version"):
-        resolve_lib.validate_release_def({
-            "url": "https://example.com/pkg.whl",
-            "platforms": ["windows-x64"],
-        })
-
-
-def test_static_http_release_requires_sha256():
-    with pytest.raises(ValueError, match="sha256"):
-        resolve_lib.validate_release_def({
-            "url": "http://example.com/pkg.whl",
-            "version": "1.2.3",
-        })
-
-
-def test_static_https_release_allows_no_sha256():
-    resolve_lib.validate_release_def({
-        "url": "https://example.com/pkg.whl",
-        "version": "1.2.3",
-        "date": "2026-01-01T00:00:00Z",
-    })
