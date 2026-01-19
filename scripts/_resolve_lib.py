@@ -239,6 +239,15 @@ def normalize_base_url(base: str) -> str:
     return base
 
 
+def normalize_version_spec(specifier: str) -> str:
+    specifier = specifier.strip()
+    if not specifier or specifier == "*":
+        return ""
+    if specifier[0] in "<>=!~":
+        return specifier
+    return f"=={specifier}"
+
+
 def validate_normalized_release_def(release: NormalizedReleaseDef) -> None:
     if "base" in release:
         base = release["base"]
@@ -257,6 +266,16 @@ def validate_normalized_release_def(release: NormalizedReleaseDef) -> None:
                 raise ValueError("GitHub releases must use tags or asset patterns.")
         else:
             raise ValueError(f'Unsupported base "{base}" found in releases.')
+
+
+def concretize_release_defs(
+    releases: list[NormalizedReleaseDef], *, auto_assets: bool
+) -> list[ConcreteReleaseDef]:
+    return [
+        concrete
+        for release in releases
+        for concrete in concretize_release_def(release, auto_assets=auto_assets)
+    ]
 
 
 def concretize_release_def(
@@ -293,14 +312,19 @@ def concretize_release_def(
     return output
 
 
-def concretize_release_defs(
-    releases: list[NormalizedReleaseDef], *, auto_assets: bool
-) -> list[ConcreteReleaseDef]:
-    return [
-        concrete
-        for release in releases
-        for concrete in concretize_release_def(release, auto_assets=auto_assets)
-    ]
+def build_auto_asset_patterns(platform_tags: list[str]) -> list[AssetPattern]:
+    version_var = "${version}"
+    py_var = "${py_version}"
+    py_tag = f"cp{py_var}"
+    abi_tags = [f"cp{py_var}m", f"cp{py_var}"]
+
+    patterns = []
+    for platform_tag in platform_tags:
+        for abi_tag in abi_tags:
+            patterns.append(f"*-{version_var}-{py_tag}-{abi_tag}-{platform_tag}.whl")
+    patterns.append(f"*-{version_var}-py3-none-any.whl")
+    patterns.append(f"*-{version_var}-py2.py3-none-any.whl")
+    return patterns
 
 
 def explain_library(library: RegistryEntry) -> list[dict]:
@@ -325,21 +349,6 @@ def explain_library(library: RegistryEntry) -> list[dict]:
                 entry["tags"] = tags
             output.append(entry)
     return output
-
-
-def build_auto_asset_patterns(platform_tags: list[str]) -> list[AssetPattern]:
-    version_var = "${version}"
-    py_var = "${py_version}"
-    py_tag = f"cp{py_var}"
-    abi_tags = [f"cp{py_var}m", f"cp{py_var}"]
-
-    patterns = []
-    for platform_tag in platform_tags:
-        for abi_tag in abi_tags:
-            patterns.append(f"*-{version_var}-{py_tag}-{abi_tag}-{platform_tag}.whl")
-    patterns.append(f"*-{version_var}-py3-none-any.whl")
-    patterns.append(f"*-{version_var}-py2.py3-none-any.whl")
-    return patterns
 
 
 def compile_asset_patterns(
@@ -447,15 +456,6 @@ def normalize_output_constraints(concrete: ConcreteReleaseDef) -> ReleaseConstra
         "python_versions": [concrete.python_version],
         "sublime_text": concrete.sublime_text,
     }
-
-
-def normalize_version_spec(specifier: str) -> str:
-    specifier = specifier.strip()
-    if not specifier or specifier == "*":
-        return ""
-    if specifier[0] in "<>=!~":
-        return specifier
-    return f"=={specifier}"
 
 
 def normalize_timestamp(timestamp: str) -> str:
@@ -820,26 +820,6 @@ def match_release_asset(
     return None
 
 
-def match_tag_version(
-    tag_name: str, tag_prefix: str | None
-) -> tuple[Version, str] | None:
-    if tag_prefix:
-        if not tag_name.startswith(tag_prefix):
-            return None
-        version_str = tag_name[len(tag_prefix):]
-    else:
-        version_str = tag_name.removeprefix("v")
-
-    try:
-        return Version(version_str), version_str
-    except InvalidVersion:
-        return None
-
-
-def is_final_version(version: Version) -> bool:
-    return not (version.is_prerelease or version.is_devrelease)
-
-
 async def resolve_github_tags(
     session: aiohttp.ClientSession,
     github_tag_defs: dict[str, list[tuple[NormalizedReleaseDef, IncludeMetadata]]],
@@ -884,3 +864,23 @@ async def resolve_github_tags(
                     break
 
     return output, metadata
+
+
+def match_tag_version(
+    tag_name: str, tag_prefix: str | None
+) -> tuple[Version, str] | None:
+    if tag_prefix:
+        if not tag_name.startswith(tag_prefix):
+            return None
+        version_str = tag_name[len(tag_prefix):]
+    else:
+        version_str = tag_name.removeprefix("v")
+
+    try:
+        return Version(version_str), version_str
+    except InvalidVersion:
+        return None
+
+
+def is_final_version(version: Version) -> bool:
+    return not (version.is_prerelease or version.is_devrelease)
