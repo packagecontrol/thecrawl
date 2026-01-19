@@ -54,8 +54,13 @@
   {% endif %}
 {% endmacro %}
 
-{% macro labels(pkg, with_icons=false) %}
+{% macro labels(pkg, with_icons=false, platform_statement='') %}
   {% set buttons -%}
+    {%- if platform_statement -%}
+      <li class="platform-statement-wrap">
+        <span class="button label platform-statement">{{ platform_statement }}</span>
+      </li>
+    {%- endif -%}
     {%- for label in pkg.labels %}
       {% set q = searchQueryFor('label', label) %}
       <li>
@@ -152,8 +157,7 @@
     <ul class="stats">
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
-      {{ platforms(pkg.platform_statement) }}
     </ul>
-    {{ labels(pkg, true) }}
+    {{ labels(pkg, true, pkg.platform_statement) }}
   </div>
 {% endmacro %}

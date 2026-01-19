@@ -34,8 +34,8 @@ export class Card {
     const labels = this.clone.querySelector('ul.labels')
     // clear the placeholder then fill with data
     labels.innerHTML = ''
+    this.platforms(labels)
     this.labels(labels)
-    this.platforms()
     this.stats()
 
     return this.clone
@@ -170,29 +170,29 @@ export class Card {
     })
   }
 
-  platforms() {
-    const stats = this.clone.querySelector('ul.stats')
-    if (!stats) {
+  platforms(parent) {
+    const labels = parent ?? this.clone.querySelector('ul.labels')
+    if (!labels) {
       return
     }
 
-    let li = stats.querySelector('.platforms')
     const label = typeof this.pkg.platform_statement === 'string'
       ? this.pkg.platform_statement.trim()
       : ''
 
     if (!label) {
-      li?.remove()
       return
     }
 
-    if (!li) {
-      li = document.createElement('li')
-      li.classList.add('platforms')
-      stats.appendChild(li)
-    }
+    const li = document.createElement('li')
+    li.classList.add('platform-statement-wrap')
 
-    li.textContent = label
+    const span = document.createElement('span')
+    span.classList.add('button', 'label', 'platform-statement')
+    span.textContent = label
+    li.appendChild(span)
+
+    labels.insertBefore(li, labels.firstChild)
 
     return li
   }

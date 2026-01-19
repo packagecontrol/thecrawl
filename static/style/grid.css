@@ -126,6 +126,18 @@ section[name="labels"] .grid {
       line-height: 20px;
       padding: 1px 6px;
     }
+    .platform-statement-wrap {
+      flex: 1 1 auto;
+    }
+    .platform-statement {
+      background: transparent;
+      margin: 0;
+      padding: 0;
+      cursor: default;
+      &:hover {
+        background: transparent;
+      }
+    }
   }
 
   .list & .labels {
