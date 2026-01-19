@@ -63,21 +63,16 @@ class BranchInfo(TypedDict):
     date: IsoTimestamp
 
 
+class ReleaseInfo(TypedDict):
+    tag_name: str
+    date: IsoTimestamp
+    is_draft: bool
+    assets: list[ReleaseAssetInfo]
+
+
 class ReleaseAssetInfo(TypedDict):
     name: str
     url: Url
-    size: int | None
-    content_type: str | None
-
-
-class ReleaseInfo(TypedDict):
-    name: str | None
-    tag_name: str
-    url: Url
-    date: IsoTimestamp
-    is_prerelease: bool
-    is_draft: bool
-    assets: list[ReleaseAssetInfo]
 
 
 class RateLimitInfo(TypedDict):
@@ -205,19 +200,14 @@ RELEASES = (
         endCursor
       }
       nodes {
-        name
         tagName
         createdAt
         publishedAt
         isDraft
-        isPrerelease
-        url
         releaseAssets(first: 100) {
           nodes {
             name
             downloadUrl
-            size
-            contentType
           }
         }
       }
@@ -468,18 +458,13 @@ def grab_releases(repo: str, entries) -> list[ReleaseInfo]:
             {
                 "name": asset.get("name"),
                 "url": asset.get("downloadUrl"),
-                "size": asset.get("size"),
-                "content_type": asset.get("contentType"),
             }
             for asset in node.get("releaseAssets", {}).get("nodes", [])
             if asset.get("downloadUrl")
         ]
         releases.append({
-            "name": node.get("name"),
             "tag_name": tag_name,
-            "url": node.get("url"),
             "date": date[:19] + "Z",
-            "is_prerelease": bool(node.get("isPrerelease")),
             "is_draft": bool(node.get("isDraft")),
             "assets": assets,
         })
