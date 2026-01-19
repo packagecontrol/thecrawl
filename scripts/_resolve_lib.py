@@ -150,15 +150,6 @@ def name_and_version(url: str) -> tuple[str, str | None] | tuple[None, None]:
     return (None, None)
 
 
-def normalize_library(library: RegistryEntry) -> NormalizedRegistryEntry:
-    normalized: NormalizedRegistryEntry = library.copy()
-    normalized["releases"] = [
-        normalize_release_def(release)
-        for release in library.get("releases", [])
-    ]
-    return normalized
-
-
 def normalize_release_def(release: ReleaseDef) -> NormalizedReleaseDef:
     is_static = "url" in release
     normalized = release.copy()
@@ -286,9 +277,9 @@ def concretize_release_def(
 
 
 def explain_library(library: RegistryEntry) -> list[dict]:
-    normalized_library = normalize_library(library)
+    releases = list(map(normalize_release_def, library.get("releases", [])))
     output: list[dict] = []
-    for release in normalized_library.get("releases", []):
+    for release in releases:
         base = release.get("base")
         if not base:
             continue
@@ -433,8 +424,6 @@ def parse_tag_prefix(value) -> str | None:
 async def resolve_library(
     library: RegistryEntry, cache_dir: Path, aio_session: aiohttp.ClientSession
 ) -> tuple[ResolvedLibraryInfo, list[SourceInfo]]:
-    normalized_library = normalize_library(library)
-
     output_releases: list[ReleaseInfo] = []
     static_releases: list[ReleaseInfo] = []
     sources: set[str] = set()
@@ -447,7 +436,8 @@ async def resolve_library(
     github_asset_defs: ByUrl[tuple[NormalizedReleaseDef, IncludeMetadata]] = defaultdict(list)
     github_tag_defs: ByUrl[tuple[NormalizedReleaseDef, IncludeMetadata]] = defaultdict(list)
 
-    for release in normalized_library.get("releases", []):
+    releases = map(normalize_release_def, library.get("releases", []))
+    for release in releases:
         base_url = release.get("base")
         if release.get("url") and not base_url:
             static_releases.append(release.copy())  # type: ignore[arg-type]
@@ -472,13 +462,13 @@ async def resolve_library(
             if not pypi_metadata:
                 pypi_metadata = pypi_data.get("info", {}) or {}
 
-            releases: PypiReleases = pypi_data.get("releases", {})
+            pypi_releases: PypiReleases = pypi_data.get("releases", {})
             if base_version:
                 downloads = download_info_from_fixed_version(
-                    base_version, concrete_defs, releases
+                    base_version, concrete_defs, pypi_releases
                 )
             else:
-                downloads = download_info_from_latest_versions(concrete_defs, releases)
+                downloads = download_info_from_latest_versions(concrete_defs, pypi_releases)
             output_releases.extend(downloads)
 
     if github_asset_defs or github_tag_defs:
@@ -521,7 +511,7 @@ async def resolve_library(
     info: ResolvedLibraryInfo = (
         lib_info_from_github
         | lib_info_from_pypi
-        | normalized_library
+        | library
         | {"releases": sort_releases(combine_releases(output_releases + static_releases))}
     )
 
