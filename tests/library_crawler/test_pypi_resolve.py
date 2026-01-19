@@ -1,6 +1,10 @@
+# mypy: ignore-errors
+import aiohttp
 import json
 from pathlib import Path
+import pytest
 
+import scripts._resolve_lib as resolve_lib
 from scripts._resolve_lib import (
     concretize_release_def,
     download_info_from_latest_versions,
@@ -107,3 +111,44 @@ def test_pypi_backrefs_post_release_py38():
     assert len(info) == 1
     assert info[0]["version"] == "5.7.post1"
     assert info[0]["url"].endswith("backrefs-5.7.post1-py38-none-any.whl")
+
+
+class FetchCalled(Exception):
+    pass
+
+
+@pytest.mark.asyncio
+async def test_resolve_library_pypi_base_name(monkeypatch, tmp_path):
+    async def fake_fetch_pypi_json(name, cache_dir, aio_session, ttl_seconds=0):
+        assert name == "Markdown"
+        raise FetchCalled
+
+    monkeypatch.setattr(resolve_lib, "fetch_pypi_json", fake_fetch_pypi_json)
+    library = {
+        "name": "Markdown",
+        "releases": [
+            {
+                "base": "https://pypi.org/project/Markdown",
+            }
+        ],
+    }
+
+    session = object()
+    with pytest.raises(FetchCalled):
+        await resolve_lib.resolve_library(library, tmp_path / "cache", session)
+
+
+@pytest.mark.asyncio
+async def test_resolve_library_pypi_base_name_rejects_empty(tmp_path):
+    library = {
+        "name": "EmptyBase",
+        "releases": [
+            {
+                "base": "https://pypi.org/project/",
+            }
+        ],
+    }
+
+    session = object()
+    with pytest.raises(ValueError, match="Invalid PyPI base URL"):
+        await resolve_lib.resolve_library(library, tmp_path / "cache", session)
