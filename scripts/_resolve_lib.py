@@ -871,7 +871,6 @@ async def resolve_github_tags(
             version_spec = release.get("version")
             spec_set = SpecifierSet(version_spec) if version_spec else None
 
-            tagged_versions = []
             async for tag in gh_info["tags"]:
                 match = match_tag_version(tag["name"], tag_prefix)
                 if not match:
@@ -879,18 +878,14 @@ async def resolve_github_tags(
                 version, version_str = match
                 if spec_set and not spec_set.contains(version, prereleases=True):
                     continue
-                tagged_versions.append((version, version_str, tag))
 
-            tagged_versions.sort(key=lambda item: item[0], reverse=True)
-            for version, version_str, tag in tagged_versions:
-                download_info: ReleaseInfo = {  # type: ignore[typeddict-item]
-                    "url": tag["url"],
-                    "version": version_str,
-                    "date": normalize_timestamp(tag["date"]),
-                }
                 for concrete in concretize_release_def(release, auto_assets=False):
-                    release_info = download_info | normalize_output_constraints(concrete)
-                    output.append(release_info)
+                    download_info: ReleaseInfo = {  # type: ignore[assignment]
+                        "url": tag["url"],
+                        "version": version_str,
+                        "date": normalize_timestamp(tag["date"]),
+                    } | normalize_output_constraints(concrete)
+                    output.append(download_info)
 
                 if is_final_version(version):
                     break
