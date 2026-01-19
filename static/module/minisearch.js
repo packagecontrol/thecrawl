@@ -52,6 +52,7 @@ function createMinisearchInstance(MiniSearch) {
       'archived_at',
       'removed',
       'platforms',
+      'platform_statement',
       'labels',
       'permalink',
       'magic_score',

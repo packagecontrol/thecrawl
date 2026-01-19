@@ -20,12 +20,139 @@ export function cleanPlatforms(platforms) {
 export function dedupePlatforms(releases) {
   const all = releases.flatMap(release => release.platforms)
   const unique = Array.from(new Set(all))
-  // when a package actually supports all platforms (across multiple releases)
-  if (unique.includes('linux') && unique.includes('windows') && unique.includes('macos')) {
+  if (unique.includes('*')) {
     return ['any']
   }
-
+  // when a package actually supports all platforms (across multiple releases)
+  if (unique.includes('linux') && unique.includes('windows') && unique.includes('osx')) {
+    return ['any']
+  }
   return unique
+}
+
+/**
+ * Build a human-readable platform statement for cards.
+ */
+export function computePlatformStatement(platforms) {
+  const list = Array.isArray(platforms)
+    ? platforms.map(item => String(item ?? '').trim()).filter(Boolean)
+    : []
+
+  if (!list.length) return ''
+
+  const normalized = list.map(item => item.toLowerCase())
+  if (normalized.includes('any') || normalized.includes('*')) return ''
+
+  const canonicalOs = (value) => {
+    if (value === 'osx' || value === 'macos') return 'macos'
+    if (value === 'linux') return 'linux'
+    if (value === 'windows') return 'windows'
+    return null
+  }
+
+  const prettyOs = (value) => {
+    if (value === 'macos') return 'macOS'
+    if (value === 'linux') return 'Linux'
+    if (value === 'windows') return 'Windows'
+    return value
+  }
+
+  const tokens = []
+  const variantsByOs = new Map()
+  const baseTokens = new Set()
+
+  normalized.forEach((token, idx) => {
+    const raw = list[idx]
+    const base = canonicalOs(token)
+    if (base) {
+      baseTokens.add(base)
+      tokens.push({ kind: 'base', os: base })
+      return
+    }
+
+    const match = /^([^-]+)-(.+)$/.exec(token)
+    if (match) {
+      const os = canonicalOs(match[1])
+      if (os) {
+        const variant = match[2]
+        if (!variantsByOs.has(os)) variantsByOs.set(os, new Set())
+        variantsByOs.get(os).add(variant)
+        tokens.push({ kind: 'variant', os, variant })
+        return
+      }
+    }
+
+    tokens.push({ kind: 'other', raw })
+  })
+
+  const collapseOs = new Set()
+  for (const [os, variants] of variantsByOs.entries()) {
+    if (variants.has('x32') && variants.has('x64')) {
+      collapseOs.add(os)
+    }
+  }
+
+  const collapsed = []
+  const seen = new Set()
+  const addToken = (token) => {
+    const key = `${token.kind}:${token.os ?? ''}:${token.variant ?? ''}:${token.raw ?? ''}`.toLowerCase()
+    if (seen.has(key)) return
+    seen.add(key)
+    collapsed.push(token)
+  }
+
+  tokens.forEach((token) => {
+    if (token.kind === 'base') {
+      addToken({ kind: 'base', os: token.os })
+      return
+    }
+    if (token.kind === 'variant') {
+      if (collapseOs.has(token.os)) {
+        addToken({ kind: 'base', os: token.os })
+        return
+      }
+      addToken(token)
+      return
+    }
+    addToken(token)
+  })
+
+  const baseOrder = ['linux', 'windows', 'macos']
+  const baseOnly = collapsed.length > 0 && collapsed.every(token => token.kind === 'base')
+  if (baseOnly) {
+    const baseSet = new Set(collapsed.map(token => token.os))
+    if (baseOrder.every(os => baseSet.has(os))) return ''
+    if (collapsed.length === 1) return `Only for ${prettyOs(collapsed[0].os)}`
+    if (collapsed.length === 2) {
+      const missing = baseOrder.find(os => !baseSet.has(os))
+      return missing ? `Not for ${prettyOs(missing)}` : ''
+    }
+  }
+
+  const variantOnly = collapsed.length === 3 && collapsed.every(token => token.kind === 'variant')
+  if (variantOnly) {
+    const osSet = new Set(collapsed.map(token => token.os))
+    const variantSet = new Set(collapsed.map(token => token.variant))
+    if (baseOrder.every(os => osSet.has(os)) && variantSet.size === 1) {
+      const variant = variantSet.values().next().value
+      if (variant === 'x32' || variant === 'x64') {
+        return `Only on ${variant}`
+      }
+    }
+  }
+
+  if (collapsed.length === 1 && collapsed[0].kind === 'variant') {
+    const token = collapsed[0]
+    return `Only on ${prettyOs(token.os)}-${token.variant}`
+  }
+
+  const labels = collapsed.map((token) => {
+    if (token.kind === 'base') return prettyOs(token.os)
+    if (token.kind === 'variant') return `${prettyOs(token.os)}-${token.variant}`
+    return token.raw
+  })
+
+  return labels.join('/')
 }
 
 /**
@@ -374,6 +501,61 @@ if (import.meta.vitest) {
       ['n/a', Infinity],
     ])('parseSublimeTextMax(%j) -> %j', (input, expected) => {
       expect(parseSublimeTextMax(input)).toBe(expected)
+    })
+  })
+
+  describe('computePlatformStatement', () => {
+    it.each([
+      [[], ''],
+      [['any'], ''],
+      [['*'], ''],
+      [['linux', 'windows', 'osx'], ''],
+
+      [['osx'], 'Only for macOS'],
+      [['windows'], 'Only for Windows'],
+      [['linux'], 'Only for Linux'],
+
+      [['osx', 'linux'], 'Not for Windows'],
+      [['osx', 'windows'], 'Not for Linux'],
+      [['linux', 'windows'], 'Not for macOS'],
+
+      [['linux-x64', 'windows-x64', 'osx-x64'], 'Only on x64'],
+
+      [['linux-x32', 'linux-x64'], 'Only for Linux'],
+      [['linux-x32', 'linux-x64', 'windows'], 'Not for macOS'],
+
+      [['windows-x64'], 'Only on Windows-x64'],
+      [['linux-x32', 'windows-x32'], 'Linux-x32/Windows-x32'],
+      [['linux-arm64'], 'Only on Linux-arm64'],
+    ])('computePlatformStatement(%j) -> %j', (input, expected) => {
+      expect(computePlatformStatement(input)).toBe(expected)
+    })
+  })
+
+  describe('dedupePlatforms', () => {
+    it('dedupes platform tokens', () => {
+      const releases = [
+        { platforms: ['linux', 'windows'] },
+        { platforms: ['windows'] },
+      ]
+      expect(dedupePlatforms(releases).sort()).toEqual(['linux', 'windows'])
+    })
+
+    it('collapses full OS coverage to any', () => {
+      const releases = [
+        { platforms: ['linux'] },
+        { platforms: ['windows'] },
+        { platforms: ['osx'] },
+      ]
+      expect(dedupePlatforms(releases)).toEqual(['any'])
+    })
+
+    it('collapses explicit any tokens', () => {
+      const releases = [
+        { platforms: ['*'] },
+        { platforms: ['linux'] },
+      ]
+      expect(dedupePlatforms(releases)).toEqual(['any'])
     })
   })
 

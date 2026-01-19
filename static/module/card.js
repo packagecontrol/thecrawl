@@ -171,39 +171,28 @@ export class Card {
   }
 
   platforms() {
-    const os = this.pkg.platforms
-    const li = this.clone.querySelector('ul.stats .platforms')
-
-    if (os.length < 1 || os.includes('any')) {
-      // this runs on anything
-      li.remove()
+    const stats = this.clone.querySelector('ul.stats')
+    if (!stats) {
       return
     }
 
-    const oses = os.split(',')
-    const a = document.createElement('a')
-    a.classList.add('platform')
+    let li = stats.querySelector('.platforms')
+    const label = typeof this.pkg.platform_statement === 'string'
+      ? this.pkg.platform_statement.trim()
+      : ''
 
-    if (oses.length === 1) {
-      a.appendChild(document.createTextNode(`Only for ${oses[0]}`))
-      a.setAttribute('href', searchQueryFor('platform', oses[0]))
-      a.setAttribute('title', `Find more packages for ${oses[0]}`)
-    } else if (!oses.includes('macOS')) {
-      a.appendChild(document.createTextNode('Not for macOS'))
-      a.setAttribute('href', searchQueryFor('platform', 'macOS'))
-      a.setAttribute('title', 'Find packages for macOS')
-    } else if (!oses.includes('Windows')) {
-      a.appendChild(document.createTextNode('Not for Windows'))
-      a.setAttribute('href', searchQueryFor('platform', 'Windows'))
-      a.setAttribute('title', 'Find packages for Windows')
-    } else if (!oses.includes('Linux')) {
-      a.appendChild(document.createTextNode('Not for Linux'))
-      a.setAttribute('href', searchQueryFor('platform', 'Linux'))
-      a.setAttribute('title', 'Find packages for Linux')
+    if (!label) {
+      li?.remove()
+      return
     }
 
-    li.classList.add('platform')
-    li.appendChild(a)
+    if (!li) {
+      li = document.createElement('li')
+      li.classList.add('platforms')
+      stats.appendChild(li)
+    }
+
+    li.textContent = label
 
     return li
   }

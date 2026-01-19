@@ -147,7 +147,8 @@ function computeMagicMetadata(packages) {
 
 function basePackage(pkg, stat) {
   // Create a new array of releases with cleaned platforms
-  const releases = (pkg.releases || []).map(release => ({
+  const rawReleases = pkg.releases || []
+  const releases = rawReleases.map(release => ({
     ...release,
     platforms: util.cleanPlatforms(release.platforms),
   }))
@@ -215,6 +216,8 @@ function basePackage(pkg, stat) {
     labels.push('MIA')
   }
 
+  const platforms = util.dedupePlatforms(rawReleases).sort()
+
   return {
     name: pkg.name,
     author: util.cleanAuthors(pkg.author) ?? [],
@@ -228,7 +231,8 @@ function basePackage(pkg, stat) {
     releases: mainReleases,
     otherReleases,
     labels: labels,
-    platforms: util.dedupePlatforms(releases).sort(),
+    platforms: platforms,
+    platform_statement: util.computePlatformStatement(platforms),
     outdated: !supportsModernSublime,
     st3_only: supportsModernSublime && doesNotSupportNewestSublime,
   }

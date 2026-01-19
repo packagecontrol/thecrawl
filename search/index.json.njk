@@ -35,6 +35,7 @@ permalink: "/search/index.json"
       "archived_at": "{{ pkg.archived_at | timestamp }}",
     {%- endif %}
     "platforms": "{{ pkg.platforms | default([]) | join(",") }}",
+    "platform_statement": "{{ pkg.platform_statement | default('') }}",
     "labels": "{{ pkg.labels | default([]) | join(",") | safe }}",
     "permalink": "/packages/{{ pkg.name | urlencode }}"
   }{{ "," if not loop.last }}
