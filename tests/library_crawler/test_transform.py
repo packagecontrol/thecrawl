@@ -124,6 +124,25 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
 
         assert result["base"] == expected
 
+    def test_base_versioned_pypi_url_sets_version(self):
+        definition = {
+            "base": "https://pypi.org/project/Markdown/3.2.2",
+        }
+
+        result = normalize_release_def(definition)
+
+        assert result["base"] == "https://pypi.org/project/Markdown"
+        assert result["version"] == "==3.2.2"
+
+    def test_base_versioned_pypi_url_rejects_version_field(self):
+        definition = {
+            "base": "https://pypi.org/project/Markdown/3.2.2",
+            "version": ">=3",
+        }
+
+        with pytest.raises(ValueError, match="versioned URL"):
+            normalize_release_def(definition)
+
     @pytest.mark.parametrize(
         ("value", "expected"),
         [

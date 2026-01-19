@@ -20,6 +20,7 @@ from .utils import drop_falsy, pipe
 
 
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
+PYPI_SPLIT_VERSIONED_URL = re.compile(r"^(https?://pypi\.org/project/[^/#?]+)/([^/#?]+?)$")
 CACHE_TTL_SECONDS = 600
 PYPI_META_LOCK = asyncio.Lock()
 PYPI_DATA_CACHE: dict[str, tuple[dict, str]] = {}
@@ -207,13 +208,6 @@ def dump_json(path: Path, data: dict, *, sort_keys: bool = False) -> None:
         handle.write("\n")
 
 
-def name_and_version(url: str) -> tuple[str, str | None] | tuple[None, None]:
-    match = re.match(r"^https?://pypi\.org/project/([^/#?]+)(?:/([^/#?]+?)|/?)$", url)
-    if match:
-        return match.groups()  # type: ignore[return-value]
-    return (None, None)
-
-
 ALL_BUILDS = "*"
 ALL_MARKER = ["*"]
 
@@ -237,6 +231,7 @@ def normalize_release_def(definition: ReleasePartial) -> ReleaseDef:
         )
 
     if "base" in definition:
+        migrate_pypi_versioned_url(definition)
         defaults = {
             "sublime_text": [ALL_BUILDS],
             "platforms": SUPPORTED_PLATFORMS,
@@ -254,6 +249,19 @@ def normalize_release_def(definition: ReleasePartial) -> ReleaseDef:
             ["tags"],
             ["version", normalize_version_spec],
         )
+
+
+def migrate_pypi_versioned_url(definition: _UnsatisfiedPartial) -> None:
+    base, version = definition["base"], ""
+    #  E.g. "https://pypi.org/project/Markdown/3.2.2"
+    if match := PYPI_SPLIT_VERSIONED_URL.match(base):
+        if "version" in definition:
+            raise ValueError(
+                f"Can't use both: a versioned URL and the version field; {base}"
+            )
+        base, version = match.groups(default="")
+        definition["base"] = base
+        definition["version"] = version
 
 
 def normalize_version_spec(specifier: str) -> str:
@@ -526,7 +534,7 @@ async def resolve_library(
     if pypi_bases:
         for base_url, rel_defs in pypi_bases.items():
             concrete_defs = concretize_release_defs(rel_defs, auto_assets=True)
-            base_name, base_version = name_and_version(base_url)
+            base_name = base_url[len("https://pypi.org/project/"):]
             if not base_name:
                 raise ValueError(f'Invalid PyPI base URL "{base_url}".')
 
@@ -536,12 +544,7 @@ async def resolve_library(
                 pypi_metadata = pypi_data.get("info", {}) or {}
 
             pypi_releases: PypiReleases = pypi_data.get("releases", {})
-            if base_version:
-                downloads = download_info_from_fixed_version(
-                    base_version, concrete_defs, pypi_releases
-                )
-            else:
-                downloads = download_info_from_latest_versions(concrete_defs, pypi_releases)
+            downloads = download_info_from_latest_versions(concrete_defs, pypi_releases)
             output_releases.extend(downloads)
 
     if github_asset_defs or github_tag_defs:
@@ -721,25 +724,6 @@ async def _fetch_pypi_json(
             }
             dump_json(meta_path, meta)
         return data, "network"
-
-
-def download_info_from_fixed_version(
-    version_string: VersionString,
-    concrete_defs: list[ConcreteReleaseDef],
-    releases: PypiReleases,
-) -> list[ReleaseInfo]:
-    try:
-        version = Version(version_string)
-    except InvalidVersion:
-        return []
-
-    assets = releases.get(version_string, [])
-    return [
-        info
-        for concrete in concrete_defs
-        if concrete.version.contains(version, prereleases=True)
-        if (info := find_release_info(concrete, version_string, assets))
-    ]
 
 
 def download_info_from_latest_versions(

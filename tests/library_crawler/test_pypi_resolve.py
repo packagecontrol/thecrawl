@@ -3,7 +3,6 @@ from pathlib import Path
 
 from scripts._resolve_lib import (
     concretize_release_def,
-    download_info_from_fixed_version,
     download_info_from_latest_versions,
     normalize_release_def,
 )
@@ -11,18 +10,18 @@ from scripts._resolve_lib import (
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 
 
-def load_releases(name: str):
-    return json.loads((FIXTURES_DIR / f"{name}.json").read_text())["releases"]
+def resolve_latest(release: dict, fixture: str):
+    return download_info_from_latest_versions(
+        make_concrete(release), load_releases(fixture)
+    )
 
 
 def make_concrete(release: dict, auto_assets: bool = True):
     return concretize_release_def(normalize_release_def(release), auto_assets=auto_assets)
 
 
-def resolve_latest(release: dict, fixture: str):
-    return download_info_from_latest_versions(
-        make_concrete(release), load_releases(fixture)
-    )
+def load_releases(name: str):
+    return json.loads((FIXTURES_DIR / f"{name}.json").read_text())["releases"]
 
 
 def test_pypi_latest_cp313_picks_6_0_2():
@@ -38,14 +37,13 @@ def test_pypi_latest_cp313_picks_6_0_2():
     assert info[0]["url"].endswith("lxml-6.0.2-cp313-cp313-win_amd64.whl")
 
 
-def test_pypi_cp33_macos_multitag_filename():
+def test_pypi_versioned_url():
     release = {
-        "base": "https://pypi.org/project/lxml",
+        "base": "https://pypi.org/project/lxml/4.2.1",
         "platforms": "osx-x64",
         "python_versions": "3.3",
     }
-    concrete_defs = make_concrete(release)
-    info = download_info_from_fixed_version("4.2.1", concrete_defs, load_releases("lxml"))
+    info = resolve_latest(release, "lxml")
 
     assert len(info) == 1
     assert info[0]["version"] == "4.2.1"
