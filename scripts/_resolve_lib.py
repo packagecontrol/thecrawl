@@ -22,6 +22,7 @@ from .utils import drop_falsy
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
 CACHE_TTL_SECONDS = 600
 PYPI_META_LOCK = asyncio.Lock()
+PYPI_DATA_CACHE: dict[str, tuple[dict, str]] = {}
 
 
 type Name = str
@@ -437,7 +438,7 @@ async def resolve_library(
     output_releases: list[ReleaseInfo] = []
     static_releases: list[ReleaseInfo] = []
     sources: set[str] = set()
-    pypi_data_by_name: dict[str, dict] = {}  # Cache PyPI JSON per project name.
+    pypi_metadata: dict = {}
     included_github_metadata = False
 
     type ByUrl[T] = dict[Url, list[T]]
@@ -466,14 +467,10 @@ async def resolve_library(
             if not base_name:
                 raise ValueError(f'Invalid PyPI base URL "{base_url}".')
 
-            if base_name not in pypi_data_by_name:
-                pypi_data, pypi_source = await fetch_pypi_json(
-                    base_name, cache_dir, aio_session
-                )
-                pypi_data_by_name[base_name] = pypi_data
-                sources.add(f"pypi:{pypi_source}")
-            else:
-                pypi_data = pypi_data_by_name[base_name]
+            pypi_data, pypi_source = await fetch_pypi_json(base_name, cache_dir, aio_session)
+            sources.add(f"pypi:{pypi_source}")
+            if not pypi_metadata:
+                pypi_metadata = pypi_data.get("info", {}) or {}
 
             releases: PypiReleases = pypi_data.get("releases", {})
             if base_version:
@@ -512,15 +509,14 @@ async def resolve_library(
         "issues": github_metadata.get("issues"),
         "homepage": github_metadata.get("homepage"),
     })
-    pypi_info: dict = next((data.get("info", {}) for data in pypi_data_by_name.values()), {})
     lib_info_from_pypi = drop_falsy({
-        "description": pypi_info.get("summary"),
-        "author": pypi_info.get("author"),
+        "description": pypi_metadata.get("summary"),
+        "author": pypi_metadata.get("author"),
         "issues": (
-            pypi_info.get("bugtrack_url")
-            or (pypi_info.get("project_urls") or {}).get("Issues")
+            pypi_metadata.get("bugtrack_url")
+            or (pypi_metadata.get("project_urls") or {}).get("Issues")
         ),
-        "homepage": pypi_homepage(pypi_info),
+        "homepage": pypi_homepage(pypi_metadata),
     })
     info: ResolvedLibraryInfo = (
         lib_info_from_github
@@ -595,6 +591,23 @@ def combine_releases(releases: list[ReleaseInfo]) -> list[dict]:
 
 
 async def fetch_pypi_json(
+    name: str,
+    cache_dir: Path,
+    aio_session: aiohttp.ClientSession,
+    ttl_seconds: int = CACHE_TTL_SECONDS,
+) -> tuple[dict, str]:
+    cached = PYPI_DATA_CACHE.get(name)
+    if cached is not None:
+        return cached
+
+    data, source = await _fetch_pypi_json(
+        name, cache_dir, aio_session, ttl_seconds=ttl_seconds
+    )
+    PYPI_DATA_CACHE[name] = (data, source)
+    return data, source
+
+
+async def _fetch_pypi_json(
     name: str,
     cache_dir: Path,
     aio_session: aiohttp.ClientSession,
