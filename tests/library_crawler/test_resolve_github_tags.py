@@ -26,7 +26,7 @@ async def test_resolve_tags_matches_true_tags(
             "tags": True,
         }
     )
-    github_tag_defs = {BASE_URL: [(release, False)]}
+    github_tag_defs = {BASE_URL: [release]}
     tags = [
         {
             "name": tag_name,
@@ -67,7 +67,7 @@ async def test_resolve_tags_matches_prefix_tags(monkeypatch):
             "tags": "st4147-",
         }
     )
-    github_tag_defs = {BASE_URL: [(release, False)]}
+    github_tag_defs = {BASE_URL: [release]}
     tags = [
         {
             "name": "v1.5.0",
@@ -109,7 +109,7 @@ async def test_resolve_tags_respects_version_spec(monkeypatch):
             "version": "<3",
         }
     )
-    github_tag_defs = {BASE_URL: [(release, False)]}
+    github_tag_defs = {BASE_URL: [release]}
     tags = [
         {
             "name": "3.1.0",
@@ -155,7 +155,7 @@ async def test_resolve_tags_includes_metadata(monkeypatch):
             "tags": True,
         }
     )
-    github_tag_defs = {BASE_URL: [(release, True)]}
+    github_tag_defs = {BASE_URL: [release]}
     tags = [
         {
             "name": "1.2.0",
@@ -174,12 +174,80 @@ async def test_resolve_tags_includes_metadata(monkeypatch):
 
     session = object()
     downloads, metadata = await resolve_lib.resolve_github_tags(
-        session, github_tag_defs
+        session, github_tag_defs, fetch_metadata=True
     )
 
     assert metadata["homepage"] == BASE_URL
     assert metadata["description"] == "Repo desc"
     assert len(downloads) == 1
+
+
+@pytest.mark.asyncio
+async def test_resolve_tags_requests_metadata_once(monkeypatch):
+    other_url = "https://github.com/example/other"
+    release = resolve_lib.normalize_release_def(
+        {
+            "base": BASE_URL,
+            "platforms": "windows-x64",
+            "python_versions": "3.8",
+            "sublime_text": "*",
+            "tags": True,
+        }
+    )
+    other_release = resolve_lib.normalize_release_def(
+        {
+            "base": other_url,
+            "platforms": "windows-x64",
+            "python_versions": "3.8",
+            "sublime_text": "*",
+            "tags": True,
+        }
+    )
+    github_tag_defs = {
+        BASE_URL: [release],
+        other_url: [other_release],
+    }
+    scopes_by_url = {}
+
+    async def fake_fetch_github_info(session, url, scopes, *, hints=None):
+        scopes_by_url[url] = tuple(scopes)
+        return {"tags": async_iter([])}
+
+    monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
+
+    session = object()
+    await resolve_lib.resolve_github_tags(
+        session, github_tag_defs, fetch_metadata=True
+    )
+
+    assert "METADATA" in scopes_by_url[BASE_URL]
+    assert "METADATA" not in scopes_by_url[other_url]
+
+
+@pytest.mark.asyncio
+async def test_resolve_tags_skips_metadata_scopes(monkeypatch):
+    release = resolve_lib.normalize_release_def(
+        {
+            "base": BASE_URL,
+            "platforms": "windows-x64",
+            "python_versions": "3.8",
+            "sublime_text": "*",
+            "tags": True,
+        }
+    )
+    github_tag_defs = {BASE_URL: [release]}
+    scopes = []
+
+    async def fake_fetch_github_info(session, url, scope_list, *, hints=None):
+        scopes.append(tuple(scope_list))
+        return {"tags": async_iter([])}
+
+    monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
+
+    session = object()
+    await resolve_lib.resolve_github_tags(session, github_tag_defs)
+
+    assert scopes == [("TAGS",)]
 
 
 async def async_iter(items):

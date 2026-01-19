@@ -7,7 +7,7 @@ import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from itertools import product
+from itertools import product, zip_longest
 from pathlib import Path
 from typing import Iterable, Literal, Mapping, NotRequired, Required, Sequence, TypedDict, final
 
@@ -146,7 +146,6 @@ type VersionString = str
 type VersionSpecString = str
 type AssetPattern = str
 type AssetPatterns = list[AssetPattern]
-type IncludeMetadata = bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -514,13 +513,12 @@ async def resolve_library(
     static_releases: list[ReleaseInfo] = []
     sources: set[str] = set()
     pypi_metadata: dict = {}
-    included_github_metadata = False
 
     type ByUrl[T] = dict[Url, list[T]]
 
     pypi_bases: ByUrl[AssetBasedRelease] = defaultdict(list)
-    github_asset_defs: ByUrl[tuple[AssetBasedRelease, IncludeMetadata]] = defaultdict(list)
-    github_tag_defs: ByUrl[tuple[TagsBasedRelease, IncludeMetadata]] = defaultdict(list)
+    github_asset_defs: ByUrl[AssetBasedRelease] = defaultdict(list)
+    github_tag_defs: ByUrl[TagsBasedRelease] = defaultdict(list)
 
     releases = map(normalize_release_def, library.get("releases", []))
     for release in releases:
@@ -533,9 +531,7 @@ async def resolve_library(
             pypi_bases[base_url].append(release)  # type: ignore[arg-type]
         elif base_url and "github.com/" in base_url:
             container = github_asset_defs if "asset" in release else github_tag_defs
-            container[base_url].append((release, not included_github_metadata))
-            if not included_github_metadata:
-                included_github_metadata = True
+            container[base_url].append(release)
 
     if pypi_bases:
         for base_url, rel_defs in pypi_bases.items():
@@ -559,14 +555,18 @@ async def resolve_library(
 
     github_metadata: RepoMetadata = {}
     if github_asset_defs:
-        downloads, metadata = await resolve_github_releases(aio_session, github_asset_defs)
+        downloads, metadata = await resolve_github_releases(
+            aio_session, github_asset_defs, fetch_metadata=True
+        )
         if downloads:
             output_releases.extend(downloads)
             sources.add("github:releases")
         github_metadata |= metadata
 
     if github_tag_defs:
-        downloads, metadata = await resolve_github_tags(aio_session, github_tag_defs)
+        downloads, metadata = await resolve_github_tags(
+            aio_session, github_tag_defs, fetch_metadata=not github_asset_defs
+        )
         if downloads:
             output_releases.extend(downloads)
             sources.add("github:tags")
@@ -760,15 +760,20 @@ def download_info_from_latest_versions(
 
 async def resolve_github_releases(
     session: aiohttp.ClientSession,
-    github_asset_defs: dict[str, list[tuple[AssetBasedRelease, IncludeMetadata]]],
+    github_asset_defs: dict[str, list[AssetBasedRelease]],
+    *,
+    fetch_metadata: bool = False,
 ) -> tuple[list[ReleaseInfo], RepoMetadata]:
     output: list[ReleaseInfo] = []
     metadata: RepoMetadata = {}
+    if not github_asset_defs:
+        return [], {}
 
-    for base_url, defs in github_asset_defs.items():
-        include_metadata = any(include for _, include in defs)
+    for (base_url, defs), fetch_metadata_ in zip_longest(  # type: ignore[misc]
+        github_asset_defs.items(), [fetch_metadata], fillvalue=False
+    ):
         concrete_defs: list[tuple[ConcreteReleaseDef, str | None]] = []
-        for release, _ in defs:
+        for release in defs:
             tag_prefix = parse_tag_prefix(release.get("tags"))
             for concrete in concretize_release_def(release, auto_assets=False):
                 concrete_defs.append((concrete, tag_prefix))
@@ -777,10 +782,11 @@ async def resolve_github_releases(
             session,
             base_url,
             concrete_defs,
-            include_metadata=include_metadata,
+            fetch_metadata=fetch_metadata_,
         )
         output.extend(downloads)
-        metadata |= new_metadata
+        if fetch_metadata_:
+            metadata = new_metadata
 
     return output, metadata
 
@@ -790,13 +796,13 @@ async def download_info_from_github_releases(
     base_url: str,
     concrete_defs: list[tuple[ConcreteReleaseDef, str | None]],
     *,
-    include_metadata: IncludeMetadata = False,
+    fetch_metadata: bool = False,
 ) -> tuple[list[ReleaseInfo], RepoMetadata]:
     if not concrete_defs:
         return [], {}
-    scopes = ("RELEASES", "METADATA") if include_metadata else ("RELEASES",)
+    scopes = ("RELEASES", "METADATA") if fetch_metadata else ("RELEASES",)
     gh_info = await fetch_github_info_(session, base_url, scopes, hints=["no_readme"])
-    metadata: RepoMetadata = gh_info.get("metadata", {}) if include_metadata else {}
+    metadata = gh_info.get("metadata", {}) if fetch_metadata else {}
 
     output = []
     for concrete, tag_prefix in concrete_defs:
@@ -843,19 +849,24 @@ def match_release_asset(
 
 async def resolve_github_tags(
     session: aiohttp.ClientSession,
-    github_tag_defs: dict[str, list[tuple[TagsBasedRelease, IncludeMetadata]]],
+    github_tag_defs: dict[str, list[TagsBasedRelease]],
+    *,
+    fetch_metadata: bool = False,
 ) -> tuple[list[ReleaseInfo], RepoMetadata]:
+    if not github_tag_defs:
+        return [], {}
     output: list[ReleaseInfo] = []
     metadata: RepoMetadata = {}
 
-    for base_url, defs in github_tag_defs.items():
-        include_metadata = any(include for _, include in defs)
-        scopes = ("TAGS", "METADATA") if include_metadata else ("TAGS",)
+    for (base_url, defs), fetch_metadata_ in zip_longest(  # type: ignore[misc]
+        github_tag_defs.items(), [fetch_metadata], fillvalue=False
+    ):
+        scopes = ("TAGS", "METADATA") if fetch_metadata_ else ("TAGS",)
         gh_info = await fetch_github_info_(session, base_url, scopes, hints=["no_readme"])
-        if include_metadata:
-            metadata |= gh_info.get("metadata", {})
+        if fetch_metadata_:
+            metadata = gh_info.get("metadata", {})
 
-        for release, _ in defs:
+        for release in defs:
             tag_prefix = parse_tag_prefix(release.get("tags"))
             version_spec = release.get("version")
             spec_set = SpecifierSet(version_spec) if version_spec else None

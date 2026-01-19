@@ -50,7 +50,9 @@ async def test_library_metadata_always_wins(monkeypatch, tmp_path):
     async def fake_fetch_pypi_json(name, cache_dir, aio_session, ttl_seconds=0):
         return build_pypi_data("pypi desc", "pypi author", "https://pypi/issues"), "network"
 
-    async def fake_resolve_github_releases(session, github_asset_defs):
+    async def fake_resolve_github_releases(
+        session, github_asset_defs, *, fetch_metadata=False
+    ):
         return [], {
             "description": "gh desc",
             "author": "gh author",
@@ -88,7 +90,9 @@ async def test_pypi_metdata_overwrites_github(monkeypatch, tmp_path):
         pypi_data["info"]["project_urls"] = {"Homepage": "Homepage URL"}
         return pypi_data, "network"
 
-    async def fake_resolve_github_releases(session, github_asset_defs):
+    async def fake_resolve_github_releases(
+        session, github_asset_defs, *, fetch_metadata=False
+    ):
         return [], {
             "description": "gh desc",
             "author": "gh author",

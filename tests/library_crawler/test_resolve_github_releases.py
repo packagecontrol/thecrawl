@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import pytest
 
 import scripts._resolve_lib as resolve_lib
@@ -31,7 +32,7 @@ async def test_resolve_releases_matches_default_tags(
     )
     if tags_value is not MISSING:
         release["tags"] = tags_value
-    github_asset_defs = {BASE_URL: [(release, False)]}
+    github_asset_defs = {BASE_URL: [release]}
     releases = [
         {
             "tag_name": tag_name,
@@ -79,7 +80,7 @@ async def test_resolve_releases_matches_prefix_tags(monkeypatch):
             "tags": "st4117-",
         }
     )
-    github_asset_defs = {BASE_URL: [(release, False)]}
+    github_asset_defs = {BASE_URL: [release]}
     releases = [
         {
             "tag_name": "v1.5.0",
@@ -134,7 +135,7 @@ async def test_resolve_releases_respects_version_spec(monkeypatch):
             "version": "<3",
         }
     )
-    github_asset_defs = {BASE_URL: [(release, False)]}
+    github_asset_defs = {BASE_URL: [release]}
     releases = [
         {
             "tag_name": "3.1.0",
@@ -188,7 +189,7 @@ async def test_resolve_releases_includes_metadata(monkeypatch):
             "sublime_text": "*",
         }
     )
-    github_asset_defs = {BASE_URL: [(release, True)]}
+    github_asset_defs = {BASE_URL: [release]}
     releases = [
         {
             "tag_name": "1.2.0",
@@ -213,12 +214,80 @@ async def test_resolve_releases_includes_metadata(monkeypatch):
 
     session = object()
     downloads, metadata = await resolve_lib.resolve_github_releases(
-        session, github_asset_defs
+        session, github_asset_defs, fetch_metadata=True
     )
 
     assert metadata["homepage"] == BASE_URL
     assert metadata["description"] == "Repo desc"
     assert len(downloads) == 1
+
+
+@pytest.mark.asyncio
+async def test_resolve_releases_requests_metadata_once(monkeypatch):
+    other_url = "https://github.com/example/other"
+    release = resolve_lib.normalize_release_def(
+        {
+            "base": BASE_URL,
+            "asset": "pkg-${version}.whl",
+            "platforms": "windows-x64",
+            "python_versions": "3.8",
+            "sublime_text": "*",
+        }
+    )
+    other_release = resolve_lib.normalize_release_def(
+        {
+            "base": other_url,
+            "asset": "pkg-${version}.whl",
+            "platforms": "windows-x64",
+            "python_versions": "3.8",
+            "sublime_text": "*",
+        }
+    )
+    github_asset_defs = {
+        BASE_URL: [release],
+        other_url: [other_release],
+    }
+    scopes_by_url = {}
+
+    async def fake_fetch_github_info(session, url, scopes, *, hints=None):
+        scopes_by_url[url] = tuple(scopes)
+        return {"releases": async_iter([])}
+
+    monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
+
+    session = object()
+    await resolve_lib.resolve_github_releases(
+        session, github_asset_defs, fetch_metadata=True
+    )
+
+    assert "METADATA" in scopes_by_url[BASE_URL]
+    assert "METADATA" not in scopes_by_url[other_url]
+
+
+@pytest.mark.asyncio
+async def test_resolve_releases_skips_metadata_scopes(monkeypatch):
+    release = resolve_lib.normalize_release_def(
+        {
+            "base": BASE_URL,
+            "asset": "pkg-${version}.whl",
+            "platforms": "windows-x64",
+            "python_versions": "3.8",
+            "sublime_text": "*",
+        }
+    )
+    github_asset_defs = {BASE_URL: [release]}
+    scopes = []
+
+    async def fake_fetch_github_info(session, url, scope_list, *, hints=None):
+        scopes.append(tuple(scope_list))
+        return {"releases": async_iter([])}
+
+    monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
+
+    session = object()
+    await resolve_lib.resolve_github_releases(session, github_asset_defs)
+
+    assert scopes == [("RELEASES",)]
 
 
 async def async_iter(items):
