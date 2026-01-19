@@ -110,7 +110,7 @@ async def test_resolve_tags_respects_version_spec(monkeypatch):
             "version": "<3",
         }
     )
-    github_tag_defs = {BASE_URL: [(release, True)]}
+    github_tag_defs = {BASE_URL: [(release, False)]}
     tags = [
         {
             "name": "3.1.0",
@@ -121,6 +121,47 @@ async def test_resolve_tags_respects_version_spec(monkeypatch):
             "name": "2.9.0",
             "url": "https://example.com/tags/2.9.0",
             "date": "2026-01-02T00:00:00Z",
+        },
+    ]
+
+    async def fake_fetch_github_info(session, url, scopes, *, hints=None):
+        return {"tags": async_iter(tags)}
+
+    monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
+
+    async with aiohttp.ClientSession() as session:
+        downloads, metadata = await resolve_lib.resolve_github_tags(
+            session, github_tag_defs
+        )
+
+    assert metadata == {}
+    assert len(downloads) == 1
+    info = downloads[0]
+    assert info["version"] == "2.9.0"
+    assert info["date"] == "2026-01-02T00:00:00Z"
+    assert info["url"] == "https://example.com/tags/2.9.0"
+    assert info["python_versions"] == ["3.8"]
+    assert info["sublime_text"] == "<4000"
+    assert info["platforms"] == ["windows-x64"]
+
+
+@pytest.mark.asyncio
+async def test_resolve_tags_includes_metadata(monkeypatch):
+    release = resolve_lib.normalize_release_def(
+        {
+            "base": BASE_URL,
+            "platforms": "windows-x64",
+            "python_versions": "3.8",
+            "sublime_text": "*",
+            "tags": True,
+        }
+    )
+    github_tag_defs = {BASE_URL: [(release, True)]}
+    tags = [
+        {
+            "name": "1.2.0",
+            "url": "https://example.com/tags/1.2.0",
+            "date": "2026-01-01T00:00:00Z",
         },
     ]
 
@@ -140,13 +181,6 @@ async def test_resolve_tags_respects_version_spec(monkeypatch):
     assert metadata["homepage"] == BASE_URL
     assert metadata["description"] == "Repo desc"
     assert len(downloads) == 1
-    info = downloads[0]
-    assert info["version"] == "2.9.0"
-    assert info["date"] == "2026-01-02T00:00:00Z"
-    assert info["url"] == "https://example.com/tags/2.9.0"
-    assert info["python_versions"] == ["3.8"]
-    assert info["sublime_text"] == "<4000"
-    assert info["platforms"] == ["windows-x64"]
 
 
 async def async_iter(items):

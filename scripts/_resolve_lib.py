@@ -9,13 +9,19 @@ from collections import defaultdict
 from dataclasses import dataclass
 from itertools import product
 from pathlib import Path
-from typing import Literal, Mapping, NotRequired, Required, Sequence, TypedDict, final
+from typing import Iterable, Literal, Mapping, NotRequired, Required, Sequence, TypedDict, final
 
 import aiohttp
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 
-from .github import fetch_github_info, ReleaseAssetInfo, RepoMetadata
+from .github import (
+    fetch_github_info,
+    QueryScope,
+    ReleaseAssetInfo,
+    RepoInfo,
+    RepoMetadata,
+)
 from .utils import drop_falsy, pipe
 
 
@@ -789,10 +795,8 @@ async def download_info_from_github_releases(
     if not concrete_defs:
         return [], {}
     scopes = ("RELEASES", "METADATA") if include_metadata else ("RELEASES",)
-    gh_info = await fetch_github_info(session, base_url, scopes, hints=["no_readme"])
-    metadata: RepoMetadata = {}
-    if include_metadata:
-        metadata = {"homepage": base_url} | gh_info.get("metadata", {})
+    gh_info = await fetch_github_info_(session, base_url, scopes, hints=["no_readme"])
+    metadata: RepoMetadata = gh_info.get("metadata", {}) if include_metadata else {}
 
     output = []
     for concrete, tag_prefix in concrete_defs:
@@ -847,9 +851,9 @@ async def resolve_github_tags(
     for base_url, defs in github_tag_defs.items():
         include_metadata = any(include for _, include in defs)
         scopes = ("TAGS", "METADATA") if include_metadata else ("TAGS",)
-        gh_info = await fetch_github_info(session, base_url, scopes, hints=["no_readme"])
+        gh_info = await fetch_github_info_(session, base_url, scopes, hints=["no_readme"])
         if include_metadata:
-            metadata |= {"homepage": base_url} | gh_info.get("metadata", {})
+            metadata |= gh_info.get("metadata", {})
 
         for release, _ in defs:
             tag_prefix = parse_tag_prefix(release.get("tags"))
@@ -881,6 +885,22 @@ async def resolve_github_tags(
                     break
 
     return output, metadata
+
+
+# Keep the homepage fallback out of fetch_github_info to avoid storing base_url
+# in the workspace; "details" already tracks it and we don't want to switch yet.
+async def fetch_github_info_(
+    session: aiohttp.ClientSession,
+    base_url: str,
+    scopes: Iterable[QueryScope],
+    *,
+    hints: list[str] = [],
+) -> RepoInfo:
+    scope_list = tuple(scopes)
+    gh_info = await fetch_github_info(session, base_url, scope_list, hints=hints)
+    if "METADATA" in scope_list:
+        gh_info.get("metadata", {}).setdefault("homepage", base_url)
+    return gh_info
 
 
 def match_tag_version(

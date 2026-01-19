@@ -178,6 +178,50 @@ async def test_resolve_releases_respects_version_spec(monkeypatch):
     assert info["sublime_text"] == "3015"
 
 
+@pytest.mark.asyncio
+async def test_resolve_releases_includes_metadata(monkeypatch):
+    release = resolve_lib.normalize_release_def(
+        {
+            "base": BASE_URL,
+            "asset": "pkg-${version}.whl",
+            "platforms": "windows-x64",
+            "python_versions": "3.8",
+            "sublime_text": "*",
+        }
+    )
+    github_asset_defs = {BASE_URL: [(release, True)]}
+    releases = [
+        {
+            "tag_name": "1.2.0",
+            "is_draft": False,
+            "assets": [
+                {
+                    "name": "pkg-1.2.0.whl",
+                    "url": "https://example.com/pkg-1.2.0.whl",
+                }
+            ],
+            "date": "2026-01-06T00:00:00Z",
+        },
+    ]
+
+    async def fake_fetch_github_info(session, url, scopes, *, hints=None):
+        return {
+            "releases": async_iter(releases),
+            "metadata": {"description": "Repo desc"},
+        }
+
+    monkeypatch.setattr(resolve_lib, "fetch_github_info", fake_fetch_github_info)
+
+    async with aiohttp.ClientSession() as session:
+        downloads, metadata = await resolve_lib.resolve_github_releases(
+            session, github_asset_defs
+        )
+
+    assert metadata["homepage"] == BASE_URL
+    assert metadata["description"] == "Repo desc"
+    assert len(downloads) == 1
+
+
 async def async_iter(items):
     for item in items:
         yield item
