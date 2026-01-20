@@ -13,7 +13,15 @@ const nextButton = document.querySelector('[data-control="next"]')
 /** @type {HTMLButtonElement | null} */
 const lastButton = document.querySelector('[data-control="last"]')
 
-/** @typedef {{ date: string, run_id?: string, notes?: string, conclusion?: string, failuresChanged?: boolean, glitchStartIndex?: number | null }} LogEntry */
+/** @typedef {{
+ *    date: string,
+ *    run_id?: string,
+ *    notes?: string,
+ *    conclusion?: string,
+ *    failuresChanged?: boolean,
+ *    glitchStartIndex?: number | null
+ *  }} LogEntry
+ */
 
 /** @type {LogEntry[]} */
 let logs = []
