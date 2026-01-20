@@ -52,7 +52,7 @@ which backend is used and is the only required field.
 
 ```json
 {
-  "base": "https://pypi.org/project/pydantic-core"
+  "base": "pypi:pydantic-core"
 }
 ```
 
@@ -106,7 +106,7 @@ E.g.
 
 ```json
 {
-  "base": "https://pypi.org/project/watchdog",
+  "base": "pypi:watchdog",
   "asset": "watchdog-*-py3-none-win32.whl",
   "platforms": "windows-x32",
   "python_versions": ["3.8", "3.13"]
@@ -117,13 +117,13 @@ is resolved to
 ```json
 [
   {
-    "base": "https://pypi.org/project/watchdog",
+    "base": "pypi:watchdog",
     "asset": "watchdog-*-py3-none-win32.whl",
     "platforms": "windows-x32",
     "python_versions": "3.8"
   },
   {
-    "base": "https://pypi.org/project/watchdog",
+    "base": "pypi:watchdog",
     "asset": "watchdog-*-py3-none-win32.whl",
     "platforms": "windows-x32",
     "python_versions": "3.13"
@@ -179,10 +179,12 @@ Glob rules:
 ### Summary
 
 Common fields:
-- `base` (string, required): Source URL.
-  - PyPI: `https://pypi.org/project/<name>` or pinned version
-    `https://pypi.org/project/<name>/<version>`.
-  - GitHub: `https://github.com/<owner>/<repo>`.
+- `base` (string, required): Source Provider or URL.
+  - PyPi: `pypi:<name>` or the long format `https://pypi.org/project/<name>`
+    Pinned version, e.g. `https://pypi.org/project/<name>/<version>`, is deprecated;
+    just use the "version" field.
+  - GitHub: `github:<owner>/<repo>` or the long form
+    `https://github.com/<owner>/<repo>`.
 
 - `platforms` (string or list, optional): Sublime platform identifiers.
    default: all supported platforms (`*`).
@@ -236,7 +238,7 @@ automatically from the platform and Python version(s):
 
 ```json
 {
-  "base": "https://pypi.org/project/lxml",
+  "base": "pypi:lxml",
   "platforms": "osx-x64",
   "python_versions": "3.13"
 }
@@ -259,7 +261,7 @@ variables:
 
 ```json
 {
-  "base": "https://pypi.org/project/pydantic-core",
+  "base": "pypi:pydantic-core",
   "platforms": "linux-x64",
   "python_versions": "3.13",
   "asset": "pydantic_core-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl"
@@ -275,13 +277,12 @@ variables:
 pattern!  Static is e.g. "4.2.1-cp37-abi3-win_amd64"
 
 Putting the version into asset is not recommend however.  Use "version" for it.
-(or a versioned base URL but "version" is the recommended style.)
 
 Fully manual definitions specify explicit assets without variables:
 
 ```json
 {
-  "base": "https://pypi.org/project/pycryptodome",
+  "base": "pypi:pycryptodome",
   "platforms": ["windows-x64"],
   "python_versions": ["3.8", "3.13"],
   "asset": "pycryptodome-*-cp37-abi3-win_amd64"
@@ -292,21 +293,11 @@ This uses a fixed ABI tag (`abi3`) and explicit platform tag (`win_amd64`).
 
 ##### Optional version pinning and filters
 
-Two ways to pin or filter versions:
+Use a `version` specifier (PEP 440), e.g.:
 
-1. Pin in the `base` URL (from `repository.json`):
 ```json
 {
-  "base": "https://pypi.org/project/Markdown/3.2.2",
-  "asset": "Markdown-*-py3-none-any.whl",
-  "python_versions": ["3.8"]
-}
-```
-
-2. Use a `version` specifier (PEP 440), e.g.:
-```json
-{
-  "base": "https://pypi.org/project/Markdown",
+  "base": "pypi:Markdown",
   "python_versions": ["3.13"],
   "asset": "markdown-*-py3-none-any.whl",
   "version": ">=3.4,<4"
@@ -317,20 +308,38 @@ Bare versions and prefixes are normalized to `==`:
 - `"3.2.2"` -> `"==3.2.2"`
 - `"5.*"` -> `"==5.*"`
 
+Deprecated: Pin in the `base` URL (from `repository.json`):
+
+```json
+{
+  "base": "https://pypi.org/project/Markdown/3.2.2",
+  "asset": "Markdown-*-py3-none-any.whl",
+  "python_versions": ["3.8"]
+}
+```
+
 ### GitHub release definitions
 
 GitHub releases can use tags and/or release assets:
 
-- `tags: true` means "latest tag".
+- `tags: true` (the default) means "latest tag".
 - `tags: "st3-v"` means "latest tag with this prefix".
 - `asset` (if present) selects a GitHub release asset by pattern.
 
 Examples:
 
+Grab latest tag:
+```json
+{
+  "base": "github:sublimelsp/lsp_utils",
+  "sublime_text": ">=4070",
+}
+```
+
 Tag prefix split by Sublime build (from `lsp_utils`):
 ```json
 {
-  "base": "https://github.com/sublimelsp/lsp_utils",
+  "base": "github:sublimelsp/lsp_utils",
   "python_versions": ["3.3", "3.8", "3.13"],
   "sublime_text": "3154 - 4069",
   "tags": "st3-v"
@@ -340,7 +349,7 @@ Tag prefix split by Sublime build (from `lsp_utils`):
 Release assets (from `sublime_aio`):
 ```json
 {
-  "base": "https://github.com/packagecontrol/sublime_aio",
+  "base": "github:packagecontrol/sublime_aio",
   "python_versions": ["3.8", "3.13"],
   "asset": "sublime_aio-*-py3-none-any.whl"
 }
@@ -349,7 +358,7 @@ Release assets (from `sublime_aio`):
 Tags + assets (from `sublime_lib`):
 ```json
 {
-  "base": "https://github.com/SublimeText/sublime_lib",
+  "base": "github:SublimeText/sublime_lib",
   "python_versions": ["3.3"],
   "tags": "st3-v",
   "asset": "sublime_lib-*-py3-none-any.whl"
