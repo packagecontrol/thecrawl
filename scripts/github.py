@@ -666,11 +666,33 @@ if __name__ == "__main__":
             help="GitHub repo URL or owner/repo",
         )
         parser.add_argument(
+            "-b",
+            "--branches",
+            action="store_true",
+            help="Fetch branches.",
+        )
+        parser.add_argument(
+            "-r",
+            "--releases",
+            action="store_true",
+            help="Fetch releases.",
+        )
+        parser.add_argument(
+            "-t",
+            "--tags",
+            action="store_true",
+            help="Fetch tags (default unless -b or -r is set).",
+        )
+        parser.add_argument(
             "--rest-files",
             action="store_true",
             help="Use REST for root files (skip GraphQL files).",
         )
         args = parser.parse_args()
+
+        want_branches = args.branches
+        want_releases = args.releases
+        want_tags = args.tags or (not want_branches and not want_releases)
 
         arg = args.repo
         if arg.startswith("https://"):
@@ -682,20 +704,35 @@ if __name__ == "__main__":
         print(f"Fetching GitHub info for: {url}")
         async with aiohttp.ClientSession() as session:
             hints = ["too_many_files"] if args.rest_files else []
+            scopes = ["METADATA"]
+            if want_tags:
+                scopes.append("TAGS")
+            if want_branches:
+                scopes.append("BRANCHES")
+            if want_releases:
+                scopes.append("RELEASES")
             info = await fetch_github_info(
                 session,
                 url,
-                ("METADATA", "TAGS", "BRANCHES"),
+                scopes,
                 hints=hints,
             )
             print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
-            print("Tags:")
-            async for tag in info["tags"]:
-                print(tag)
-            print("Branches:")
-            async for branch in info["branches"]:
-                print(branch)
+            if want_tags:
+                print("Tags:")
+                async for tag in info["tags"]:
+                    print(tag)
+            if want_branches:
+                print("Branches:")
+                async for branch in info["branches"]:
+                    print(branch)
+            if want_releases:
+                print("Releases:")
+                async for release in info["releases"]:
+                    print(release)
 
         print("rate_limit_info", info["rate_limit_info"])
+        if not (args.branches or args.tags or args.releases):
+            print("hint: set -b to fetch branches or -r to fetch releases")
 
     asyncio.run(main())
