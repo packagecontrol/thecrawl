@@ -2,29 +2,47 @@ import { execSync } from 'child_process'
 
 const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
 
-/**
- * Rename osx -> macos, * -> any
- * and capitalize
- */
-export function cleanPlatforms(platforms) {
-  return platforms
-    .map(platform => platform.replace('osx', 'macOS'))
-    .map(platform => platform.replace('linux', 'Linux'))
-    .map(platform => platform.replace('windows', 'Windows'))
-    .map(platform => platform === '*' ? 'any' : platform)
+const canonicalizeOs = (platform) => {
+  const lower = platform.toLowerCase()
+  if (lower === '*') return 'any'
+  return lower.replace('osx', 'macos')
+}
+
+const prettifyOs = (platform) => {
+  return platform
+    .replace('macos', 'macOS')
+    .replace('linux', 'Linux')
+    .replace('windows', 'Windows')
 }
 
 /**
- * Deduplicate supported platform across releases.
+ * Prettify platform labels for display (canonicalize tokens then apply casing).
+ * @param {string[]} platforms
+ * @returns {string[]}
  */
-export function dedupePlatforms(releases) {
-  const all = releases.flatMap(release => release.platforms)
-  const unique = Array.from(new Set(all))
-  if (unique.includes('*')) {
+export function prettifyPlatformLabels(platforms) {
+  return platforms
+    .map(canonicalizeOs)
+    .map(prettifyOs)
+}
+
+/**
+ * Compute platform labels for search.
+ * Input platforms come straight from the workspace (osx/linux/windows, its variants, or "*"),
+ * so normalize to lower-case tokens, map osx -> macos and "*" -> any, then dedupe and
+ * collapse full OS coverage to ["any"].
+ * @param {Array<{platforms?: Array<string>}>} releases
+ * @returns {string[]}
+ */
+export function computePlatformLabelsForSearch(releases) {
+  const all = releases.flatMap(release => release.platforms ?? [])
+  const normalized = all.map(canonicalizeOs).filter(Boolean)
+  const unique = Array.from(new Set(normalized))
+  if (unique.includes('any')) {
     return ['any']
   }
   // when a package actually supports all platforms (across multiple releases)
-  if (unique.includes('linux') && unique.includes('windows') && unique.includes('osx')) {
+  if (unique.includes('linux') && unique.includes('windows') && unique.includes('macos')) {
     return ['any']
   }
   return unique
@@ -32,48 +50,28 @@ export function dedupePlatforms(releases) {
 
 /**
  * Build a human-readable platform statement for cards.
+ * Input is already canonicalized (lowercase tokens like macos/linux/windows/any).
  */
 export function computePlatformStatement(platforms) {
-  const list = Array.isArray(platforms)
-    ? platforms.map(item => String(item ?? '').trim()).filter(Boolean)
-    : []
-
-  if (!list.length) return ''
-
-  const normalized = list.map(item => item.toLowerCase())
-  if (normalized.includes('any') || normalized.includes('*')) return ''
-
-  const canonicalOs = (value) => {
-    if (value === 'osx' || value === 'macos') return 'macos'
-    if (value === 'linux') return 'linux'
-    if (value === 'windows') return 'windows'
-    return null
-  }
-
-  const prettyOs = (value) => {
-    if (value === 'macos') return 'macOS'
-    if (value === 'linux') return 'Linux'
-    if (value === 'windows') return 'Windows'
-    return value
-  }
+  if (!platforms.length) return ''
+  if (platforms.includes('any')) return ''
 
   const tokens = []
   const variantsByOs = new Map()
   const baseTokens = new Set()
+  const isBaseOs = value => value === 'macos' || value === 'linux' || value === 'windows'
 
-  normalized.forEach((token, idx) => {
-    const raw = list[idx]
-    const base = canonicalOs(token)
-    if (base) {
-      baseTokens.add(base)
-      tokens.push({ kind: 'base', os: base })
+  platforms.forEach((token) => {
+    if (isBaseOs(token)) {
+      baseTokens.add(token)
+      tokens.push({ kind: 'base', os: token })
       return
     }
 
     const match = /^([^-]+)-(.+)$/.exec(token)
     if (match) {
-      const os = canonicalOs(match[1])
-      if (os) {
+      const os = match[1]
+      if (isBaseOs(os)) {
         const variant = match[2]
         if (!variantsByOs.has(os)) variantsByOs.set(os, new Set())
         variantsByOs.get(os).add(variant)
@@ -82,7 +80,7 @@ export function computePlatformStatement(platforms) {
       }
     }
 
-    tokens.push({ kind: 'other', raw })
+    tokens.push({ kind: 'other', raw: token })
   })
 
   const collapseOs = new Set()
@@ -122,10 +120,10 @@ export function computePlatformStatement(platforms) {
   if (baseOnly) {
     const baseSet = new Set(collapsed.map(token => token.os))
     if (baseOrder.every(os => baseSet.has(os))) return ''
-    if (collapsed.length === 1) return `Only for ${prettyOs(collapsed[0].os)}`
+    if (collapsed.length === 1) return `Only for ${prettifyOs(collapsed[0].os)}`
     if (collapsed.length === 2) {
       const missing = baseOrder.find(os => !baseSet.has(os))
-      return missing ? `Not for ${prettyOs(missing)}` : ''
+      return missing ? `Not for ${prettifyOs(missing)}` : ''
     }
   }
 
@@ -143,12 +141,12 @@ export function computePlatformStatement(platforms) {
 
   if (collapsed.length === 1 && collapsed[0].kind === 'variant') {
     const token = collapsed[0]
-    return `Only on ${prettyOs(token.os)}-${token.variant}`
+    return `Only on ${prettifyOs(token.os)}-${token.variant}`
   }
 
   const labels = collapsed.map((token) => {
-    if (token.kind === 'base') return prettyOs(token.os)
-    if (token.kind === 'variant') return `${prettyOs(token.os)}-${token.variant}`
+    if (token.kind === 'base') return prettifyOs(token.os)
+    if (token.kind === 'variant') return `${prettifyOs(token.os)}-${token.variant}`
     return token.raw
   })
 
@@ -504,22 +502,34 @@ if (import.meta.vitest) {
     })
   })
 
+  describe('prettifyPlatformLabels', () => {
+    it.each([
+      [['osx'], ['macOS']],
+      [['linux'], ['Linux']],
+      [['windows'], ['Windows']],
+      [['osx-x64'], ['macOS-x64']],
+      [['linux-x32', 'windows-x64'], ['Linux-x32', 'Windows-x64']],
+      [['*'], ['any']],
+    ])('prettifyPlatformLabels(%j) -> %j', (input, expected) => {
+      expect(prettifyPlatformLabels(input)).toEqual(expected)
+    })
+  })
+
   describe('computePlatformStatement', () => {
     it.each([
       [[], ''],
       [['any'], ''],
-      [['*'], ''],
-      [['linux', 'windows', 'osx'], ''],
+      [['linux', 'windows', 'macos'], ''],
 
-      [['osx'], 'Only for macOS'],
+      [['macos'], 'Only for macOS'],
       [['windows'], 'Only for Windows'],
       [['linux'], 'Only for Linux'],
 
-      [['osx', 'linux'], 'Not for Windows'],
-      [['osx', 'windows'], 'Not for Linux'],
+      [['macos', 'linux'], 'Not for Windows'],
+      [['macos', 'windows'], 'Not for Linux'],
       [['linux', 'windows'], 'Not for macOS'],
 
-      [['linux-x64', 'windows-x64', 'osx-x64'], 'Only on x64'],
+      [['linux-x64', 'windows-x64', 'macos-x64'], 'Only on x64'],
 
       [['linux-x32', 'linux-x64'], 'Only for Linux'],
       [['linux-x32', 'linux-x64', 'windows'], 'Not for macOS'],
@@ -532,13 +542,21 @@ if (import.meta.vitest) {
     })
   })
 
-  describe('dedupePlatforms', () => {
+  describe('computePlatformLabelsForSearch', () => {
     it('dedupes platform tokens', () => {
       const releases = [
         { platforms: ['linux', 'windows'] },
         { platforms: ['windows'] },
       ]
-      expect(dedupePlatforms(releases).sort()).toEqual(['linux', 'windows'])
+      expect(computePlatformLabelsForSearch(releases).sort()).toEqual(['linux', 'windows'])
+    })
+
+    it('normalizes osx tokens to macos', () => {
+      const releases = [
+        { platforms: ['osx'] },
+        { platforms: ['osx-x64'] },
+      ]
+      expect(computePlatformLabelsForSearch(releases).sort()).toEqual(['macos', 'macos-x64'])
     })
 
     it('collapses full OS coverage to any', () => {
@@ -547,7 +565,7 @@ if (import.meta.vitest) {
         { platforms: ['windows'] },
         { platforms: ['osx'] },
       ]
-      expect(dedupePlatforms(releases)).toEqual(['any'])
+      expect(computePlatformLabelsForSearch(releases)).toEqual(['any'])
     })
 
     it('collapses explicit any tokens', () => {
@@ -555,7 +573,7 @@ if (import.meta.vitest) {
         { platforms: ['*'] },
         { platforms: ['linux'] },
       ]
-      expect(dedupePlatforms(releases)).toEqual(['any'])
+      expect(computePlatformLabelsForSearch(releases)).toEqual(['any'])
     })
   })
 
