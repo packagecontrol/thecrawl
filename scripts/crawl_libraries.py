@@ -24,7 +24,7 @@ from rich.progress import (
 
 from ._resolve_lib import (
     ReleaseInfo,
-    ReleaseDef,
+    ReleasePartial,
     ResolvedLibraryInfo,
     SourceInfo,
     dump_json,
@@ -70,7 +70,7 @@ class _Entry(TypedDict, total=False):
 
 class RegistryEntry(_Entry, total=False):
     name: Required[str]
-    releases: Required[list[ReleaseDef]]
+    releases: Required[list[ReleasePartial]]
 
 
 class WorkspaceEntry(_Entry, total=False):
