@@ -243,7 +243,9 @@ def build_query(sub_queries: Iterable[str | tuple[str, str]]) -> str:
 
 _readme_filenames = {
     'readme', 'readme.txt', 'readme.md', 'readme.mkd', 'readme.mdown',
-    'readme.markdown', 'readme.textile', 'readme.creole', 'readme.rst'
+    'readme.markdown', 'readme.textile', 'readme.rdoc', 'readme.org',
+    'readme.creole', 'readme.mediawiki', 'readme.wiki', 'readme.rst',
+    'readme.asciidoc', 'readme.adoc', 'readme.asc', 'readme.pod',
 }
 
 
