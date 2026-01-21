@@ -43,6 +43,9 @@
     border-radius: 6px;
     background: var(--highlight);
   }
+  pre.fallback {
+    background: var(--background-1);
+  }
   pre code {
     background: transparent;
   }
