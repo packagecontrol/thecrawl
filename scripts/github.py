@@ -684,6 +684,11 @@ if __name__ == "__main__":
             help="Fetch tags (default unless -b or -r is set).",
         )
         parser.add_argument(
+            "--more",
+            action="store_true",
+            help="Show full lists (no truncation).",
+        )
+        parser.add_argument(
             "--rest-files",
             action="store_true",
             help="Use REST for root files (skip GraphQL files).",
@@ -693,6 +698,7 @@ if __name__ == "__main__":
         want_branches = args.branches
         want_releases = args.releases
         want_tags = args.tags or (not want_branches and not want_releases)
+        list_limit = 30
 
         arg = args.repo
         if arg.startswith("https://"):
@@ -718,21 +724,50 @@ if __name__ == "__main__":
                 hints=hints,
             )
             print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
+            truncated = False
             if want_tags:
-                print("Tags:")
-                async for tag in info["tags"]:
-                    print(tag)
+                truncated |= await print_list(
+                    "Tags",
+                    info["tags"],
+                    limit=list_limit,
+                    show_all=args.more,
+                )
             if want_branches:
-                print("Branches:")
-                async for branch in info["branches"]:
-                    print(branch)
+                truncated |= await print_list(
+                    "Branches",
+                    info["branches"],
+                    limit=list_limit,
+                    show_all=args.more,
+                )
             if want_releases:
-                print("Releases:")
-                async for release in info["releases"]:
-                    print(release)
+                truncated |= await print_list(
+                    "Releases",
+                    info["releases"],
+                    limit=list_limit,
+                    show_all=args.more,
+                )
 
         print("rate_limit_info", info["rate_limit_info"])
+        if truncated:
+            print("hint: truncated output, set --more for more")
         if not (args.branches or args.tags or args.releases):
             print("hint: set -b to fetch branches or -r to fetch releases")
+
+    async def print_list(label, entries, *, limit, show_all):
+        print(f"{label}:")
+        if show_all:
+            async for entry in entries:
+                print(entry)
+            return False
+
+        count = 0
+        async for entry in entries:
+            if count < limit:
+                print(entry)
+                count += 1
+                continue
+            print("  ⋮")
+            return True
+        return False
 
     asyncio.run(main())
