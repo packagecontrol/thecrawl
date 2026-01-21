@@ -51,7 +51,7 @@ else {
 }
 
 function is_markdown(url) {
-  return !url.match('(.creole|.rst|.textile)$')
+  return /(readme|\.md|\.mkd|\.mdown|\.markdown|\.txt)$/i.test(url)
 }
 
 function post_process_html(html, base_url) {
