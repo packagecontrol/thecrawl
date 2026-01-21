@@ -55,6 +55,9 @@ export function computePlatformLabelsForSearch(releases) {
 export function computePlatformStatement(platforms) {
   if (!platforms.length) return ''
   if (platforms.includes('any')) return ''
+  if (platforms.some(token => token === 'osx' || token.startsWith('osx-'))) {
+    throw new Error(`computePlatformStatement received non-canonicalized platform: ${platforms.join(', ')}`)
+  }
 
   const tokens = []
   const variantsByOs = new Map()
