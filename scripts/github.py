@@ -658,7 +658,10 @@ if __name__ == "__main__":
     import argparse
 
     async def main():
-        parser = argparse.ArgumentParser(description="Fetch GitHub info via GraphQL.")
+        parser = argparse.ArgumentParser(
+            description="Fetch GitHub info via GraphQL.",
+            epilog="Numeric shorthand: -<n> sets list limit (default: -30).",
+        )
         parser.add_argument(
             "repo",
             nargs="?",
@@ -693,12 +696,16 @@ if __name__ == "__main__":
             action="store_true",
             help="Use REST for root files (skip GraphQL files).",
         )
-        args = parser.parse_args()
+        argv, list_limit = normalize_limit_argv(sys.argv[1:])
+        explicit_limit = list_limit is not None
+        if list_limit is None:
+            list_limit = 30
+
+        args = parser.parse_args(argv)
 
         want_branches = args.branches
         want_releases = args.releases
         want_tags = args.tags or (not want_branches and not want_releases)
-        list_limit = 30
 
         arg = args.repo
         if arg.startswith("https://"):
@@ -725,12 +732,14 @@ if __name__ == "__main__":
             )
             print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
             truncated = False
+            show_ellipsis = not explicit_limit
             if want_tags:
                 truncated |= await print_list(
                     "Tags",
                     info["tags"],
                     limit=list_limit,
                     show_all=args.more,
+                    show_ellipsis=show_ellipsis,
                 )
             if want_branches:
                 truncated |= await print_list(
@@ -738,6 +747,7 @@ if __name__ == "__main__":
                     info["branches"],
                     limit=list_limit,
                     show_all=args.more,
+                    show_ellipsis=show_ellipsis,
                 )
             if want_releases:
                 truncated |= await print_list(
@@ -745,15 +755,16 @@ if __name__ == "__main__":
                     info["releases"],
                     limit=list_limit,
                     show_all=args.more,
+                    show_ellipsis=show_ellipsis,
                 )
 
         print("rate_limit_info", info["rate_limit_info"])
         if truncated:
-            print("hint: truncated output, set --more for more")
+            print("hint: truncated output, set --more for more or -<n> for a desired length")
         if not (args.branches or args.tags or args.releases):
             print("hint: set -b to fetch branches or -r to fetch releases")
 
-    async def print_list(label, entries, *, limit, show_all):
+    async def print_list(label, entries, *, limit, show_all, show_ellipsis):
         print(f"{label}:")
         if show_all:
             async for entry in entries:
@@ -766,8 +777,20 @@ if __name__ == "__main__":
                 print(entry)
                 count += 1
                 continue
-            print("  ⋮")
-            return True
+            if show_ellipsis:
+                print("  ⋮")
+                return True
+            return False
         return False
+
+    def normalize_limit_argv(argv):
+        normalized = []
+        limit = None
+        for arg in argv:
+            if re.fullmatch(r"-\d+", arg):
+                limit = int(arg[1:])
+                continue
+            normalized.append(arg)
+        return normalized, limit
 
     asyncio.run(main())
