@@ -85,6 +85,10 @@ ul.stats {
   svg {
     margin-right: 1ex;
   }
+
+  a {
+    color: inherit;
+  }
 }
 
 .other-releases {

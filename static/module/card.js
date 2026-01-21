@@ -34,7 +34,7 @@ export class Card {
     const labels = this.clone.querySelector('ul.labels')
     // clear the placeholder then fill with data
     labels.innerHTML = ''
-    this.platforms(labels)
+    this.platforms()
     this.labels(labels)
     this.stats()
 
@@ -170,16 +170,45 @@ export class Card {
     })
   }
 
-  platforms(parent) {
-    let os = this.pkg.platforms
+  platforms() {
+    const label = typeof this.pkg.platform_statement === 'string'
+      ? this.pkg.platform_statement.trim()
+      : ''
 
-    if (os.length < 1 || os.includes('any')) {
+    if (!label) {
       return
     }
 
-    os.split(',').forEach((item) => {
-      parent.appendChild(this.button(item))
-    })
+    if (this.compact) {
+      const labels = this.clone.querySelector('ul.labels')
+      if (!labels) {
+        return
+      }
+      const li = document.createElement('li')
+      li.classList.add('platform-statement-wrap')
+
+      const span = document.createElement('span')
+      span.classList.add('button', 'label', 'platform-statement')
+      span.textContent = label
+      li.appendChild(span)
+
+      labels.insertBefore(li, labels.firstChild)
+      return li
+    }
+
+    const stats = this.clone.querySelector('ul.stats')
+    if (!stats) {
+      return
+    }
+    let li = stats.querySelector('.platforms')
+    if (!li) {
+      li = document.createElement('li')
+      li.classList.add('platforms')
+      stats.appendChild(li)
+    }
+    li.textContent = label
+
+    return li
   }
 
   labels(parent) {
@@ -213,27 +242,21 @@ export class Card {
     const li = document.createElement('li')
     const a = document.createElement('a')
 
-    if (name.startsWith('linux') || name.startsWith('macos') || name.startsWith('windows')) {
-      a.classList.add('button', 'platform', 'platform-' + name)
-      a.setAttribute('href', searchQueryFor('platform', name))
-    }
-    else {
-      a.classList.add('button', 'label')
-      a.setAttribute('href', searchQueryFor('label', name))
+    a.classList.add('button', 'label')
+    a.setAttribute('href', searchQueryFor('label', name))
 
-      const iconId = resolveLabelIconId(name)
-      if (iconId) {
-        const svgNS = 'http://www.w3.org/2000/svg'
-        const svg = document.createElementNS(svgNS, 'svg')
-        const canonical = iconId.replace(/^label-icon-/, '')
-        const tint = resolveLabelIconTint(canonical)
-        svg.setAttribute('class', `label-icon${tint ? ' label-icon--' + tint : ''}`)
-        svg.setAttribute('aria-hidden', 'true')
-        const use = document.createElementNS(svgNS, 'use')
-        use.setAttribute('href', `${this.staticBase}label-icons.svg#${iconId}`)
-        svg.appendChild(use)
-        a.appendChild(svg)
-      }
+    const iconId = resolveLabelIconId(name)
+    if (iconId) {
+      const svgNS = 'http://www.w3.org/2000/svg'
+      const svg = document.createElementNS(svgNS, 'svg')
+      const canonical = iconId.replace(/^label-icon-/, '')
+      const tint = resolveLabelIconTint(canonical)
+      svg.setAttribute('class', `label-icon${tint ? ' label-icon--' + tint : ''}`)
+      svg.setAttribute('aria-hidden', 'true')
+      const use = document.createElementNS(svgNS, 'use')
+      use.setAttribute('href', `${this.staticBase}label-icons.svg#${iconId}`)
+      svg.appendChild(use)
+      a.appendChild(svg)
     }
 
     if (['ST2', 'RIP'].includes(name)) {
@@ -269,7 +292,7 @@ const searchQueryFor = (field, rawValue) => {
   return '/?q=' + encodeURIComponent(filter)
 }
 
-function resolveLabelIconId(label) {
+const resolveLabelIconId = (label) => {
   if (typeof label !== 'string') return null
   const normalized = label.trim().toLowerCase()
   if (!normalized) return null
@@ -290,10 +313,11 @@ function resolveLabelIconId(label) {
   return `label-icon-${canonical}`
 }
 
-function resolveLabelIconTint(canonical) {
+const resolveLabelIconTint = (canonical) => {
   const tints = window.__LABEL_ICON_TINTS__ ?? {}
   return tints[canonical]
 }
+
 const toFinite = (value) => {
   const num = Number(value)
   return Number.isFinite(num) ? num : null

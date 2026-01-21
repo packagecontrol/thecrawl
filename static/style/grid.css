@@ -103,9 +103,9 @@ section[name="labels"] .grid {
     align-items: flex-end;
     padding: 0;
     margin: 0;
-    line-height: 1.6;
+    line-height: 18px;
     position: absolute;
-    top: 24px;
+    top: 18px;
     right: 1rem;
     gap: 0;
     font-size: 12px;
@@ -126,6 +126,18 @@ section[name="labels"] .grid {
       line-height: 20px;
       padding: 1px 6px;
     }
+    .platform-statement-wrap {
+      flex: 1 1 auto;
+    }
+    .platform-statement {
+      background: transparent;
+      margin: 0;
+      padding: 0;
+      cursor: default;
+      &:hover {
+        background: transparent;
+      }
+    }
   }
 
   .list & .labels {
@@ -137,6 +149,15 @@ section[name="labels"] .grid {
     @media (min-width: 480px) {
       flex-direction: row-reverse;
       gap: 1em;
+
+      .platforms {
+        position: absolute;
+        right: 0;
+        top: 1.75em;
+        width: auto;
+        white-space: nowrap;
+        text-align: right;
+      }
     }
   }
 

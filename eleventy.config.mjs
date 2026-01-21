@@ -147,9 +147,11 @@ function computeMagicMetadata(packages) {
 
 function basePackage(pkg, stat) {
   // Create a new array of releases with cleaned platforms
-  const releases = (pkg.releases || []).map(release => ({
+  const rawReleases = pkg.releases || []
+  const releases = rawReleases.map(release => ({
     ...release,
-    platforms: util.cleanPlatforms(release.platforms),
+    // Used for release list display and for grouping releases with identical platform sets.
+    platforms: util.prettifyPlatformLabels(release.platforms),
   }))
 
   const supportsModernSublime = releases.some((release) => {
@@ -215,6 +217,8 @@ function basePackage(pkg, stat) {
     labels.push('MIA')
   }
 
+  const platforms = util.computePlatformLabelsForSearch(rawReleases).sort()
+
   return {
     name: pkg.name,
     author: util.cleanAuthors(pkg.author) ?? [],
@@ -228,7 +232,10 @@ function basePackage(pkg, stat) {
     releases: mainReleases,
     otherReleases,
     labels: labels,
-    platforms: util.dedupePlatforms(releases).sort(),
+    // Aggregated platform tokens for search indexing and platform: filtering.
+    platforms: platforms,
+    // Human-readable label shown on cards and package stats/labels.
+    platform_statement: util.computePlatformStatement(platforms),
     outdated: !supportsModernSublime,
     st3_only: supportsModernSublime && doesNotSupportNewestSublime,
   }
