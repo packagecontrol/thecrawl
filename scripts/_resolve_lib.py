@@ -35,6 +35,56 @@ PYPI_DATA_CACHE: dict[str, tuple[dict, str]] = {}
 type Name = str
 type Url = str
 type IsoTimestamp = str
+type VersionString = str
+type VersionSpecString = str
+type AssetPattern = str
+type AssetPatterns = list[AssetPattern]
+
+type SourceInfo = str  # Labels like "pypi:cache" or "github:tags" for provenance.
+
+type PypiAssetInfo = dict
+type PypiReleases = dict[VersionString, list[PypiAssetInfo]]
+
+ALL_BUILDS = "*"
+ALL_MARKER = ["*"]
+SUPPORTED_PLATFORMS = [
+    "windows-x64",
+    "windows-x32",
+    "osx-x64",
+    "osx-arm64",
+    "linux-x64",
+    "linux-arm64",
+]
+SUPPORTED_PYTHON_VERSIONS = ["3.3", "3.8", "3.13"]
+PLATFORM_TAG_PATTERNS = {
+    "windows-x64": ["win_amd64"],
+    "windows-x32": ["win32"],
+    "osx-x64": ["macosx_*_x86_64", "macosx_*_universal2"],
+    "osx-arm64": ["macosx_*_arm64", "macosx_*_universal2"],
+    "linux-x64": ["manylinux*_x86_64"],
+    "linux-arm64": ["manylinux*_aarch64"],
+}
+
+
+def build_default_asset_patterns(platform_tags: list[str]) -> list[AssetPattern]:
+    version_var = "${version}"
+    py_var = "${py_version}"
+    py_tag = f"cp{py_var}"
+    abi_tags = [f"cp{py_var}m", f"cp{py_var}"]
+
+    patterns = []
+
+    for platform_tag, abi_tag in product(platform_tags, abi_tags):
+        patterns.append(f"*-{version_var}-{py_tag}-{abi_tag}-{platform_tag}.whl")
+    patterns.append(f"*-{version_var}-py3-none-any.whl")
+    patterns.append(f"*-{version_var}-py2.py3-none-any.whl")
+    return patterns
+
+
+DEFAULT_ASSET_PATTERNS: dict[str, AssetPatterns] = {
+    platform: build_default_asset_patterns(platform_tags)
+    for platform, platform_tags in PLATFORM_TAG_PATTERNS.items()
+}
 
 
 class RegistryEntry(TypedDict, total=False):
@@ -142,80 +192,6 @@ class TagsBasedRelease(_UnresolvedRelease):
 
 type UnresolvedRelease = AssetBasedRelease | TagsBasedRelease
 
-type VersionString = str
-type VersionSpecString = str
-type AssetPattern = str
-type AssetPatterns = list[AssetPattern]
-
-
-@dataclass(frozen=True, slots=True)
-class ConcreteReleaseDef:
-    base: Url
-    asset_patterns: AssetPatterns
-    platform: str
-    python_version: str
-    sublime_text: str
-    version: SpecifierSet
-
-
-type SourceInfo = str  # Labels like "pypi:cache" or "github:tags" for provenance.
-type PypiAssetInfo = dict
-type PypiReleases = dict[VersionString, list[PypiAssetInfo]]
-SUPPORTED_PLATFORMS = [
-    "windows-x64",
-    "windows-x32",
-    "osx-x64",
-    "osx-arm64",
-    "linux-x64",
-    "linux-arm64",
-]
-SUPPORTED_PYTHON_VERSIONS = ["3.3", "3.8", "3.13"]
-PLATFORM_TAG_PATTERNS = {
-    "windows-x64": ["win_amd64"],
-    "windows-x32": ["win32"],
-    "osx-x64": ["macosx_*_x86_64", "macosx_*_universal2"],
-    "osx-arm64": ["macosx_*_arm64", "macosx_*_universal2"],
-    "linux-x64": ["manylinux*_x86_64"],
-    "linux-arm64": ["manylinux*_aarch64"],
-}
-
-
-def build_default_asset_patterns(platform_tags: list[str]) -> list[AssetPattern]:
-    version_var = "${version}"
-    py_var = "${py_version}"
-    py_tag = f"cp{py_var}"
-    abi_tags = [f"cp{py_var}m", f"cp{py_var}"]
-
-    patterns = []
-
-    for platform_tag, abi_tag in product(platform_tags, abi_tags):
-        patterns.append(f"*-{version_var}-{py_tag}-{abi_tag}-{platform_tag}.whl")
-    patterns.append(f"*-{version_var}-py3-none-any.whl")
-    patterns.append(f"*-{version_var}-py2.py3-none-any.whl")
-    return patterns
-
-
-DEFAULT_ASSET_PATTERNS: dict[str, AssetPatterns] = {
-    platform: build_default_asset_patterns(platform_tags)
-    for platform, platform_tags in PLATFORM_TAG_PATTERNS.items()
-}
-
-
-def load_json(path: Path) -> dict:
-    with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
-
-
-def dump_json(path: Path, data: dict, *, sort_keys: bool = False) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, indent=2, ensure_ascii=True, sort_keys=sort_keys)
-        handle.write("\n")
-
-
-ALL_BUILDS = "*"
-ALL_MARKER = ["*"]
-
 
 def normalize_release_def(definition: ReleasePartial) -> ReleaseDef:
     if "url" in definition:
@@ -320,6 +296,16 @@ def validate_normalized_release_def(release: ReleaseDef) -> None:
                 raise ValueError(f"Can't provide default assets for platform: {platform}")
 
 
+@dataclass(frozen=True, slots=True)
+class ConcreteReleaseDef:
+    base: Url
+    asset_patterns: AssetPatterns
+    platform: str
+    python_version: str
+    sublime_text: str
+    version: SpecifierSet
+
+
 def concretize_release_defs(
     releases: Sequence[UnresolvedRelease], *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
@@ -356,30 +342,6 @@ def concretize_release_def(
                 version=SpecifierSet(version_spec),
             )
         )
-    return output
-
-
-def explain_library(library: RegistryEntry) -> list[dict]:
-    releases = list(map(normalize_release_def, library.get("releases", [])))
-    output: list[dict] = []
-    for release in releases:
-        if "url" in release:
-            continue
-        base = release.get("base")
-        auto_assets = "pypi.org/project/" in base and release.get("asset") is None
-        for concrete in concretize_release_def(release, auto_assets=auto_assets):
-            entry: dict[str, object] = {
-                "base": concrete.base,
-                "asset": concrete.asset_patterns,
-                "platform": concrete.platform,
-                "python_version": concrete.python_version,
-                "sublime_text": concrete.sublime_text,
-                "version": str(concrete.version) or "*",
-            }
-            tags = release.get("tags")
-            if tags is not None:
-                entry["tags"] = tags
-            output.append(entry)
     return output
 
 
@@ -426,82 +388,28 @@ def normalize_st_build(st_specifier: str) -> str:
     return st_specifier[2:]
 
 
-def find_release_info(
-    concrete: ConcreteReleaseDef,
-    version: VersionString,
-    assets: list[PypiAssetInfo],
-) -> ReleaseInfo | None:
-    python_versions = [Version(concrete.python_version)]
-    for re_pattern in compile_asset_patterns(concrete, version):
-        asset = match_pypi_asset(re_pattern, python_versions, assets)
-        if not asset:
+def explain_library(library: RegistryEntry) -> list[dict]:
+    releases = list(map(normalize_release_def, library.get("releases", [])))
+    output: list[dict] = []
+    for release in releases:
+        if "url" in release:
             continue
-        return create_release_info_from_asset(asset, concrete, version)
-    return None
-
-
-def match_pypi_asset(
-    file_pattern: re.Pattern,
-    python_versions: list[Version],
-    assets: list[PypiAssetInfo],
-) -> PypiAssetInfo | None:
-    for asset in assets:
-        if asset.get("packagetype") != "bdist_wheel":
-            continue
-        if asset.get("yanked"):
-            continue
-        if not file_pattern.match(asset.get("filename", "")):
-            continue
-
-        specs = asset.get("requires_python")
-        if specs:
-            spec_set = SpecifierSet(specs)
-            if not all(
-                spec_set.contains(ver, prereleases=True) for ver in python_versions
-            ):
-                continue
-
-        return asset
-
-    return None
-
-
-def create_release_info_from_asset(
-    asset: PypiAssetInfo,
-    concrete: ConcreteReleaseDef,
-    version: VersionString,
-) -> ReleaseInfo:
-    output_constraints = normalize_output_constraints(concrete)
-    info = {
-        "url": asset["url"],
-        "version": version,
-        "date": asset["upload_time"][:19] + "Z",
-        "sha256": asset["digests"]["sha256"],
-    }
-    info.update(output_constraints)
-    return info  # type: ignore[return-value]
-
-
-def normalize_output_constraints(concrete: ConcreteReleaseDef) -> ReleaseConstraints:
-    return {
-        "platforms": [concrete.platform],
-        "python_versions": [concrete.python_version],
-        "sublime_text": concrete.sublime_text,
-    }
-
-
-def normalize_timestamp(timestamp: str) -> str:
-    if not timestamp:
-        return timestamp
-    return timestamp[:19] + "Z"
-
-
-def parse_tag_prefix(value) -> str | None:
-    if value is True or value is None:
-        return None
-    if isinstance(value, str):
-        return value
-    raise ValueError("Invalid tags value; must be true or a prefix string.")
+        base = release.get("base")
+        auto_assets = "pypi.org/project/" in base and release.get("asset") is None
+        for concrete in concretize_release_def(release, auto_assets=auto_assets):
+            entry: dict[str, object] = {
+                "base": concrete.base,
+                "asset": concrete.asset_patterns,
+                "platform": concrete.platform,
+                "python_version": concrete.python_version,
+                "sublime_text": concrete.sublime_text,
+                "version": str(concrete.version) or "*",
+            }
+            tags = release.get("tags")
+            if tags is not None:
+                entry["tags"] = tags
+            output.append(entry)
+    return output
 
 
 async def resolve_library(
@@ -755,6 +663,76 @@ def download_info_from_latest_versions(
     return output
 
 
+def find_release_info(
+    concrete: ConcreteReleaseDef,
+    version: VersionString,
+    assets: list[PypiAssetInfo],
+) -> ReleaseInfo | None:
+    python_versions = [Version(concrete.python_version)]
+    for re_pattern in compile_asset_patterns(concrete, version):
+        asset = match_pypi_asset(re_pattern, python_versions, assets)
+        if not asset:
+            continue
+        return create_release_info_from_asset(asset, concrete, version)
+    return None
+
+
+def match_pypi_asset(
+    file_pattern: re.Pattern,
+    python_versions: list[Version],
+    assets: list[PypiAssetInfo],
+) -> PypiAssetInfo | None:
+    for asset in assets:
+        if asset.get("packagetype") != "bdist_wheel":
+            continue
+        if asset.get("yanked"):
+            continue
+        if not file_pattern.match(asset.get("filename", "")):
+            continue
+
+        specs = asset.get("requires_python")
+        if specs:
+            spec_set = SpecifierSet(specs)
+            if not all(
+                spec_set.contains(ver, prereleases=True) for ver in python_versions
+            ):
+                continue
+
+        return asset
+
+    return None
+
+
+def create_release_info_from_asset(
+    asset: PypiAssetInfo,
+    concrete: ConcreteReleaseDef,
+    version: VersionString,
+) -> ReleaseInfo:
+    output_constraints = normalize_output_constraints(concrete)
+    info = {
+        "url": asset["url"],
+        "version": version,
+        "date": asset["upload_time"][:19] + "Z",
+        "sha256": asset["digests"]["sha256"],
+    }
+    info.update(output_constraints)
+    return info  # type: ignore[return-value]
+
+
+def normalize_output_constraints(concrete: ConcreteReleaseDef) -> ReleaseConstraints:
+    return {
+        "platforms": [concrete.platform],
+        "python_versions": [concrete.python_version],
+        "sublime_text": concrete.sublime_text,
+    }
+
+
+def normalize_timestamp(timestamp: str) -> str:
+    if not timestamp:
+        return timestamp
+    return timestamp[:19] + "Z"
+
+
 async def resolve_github_releases(
     session: aiohttp.ClientSession,
     github_asset_defs: dict[str, list[AssetBasedRelease]],
@@ -909,6 +887,14 @@ async def fetch_github_info_(
     return gh_info
 
 
+def parse_tag_prefix(value) -> str | None:
+    if value is True or value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    raise ValueError("Invalid tags value; must be true or a prefix string.")
+
+
 def match_tag_version(
     tag_name: str, tag_prefix: str | None
 ) -> tuple[Version, str] | None:
@@ -927,3 +913,15 @@ def match_tag_version(
 
 def is_final_version(version: Version) -> bool:
     return not (version.is_prerelease or version.is_devrelease)
+
+
+def load_json(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def dump_json(path: Path, data: dict, *, sort_keys: bool = False) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, indent=2, ensure_ascii=True, sort_keys=sort_keys)
+        handle.write("\n")
