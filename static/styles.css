@@ -136,7 +136,8 @@ pre {
   }
 }
 
-h2 {
+h2,
+h3 {
   color: var(--foreground-2);
 }
 

@@ -16,6 +16,11 @@
     display: none;
   }
 
+  h2,
+  h3 {
+    color: inherit;
+  }
+
   /* increase density around paragraphs */
   p, ul, ol, summary {
     padding-top: 0;
