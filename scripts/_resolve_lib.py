@@ -341,23 +341,21 @@ def concretize_release_def(
     asset_patterns: list[AssetPattern] | None = release.get("asset", [])  # type: ignore[assignment]
 
     output: list[ConcreteReleaseDef] = []
-    for st_specifier in sublime_text:
-        for py_ver in python_versions:
-            for platform in platforms:
-                patterns = asset_patterns or (
-                    DEFAULT_ASSET_PATTERNS.get(platform, [])
-                    if auto_assets else []
-                )
-                output.append(
-                    ConcreteReleaseDef(
-                        base=base,
-                        asset_patterns=patterns,
-                        platform=platform,
-                        python_version=py_ver,
-                        sublime_text=st_specifier,
-                        version=SpecifierSet(version_spec),
-                    )
-                )
+    for st_specifier, py_ver, platform in product(sublime_text, python_versions, platforms):
+        patterns = asset_patterns or (
+            DEFAULT_ASSET_PATTERNS.get(platform, [])
+            if auto_assets else []
+        )
+        output.append(
+            ConcreteReleaseDef(
+                base=base,
+                asset_patterns=patterns,
+                platform=platform,
+                python_version=py_ver,
+                sublime_text=st_specifier,
+                version=SpecifierSet(version_spec),
+            )
+        )
     return output
 
 
