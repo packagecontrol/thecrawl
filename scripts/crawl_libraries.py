@@ -4,7 +4,7 @@ import argparse
 import asyncio
 import json
 import os
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
@@ -13,20 +13,11 @@ from typing import NotRequired, Required, TypedDict
 
 import aiohttp
 from rich.console import Console
-from rich.progress import (
-    BarColumn,
-    Progress,
-    TaskProgressColumn,
-    TextColumn,
-    TimeElapsedColumn,
-    TimeRemainingColumn,
-)
+from rich.progress import track
 
 from ._resolve_lib import (
     ReleaseInfo,
     ReleasePartial,
-    ResolvedLibraryInfo,
-    SourceInfo,
     dump_json,
     explain_library,
     load_json,
@@ -222,75 +213,65 @@ async def run(args: Args) -> int:
             if entry := workspace_entries.get(name):
                 mark_added(entry, timestamp)
 
+    lib_info = namedtuple("lib_info", "last_crawl lname name entry")
     active_libs = (
-        entry
+        lib_info(
+            (
+                workspace_entries  # type: ignore[call-overload]
+                .get(name, {})
+                .get("last_crawl", "0000-00-00T00:00:00Z")
+            ),
+            name.lower(),
+            name,
+            entry
+        )
         for name, entry in registered_entries.items()
         if is_allowed_source(entry, args.allowed_sources)
         if not workspace_entries.get(name, {}).get("removed")  # type: ignore[call-overload]
     )
 
-    def sorter(name: Name):
-        return (
-            workspace_entries  # type: ignore[call-overload]
-            .get(name, {})
-            .get("last_crawl", "0000-00-00T00:00:00Z"),
-            name.lower()
-        )
-
-    selected_libs = sorted(
-        active_libs,
-        key=lambda entry: sorter(entry["name"])
-    )[:args.limit]
+    selected_libs = sorted(active_libs)[:args.limit]
     if not selected_libs:
         print("Nothing to crawl.")
         return 0
 
     console = Console(stderr=True)
     disable_progress = not console.is_terminal or os.environ.get("CI") == "true"
-    with Progress(
-        TextColumn("[bold blue]Crawling Libraries:"),
-        BarColumn(),
-        TaskProgressColumn(),
-        TimeElapsedColumn(),
-        TimeRemainingColumn(),
+    track_ = partial(
+        track,
+        description="Crawling Libraries",
         console=console,
-        transient=False,
-        disable=disable_progress,
-    ) as progress:
-        task_id = progress.add_task("Crawling Libraries", total=len(selected_libs))
-        async with aiohttp.ClientSession() as aio_session:
-            async def _resolve_named(
-                library: RegistryEntry,
-            ) -> tuple[str, tuple[ResolvedLibraryInfo, list[SourceInfo]] | Exception]:
-                name = library["name"]
-                task = resolve_library(library, args.cache_dir, aio_session)
-                try:
-                    return name, await task
-                except Exception as exc:
-                    return name, exc
+        disable=disable_progress
+    )
 
-            tasks = [_resolve_named(library) for library in selected_libs]
-            for task in asyncio.as_completed(tasks):
-                name, result = await task
-                progress.advance(task_id)
+    async with aiohttp.ClientSession() as aio_session:
+        ordered_libs = sorted(selected_libs, key=lambda lib: lib.lname)
+        tasks = {
+            lib.name: asyncio.create_task(
+                resolve_library(lib.entry, args.cache_dir, aio_session)
+            )
+            for lib in ordered_libs
+        }
+        for name, task in track_(tasks.items()):
+            try:
+                result = await task
+            except Exception as exc:
+                if name in workspace_entries:
+                    mark_failure(workspace_entries[name], timestamp, str(exc))
+                print(f"Failed {name}: {exc}")
+                continue
 
-                if isinstance(result, Exception):
-                    if name in workspace_entries:
-                        mark_failure(workspace_entries[name], timestamp, str(result))
-                    print(f"Failed {name}: {result}")
-                    continue
-
-                info, sources = result
-                entry = workspace_entries.get(name, {"name": name}).copy()
-                entry.update(info)
-                mark_added(entry, timestamp)
-                latest_version = latest_version_from_releases(info["releases"])
-                if mark_success(entry, timestamp, latest_version):
-                    updated_names.append(name)
-                workspace_entries[name] = entry
-                source_label = ", ".join(sources) if sources else "cache"
-                version_label = f" {latest_version}" if latest_version else ""
-                err(f"Resolved {name}{version_label} using {source_label}.")
+            info, sources = result
+            entry = workspace_entries.get(name, {"name": name}).copy()
+            entry.update(info)
+            mark_added(entry, timestamp)
+            latest_version = latest_version_from_releases(info["releases"])
+            if mark_success(entry, timestamp, latest_version):
+                updated_names.append(name)
+            workspace_entries[name] = entry
+            source_label = ", ".join(sources) if sources else "cache"
+            version_label = f" {latest_version}" if latest_version else ""
+            err(f"Resolved {name}{version_label} using {source_label}.")
 
     dump_workspace()
     print(f"Crawled {len(selected_libs)} libraries.")
