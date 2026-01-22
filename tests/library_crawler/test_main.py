@@ -246,6 +246,103 @@ async def test_record_failures_and_clear_failures(monkeypatch, tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_records_failure_for_new_library(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": [{"name": "alpha"}]})
+    output_path = tmp_path / "libraries.json"
+    args = make_args(tmp_path, repo_path, output_path)
+
+    async def fail_resolver(library, cache_dir, session):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", fail_resolver)
+    monkeypatch.setattr(
+        crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
+    )
+
+    await crawl_libraries.run(args)
+
+    data = read_json(output_path)
+    entry = data["libraries"]["alpha"]
+    assert entry["name"] == "alpha"
+    assert entry["fail_reason"] == "boom"
+    assert entry["failing_since"] == "2026-01-01T00:00:00Z"
+    assert entry["last_crawl"] == "2026-01-01T00:00:00Z"
+
+
+@pytest.mark.asyncio
+async def test_handle_name_records_failure_on_write(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": [{"name": "alpha"}]})
+    output_path = tmp_path / "libraries.json"
+    write_json(
+        output_path,
+        {
+            "libraries": {
+                "alpha": make_info("alpha") | {"added": "2025-01-01T00:00:00Z"}
+            }
+        },
+    )
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        name="alpha",
+        write=True
+    )
+
+    async def fail_resolver(library, cache_dir, session):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", fail_resolver)
+    monkeypatch.setattr(
+        crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
+    )
+
+    with pytest.raises(RuntimeError, match="boom"):
+        await crawl_libraries.run(args)
+
+    data = read_json(output_path)
+    entry = data["libraries"]["alpha"]
+    assert entry["fail_reason"] == "boom"
+    assert entry["failing_since"] == "2026-01-01T00:00:00Z"
+    assert entry["last_crawl"] == "2026-01-01T00:00:00Z"
+
+
+@pytest.mark.asyncio
+async def test_handle_name_records_failure_for_new_library(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": [{"name": "alpha"}]})
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        name="alpha",
+        write=True
+    )
+
+    async def fail_resolver(library, cache_dir, session):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", fail_resolver)
+    monkeypatch.setattr(
+        crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
+    )
+
+    with pytest.raises(RuntimeError, match="boom"):
+        await crawl_libraries.run(args)
+
+    assert output_path.exists()
+    data = read_json(output_path)
+    entry = data["libraries"]["alpha"]
+    assert entry["name"] == "alpha"
+    assert entry["fail_reason"] == "boom"
+    assert entry["failing_since"] == "2026-01-01T00:00:00Z"
+    assert entry["last_crawl"] == "2026-01-01T00:00:00Z"
+
+
+@pytest.mark.asyncio
 async def test_record_removed_and_preserve_all_entry_fields(monkeypatch, tmp_path):
     repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "stay"}]})

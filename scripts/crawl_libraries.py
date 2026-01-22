@@ -256,8 +256,10 @@ async def run(args: Args) -> int:
             try:
                 result = await task
             except Exception as exc:
-                if name in workspace_entries:
-                    mark_failure(workspace_entries[name], timestamp, str(exc))
+                entry = workspace_entries.get(name, {"name": name}).copy()
+                mark_added(entry, timestamp)
+                mark_failure(entry, timestamp, str(exc))
+                workspace_entries[name] = entry
                 print(f"Failed {name}: {exc}")
                 continue
 
@@ -321,8 +323,12 @@ async def handle_name(name: str, args: Args) -> int:
         print(format_updated_message(updated_names))
         return 0
     except Exception as exc:
-        if args.write and args.name in workspace_entries:
-            mark_failure(workspace_entries[args.name], timestamp, str(exc))
+        if args.write:
+            entry = \
+                workspace_entries.get(name, {"name": args.name}).copy()  # type: ignore[assignment]
+            mark_added(entry, timestamp)
+            mark_failure(entry, timestamp, str(exc))
+            workspace_entries[name] = entry
             dump_workspace()
         raise
 
