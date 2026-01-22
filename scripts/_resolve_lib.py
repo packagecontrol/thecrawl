@@ -9,7 +9,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from itertools import product, zip_longest
 from pathlib import Path
-from typing import Iterable, Literal, Mapping, NotRequired, Required, Sequence, TypedDict, final
+from typing import Iterable, Literal, Mapping, NotRequired, Required, TypedDict, final
 
 import aiohttp
 from packaging.specifiers import SpecifierSet
@@ -299,15 +299,6 @@ class ConcreteReleaseDef:
     version: SpecifierSet
 
 
-def concretize_release_defs(
-    releases: Sequence[ReleaseDescription], *, auto_assets: bool
-) -> list[ConcreteReleaseDef]:
-    return list(flatten(
-        spell_out_constraint_variations(r, auto_assets=auto_assets)
-        for r in releases
-    ))
-
-
 def spell_out_constraint_variations(
     release: ReleaseDescription, *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
@@ -432,7 +423,10 @@ async def resolve_library(
 
     if pypi_bases:
         for base_url, rel_defs in pypi_bases.items():
-            concrete_defs = concretize_release_defs(rel_defs, auto_assets=True)
+            concrete_defs = list(flatten(
+                spell_out_constraint_variations(r, auto_assets=True)
+                for r in rel_defs
+            ))
             base_name = base_url[len("https://pypi.org/project/"):]
             if not base_name:
                 raise ValueError(f'Invalid PyPI base URL "{base_url}".')
