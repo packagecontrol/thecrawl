@@ -641,43 +641,32 @@ def download_info_from_latest_versions(
             if not concrete.version.contains(version, prereleases=True):
                 continue
             assets = releases[version_string]
-            info = find_release_info(concrete, version_string, assets)
-            if info:
+            if asset := find_pypi_asset(concrete, version_string, assets):
+                info = create_release_info_from_asset(asset, concrete, version_string)
                 output.append(info)
                 break
 
     return output
 
 
-def find_release_info(
+def find_pypi_asset(
     concrete: ConcreteReleaseDef,
     version: VersionString,
     assets: list[PypiAssetInfo],
-) -> Release | None:
+) -> PypiAssetInfo | None:
     python_version = Version(concrete.python_version)
     for re_pattern in compile_asset_patterns(concrete, version):
-        if asset := match_pypi_asset(re_pattern, python_version, assets):
-            return create_release_info_from_asset(asset, concrete, version)
-    return None
+        for asset in assets:
+            if asset.get("packagetype") != "bdist_wheel":
+                continue
+            if asset.get("yanked"):
+                continue
+            if not re_pattern.match(asset.get("filename", "")):
+                continue
 
-
-def match_pypi_asset(
-    file_pattern: re.Pattern,
-    python_version: Version,
-    assets: list[PypiAssetInfo],
-) -> PypiAssetInfo | None:
-    for asset in assets:
-        if asset.get("packagetype") != "bdist_wheel":
-            continue
-        if asset.get("yanked"):
-            continue
-        if not file_pattern.match(asset.get("filename", "")):
-            continue
-
-        specs = asset.get("requires_python")
-        if not specs or SpecifierSet(specs).contains(python_version, prereleases=True):
-            return asset
-
+            specs = asset.get("requires_python")
+            if not specs or SpecifierSet(specs).contains(python_version, prereleases=True):
+                return asset
     return None
 
 
