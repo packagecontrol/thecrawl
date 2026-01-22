@@ -5,7 +5,6 @@ from scripts._resolve_lib import (
     SUPPORTED_PLATFORMS,
     SUPPORTED_PYTHON_VERSIONS,
     normalize_release_def,
-    validate_normalized_release_def
 )
 
 
@@ -251,12 +250,12 @@ class TestNormalizeReleaseDefinitionDynamicReleases:
         assert str(result["version"]) == expected
 
 
-class TestValidateNormalizedReleaseDef:
+class TestNormalizeReleaseDefinitionValidation:
     def test_rejects_unknown_platform_for_pypi_default_assets(self):
         with pytest.raises(
             ValueError, match="Can't provide default assets for platform: not-a-platform"
         ):
-            validate_normalized_release_def(
+            normalize_release_def(
                 {
                     "base": "https://pypi.org/project/example",
                     "platforms": ["not-a-platform"],
