@@ -13,6 +13,7 @@ def patch_http_get(monkeypatch):
     Patch generate_registry.http_get to support file:// URLs for all tests.
     """
     from scripts import generate_registry
+
     async def fake_http_get(location, session):
         if location.startswith("file://"):
             path = Path.from_uri(location)

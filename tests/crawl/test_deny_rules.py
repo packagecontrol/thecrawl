@@ -3,7 +3,6 @@ import pytest
 from scripts.crawl import main_
 
 
-
 @pytest.mark.asyncio
 async def test_repo_id_mismatch_same_url_is_fatal(set_now, set_github_info):
     registry = {

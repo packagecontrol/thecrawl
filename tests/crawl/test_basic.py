@@ -139,7 +139,6 @@ def expected():
     return json.loads(EXPECTED)
 
 
-
 @pytest.mark.asyncio
 async def test_happy_path(
     registry,
@@ -176,7 +175,10 @@ async def test_drop_packagecontrolio_as_homepage(
 
 
 @pytest.mark.asyncio
-async def test_metadata_name_is_essentially_ignored_as_registry_name_has_precedence(set_now, set_github_info):
+async def test_metadata_name_is_essentially_ignored_as_registry_name_has_precedence(
+    set_now,
+    set_github_info
+):
     registry = {
         "repositories": [
             "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"

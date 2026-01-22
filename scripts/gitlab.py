@@ -4,7 +4,6 @@ import aiohttp
 import asyncio
 import os
 import re
-from datetime import datetime, timedelta
 from urllib.parse import urlparse, quote
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
@@ -84,7 +83,11 @@ async def fetch_json(session: aiohttp.ClientSession, url: str):
     return data
 
 
-async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: str) -> RepoMetadata:
+async def fetch_repo_metadata(
+    session: aiohttp.ClientSession,
+    owner: str,
+    repo: str
+) -> RepoMetadata:
     encoded_path = quote(f"{owner}/{repo}", safe="")
     url = f"{GITLAB_API_URL}/projects/{encoded_path}"
     data = await fetch_json(session, url)
@@ -138,8 +141,11 @@ class TagPager(_Pager):
         self._session = session
         self.owner = owner
         self.repo = repo
-        self._next_url = f"{GITLAB_API_URL}/projects/{quote(owner + '/' + repo, safe='')}/repository/tags?per_page=100"
-        self._cache = []
+        encoded_path = quote(f"{owner}/{repo}", safe="")
+        self._next_url = (
+            f"{GITLAB_API_URL}/projects/{encoded_path}/repository/tags?per_page=100"
+        )
+        self._cache: list[TagInfo] = []
 
     def __aiter__(self):
         return self._generator()
@@ -150,7 +156,7 @@ class TagPager(_Pager):
 
         while self._next_url:
             data, headers = await fetch_(self._session, self._next_url)
-            new_tags = []
+            new_tags: list[TagInfo] = []
             for tag in data:
                 raw_date = tag.get("commit", {}).get("committed_date", "")
                 if not raw_date:
@@ -161,7 +167,12 @@ class TagPager(_Pager):
                     continue
                 new_tags.append({
                     "name": tag["name"],
-                    "url": tag.get("web_url") or f"https://gitlab.com/{self.owner}/{self.repo}/-/archive/{tag['name']}/{self.repo}-{tag['name']}.zip",
+                    "url": (
+                        tag.get("web_url") or (
+                            f"https://gitlab.com/{self.owner}/{self.repo}"
+                            f"/-/archive/{tag['name']}/{self.repo}-{tag['name']}.zip"
+                        )
+                    ),
                     "date": normalize_tz_aware_datetime(raw_date),
                 })
             self._cache.extend(new_tags)
@@ -176,8 +187,11 @@ class BranchesPager(_Pager):
         self._session = session
         self.owner = owner
         self.repo = repo
-        self._next_url = f"{GITLAB_API_URL}/projects/{quote(owner + '/' + repo, safe='')}/repository/branches?per_page=100"
-        self._cache = []
+        encoded_path = quote(f"{owner}/{repo}", safe="")
+        self._next_url = (
+            f"{GITLAB_API_URL}/projects/{encoded_path}/repository/branches?per_page=100"
+        )
+        self._cache: list[BranchInfo] = []
 
     def __aiter__(self):
         return self._generator()
@@ -188,7 +202,7 @@ class BranchesPager(_Pager):
         next_url = self._next_url
         while next_url:
             data, headers = await fetch_(self._session, next_url)
-            new_branches = []
+            new_branches: list[BranchInfo] = []
             for branch in data:
                 raw_date = branch.get("commit", {}).get("committed_date", "")
                 if not raw_date:

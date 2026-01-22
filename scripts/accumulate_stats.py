@@ -94,9 +94,12 @@ def main():
                 print(f'"{pkg}" {target_key} +{delta}')
 
             container["totals"] = current_total
-            accumulate(delta, container, "daily", len(output_data["__daily_dates"]), rollovers["daily"])
-            accumulate(delta, container, "weekly", len(output_data["__weekly_dates"]), rollovers["weekly"])
-            accumulate(delta, container, "yearly", len(output_data["__yearly_dates"]), rollovers["yearly"])
+            accumulate(
+                delta, container, "daily", len(output_data["__daily_dates"]), rollovers["daily"])
+            accumulate(
+                delta, container, "weekly", len(output_data["__weekly_dates"]), rollovers["weekly"])
+            accumulate(
+                delta, container, "yearly", len(output_data["__yearly_dates"]), rollovers["yearly"])
 
     save_json(args.output, output_data, pretty=args.pretty)
     save_json(prev_path, current_totals)
@@ -174,7 +177,9 @@ def save_json(path: str, data: dict, pretty: bool = False):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Compute daily, weekly, yearly download counts from all-time totals")
+    parser = argparse.ArgumentParser(
+        description="Compute daily, weekly, yearly download counts from all-time totals"
+    )
     parser.add_argument(
         "-o",
         "--output",

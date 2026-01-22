@@ -60,6 +60,7 @@ if not os.getenv("BITBUCKET_TOKEN"):
         "Running anonymously."
     )
 
+
 async def fetch_json(session: aiohttp.ClientSession, url: str) -> dict:
     headers = {}
     if token := os.getenv("BITBUCKET_TOKEN"):
@@ -77,7 +78,9 @@ def parse_owner_repo(url: str):
     return path_parts[0], path_parts[1]
 
 
-async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: str) -> RepoMetadata:
+async def fetch_repo_metadata(
+    session: aiohttp.ClientSession, owner: str, repo: str
+) -> RepoMetadata:
     url = f"{BITBUCKET_API_URL}/repositories/{owner}/{repo}"
     data = await fetch_json(session, url)
     default_branch = data.get("mainbranch", {}).get("name", "master")
@@ -106,7 +109,7 @@ async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: 
         "default_branch": default_branch,
         "stars": stars,
         "created_at": normalize_tz_aware_datetime(data.get("created_on") or ""),
-        #                               ^^ funny, isn't it?
+        #                                                           ^^ funny, isn't it?
         "archived_at": None,  # Not available
     })
 
@@ -129,8 +132,9 @@ class TagPager:
         self._session = session
         self.owner = owner
         self.repo = repo
-        self._next_url = f"{BITBUCKET_API_URL}/repositories/{owner}/{repo}/refs/tags"
-        self._cache = []
+        self._next_url: str | None = \
+            f"{BITBUCKET_API_URL}/repositories/{owner}/{repo}/refs/tags"
+        self._cache: list[TagInfo] = []
 
     def __aiter__(self):
         return self._generator()
@@ -141,18 +145,21 @@ class TagPager:
 
         while self._next_url:
             data = await fetch_json(self._session, self._next_url)
-            new_tags = []
+            new_tags: list[TagInfo] = []
             for tag in data.get("values", []):
                 raw_date = tag.get("target", {}).get("date", "")
                 if not raw_date:
                     err(
-                        f"Skip tag `{tag}` from https://bitbucket.org/{self.owner}/{self.repo} "
-                        "which has no date"
+                        f"Skip tag `{tag}` "
+                        f"from https://bitbucket.org/{self.owner}/{self.repo} "
+                        f"which has no date"
                     )
                     continue
                 new_tags.append({
                     "name": tag["name"],
-                    "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{tag['name']}.zip",
+                    "url":
+                        f"https://bitbucket.org/{self.owner}/{self.repo}/get/{tag['name']}.zip"
+                    ,
                     "date": normalize_tz_aware_datetime(raw_date),
                 })
             self._cache.extend(new_tags)
@@ -167,8 +174,9 @@ class BranchesPager:
         self._session = session
         self.owner = owner
         self.repo = repo
-        self._next_url = f"{BITBUCKET_API_URL}/repositories/{owner}/{repo}/refs/branches"
-        self._cache = []
+        self._next_url: str | None = \
+            f"{BITBUCKET_API_URL}/repositories/{owner}/{repo}/refs/branches"
+        self._cache: list[BranchInfo] = []
 
     def __aiter__(self):
         return self._generator()
@@ -179,18 +187,21 @@ class BranchesPager:
 
         while self._next_url:
             data = await fetch_json(self._session, self._next_url)
-            new_branches = []
+            new_branches: list[BranchInfo] = []
             for branch in data.get("values", []):
                 raw_date = branch.get("target", {}).get("date", "")
                 if not raw_date:
                     err(
-                        f"Skip branch `{branch}` from https://bitbucket.org/{self.owner}/{self.repo} "
-                        "which has no date"
+                        f"Skip branch `{branch}` "
+                        f"from https://bitbucket.org/{self.owner}/{self.repo} "
+                        f"which has no date"
                     )
                     continue
                 new_branches.append({
                     "name": branch["name"],
-                    "url": f"https://bitbucket.org/{self.owner}/{self.repo}/get/{branch['name']}.zip",
+                    "url":
+                        f"https://bitbucket.org/{self.owner}/{self.repo}/get/{branch['name']}.zip"
+                    ,
                     "date": normalize_tz_aware_datetime(raw_date),
                 })
             self._cache.extend(new_branches)

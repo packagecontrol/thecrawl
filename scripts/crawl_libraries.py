@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
-from typing import NotRequired, Required, TypedDict
+from typing import Required, TypedDict
 
 import aiohttp
 from rich.console import Console

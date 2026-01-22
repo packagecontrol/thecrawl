@@ -25,7 +25,6 @@ from ._resolve_lib import (
     match_tag_version,
     normalize_st_build,
     normalize_version_spec,
-    parse_tag_prefix,
 )
 from ._utils import next_run, parse_version, resolve_url, update_url
 import traceback
@@ -55,7 +54,7 @@ class Release(TypedDict, total=False):
 
 
 class PackageEntry(TypedDict, total=False):
-    id: Required[str]
+    id: NotRequired[str]
     name: Required[str]
     details: NotRequired[Url]
     releases: list[Release]
@@ -178,7 +177,7 @@ def next_packages_to_crawl(
         for entry in packages
         if not entry.get("fetching_source_failed")
         if presto or (
-            workspace["packages"]
+            workspace["packages"]  # type: ignore[call-overload]
             .get(entry["name"], {})
             .get("next_crawl", now_string)
             <= now_string
@@ -196,13 +195,13 @@ def next_packages_to_crawl(
                 if not entry.get("fetching_source_failed")
             ),
             key=lambda pkg: (
-                workspace["packages"]
+                workspace["packages"]  # type: ignore[call-overload]
                 .get(pkg["name"], {})
                 .get("next_crawl", now_string)
             )
         )), None):
             next_crawl_time = (
-                workspace["packages"]
+                workspace["packages"]  # type: ignore[call-overload]
                 .get(next_package["name"], {})
                 .get("next_crawl", now_string)
             )
@@ -218,16 +217,15 @@ def next_packages_to_crawl(
             else:
                 print(f"Next package runs in {round(delta.total_seconds())} seconds.")
 
-
     if presto:
         key = lambda pkg: (
-            workspace["packages"]
+            workspace["packages"]  # type: ignore[call-overload]
             .get(pkg["name"], {})
             .get("last_seen", "0000-00-00T00:00:00Z")
         )
     else:
         key = lambda pkg: (
-            workspace["packages"]
+            workspace["packages"]  # type: ignore[call-overload]
             .get(pkg["name"], {})
             .get("next_crawl", now_string)
         )
@@ -236,7 +234,7 @@ def next_packages_to_crawl(
 
 
 def maintenance(registry: Registry, workspace: Workspace) -> None:
-    workspace.pop("dependencies", None)
+    workspace.pop("dependencies", None)  # type: ignore[typeddict-item]
 
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
@@ -347,11 +345,14 @@ async def crawl_package(
     entry: PackageEntryV1,
     existing: PackageEntry
 ) -> PackageEntry:
-    out: PackageEntry = {**entry}
+    out: PackageEntry = {**entry}  # type: ignore[typeddict-item]
     if "readme" in out:
-        out["readme"] = update_url(resolve_url(out["source"], out["readme"]))
+        out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]
+            resolve_url(out["source"], out["readme"])  # type: ignore[typeddict-item]
+        )
     details = out.get("details")
-    release_definitions: list[ReleaseDescription] = out.get("releases", [])  # type: ignore[assignment]
+    release_definitions: list[ReleaseDescription] = \
+        out.get("releases", [])  # type: ignore[assignment]
     migrate_release_definitions_from_v2(release_definitions)
     normalize_release_definition(release_definitions, out["source"], details)
 
@@ -379,20 +380,22 @@ async def crawl_package(
                 hints = existing.get("hints", [])
                 info = await fetch_github_info(session, url, scopes, hints=hints)
             case "bitbucket":
-                info = await fetch_bitbucket_info(session, url, scopes)
+                info = await fetch_bitbucket_info(session, url, scopes)  # type: ignore[arg-type]
             case "gitlab":
-                info = await fetch_gitlab_info(session, url, scopes)
+                info = await fetch_gitlab_info(session, url, scopes)  # type: ignore[arg-type]
             case "codeberg":
-                info = await fetch_codeberg_info(session, url, scopes)
+                info = await fetch_codeberg_info(session, url, scopes)  # type: ignore[arg-type]
             case _:
                 err(f"Backend for {url} not implemented yet")
                 continue
 
         if url == details:
-            if info["metadata"].get("homepage", "").startswith("https://packagecontrol.io/packages/"):
+            if info["metadata"].get("homepage", "").startswith(
+                "https://packagecontrol.io/packages/"
+            ):
                 info["metadata"].pop("homepage")
 
-            out = info["metadata"] | out
+            out = info["metadata"] | out  # type: ignore[assignment]
             if (
                 existing.get("id")
                 and existing.get("id") != out.get("id")
@@ -438,7 +441,7 @@ async def crawl_package(
                     spec_set = SpecifierSet(normalized_spec) if normalized_spec else None
 
                 resolved_releases: list[dict] = []
-                async for release in info["releases"]:  # type: ignore[typeddict-item]  # sad, isn't it
+                async for release in info["releases"]:  # type: ignore[typeddict-item]
                     if release.get("is_draft"):
                         continue
                     tag_name = release.get("tag_name")
@@ -513,7 +516,7 @@ async def crawl_package(
                             if tag_prefix
                             else tag["name"].removeprefix("v")
                         ))
-                        and (version := parse_version(version_string))
+                        and (version := parse_version(version_string))  # type: ignore[assignment]
                     ):
                         if version.is_prerelease and not prerelease_pushed:
                             r_ = deepcopy(r)
@@ -600,7 +603,7 @@ def missing_from_release_definition(release: ReleaseDescription) -> set[str]:
 
 
 def is_fulfilled_release_definition(release: ReleaseDescription) -> bool:
-    return not(
+    return not (
         "tags" in release
         or "branch" in release
         or missing_from_release_definition(release)

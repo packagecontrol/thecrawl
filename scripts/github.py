@@ -9,7 +9,7 @@ import sys
 from time import time
 from urllib.parse import urlparse
 
-from typing import AsyncIterable, Iterable, Literal, TypedDict
+from typing import AsyncIterable, Iterable, TypedDict
 
 from ._utils import drop_falsy, normalize_tz_aware_datetime
 
@@ -382,7 +382,7 @@ async def fetch_github_info(
     )
 
     return {
-        "metadata": drop_falsy({
+        "metadata": drop_falsy({  # type: ignore[typeddict-item]
             "id": repo_data.get("id"),
             "name": repo_data.get("name"),
             "description": repo_data.get("description"),

@@ -16,6 +16,8 @@ NEW_CHANNEL = (
 v4_CHANNEL = "https://packagecontrol.github.io/channel/channel_v4.json"
 DEFAULT_OUTPUT_FILE = "./channel.json"
 
+type Release = dict
+
 
 async def main(
     output_file: str = DEFAULT_OUTPUT_FILE,
@@ -55,10 +57,8 @@ async def main(
                 releases = p["releases"]
                 for r in releases[:]:
                     if is_outdated(r):
-                        # err(f"Drop outdated release {r['version']} for package {p['name']} from {repo_url}")
                         releases.remove(r)
                 if not releases:
-                    # err(f"Drop package {p['name']} which is not supported by modern Sublime Text")
                     drop_count[key] += 1
                     packages.remove(p)
                     continue
@@ -117,7 +117,7 @@ async def http_get_json(location: str, session: aiohttp.ClientSession) -> dict:
 
 
 async def http_get(location: str, session: aiohttp.ClientSession) -> str:
-    headers={
+    headers = {
         'User-Agent': 'Mozilla/5.0',
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'

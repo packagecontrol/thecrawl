@@ -1,5 +1,4 @@
 import pytest
-from packaging.specifiers import SpecifierSet
 
 from scripts._resolve_lib import (
     ALL_BUILDS,

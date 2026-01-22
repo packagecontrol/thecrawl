@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime
 import json
 import pytest
@@ -32,6 +31,7 @@ def set_github_info(monkeypatch):
 def mock_github(info):
     if isinstance(info, str):
         info = json.loads(info)
+
     async def wrapper(*args, **kwargs):
         if "tags" in info:
             info["tags"] = AsyncList(info["tags"])

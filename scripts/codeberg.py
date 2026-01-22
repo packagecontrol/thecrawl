@@ -89,7 +89,11 @@ async def fetch_(session: aiohttp.ClientSession, url: str):
         return await resp.json(), dict(resp.headers)
 
 
-async def fetch_repo_metadata(session: aiohttp.ClientSession, owner: str, repo: str) -> RepoMetadata:
+async def fetch_repo_metadata(
+    session: aiohttp.ClientSession,
+    owner: str,
+    repo: str
+) -> RepoMetadata:
     url = f"{CODEBERG_API_URL}/repos/{owner}/{repo}"
     data = await fetch_json(session, url)
     default_branch = data.get("default_branch", "master")
@@ -167,7 +171,10 @@ class TagPager:
             yield tag
 
         while True:
-            url = f"{CODEBERG_API_URL}/repos/{self.owner}/{self.repo}/tags?page={self._page}&limit=50"
+            url = (
+                f"{CODEBERG_API_URL}/repos/{self.owner}/{self.repo}"
+                f"/tags?page={self._page}&limit=50"
+            )
             data = await fetch_json(self._session, url)
             if not data:
                 break
@@ -211,7 +218,10 @@ class BranchesPager:
             yield branch
 
         while True:
-            url = f"{CODEBERG_API_URL}/repos/{self.owner}/{self.repo}/branches?page={self._page}&limit=50"
+            url = (
+                f"{CODEBERG_API_URL}/repos/{self.owner}/{self.repo}"
+                f"/branches?page={self._page}&limit=50"
+            )
             data = await fetch_json(self._session, url)
             if not data:
                 break
@@ -222,7 +232,8 @@ class BranchesPager:
                 raw_date = commit.get("created") or commit.get("timestamp") or ""
                 if not raw_date:
                     err(
-                        f"Skip branch `{branch}` from https://codeberg.org/{self.owner}/{self.repo} "
+                        "Skip branch `{branch}` from "
+                        f"https://codeberg.org/{self.owner}/{self.repo} "
                         "which has no date"
                     )
                     continue

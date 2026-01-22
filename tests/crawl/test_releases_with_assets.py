@@ -454,7 +454,10 @@ async def test_github_release_assets_missing_platform_logs_error(set_now, set_gi
     await main_(registry, workspace, None, 100)
 
     err = capsys.readouterr().err
-    assert "Missing release assets for https://github.com/SublimeText/PackageWithAsset for: (osx-x64, st_build=*)" in err
+    assert (
+        "Missing release assets for https://github.com/SublimeText/PackageWithAsset for: "
+        "(osx-x64, st_build=*)"
+    ) in err
 
 
 @pytest.mark.asyncio
@@ -506,4 +509,7 @@ async def test_github_release_assets_no_match_logs_error(set_now, set_github_inf
     await main_(registry, workspace, None, 100)
 
     err = capsys.readouterr().err
-    assert "No matching release asset found for https://github.com/SublimeText/PackageWithAsset" in err
+    assert (
+        "No matching release asset found for "
+        "https://github.com/SublimeText/PackageWithAsset"
+    ) in err

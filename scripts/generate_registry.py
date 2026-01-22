@@ -4,13 +4,11 @@ import argparse
 import asyncio
 import aiohttp
 from datetime import datetime, timezone
-from functools import partial
 import json
 import os
-import re
 import sys
 import time
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 from typing import Callable, Iterable, Mapping, NotRequired, TypedDict
 
 from ._utils import flatten, resolve_urls, update_url
