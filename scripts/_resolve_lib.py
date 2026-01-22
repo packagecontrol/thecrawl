@@ -89,20 +89,14 @@ DEFAULT_ASSET_PATTERNS: dict[str, AssetPatterns] = {
 
 class RegistryEntry(TypedDict, total=False):
     name: Required[str]
-    releases: Required[list[ReleasePartial]]
-    ...
-
-
-class NormalizedRegistryEntry(TypedDict, total=False):
-    name: Required[str]
-    releases: Required[list[ReleaseDef]]
+    releases: Required[list[ReleaseEntry]]
     ...
 
 
 class ResolvedLibraryInfo(TypedDict, total=False):
     name: Required[str]
     author: Required[str]
-    releases: Required[list[ReleaseInfo]]
+    releases: Required[list[Release]]
 
     description: str
     homepage: Url
@@ -110,12 +104,12 @@ class ResolvedLibraryInfo(TypedDict, total=False):
     ...
 
 
-# `ReleasePartial` is the sparse/partial info in the registry
-type ReleasePartial = StaticPartial | AssetPartial | TagsPartial
+type ReleaseEntry = StaticRelease | DynamicRelease
+type DynamicRelease = _AssetBased | _TagsBased
 
 
 @final
-class StaticPartial(TypedDict):
+class StaticRelease(TypedDict):
     url: Url
     version: str
     date: NotRequired[IsoTimestamp]
@@ -126,7 +120,7 @@ class StaticPartial(TypedDict):
     python_versions: NotRequired[str | list[str]]
 
 
-class _UnsatisfiedPartial(TypedDict):
+class _DynamicRelease(TypedDict):
     base: str
 
     sublime_text: NotRequired[str | list[str]]
@@ -138,17 +132,17 @@ class _UnsatisfiedPartial(TypedDict):
 
 
 @final
-class AssetPartial(_UnsatisfiedPartial):
+class _AssetBased(_DynamicRelease):
     asset: NotRequired[AssetPattern | list[AssetPattern]]
 
 
 @final
-class TagsPartial(_UnsatisfiedPartial):
+class _TagsBased(_DynamicRelease):
     ...
 
 
-# `ReleaseDef` is the normalized info
-type ReleaseDef = Release | UnresolvedRelease
+type NormalizedReleaseEntry = Release | ReleaseDescription
+type ReleaseDescription = AssetBased | TagsBased
 
 
 class ReleaseConstraints(TypedDict):
@@ -181,19 +175,16 @@ class _UnresolvedRelease(TypedDict):
 
 
 @final
-class AssetBasedRelease(_UnresolvedRelease):
+class AssetBased(_UnresolvedRelease):
     asset: list[AssetPattern]
 
 
 @final
-class TagsBasedRelease(_UnresolvedRelease):
+class TagsBased(_UnresolvedRelease):
     ...
 
 
-type UnresolvedRelease = AssetBasedRelease | TagsBasedRelease
-
-
-def normalize_release_def(definition: ReleasePartial) -> ReleaseDef:
+def normalize_release_def(definition: ReleaseEntry) -> NormalizedReleaseEntry:
     if "url" in definition:
         defaults = {
             "sublime_text": ALL_BUILDS,
@@ -220,7 +211,7 @@ def normalize_release_def(definition: ReleasePartial) -> ReleaseDef:
             "version": "",
             "tags": True,  # type: ignore[dict-item]
         }
-        return defaults | transform(  # type: ignore[return-value]
+        rv: ReleaseDescription = defaults | transform(  # type: ignore[assignment]
             definition,
             ["sublime_text", ensure_list],
             ["platforms", ensure_list, unpack_star(SUPPORTED_PLATFORMS)],
@@ -230,9 +221,11 @@ def normalize_release_def(definition: ReleasePartial) -> ReleaseDef:
             ["tags"],
             ["version", normalize_version_spec],
         )
+        validate_normalized_release_def(rv)
+        return rv
 
 
-def migrate_pypi_versioned_url(definition: _UnsatisfiedPartial) -> None:
+def migrate_pypi_versioned_url(definition: DynamicRelease) -> None:
     base, version = definition["base"], ""
     #  E.g. "https://pypi.org/project/Markdown/3.2.2"
     if match := PYPI_SPLIT_VERSIONED_URL.match(base):
@@ -285,10 +278,10 @@ def unpack_star(replacement, marker=ALL_MARKER):
     return unpack_star_
 
 
-def validate_normalized_release_def(release: ReleaseDef) -> None:
+def validate_normalized_release_def(release: ReleaseDescription) -> None:
     if (
         (base := release.get("base"))
-        and "pypi.org/project/" in base  # type: ignore[operator]
+        and "pypi.org/project/" in base
         and not release.get("asset")
     ):
         for platform in release["platforms"]:
@@ -307,7 +300,7 @@ class ConcreteReleaseDef:
 
 
 def concretize_release_defs(
-    releases: Sequence[UnresolvedRelease], *, auto_assets: bool
+    releases: Sequence[ReleaseDescription], *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
     return [
         concrete
@@ -317,7 +310,7 @@ def concretize_release_defs(
 
 
 def concretize_release_def(
-    release: AssetBasedRelease | TagsBasedRelease, *, auto_assets: bool
+    release: ReleaseDescription, *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
     base = release["base"]
     platforms = release["platforms"]
@@ -415,15 +408,15 @@ def explain_library(library: RegistryEntry) -> list[dict]:
 async def resolve_library(
     library: RegistryEntry, cache_dir: Path, aio_session: aiohttp.ClientSession
 ) -> tuple[ResolvedLibraryInfo, list[SourceInfo]]:
-    output_releases: list[ReleaseInfo] = []
+    output_releases: list[Release] = []
     sources: set[str] = set()
     pypi_metadata: dict = {}
 
     type ByUrl[T] = dict[Url, list[T]]
 
-    pypi_bases: ByUrl[AssetBasedRelease] = defaultdict(list)
-    github_asset_defs: ByUrl[AssetBasedRelease] = defaultdict(list)
-    github_tag_defs: ByUrl[TagsBasedRelease] = defaultdict(list)
+    pypi_bases: ByUrl[AssetBased] = defaultdict(list)
+    github_asset_defs: ByUrl[AssetBased] = defaultdict(list)
+    github_tag_defs: ByUrl[TagsBased] = defaultdict(list)
 
     releases = map(normalize_release_def, library.get("releases", []))
     for release in releases:
@@ -533,8 +526,8 @@ def sort_releases(releases: list[dict]) -> list[dict]:
     return sorted(releases, key=key, reverse=True)
 
 
-def combine_releases(releases: list[ReleaseInfo]) -> list[dict]:
-    grouped: dict[tuple[str, str], list[ReleaseInfo]] = defaultdict(list)
+def combine_releases(releases: list[Release]) -> list[dict]:
+    grouped: dict[tuple[str, str], list[Release]] = defaultdict(list)
     for release in releases:
         sublime_text = release.get("sublime_text", "*")
         url = release.get("url")
@@ -639,7 +632,7 @@ async def _fetch_pypi_json(
 
 def download_info_from_latest_versions(
     concrete_defs: list[ConcreteReleaseDef], releases: PypiReleases
-) -> list[ReleaseInfo]:
+) -> list[Release]:
     versions = []
     for version_string in releases:
         try:
@@ -667,7 +660,7 @@ def find_release_info(
     concrete: ConcreteReleaseDef,
     version: VersionString,
     assets: list[PypiAssetInfo],
-) -> ReleaseInfo | None:
+) -> Release | None:
     python_versions = [Version(concrete.python_version)]
     for re_pattern in compile_asset_patterns(concrete, version):
         asset = match_pypi_asset(re_pattern, python_versions, assets)
@@ -707,7 +700,7 @@ def create_release_info_from_asset(
     asset: PypiAssetInfo,
     concrete: ConcreteReleaseDef,
     version: VersionString,
-) -> ReleaseInfo:
+) -> Release:
     output_constraints = normalize_output_constraints(concrete)
     info = {
         "url": asset["url"],
@@ -735,11 +728,11 @@ def normalize_timestamp(timestamp: str) -> str:
 
 async def resolve_github_releases(
     session: aiohttp.ClientSession,
-    github_asset_defs: dict[str, list[AssetBasedRelease]],
+    github_asset_defs: dict[str, list[AssetBased]],
     *,
     fetch_metadata: bool = False,
-) -> tuple[list[ReleaseInfo], RepoMetadata]:
-    output: list[ReleaseInfo] = []
+) -> tuple[list[Release], RepoMetadata]:
+    output: list[Release] = []
     metadata: RepoMetadata = {}
     if not github_asset_defs:
         return [], {}
@@ -772,7 +765,7 @@ async def download_info_from_github_releases(
     concrete_defs: list[tuple[ConcreteReleaseDef, str | None]],
     *,
     fetch_metadata: bool = False,
-) -> tuple[list[ReleaseInfo], RepoMetadata]:
+) -> tuple[list[Release], RepoMetadata]:
     if not concrete_defs:
         return [], {}
     scopes = ("RELEASES", "METADATA") if fetch_metadata else ("RELEASES",)
@@ -798,7 +791,7 @@ async def download_info_from_github_releases(
             else:
                 continue
 
-            release_info: ReleaseInfo = {  # type: ignore[typeddict-item]
+            release_info: Release = {  # type: ignore[typeddict-item]
                 "url": asset["url"],
                 "version": version_str,
                 "date": normalize_timestamp(release["date"]),
@@ -824,13 +817,13 @@ def match_release_asset(
 
 async def resolve_github_tags(
     session: aiohttp.ClientSession,
-    github_tag_defs: dict[str, list[TagsBasedRelease]],
+    github_tag_defs: dict[str, list[TagsBased]],
     *,
     fetch_metadata: bool = False,
-) -> tuple[list[ReleaseInfo], RepoMetadata]:
+) -> tuple[list[Release], RepoMetadata]:
     if not github_tag_defs:
         return [], {}
-    output: list[ReleaseInfo] = []
+    output: list[Release] = []
     metadata: RepoMetadata = {}
 
     for (base_url, defs), fetch_metadata_ in zip_longest(  # type: ignore[misc]
@@ -855,7 +848,7 @@ async def resolve_github_tags(
                     continue
 
                 for st_build in release["sublime_text"]:
-                    download_info: ReleaseInfo = {
+                    download_info: Release = {
                         "url": tag["url"],
                         "version": version_str,
                         "date": normalize_timestamp(tag["date"]),
