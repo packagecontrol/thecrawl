@@ -105,7 +105,7 @@ class TestNormalizeReleaseDefinitionStaticReleases:
             assert result["sha256"] == sha_value
 
 
-class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
+class TestNormalizeReleaseDefinitionDynamicReleases:
     @pytest.mark.parametrize(
         ("value", "expected"),
         [
@@ -221,7 +221,7 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
     @pytest.mark.parametrize(
         ("value", "expected"),
         [
-            (True, True),
+            (True, ""),
             ("v1.2.3", "v1.2.3"),
         ],
     )
@@ -231,7 +231,7 @@ class TestNormalizeReleaseDefinitionUnsatisfiedReleases:
 
         result = normalize_release_def(definition)
 
-        assert result["tags"] == expected
+        assert result["tag_prefix"] == expected
 
     @pytest.mark.parametrize(
         ("value", "expected"),

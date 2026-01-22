@@ -171,7 +171,7 @@ class _UnresolvedRelease(TypedDict):
     python_versions: list[str]
 
     version: VersionSpecString
-    tags: Literal[True] | str
+    tag_prefix: str
 
 
 @final
@@ -209,7 +209,7 @@ def normalize_release_def(definition: ReleaseEntry) -> NormalizedReleaseEntry:
             "platforms": SUPPORTED_PLATFORMS,
             "python_versions": SUPPORTED_PYTHON_VERSIONS,
             "version": "",
-            "tags": True,  # type: ignore[dict-item]
+            "tag_prefix": "",
         }
         rv: ReleaseDescription = defaults | transform(  # type: ignore[assignment]
             definition,
@@ -218,7 +218,7 @@ def normalize_release_def(definition: ReleaseEntry) -> NormalizedReleaseEntry:
             ["python_versions", ensure_list, unpack_star(SUPPORTED_PYTHON_VERSIONS)],
             ["base", normalize_base_url],
             ["asset", ensure_list],
-            ["tags"],
+            ["tags->tag_prefix", normalize_tags],
             ["version", normalize_version_spec],
         )
         validate_normalized_release_def(rv)
@@ -257,12 +257,20 @@ def normalize_base_url(base: str) -> str:
     return base
 
 
+def normalize_tags(tags: str | Literal[True]) -> str:
+    return "" if tags is True else tags
+
+
 def transform(d: Mapping, *specs) -> dict:
     rv = {}
     for s in specs:
         key, fns = s[0], s[1:]
-        if key in d:
-            rv[key] = pipe(d.get(key), *fns)
+        if "->" in key:
+            old_key, new_key = key.split("->")
+        else:
+            old_key, new_key = key, key
+        if old_key in d:
+            rv[new_key] = pipe(d.get(old_key), *fns)
     return rv
 
 
@@ -387,10 +395,8 @@ def explain_library(library: RegistryEntry) -> list[dict]:
                 "python_version": concrete.python_version,
                 "sublime_text": concrete.sublime_text,
                 "version": str(concrete.version) or "*",
+                "tag_prefix": release["tag_prefix"] or "v?"
             }
-            tags = release.get("tags")
-            if tags is not None:
-                entry["tags"] = tags
             output.append(entry)
     return output
 
@@ -714,11 +720,10 @@ async def resolve_github_releases(
     for (base_url, defs), fetch_metadata_ in zip_longest(  # type: ignore[misc]
         github_asset_defs.items(), [fetch_metadata], fillvalue=False
     ):
-        concrete_defs: list[tuple[ConcreteReleaseDef, str | None]] = []
+        concrete_defs: list[tuple[ConcreteReleaseDef, str]] = []
         for release in defs:
-            tag_prefix = parse_tag_prefix(release.get("tags"))
             for concrete in spell_out_constraint_variations(release, auto_assets=False):
-                concrete_defs.append((concrete, tag_prefix))
+                concrete_defs.append((concrete, release["tag_prefix"]))
 
         downloads, new_metadata = await download_info_from_github_releases(
             session,
@@ -736,7 +741,7 @@ async def resolve_github_releases(
 async def download_info_from_github_releases(
     session: aiohttp.ClientSession,
     base_url: str,
-    concrete_defs: list[tuple[ConcreteReleaseDef, str | None]],
+    concrete_defs: list[tuple[ConcreteReleaseDef, str]],
     *,
     fetch_metadata: bool = False,
 ) -> tuple[list[Release], RepoMetadata]:
@@ -809,12 +814,11 @@ async def resolve_github_tags(
             metadata = gh_info.get("metadata", {})
 
         for release in defs:
-            tag_prefix = parse_tag_prefix(release.get("tags"))
             version_spec = release.get("version")
             spec_set = SpecifierSet(version_spec) if version_spec else None
 
             async for tag in gh_info["tags"]:
-                match = match_tag_version(tag["name"], tag_prefix)
+                match = match_tag_version(tag["name"], release["tag_prefix"])
                 if not match:
                     continue
                 version, version_str = match
@@ -854,23 +858,14 @@ async def fetch_github_info_(
     return gh_info
 
 
-def parse_tag_prefix(value) -> str | None:
-    if value is True or value is None:
+def match_tag_version(tag_name: str, tag_prefix: str) -> tuple[Version, str] | None:
+    if not tag_name.startswith(tag_prefix):
         return None
-    if isinstance(value, str):
-        return value
-    raise ValueError("Invalid tags value; must be true or a prefix string.")
-
-
-def match_tag_version(
-    tag_name: str, tag_prefix: str | None
-) -> tuple[Version, str] | None:
-    if tag_prefix:
-        if not tag_name.startswith(tag_prefix):
-            return None
-        version_str = tag_name[len(tag_prefix):]
-    else:
-        version_str = tag_name.removeprefix("v")
+    version_str = (
+        tag_name.removeprefix(tag_prefix)
+        if tag_prefix else
+        tag_name.removeprefix("v")
+    )
 
     try:
         return Version(version_str), version_str
