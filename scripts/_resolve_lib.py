@@ -423,10 +423,6 @@ async def resolve_library(
 
     if pypi_bases:
         for base_url, rel_defs in pypi_bases.items():
-            concrete_defs = list(flatten(
-                spell_out_constraint_variations(r, auto_assets=True)
-                for r in rel_defs
-            ))
             base_name = base_url[len("https://pypi.org/project/"):]
             if not base_name:
                 raise ValueError(f'Invalid PyPI base URL "{base_url}".')
@@ -436,8 +432,12 @@ async def resolve_library(
             if not pypi_metadata:
                 pypi_metadata = pypi_data.get("info", {}) or {}
 
+            concrete_defs = list(flatten(
+                spell_out_constraint_variations(r, auto_assets=True)
+                for r in rel_defs
+            ))
             pypi_releases: PypiReleases = pypi_data.get("releases", {})
-            downloads = download_info_from_latest_versions(concrete_defs, pypi_releases)
+            downloads = resolve_pypi_releases(concrete_defs, pypi_releases)
             output_releases.extend(downloads)
 
     if github_asset_defs or github_tag_defs:
@@ -623,7 +623,7 @@ async def _fetch_pypi_json(
         return data, "network"
 
 
-def download_info_from_latest_versions(
+def resolve_pypi_releases(
     concrete_defs: list[ConcreteReleaseDef], releases: PypiReleases
 ) -> list[Release]:
     versions = []

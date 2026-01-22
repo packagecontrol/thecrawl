@@ -5,7 +5,7 @@ import pytest
 import scripts._resolve_lib as resolve_lib
 from scripts._resolve_lib import (
     spell_out_constraint_variations,
-    download_info_from_latest_versions,
+    resolve_pypi_releases,
     normalize_release_def,
 )
 
@@ -13,7 +13,7 @@ FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 
 
 def resolve_latest(release: dict, fixture: str):
-    return download_info_from_latest_versions(
+    return resolve_pypi_releases(
         make_concrete(release), load_releases(fixture)
     )
 
