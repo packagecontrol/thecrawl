@@ -389,12 +389,12 @@ def explain_library(library: RegistryEntry) -> list[dict]:
         auto_assets = "pypi.org/project/" in base
         for concrete in spell_out_constraint_variations(release, auto_assets=auto_assets):
             entry: dict[str, object] = {
-                "base": concrete.base,
+                "base": base,
                 "asset": concrete.asset_patterns,
                 "platform": concrete.platform,
                 "python_version": concrete.python_version,
                 "sublime_text": concrete.sublime_text,
-                "version": str(concrete.version) or "*",
+                "version": release["version"] or "*",
                 "tag_prefix": release["tag_prefix"] or "v?"
             }
             output.append(entry)
