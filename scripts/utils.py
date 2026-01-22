@@ -1,4 +1,5 @@
 from __future__ import annotations
+from itertools import chain
 import hashlib
 import re
 import sys
@@ -13,6 +14,11 @@ def err(*args, **kwargs):
 
 
 # FUNC UTILS
+
+
+def flatten[T](list_of_lists: Iterable[Iterable[T]]) -> Iterable[T]:
+    """Flatten a list of lists into a single list."""
+    return chain.from_iterable(list_of_lists)
 
 
 def pipe(v, *fns):

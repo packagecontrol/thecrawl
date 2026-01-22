@@ -12,9 +12,8 @@ import sys
 import time
 from urllib.parse import urljoin, urlparse
 from typing import Callable, Iterable, Mapping, NotRequired, TypedDict
-from itertools import chain
 
-from .utils import resolve_urls, update_url
+from .utils import flatten, resolve_urls, update_url
 
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
@@ -101,8 +100,7 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
         repos_lists = await asyncio.gather(*[
             get_repositories(channel, session) for channel in channels
         ])
-        # Flatten the list of lists
-        repos: list[str] = flatten(repos_lists)
+        repos: list[str] = list(flatten(repos_lists))
         unseen = Unseen(repos)
         sem = asyncio.Semaphore(MAX_CONCURRENCY)
         result: dict[Url, RepositorySchema] = {}
@@ -276,11 +274,6 @@ async def http_get(location: str, session: aiohttp.ClientSession) -> str:
 
 def err(*args, **kwargs) -> None:
     print(*args, **kwargs, file=sys.stderr)
-
-
-def flatten[T](list_of_lists: list[list[T]]) -> list[T]:
-    """Flatten a list of lists into a single list."""
-    return list(chain.from_iterable(list_of_lists))
 
 
 class Unseen[T]:
