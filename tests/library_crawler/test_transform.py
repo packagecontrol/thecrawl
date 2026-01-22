@@ -1,4 +1,3 @@
-# mypy: ignore-errors
 import pytest
 from packaging.specifiers import SpecifierSet
 

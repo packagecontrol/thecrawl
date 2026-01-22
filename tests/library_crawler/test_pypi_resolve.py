@@ -1,5 +1,3 @@
-# mypy: ignore-errors
-import aiohttp
 import json
 from pathlib import Path
 import pytest

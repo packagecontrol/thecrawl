@@ -1,4 +1,3 @@
-# mypy: ignore-errors
 import pytest
 
 import scripts._resolve_lib as resolve_lib
