@@ -2,13 +2,13 @@ from packaging.specifiers import SpecifierSet
 from scripts._resolve_lib import (
     SUPPORTED_PLATFORMS,
     combine_releases,
-    concretize_release_def,
+    spell_out_constraint_variations,
     normalize_release_def,
 )
 
 
 def make_concrete(release: dict, auto_assets: bool = True):
-    return concretize_release_def(normalize_release_def(release), auto_assets=auto_assets)
+    return spell_out_constraint_variations(normalize_release_def(release), auto_assets=auto_assets)
 
 
 def test_concretize_single_manual_release():

@@ -22,7 +22,7 @@ from .github import (
     RepoInfo,
     RepoMetadata,
 )
-from .utils import drop_falsy, pipe
+from .utils import drop_falsy, flatten, pipe
 
 
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
@@ -302,14 +302,13 @@ class ConcreteReleaseDef:
 def concretize_release_defs(
     releases: Sequence[ReleaseDescription], *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
-    return [
-        concrete
-        for release in releases
-        for concrete in concretize_release_def(release, auto_assets=auto_assets)
-    ]
+    return list(flatten(
+        spell_out_constraint_variations(r, auto_assets=auto_assets)
+        for r in releases
+    ))
 
 
-def concretize_release_def(
+def spell_out_constraint_variations(
     release: ReleaseDescription, *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
     base = release["base"]
@@ -389,7 +388,7 @@ def explain_library(library: RegistryEntry) -> list[dict]:
             continue
         base = release.get("base")
         auto_assets = "pypi.org/project/" in base and release.get("asset") is None
-        for concrete in concretize_release_def(release, auto_assets=auto_assets):
+        for concrete in spell_out_constraint_variations(release, auto_assets=auto_assets):
             entry: dict[str, object] = {
                 "base": concrete.base,
                 "asset": concrete.asset_patterns,
@@ -735,7 +734,7 @@ async def resolve_github_releases(
         concrete_defs: list[tuple[ConcreteReleaseDef, str | None]] = []
         for release in defs:
             tag_prefix = parse_tag_prefix(release.get("tags"))
-            for concrete in concretize_release_def(release, auto_assets=False):
+            for concrete in spell_out_constraint_variations(release, auto_assets=False):
                 concrete_defs.append((concrete, tag_prefix))
 
         downloads, new_metadata = await download_info_from_github_releases(

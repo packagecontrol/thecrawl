@@ -6,7 +6,7 @@ import pytest
 
 import scripts._resolve_lib as resolve_lib
 from scripts._resolve_lib import (
-    concretize_release_def,
+    spell_out_constraint_variations,
     download_info_from_latest_versions,
     normalize_release_def,
 )
@@ -21,7 +21,7 @@ def resolve_latest(release: dict, fixture: str):
 
 
 def make_concrete(release: dict, auto_assets: bool = True):
-    return concretize_release_def(normalize_release_def(release), auto_assets=auto_assets)
+    return spell_out_constraint_variations(normalize_release_def(release), auto_assets=auto_assets)
 
 
 def load_releases(name: str):
