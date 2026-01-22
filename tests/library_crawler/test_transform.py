@@ -5,6 +5,7 @@ from scripts._resolve_lib import (
     SUPPORTED_PLATFORMS,
     SUPPORTED_PYTHON_VERSIONS,
     normalize_release_def,
+    transform,
 )
 
 
@@ -16,6 +17,31 @@ BASE_UNSATISFIED_DEFINITION = {
     "base": "https://pypi.org/project/example",
 }
 MISSING = object()
+
+
+class TestTransform:
+    def test_picks_only_known_keys(self):
+        result = transform(
+            {"a": 1, "b": 2, "extra": 3},
+            ["a"],
+            ["missing"],
+            ["b"],
+        )
+
+        assert result == {"a": 1, "b": 2}
+
+    def test_pipeline_applies_functions_in_order(self):
+        result = transform(
+            {"count": 1},
+            ["count", lambda value: value + 1, lambda value: f"v{value}"],
+        )
+
+        assert result == {"count": "v2"}
+
+    def test_key_transformation(self):
+        result = transform({"a": 10}, ["a->b"])
+
+        assert result == {"b": 10}
 
 
 class TestNormalizeReleaseDefinitionStaticReleases:
