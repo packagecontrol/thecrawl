@@ -386,7 +386,7 @@ def explain_library(library: RegistryEntry) -> list[dict]:
         if "url" in release:
             continue
         base = release.get("base")
-        auto_assets = "pypi.org/project/" in base and release.get("asset") is None
+        auto_assets = "pypi.org/project/" in base
         for concrete in spell_out_constraint_variations(release, auto_assets=auto_assets):
             entry: dict[str, object] = {
                 "base": concrete.base,
