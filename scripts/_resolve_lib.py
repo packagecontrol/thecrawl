@@ -429,10 +429,7 @@ async def resolve_library(
 
     if pypi_bases:
         for base_url, rel_defs in pypi_bases.items():
-            base_name = base_url[len("https://pypi.org/project/"):]
-            if not base_name:
-                raise ValueError(f'Invalid PyPI base URL "{base_url}".')
-
+            base_name = base_url.removeprefix("https://pypi.org/project/")
             pypi_data, pypi_source = await fetch_pypi_json(base_name, cache_dir, aio_session)
             sources.add(f"pypi:{pypi_source}")
             if not pypi_metadata:
@@ -582,6 +579,7 @@ async def _fetch_pypi_json(
     aio_session: aiohttp.ClientSession,
     ttl_seconds: int = CACHE_TTL_SECONDS,
 ) -> tuple[dict, str]:
+    assert name, f"name is not given; {name!r}"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / f"{name}.json"
     has_cache = cache_path.exists()

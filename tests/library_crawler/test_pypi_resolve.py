@@ -134,19 +134,3 @@ async def test_resolve_library_pypi_base_name(monkeypatch, tmp_path):
     session = object()
     with pytest.raises(FetchCalled):
         await resolve_lib.resolve_library(library, tmp_path / "cache", session)
-
-
-@pytest.mark.asyncio
-async def test_resolve_library_pypi_base_name_rejects_empty(tmp_path):
-    library = {
-        "name": "EmptyBase",
-        "releases": [
-            {
-                "base": "https://pypi.org/project/",
-            }
-        ],
-    }
-
-    session = object()
-    with pytest.raises(ValueError, match="Invalid PyPI base URL"):
-        await resolve_lib.resolve_library(library, tmp_path / "cache", session)
