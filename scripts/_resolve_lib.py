@@ -661,18 +661,16 @@ def find_release_info(
     version: VersionString,
     assets: list[PypiAssetInfo],
 ) -> Release | None:
-    python_versions = [Version(concrete.python_version)]
+    python_version = Version(concrete.python_version)
     for re_pattern in compile_asset_patterns(concrete, version):
-        asset = match_pypi_asset(re_pattern, python_versions, assets)
-        if not asset:
-            continue
-        return create_release_info_from_asset(asset, concrete, version)
+        if asset := match_pypi_asset(re_pattern, python_version, assets):
+            return create_release_info_from_asset(asset, concrete, version)
     return None
 
 
 def match_pypi_asset(
     file_pattern: re.Pattern,
-    python_versions: list[Version],
+    python_version: Version,
     assets: list[PypiAssetInfo],
 ) -> PypiAssetInfo | None:
     for asset in assets:
@@ -684,14 +682,8 @@ def match_pypi_asset(
             continue
 
         specs = asset.get("requires_python")
-        if specs:
-            spec_set = SpecifierSet(specs)
-            if not all(
-                spec_set.contains(ver, prereleases=True) for ver in python_versions
-            ):
-                continue
-
-        return asset
+        if not specs or SpecifierSet(specs).contains(python_version, prereleases=True):
+            return asset
 
     return None
 
