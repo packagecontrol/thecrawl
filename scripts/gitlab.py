@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlparse, quote
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from .utils import drop_falsy, err, normalize_tz_aware_datetime
+from ._utils import drop_falsy, err, normalize_tz_aware_datetime
 
 QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 Url = str

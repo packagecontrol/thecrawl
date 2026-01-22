@@ -13,7 +13,7 @@ import time
 from urllib.parse import urljoin, urlparse
 from typing import Callable, Iterable, Mapping, NotRequired, TypedDict
 
-from .utils import flatten, resolve_urls, update_url
+from ._utils import flatten, resolve_urls, update_url
 
 
 DEFAULT_OUTPUT_FILE = "./registry.json"

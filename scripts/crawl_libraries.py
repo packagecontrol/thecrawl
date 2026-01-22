@@ -23,7 +23,7 @@ from ._resolve_lib import (
     load_json,
     resolve_library,
 )
-from .utils import err
+from ._utils import err
 
 
 DEFAULT_REGISTRY = "./registry.json"

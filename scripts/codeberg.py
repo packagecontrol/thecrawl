@@ -7,7 +7,7 @@ from urllib.parse import urlparse, urlencode
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from .utils import drop_falsy, err, normalize_tz_aware_datetime
+from ._utils import drop_falsy, err, normalize_tz_aware_datetime
 
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]

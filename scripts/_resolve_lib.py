@@ -22,7 +22,7 @@ from .github import (
     RepoInfo,
     RepoMetadata,
 )
-from .utils import drop_falsy, flatten, pipe
+from ._utils import drop_falsy, flatten, pipe
 
 
 PYPI_BASE = "https://pypi.org/pypi/{}/json"

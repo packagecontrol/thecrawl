@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 from typing import AsyncIterable, Iterable, Literal, TypedDict
 
-from .utils import drop_falsy, normalize_tz_aware_datetime
+from ._utils import drop_falsy, normalize_tz_aware_datetime
 
 # This module exposes a single entrypoint
 # fetch_repo_info(Url, Iterable[QueryScope]) -> RepoInfo

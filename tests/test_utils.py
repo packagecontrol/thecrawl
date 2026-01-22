@@ -1,5 +1,5 @@
 import pytest
-from scripts.utils import parse_version, VersionInfo, is_semver, normalize_tz_aware_datetime
+from scripts._utils import parse_version, VersionInfo, is_semver, normalize_tz_aware_datetime
 
 
 @pytest.mark.parametrize("input_str,expected", [

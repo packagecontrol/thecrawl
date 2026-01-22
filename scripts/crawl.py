@@ -27,7 +27,7 @@ from ._resolve_lib import (
     normalize_version_spec,
     parse_tag_prefix,
 )
-from .utils import next_run, parse_version, resolve_url, update_url
+from ._utils import next_run, parse_version, resolve_url, update_url
 import traceback
 
 
