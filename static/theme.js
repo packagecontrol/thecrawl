@@ -58,10 +58,12 @@ function setKeyframe(el, t) {
 
   const durationSeconds = 3600 // 60 minutes
   const delaySeconds = -durationSeconds * t
+  const nextVal = delaySeconds == 0 ? '' : `${delaySeconds}s`
+  if (el.style.animationDelay == nextVal) return
 
   // let the engine apply the new delay
   el.style.animationPlayState = 'running'
-  el.style.animationDelay = `${delaySeconds}s`
+  el.style.animationDelay = nextVal
 
   // then freeze at that frame
   requestAnimationFrame(() => {
@@ -104,25 +106,6 @@ function computeMoonProgress(date = new Date()) {
   return 0
 }
 
-function inHotSeason(date = new Date()) {
-  // Northern hemisphere is the default. (Likely most users are here anyway; worst case: a false-positive.)
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''
-  const south = /^(America\/(Argentina|Santiago|Montevideo)|Australia\/|Pacific\/Auckland|Africa\/Johannesburg)/.test(tz)
-
-  /* eslint-disable @stylistic/no-multi-spaces */
-  const m = date.getMonth() + 1 // 1..12
-  const d = date.getDate()      // 1..31
-  /* eslint-enable @stylistic/no-multi-spaces */
-
-  // Europe-ish: June 1 → Aug 15 (inclusive)
-  const northHot = (m === 6) || (m === 7) || (m === 8 && d <= 15)
-
-  // Southern hemisphere "hot": Dec 1 → Feb 28/29
-  const southHot = (m === 12) || (m === 1) || (m === 2)
-
-  return south ? southHot : northHot
-}
-
 function computeSunProgress(date = new Date()) {
   if (!inHotSeason(date)) {
     return 0
@@ -155,6 +138,25 @@ function computeSunProgress(date = new Date()) {
 
   // --- Outside glow window ---
   return 0
+}
+
+function inHotSeason(date = new Date()) {
+  // Northern hemisphere is the default. (Likely most users are here anyway; worst case: a false-positive.)
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+  const south = /^(America\/(Argentina|Santiago|Montevideo)|Australia\/|Pacific\/Auckland|Africa\/Johannesburg)/.test(tz)
+
+  /* eslint-disable @stylistic/no-multi-spaces */
+  const m = date.getMonth() + 1 // 1..12
+  const d = date.getDate()      // 1..31
+  /* eslint-enable @stylistic/no-multi-spaces */
+
+  // Europe-ish: June 1 → Aug 15 (inclusive)
+  const northHot = (m === 6) || (m === 7) || (m === 8 && d <= 15)
+
+  // Southern hemisphere "hot": Dec 1 → Feb 28/29
+  const southHot = (m === 12) || (m === 1) || (m === 2)
+
+  return south ? southHot : northHot
 }
 
 function updateIcons(date = new Date()) {
