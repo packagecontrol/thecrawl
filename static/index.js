@@ -4,7 +4,8 @@ import { createMinisearch } from './module/minisearch.js'
 
 // Fetches and returns the search data from the index
 async function fetchSearchData() {
-  const res = await fetch('/search/index.json')
+  const staticBase = window.STATIC_BASE ?? '/static/'
+  const res = await fetch(`${staticBase}search-index.json`)
   if (!res.ok) throw new Error('Failed to fetch search data')
   return await res.json()
 }
