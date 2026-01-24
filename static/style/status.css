@@ -19,7 +19,7 @@ html.status main {
   --status-dot-active-fill: hsl(273.7deg 12.38% 32.69%);
   --status-dot-active-stroke: hsl(282.55deg 11.03% 41.72%);
   --status-glitch-link: hsl(215.72deg 42.37% 38.38% / 32%);
-
+  --status-change-dot: hsl(32deg 90.32% 61.77%);
   --status-error-dot: hsl(7deg 90.45% 50.1%);
 
   :root[data-theme='dark'] & {
@@ -27,6 +27,7 @@ html.status main {
     --status-dot-active-fill: hsl(273.7deg 48.28% 87.52%);
     --status-dot-active-stroke: hsl(282.55deg 60.41% 75.84%);
     --status-glitch-link: hsl(253.48deg 32.4% 48.82% / 69%);
+    --status-change-dot: var(--orange-2);
     --status-error-dot: var(--red-2);
   }
 
@@ -78,7 +79,7 @@ html.status main {
       fill: var(--foreground-3);
     }
     &.changed {
-      fill: var(--orange-2);
+      fill: var(--status-change-dot);
     }
     &.no-notes {
       opacity: 0.35;
