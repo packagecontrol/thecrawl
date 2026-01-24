@@ -117,6 +117,19 @@ select {
   line-height: 24px;
   cursor: pointer;
   transition: background .1s, color .1s;
+
+  :root[data-theme='light'] & {
+    option, optgroup {
+      background: var(--background-1);
+      color: var(--foreground-1);
+    }
+  }
+  :root[data-theme='dark'] & {
+    option, optgroup {
+      background: var(--background-2);
+      color: var(--foreground-2);
+    }
+  }
 }
 
 .search-controls {
