@@ -299,22 +299,22 @@ def validate_normalized_release_def(release: ReleaseDescription) -> None:
 
 @dataclass(frozen=True, slots=True)
 class ConcreteReleaseDef:
-    base: Url
-    asset_patterns: AssetPatterns
+    sublime_text: str
     platform: str
     python_version: str
-    sublime_text: str
+    base: Url
+    asset_patterns: AssetPatterns
+    tag_prefix: str
     version: SpecifierSet
 
 
 def spell_out_constraint_variations(
     release: ReleaseDescription, *, auto_assets: bool
 ) -> list[ConcreteReleaseDef]:
-    base = release["base"]
     platforms = release["platforms"]
     python_versions = release["python_versions"]
     sublime_text = release["sublime_text"]
-    version_spec = release.get("version") or ""
+    version_spec = SpecifierSet(release["version"])
     asset_patterns: list[AssetPattern] | None = release.get("asset", [])  # type: ignore[assignment]
 
     output: list[ConcreteReleaseDef] = []
@@ -325,12 +325,13 @@ def spell_out_constraint_variations(
         )
         output.append(
             ConcreteReleaseDef(
-                base=base,
-                asset_patterns=patterns,
+                sublime_text=st_specifier,
                 platform=platform,
                 python_version=py_ver,
-                sublime_text=st_specifier,
-                version=SpecifierSet(version_spec),
+                base=release["base"],
+                asset_patterns=patterns,
+                tag_prefix=release["tag_prefix"],
+                version=version_spec,
             )
         )
     return output
@@ -718,10 +719,10 @@ async def resolve_github_releases(
     for (base_url, defs), fetch_metadata_ in zip_longest(  # type: ignore[misc]
         github_asset_defs.items(), [fetch_metadata], fillvalue=False
     ):
-        concrete_defs: list[tuple[ConcreteReleaseDef, str]] = []
+        concrete_defs: list[ConcreteReleaseDef] = []
         for release in defs:
             for concrete in spell_out_constraint_variations(release, auto_assets=False):
-                concrete_defs.append((concrete, release["tag_prefix"]))
+                concrete_defs.append(concrete)
 
         downloads, new_metadata = await download_info_from_github_releases(
             session,
@@ -739,7 +740,7 @@ async def resolve_github_releases(
 async def download_info_from_github_releases(
     session: aiohttp.ClientSession,
     base_url: str,
-    concrete_defs: list[tuple[ConcreteReleaseDef, str]],
+    concrete_defs: list[ConcreteReleaseDef],
     *,
     fetch_metadata: bool = False,
 ) -> tuple[list[Release], RepoMetadata]:
@@ -750,11 +751,11 @@ async def download_info_from_github_releases(
     metadata = gh_info.get("metadata", {}) if fetch_metadata else {}
 
     output = []
-    for concrete, tag_prefix in concrete_defs:
+    for concrete in concrete_defs:
         async for release in gh_info["releases"]:
             if release.get("is_draft"):
                 continue
-            tag_match = match_tag_version(release["tag_name"], tag_prefix)
+            tag_match = match_tag_version(release["tag_name"], concrete.tag_prefix)
             if not tag_match:
                 continue
             version, version_str = tag_match
