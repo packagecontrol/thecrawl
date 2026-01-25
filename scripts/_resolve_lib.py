@@ -323,13 +323,22 @@ def spell_out_constraint_variations(
             DEFAULT_ASSET_PATTERNS.get(platform, [])
             if auto_assets else []
         )
+        st_build = normalize_st_build(st_specifier)
+        py_version = py_ver.replace(".", "")
+        filled_patterns = [
+            pattern
+            .replace("${platform}", platform)
+            .replace("${py_version}", py_version)
+            .replace("${st_build}", st_build)
+            for pattern in patterns
+        ]
         output.append(
             ConcreteReleaseDef(
                 sublime_text=st_specifier,
                 platform=platform,
                 python_version=py_ver,
                 base=release["base"],
-                asset_patterns=patterns,
+                asset_patterns=filled_patterns,
                 tag_prefix=release["tag_prefix"],
                 version=version_spec,
             )
@@ -340,13 +349,8 @@ def spell_out_constraint_variations(
 def compile_asset_patterns(
     concrete: ConcreteReleaseDef, version: VersionString
 ) -> list[re.Pattern]:
-    st_build = normalize_st_build(concrete.sublime_text)
-    py_version = concrete.python_version.replace(".", "")
     compiled: list[re.Pattern] = []
     for pattern in concrete.asset_patterns:
-        pattern = pattern.replace("${platform}", concrete.platform)
-        pattern = pattern.replace("${py_version}", py_version)
-        pattern = pattern.replace("${st_build}", st_build)
         pattern = pattern.replace("${version}", version)
         pattern = pattern.replace(".", r"\.")
         pattern = pattern.replace("?", r".")

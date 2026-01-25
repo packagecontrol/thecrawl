@@ -23,7 +23,7 @@ def test_concretize_single_manual_release():
     assert len(concrete_defs) == 1
     concrete = concrete_defs[0]
     assert concrete.base == release["base"]
-    assert concrete.asset_patterns == [release["asset"]]
+    assert concrete.asset_patterns == ["cffi-*-cp313-cp313-win_amd64.whl"]
     assert concrete.platform == "windows-x64"
     assert concrete.python_version == "3.13"
     assert concrete.sublime_text == "*"
