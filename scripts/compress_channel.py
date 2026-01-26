@@ -10,10 +10,8 @@ import sys
 
 
 NEW_CHANNEL = (
-    "https://github.com/packagecontrol/thecrawl/releases/download"
-    "/crawler-status/channel.json"
+    "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/channel.json"
 )
-v4_CHANNEL = "https://packagecontrol.github.io/channel/channel_v4.json"
 DEFAULT_OUTPUT_FILE = "./channel.json"
 
 type Release = dict
@@ -25,16 +23,13 @@ async def main(
     legacy: bool = False,
 ) -> None:
     async with aiohttp.ClientSession() as session:
-        new_channel, v4_channel = await asyncio.gather(
-            http_get_json(NEW_CHANNEL, session),
-            http_get_json(v4_CHANNEL, session),
-        )
+        new_channel = await http_get_json(NEW_CHANNEL, session)
 
     channel = {
         "schema_version": "4.0.0",
-        "repositories": v4_channel["repositories"] + new_channel["repositories"],
+        "repositories": new_channel["repositories"],
         "packages_cache": new_channel["packages_cache"],
-        "libraries_cache": v4_channel["libraries_cache"],
+        "libraries_cache": new_channel["libraries_cache"],
     }
 
     for repo_url, packages in channel["libraries_cache"].items():

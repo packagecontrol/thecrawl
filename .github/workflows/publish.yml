@@ -44,7 +44,7 @@ jobs:
       - name: Generate new channel.json
         id: generate
         run: |
-          PYTHONUNBUFFERED=1 uv run -m scripts.collate_channel \
+          PYTHONUNBUFFERED=1 uv run -m scripts.compress_channel \
             2>&1 | tee channel.log
 
           # Verify the file was created
@@ -154,7 +154,7 @@ jobs:
       - name: Generate new channel_st3.json
         id: generate
         run: |
-          PYTHONUNBUFFERED=1 uv run -m scripts.collate_channel --legacy -o channel_st3.json \
+          PYTHONUNBUFFERED=1 uv run -m scripts.compress_channel --legacy -o channel_st3.json \
             2>&1 | tee channel.log
 
           # Verify the file was created
