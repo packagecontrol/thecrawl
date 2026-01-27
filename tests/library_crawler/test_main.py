@@ -164,6 +164,7 @@ async def test_allowed_source_filters_registry_and_reports(monkeypatch, tmp_path
     captured = capsys.readouterr()
     assert "Ignoring 1 libraries from https://denied.example" in captured.out
     assert "Ignoring 1 libraries without a source." in captured.out
+    assert "Ignoring 1 libraries from https://allowed.example" not in captured.out
     assert "Crawled 1 libraries." in captured.out
     assert "Nothing new." in captured.out
 

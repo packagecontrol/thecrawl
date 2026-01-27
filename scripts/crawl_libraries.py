@@ -195,6 +195,8 @@ async def run(args: Args) -> int:
     ignored_by_source: dict[str, int] = defaultdict(int)
     if args.allowed_sources:
         for library in registry.get("libraries", []):
+            if is_allowed_source(library, args.allowed_sources):
+                continue
             source = library.get("source", "")
             ignored_by_source[source] += 1
         for source, count in sorted(ignored_by_source.items()):
