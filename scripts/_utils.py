@@ -49,9 +49,9 @@ def apply(v, fn):
 
 def pick[K, V](keys: Iterable[K], d: Mapping[K, V]) -> Mapping[K, V]:
     return {
-        k: v
-        for k, v in d.items()
-        if k in keys
+        k: d[k]
+        for k in keys
+        if k in d
     }
 
 
@@ -59,9 +59,9 @@ def pick_and_map[K, V, Q](
     d: Mapping[K, V], keys: Iterable[K], lift: Callable[[V], Q]
 ) -> Mapping[K, Q]:
     return {
-        k: lift(v)
-        for k, v in d.items()
-        if k in keys
+        k: lift(d[k])
+        for k in keys
+        if k in d
     }
 
 
