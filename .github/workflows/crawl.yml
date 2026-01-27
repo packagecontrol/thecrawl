@@ -138,9 +138,11 @@ jobs:
             echo ""
             # Insert a blank line before lines that are exactly '---'
             awk '{ if ($0 == "---") print ""; print }' crawl.log
-            echo ""
-            echo "---"
-            cat lib.log
+            if [ -s lib.log ]; then
+              echo ""
+              echo "---"
+              cat lib.log
+            fi
             echo ""
             echo "---"
             cat channel.log
