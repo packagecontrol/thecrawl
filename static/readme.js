@@ -1,6 +1,45 @@
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.mjs'
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
 
+const markdownAlertExtension = {
+  name: 'markdownAlert',
+  level: 'block',
+  start(src) {
+    const match = src.match(/^> ?\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/m)
+    return match ? match.index : undefined
+  },
+  tokenizer(src) {
+    const rule = /^> ?\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][^\n]*(?:\n> ?.*)*/
+    const match = rule.exec(src)
+    if (!match) return
+
+    const raw = match[0]
+    const alertType = match[1].toLowerCase()
+    const lines = raw.split('\n').map(line => line.replace(/^> ?/, ''))
+    lines.shift()
+    const text = lines.join('\n').replace(/^\n+/, '')
+    const tokens = this.lexer.blockTokens(text, [])
+
+    return {
+      type: 'markdownAlert',
+      raw,
+      alertType,
+      tokens,
+    }
+  },
+  renderer(token) {
+    const title = token.alertType.charAt(0).toUpperCase() + token.alertType.slice(1)
+    const body = this.parser.parse(token.tokens)
+    return `\
+<div class="markdown-alert markdown-alert-${token.alertType}">\
+<p class="markdown-alert-title">${title}</p>\
+<p class="markdown-alert-content">${body}</p>\
+</div>`
+  },
+}
+
+marked.use({ extensions: [markdownAlertExtension] })
+
 const target = document.getElementById('md')
 const source = target.dataset.readmeUrl
 
