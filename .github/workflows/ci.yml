@@ -9,8 +9,18 @@ on:
       - main
 
 jobs:
-  pytest:
+  checks:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: Pytest
+            command: uv run pytest
+          - name: Mypy
+            command: uv run mypy scripts/
+          - name: Ruff
+            command: uv run ruff check --output-format github --preview
+    name: ${{ matrix.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,5 +34,5 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: uv sync --locked --group dev
-      - name: Run tests
-        run: uv run pytest
+      - name: Run checks
+        run: ${{ matrix.command }}
