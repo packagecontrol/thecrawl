@@ -65,7 +65,6 @@ a {
   text-decoration: underline rgba(0,0,0,0);
   border-radius: 3px;
   outline-color: transparent;
-  transition: color .1s ease-in-out, outline .1s ease-in-out;
   transition: color .1s ease-in-out, outline .1s ease-in-out, text-decoration-color .1s ease-in-out;
 
   &:hover {
