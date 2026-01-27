@@ -78,7 +78,44 @@ DEFAULT_CHANNEL = "./channel.json"
 # Targeted ST3/ST4 filtering happens later in compress_channel.py.
 
 
-def main(registry_path, workspace_path, channel_path, berlin: bool):
+def parse_args():
+    parser = argparse.ArgumentParser(description="Generate channel from workspace and registry.")
+    parser.add_argument(
+        "--registry",
+        type=str,
+        default=DEFAULT_REGISTRY,
+        help=f"Path to the registry JSON file (default: {DEFAULT_REGISTRY})")
+    parser.add_argument(
+        "--workspace",
+        type=str,
+        default=DEFAULT_WORKSPACE,
+        help=f"Path to the workspace JSON file (default: {DEFAULT_WORKSPACE})")
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=DEFAULT_CHANNEL,
+        help=f"Path to the output channel JSON file (default: {DEFAULT_CHANNEL})")
+    parser.add_argument(
+        "--wd",
+        type=str,
+        default=".",
+        help="Working directory to resolve file paths (default: .)"
+    )
+    parser.add_argument(
+        "--berlin",
+        action="store_true",
+        help="Format relative times in Europe/Berlin (default: UTC)"
+    )
+    parser.add_argument(
+        "--pretty",
+        action="store_true",
+        help="Pretty-print channel JSON output"
+    )
+    return parser.parse_args()
+
+
+def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool):
     # Load registry
     try:
         with open(registry_path, "r", encoding="utf-8") as f:
@@ -152,7 +189,10 @@ def main(registry_path, workspace_path, channel_path, berlin: bool):
 
     # Write channel.json
     with open(channel_path, "w", encoding="utf-8") as f:
-        json.dump(channel, f, indent=2, ensure_ascii=False)
+        if pretty:
+            json.dump(channel, f, indent=2, ensure_ascii=False)
+        else:
+            json.dump(channel, f, separators=(",", ":"), ensure_ascii=False)
 
     source_count = len(packages_by_source) + len(libraries_by_source)
     package_count = sum(len(pkgs) for pkgs in packages_by_source.values())
@@ -344,38 +384,6 @@ def err(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Generate channel from workspace and registry.")
-    parser.add_argument(
-        "--registry",
-        type=str,
-        default=DEFAULT_REGISTRY,
-        help=f"Path to the registry JSON file (default: {DEFAULT_REGISTRY})")
-    parser.add_argument(
-        "--workspace",
-        type=str,
-        default=DEFAULT_WORKSPACE,
-        help=f"Path to the workspace JSON file (default: {DEFAULT_WORKSPACE})")
-    parser.add_argument(
-        "--output",
-        "-o",
-        type=str,
-        default=DEFAULT_CHANNEL,
-        help=f"Path to the output channel JSON file (default: {DEFAULT_CHANNEL})")
-    parser.add_argument(
-        "--wd",
-        type=str,
-        default=".",
-        help="Working directory to resolve file paths (default: .)"
-    )
-    parser.add_argument(
-        "--berlin",
-        action="store_true",
-        help="Format relative times in Europe/Berlin (default: UTC)"
-    )
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
     args = parse_args()
     wd = os.path.abspath(args.wd)
@@ -383,4 +391,4 @@ if __name__ == "__main__":
     args.registry = os.path.normpath(os.path.join(wd, args.registry))
     args.workspace = os.path.normpath(os.path.join(wd, args.workspace))
     args.output = os.path.normpath(os.path.join(wd, args.output))
-    main(args.registry, args.workspace, args.output, args.berlin)
+    main(args.registry, args.workspace, args.output, args.berlin, args.pretty)
