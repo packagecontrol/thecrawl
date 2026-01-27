@@ -79,6 +79,24 @@
     border-left: 4px solid var(--foreground-2);
     padding-left: 1em;
 
+    &.markdown-alert-note,
+    &.markdown-alert-tip,
+    &.markdown-alert-important,
+    &.markdown-alert-warning,
+    &.markdown-alert-caution {
+      border-left-color: hsl(29.62deg 66.08% 57.86%);
+    }
+
+    :root[data-theme='dark'] & {
+      &.markdown-alert-note,
+      &.markdown-alert-tip,
+      &.markdown-alert-important,
+      &.markdown-alert-warning,
+      &.markdown-alert-caution {
+        border-left-color: hsl(32.77deg 70.44% 55.43%);
+      }
+    }
+
     .markdown-alert-title {
       font-weight: 700;
 
