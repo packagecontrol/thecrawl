@@ -56,7 +56,7 @@
     border-radius: 6px;
     line-height: 1.4rem;
     padding: 0px 4px;
-    box-shadow: inset 0px -1px 0px var(--foreground-4);
+    box-shadow: inset 0px -1px 0px var(--background-1);
     background: var(--highlight);
   }
 
@@ -72,6 +72,18 @@
     td {
       border: 1px solid var(--background-3);
       padding: 6px 13px;
+    }
+  }
+
+  a {
+    color: hsl(31.78deg 88.74% 37.93%);
+    text-decoration-color: hsl(36.11deg 97.24% 42.55%);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    :root[data-theme='dark'] & {
+      color: hsl(32.41deg 73.83% 59.86%);
+      text-decoration-color: #d68a33;
     }
   }
 
