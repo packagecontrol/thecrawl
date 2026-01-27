@@ -76,9 +76,8 @@ jobs:
           fi
 
           # otherwise, run around 07:00 or 18:00 CET
-          TZ=Europe/Berlin
-          DATE=$(date +%Y-%m-%d)
-          HOUR=$(date +%H)
+          DATE=$(TZ=Europe/Berlin date +%Y-%m-%d)
+          HOUR=$(TZ=Europe/Berlin date +%H)
           case "$HOUR" in
             07|18) ;; 
             *)
