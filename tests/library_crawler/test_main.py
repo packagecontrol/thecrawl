@@ -131,6 +131,62 @@ async def test_record_last_crawl_and_added(monkeypatch, tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_reports_new_library_as_added(monkeypatch, tmp_path, capsys):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": [{"name": "alpha"}]})
+    output_path = tmp_path / "libraries.json"
+    args = make_args(tmp_path, repo_path, output_path)
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver([]))
+    monkeypatch.setattr(
+        crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
+    )
+
+    await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert "Added alpha." in captured.out
+    assert "Nothing new." not in captured.out
+
+
+@pytest.mark.asyncio
+async def test_reports_multiple_updated_libraries(monkeypatch, tmp_path, capsys):
+    repo_path = tmp_path / "registry.json"
+    write_json(
+        repo_path,
+        {"libraries": [{"name": "alpha"}, {"name": "beta"}]},
+    )
+    output_path = tmp_path / "libraries.json"
+    write_json(
+        output_path,
+        {
+            "libraries": {
+                "alpha": make_info("alpha", version="1.0.0")
+                | {"added": "2025-01-01T00:00:00Z", "latest_version": "1.0.0"},
+                "beta": make_info("beta", version="1.0.0")
+                | {"added": "2025-01-01T00:00:00Z", "latest_version": "1.0.0"},
+            }
+        },
+    )
+    args = make_args(tmp_path, repo_path, output_path)
+
+    monkeypatch.setattr(
+        crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
+    )
+    monkeypatch.setattr(
+        crawl_libraries,
+        "resolve_library",
+        make_resolver([], version="2.0.0"),
+    )
+
+    await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert "alpha and beta have been updated." in captured.out
+    assert "Added" not in captured.out
+
+
+@pytest.mark.asyncio
 async def test_allowed_source_filters_registry_and_reports(monkeypatch, tmp_path, capsys):
     registry_path = tmp_path / "registry.json"
     write_json(
@@ -166,7 +222,6 @@ async def test_allowed_source_filters_registry_and_reports(monkeypatch, tmp_path
     assert "Ignoring 1 libraries without a source." in captured.out
     assert "Ignoring 1 libraries from https://allowed.example" not in captured.out
     assert "Crawled 1 libraries." in captured.out
-    assert "Nothing new." in captured.out
 
 
 @pytest.mark.asyncio
@@ -454,3 +509,29 @@ async def test_name_and_explain_reject_removed_library(monkeypatch, tmp_path):
     args = make_args(tmp_path, repo_path, output_path, explain="gone")
     with pytest.raises(ValueError, match="not found"):
         await crawl_libraries.run(args)
+
+
+@pytest.mark.parametrize(
+    ("names", "expected"),
+    [
+        (["alpha"], "Added alpha."),
+        (["alpha", "beta"], "Added alpha and beta."),
+        (["alpha", "beta", "gamma"], "Added alpha, beta, and gamma."),
+        (["a", "b", "c", "d", "e"], "Added a, b, c, d, and e."),
+        (["a", "b", "c", "d", "e", "f"], "Added 6 libraries."),
+    ],
+)
+def test_format_added_message(names, expected):
+    assert crawl_libraries.format_added_message(names) == expected
+
+
+@pytest.mark.parametrize(
+    ("names", "expected"),
+    [
+        (["alpha"], "alpha has been updated."),
+        (["alpha", "beta"], "alpha and beta have been updated."),
+        (["alpha", "beta", "gamma"], "alpha, beta, and gamma have been updated."),
+    ],
+)
+def test_format_updated_message(names, expected):
+    assert crawl_libraries.format_updated_message(names) == expected

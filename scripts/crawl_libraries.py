@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
-from typing import Required, TypedDict
+from typing import Literal, Required, TypedDict
 
 import aiohttp
 from rich.console import Console
@@ -182,6 +182,7 @@ async def run(args: Args) -> int:
     registry: Registry = load_json(args.registry)  # type: ignore[assignment]
 
     timestamp = now_timestamp()
+    added_names: list[str] = []
     updated_names: list[str] = []
 
     workspace: Workspace = load_workspace(args.workspace)
@@ -270,7 +271,10 @@ async def run(args: Args) -> int:
             entry.update(info)
             mark_added(entry, timestamp)
             latest_version = latest_version_from_releases(info["releases"])
-            if mark_success(entry, timestamp, latest_version):
+            status = mark_success(entry, timestamp, latest_version)
+            if status == "added":
+                added_names.append(name)
+            elif status == "updated":
                 updated_names.append(name)
             workspace_entries[name] = entry
             source_label = ", ".join(sources) if sources else "cache"
@@ -279,7 +283,7 @@ async def run(args: Args) -> int:
 
     dump_workspace()
     print(f"Crawled {len(selected_libs)} libraries.")
-    print(format_updated_message(updated_names))
+    print(format_change_message(added_names, updated_names))
     return 0
 
 
@@ -295,6 +299,7 @@ async def handle_name(name: str, args: Args) -> int:
         return 0
 
     timestamp = now_timestamp()
+    added_names: list[str] = []
     updated_names: list[str] = []
 
     workspace: Workspace = load_workspace(args.workspace)
@@ -312,7 +317,10 @@ async def handle_name(name: str, args: Args) -> int:
         entry.update(info)
         mark_added(entry, timestamp)
         latest_version = latest_version_from_releases(info["releases"])
-        if mark_success(entry, timestamp, latest_version):
+        status = mark_success(entry, timestamp, latest_version)
+        if status == "added":
+            added_names.append(name)
+        elif status == "updated":
             updated_names.append(name)
         if args.write:
             workspace_entries[name] = entry
@@ -322,7 +330,7 @@ async def handle_name(name: str, args: Args) -> int:
         version_label = f" {latest_version}" if latest_version else ""
         print(json.dumps(entry, indent=2, ensure_ascii=False))
         print(f"Resolved {args.name}{version_label} using {source_label}.")
-        print(format_updated_message(updated_names))
+        print(format_change_message(added_names, updated_names))
         return 0
     except Exception as exc:
         if args.write:
@@ -390,7 +398,7 @@ def mark_success(
     entry: WorkspaceEntry,
     timestamp: IsoTimestamp,
     latest_version: VersionString | None
-) -> bool:
+) -> Literal["added", "updated"] | None:
     entry["last_crawl"] = timestamp
     entry.pop("failing_since", None)
     entry.pop("fail_reason", None)
@@ -406,7 +414,12 @@ def mark_success(
     ):
         entry["last_update"] = f"{previous_version} -> {latest_version}"
         entry["last_update_at"] = timestamp
-    return updated
+
+    if not previous_version:
+        return "added"
+    if updated:
+        return "updated"
+    return None
 
 
 def mark_removed(entry: WorkspaceEntry, timestamp: IsoTimestamp) -> None:
@@ -426,14 +439,38 @@ def find_library(registry: Registry, name: str) -> RegistryEntry | None:
     return None
 
 
-def format_updated_message(names: list[str]) -> str:
-    if not names:
+def format_change_message(
+    added_names: list[str],
+    updated_names: list[str]
+) -> str:
+    parts: list[str] = []
+    if added_names:
+        parts.append(format_added_message(added_names))
+    if updated_names:
+        parts.append(format_updated_message(updated_names))
+    if not parts:
         return "Nothing new."
+    return "\n".join(parts)
+
+
+def format_added_message(names: list[str]) -> str:
+    if len(names) > 5:
+        return f"Added {len(names)} libraries."
+    return f"Added {format_name_list(names)}."
+
+
+def format_updated_message(names: list[str]) -> str:
     if len(names) == 1:
         return f"{names[0]} has been updated."
+    return f"{format_name_list(names)} have been updated."
+
+
+def format_name_list(names: list[str]) -> str:
+    if len(names) == 1:
+        return names[0]
     if len(names) == 2:
-        return f"{names[0]} and {names[1]} have been updated."
-    return f"{', '.join(names[:-1])}, and {names[-1]} have been updated."
+        return f"{names[0]} and {names[1]}"
+    return f"{', '.join(names[:-1])}, and {names[-1]}"
 
 
 if __name__ == "__main__":
