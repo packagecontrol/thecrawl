@@ -22,7 +22,7 @@ from .github import (
     RepoInfo,
     RepoMetadata,
 )
-from ._utils import drop_falsy, flatten, pipe
+from ._utils import drop_falsy, flatten, pipe, unique_values_preserving_order
 
 
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
@@ -542,9 +542,9 @@ def combine_releases(releases: list[Release]) -> list[dict]:
         platform_list = sorted(platforms)
         if platforms == set(SUPPORTED_PLATFORMS):
             platform_list = ["*"]
-        python_versions = {
+        python_versions = unique_values_preserving_order(
             p for entry in entries for p in entry.get("python_versions", [])
-        }
+        )
 
         merged: dict = {}
         for entry in entries:

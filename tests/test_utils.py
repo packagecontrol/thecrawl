@@ -1,5 +1,11 @@
 import pytest
-from scripts._utils import parse_version, VersionInfo, is_semver, normalize_tz_aware_datetime
+from scripts._utils import (
+    parse_version,
+    VersionInfo,
+    is_semver,
+    normalize_tz_aware_datetime,
+    unique_values_preserving_order,
+)
 
 
 @pytest.mark.parametrize("input_str,expected", [
@@ -80,3 +86,21 @@ def test_version_is_a_prerelease(input_str, expected):
 )
 def test_normalize_tz_aware_datetime(value, expected):
     assert normalize_tz_aware_datetime(value) == expected
+
+
+@pytest.mark.parametrize(
+    ("values", "expected"),
+    [
+        ([], []),
+        (["3.3", "3.8", "3.3", "3.13"], ["3.3", "3.8", "3.13"]),
+        ([1, 2, 1, 3, 2], [1, 2, 3]),
+        (["a", "b", "c"], ["a", "b", "c"]),
+    ],
+)
+def test_unique_values_preserving_order(values, expected):
+    assert unique_values_preserving_order(values) == expected
+
+
+def test_unique_values_preserving_order_iterable():
+    values = (value for value in ["a", "b", "a", "c"])
+    assert unique_values_preserving_order(values) == ["a", "b", "c"]

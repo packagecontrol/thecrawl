@@ -21,6 +21,10 @@ def flatten[T](list_of_lists: Iterable[Iterable[T]]) -> Iterable[T]:
     return chain.from_iterable(list_of_lists)
 
 
+def unique_values_preserving_order[T](values: Iterable[T]) -> list[T]:
+    return list(dict.fromkeys(values))
+
+
 def pipe(v, *fns):
     for fn in fns:
         v = fn(v)
