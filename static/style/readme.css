@@ -74,4 +74,25 @@
       padding: 6px 13px;
     }
   }
+
+  .markdown-alert {
+    border-left: 3px solid var(--orange-1);
+    padding-left: 1em;
+
+/*    &.markdown-alert-note,*/
+/*    &.markdown-alert-tip,*/
+/*    &.markdown-alert-important,*/
+    &.markdown-alert-warning,
+    &.markdown-alert-caution {
+      border-left: 3px solid var(--red-1);
+    }
+
+    .markdown-alert-title {
+      font-weight: 700;
+
+      &:after {
+        content: ':';
+      }
+    }
+  }
 }
