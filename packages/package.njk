@@ -156,6 +156,29 @@ isPackagePage: true
 {% if pkg.readme and not pkg.removed %}
   <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
   <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="main-content"></section>
+  <script>
+    (() => {
+      const target = document.getElementById('md')
+      if (!target) return
+
+      const source = target.dataset.readmeUrl
+      if (!source) return
+
+      const cacheKey = 'md:' + source
+      try {
+        const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')
+        if (!cached) return
+
+        const now = Math.floor(Date.now() / 1000)
+        const ttl = 60 * 60
+        if ((now - cached.time) < ttl) {
+          target.innerHTML = cached.html
+        }
+      } catch {
+        // Ignore cache parse failures.
+      }
+    })()
+  </script>
   <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
 {% endif %}
 
