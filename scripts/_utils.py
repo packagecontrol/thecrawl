@@ -1,6 +1,8 @@
 from __future__ import annotations
 from itertools import chain
 import hashlib
+import json
+import os
 import re
 import sys
 from urllib.parse import urljoin
@@ -13,6 +15,20 @@ import inflect
 
 def err(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
+
+
+def write_json(
+    path: str | os.PathLike[str],
+    data,
+    *,
+    pretty: bool = False,
+    ensure_ascii: bool = False
+) -> None:
+    with open(os.fspath(path), "w", encoding="utf-8") as f:
+        if pretty:
+            json.dump(data, f, indent=2, ensure_ascii=ensure_ascii)
+        else:
+            json.dump(data, f, separators=(",", ":"), ensure_ascii=ensure_ascii)
 
 
 # FUNC UTILS

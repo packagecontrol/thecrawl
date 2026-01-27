@@ -22,7 +22,7 @@ from .github import (
     RepoInfo,
     RepoMetadata,
 )
-from ._utils import drop_falsy, flatten, pipe, unique_values_preserving_order
+from ._utils import drop_falsy, flatten, pipe, unique_values_preserving_order, write_json
 
 
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
@@ -614,7 +614,7 @@ async def _fetch_pypi_json(
                 entry = meta.get(name, {})
                 entry["fetched_at"] = now
                 meta[name] = entry
-                dump_json(meta_path, meta)
+                write_json(meta_path, meta, pretty=True, ensure_ascii=True)
             return load_json(cache_path), "cache-304"
         resp.raise_for_status()
         text = await resp.text()
@@ -628,7 +628,7 @@ async def _fetch_pypi_json(
                 "last_modified": resp.headers.get("Last-Modified"),
                 "fetched_at": now,
             }
-            dump_json(meta_path, meta)
+            write_json(meta_path, meta, pretty=True, ensure_ascii=True)
         return data, "network"
 
 
@@ -883,10 +883,3 @@ def is_final_version(version: Version) -> bool:
 def load_json(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
-
-
-def dump_json(path: Path, data: dict, *, sort_keys: bool = False) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, indent=2, ensure_ascii=True, sort_keys=sort_keys)
-        handle.write("\n")

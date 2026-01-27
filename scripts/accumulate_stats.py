@@ -8,6 +8,8 @@ from datetime import date, timedelta
 from itertools import count, takewhile
 from urllib.request import Request, urlopen
 
+from ._utils import write_json
+
 DEFAULT_OUTPUT_FILE = "stats.json"
 DEFAULT_URL = "https://stats.sublimetext.io/all-totals"
 DEFAULT_RESTORE_DIR = "./restore-stats"
@@ -101,8 +103,8 @@ def main():
             accumulate(
                 delta, container, "yearly", len(output_data["__yearly_dates"]), rollovers["yearly"])
 
-    save_json(args.output, output_data, pretty=args.pretty)
-    save_json(prev_path, current_totals)
+    write_json(args.output, output_data, pretty=args.pretty, ensure_ascii=True)
+    write_json(prev_path, current_totals, ensure_ascii=True)
 
 
 def accumulate(value: int, container: dict, key: str, wanted_length: int, rollovers: int):
@@ -166,14 +168,6 @@ def load_json(path: str) -> dict | None:
             return json.load(f)
     except FileNotFoundError:
         return None
-
-
-def save_json(path: str, data: dict, pretty: bool = False):
-    with open(path, "w", encoding="utf-8") as f:
-        if pretty:
-            json.dump(data, f, indent=2, ensure_ascii=True)
-        else:
-            json.dump(data, f, separators=(",", ":"), ensure_ascii=True)
 
 
 def parse_args():

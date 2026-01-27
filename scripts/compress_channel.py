@@ -8,7 +8,7 @@ import json
 import os
 import sys
 
-from ._utils import pl
+from ._utils import pl, write_json
 
 
 NEW_CHANNEL = (
@@ -93,11 +93,7 @@ async def main(
                 if key == "packages_cache":
                     p["last_modified"] = max((r["date"] for r in releases))
 
-    with open(output_file, "w") as f:
-        if pretty:
-            json.dump(channel, f, indent=2, ensure_ascii=True)
-        else:
-            json.dump(channel, f, separators=(',', ':'), ensure_ascii=True)
+    write_json(output_file, channel, pretty=pretty, ensure_ascii=True)
 
     repository_count = len(channel["repositories"])
     package_count = sum(len(pkgs) for pkgs in channel["packages_cache"].values())

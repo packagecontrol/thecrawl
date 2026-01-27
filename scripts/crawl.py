@@ -26,7 +26,7 @@ from ._resolve_lib import (
     normalize_st_build,
     normalize_version_spec,
 )
-from ._utils import next_run, parse_version, resolve_url, update_url
+from ._utils import next_run, parse_version, resolve_url, update_url, write_json
 import traceback
 
 
@@ -115,8 +115,7 @@ async def main(
     try:
         await main_(registry_data, workspace_data, name, limit, presto)
     finally:
-        with open(workspace, 'w') as ws_file:
-            json.dump(workspace_data, ws_file, indent=2, ensure_ascii=True)
+        write_json(workspace, workspace_data, pretty=True, ensure_ascii=True)
 
 
 async def main_(

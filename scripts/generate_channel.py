@@ -8,7 +8,7 @@ import sys
 import os
 from typing import TypedDict, Literal, NotRequired
 
-from ._utils import pick, pl
+from ._utils import pick, pl, write_json
 
 type RepositoryUrl = str
 type Platform = Literal["*", "windows", "osx", "linux"]
@@ -188,11 +188,7 @@ def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool
     ]
 
     # Write channel.json
-    with open(channel_path, "w", encoding="utf-8") as f:
-        if pretty:
-            json.dump(channel, f, indent=2, ensure_ascii=False)
-        else:
-            json.dump(channel, f, separators=(",", ":"), ensure_ascii=False)
+    write_json(channel_path, channel, pretty=pretty, ensure_ascii=False)
 
     source_count = len(packages_by_source) + len(libraries_by_source)
     package_count = sum(len(pkgs) for pkgs in packages_by_source.values())
