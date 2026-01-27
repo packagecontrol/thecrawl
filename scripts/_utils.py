@@ -8,6 +8,8 @@ from urllib.parse import urljoin
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Iterable, Iterator, Mapping, NamedTuple, Optional, overload
 
+import inflect
+
 
 def err(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
@@ -23,6 +25,20 @@ def flatten[T](list_of_lists: Iterable[Iterable[T]]) -> Iterable[T]:
 
 def unique_values_preserving_order[T](values: Iterable[T]) -> list[T]:
     return list(dict.fromkeys(values))
+
+
+_INFLECT = inflect.engine()
+
+
+def pl(count: int, word: str) -> str:
+    match word:
+        case "are":
+            singular = "is"
+        case "have":
+            singular = "has"
+        case _:
+            singular = _INFLECT.singular_noun(word) or word
+    return f"{count} {_INFLECT.plural(singular, count)}"
 
 
 def pipe(v, *fns):

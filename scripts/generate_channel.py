@@ -8,7 +8,7 @@ import sys
 import os
 from typing import TypedDict, Literal, NotRequired
 
-from ._utils import pick
+from ._utils import pick, pl
 
 type RepositoryUrl = str
 type Platform = Literal["*", "windows", "osx", "linux"]
@@ -153,19 +153,23 @@ def main(registry_path, workspace_path, channel_path, berlin: bool):
     # Write channel.json
     with open(channel_path, "w", encoding="utf-8") as f:
         json.dump(channel, f, indent=2, ensure_ascii=False)
+
+    source_count = len(packages_by_source) + len(libraries_by_source)
+    package_count = sum(len(pkgs) for pkgs in packages_by_source.values())
+    library_count = sum(len(libs) for libs in libraries_by_source.values())
     print(f"Wrote {channel_path}")
     print(
-        f"Collated {len(packages_by_source) + len(libraries_by_source)} sources with "
-        f"{sum(len(pkgs) for pkgs in packages_by_source.values())} packages and "
-        f"{sum(len(libs) for libs in libraries_by_source.values())} libraries."
+        f"Collated {pl(source_count, 'sources')} with "
+        f"{pl(package_count, 'packages')} and "
+        f"{pl(library_count, 'libraries')}."
     )
     print(
-        f"Dropped {drop_count_pkg} incomplete packages.  "
-        f"{removed_count_pkg} are currently tombstoned."
+        f"Dropped {pl(drop_count_pkg, 'incomplete packages')}.  "
+        f"{pl(removed_count_pkg, 'are')} currently tombstoned."
     )
     print(
-        f"Dropped {drop_count_lib} incomplete libraries.  "
-        f"{removed_count_lib} are currently tombstoned."
+        f"Dropped {pl(drop_count_lib, 'incomplete libraries')}.  "
+        f"{pl(removed_count_pkg, 'are')} currently tombstoned."
     )
     # Extract failing packages for reporting
     if failing := [

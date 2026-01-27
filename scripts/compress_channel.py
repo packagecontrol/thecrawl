@@ -8,6 +8,8 @@ import json
 import os
 import sys
 
+from ._utils import pl
+
 
 NEW_CHANNEL = (
     "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/channel.json"
@@ -67,15 +69,18 @@ async def main(
         else:
             json.dump(channel, f, separators=(',', ':'), ensure_ascii=True)
 
+    repository_count = len(channel["repositories"])
+    package_count = sum(len(pkgs) for pkgs in channel["packages_cache"].values())
+    library_count = sum(len(pkgs) for pkgs in channel["libraries_cache"].values())
     print(f"Wrote {output_file}")
     print(
-        f"Collated {len(channel['repositories'])} repositories with "
-        f"{sum(len(pkgs) for pkgs in channel['packages_cache'].values())} packages "
-        f"and {sum(len(pkgs) for pkgs in channel['libraries_cache'].values())} libraries."
+        f"Collated {pl(repository_count, 'repositories')} with "
+        f"{pl(package_count, 'packages')} and "
+        f"{pl(library_count, 'libraries')}."
     )
     print(
-        f"Dropped {drop_count['packages_cache']} outdated packages "
-        f"and {drop_count['libraries_cache']} outdated libraries."
+        f"Dropped {pl(drop_count['packages_cache'], 'outdated packages')} "
+        f"and {pl(drop_count['libraries_cache'], 'outdated libraries')}."
     )
 
     # print the ten most recent packages
