@@ -158,7 +158,7 @@ async def main_(
     print("---")
     print(
         f"{pl(len(workspace['packages'].keys()), 'packages')} "
-        f"and {pl(len(workspace.get('libraries', {}).keys()), 'libraries')}"
+        f"and {pl(len(workspace.get('libraries', {}).keys()), 'libraries')} "
         f"in db."
     )
 
