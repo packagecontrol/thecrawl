@@ -25,12 +25,23 @@ handles all the python shenanigans related to virtual environments, dependencies
 python versions.
 
 It is assumed that your working dir is the root of the project.  Invoke all scripts using
-dot notation.
+dot notation.  A typical rundown up to a channel.json ready for consumption by Sublime Text
+is:
 
 ```bash
 $ uv run -m scripts.generate_registry
 $ uv run -m scripts.crawl
+$ uv run -m scripts.crawl_libraries
 $ uv run -m scripts.generate_channel
+```
+
+Note however, that packages and libraries are currently on different registries. To tell
+`generate_registry` invoke it rather like
+
+```bash
+$ uv run -m scripts.generate_registry \
+  --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json \
+  --channel https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/channel.json
 ```
 
 For `crawl`, a GITHUB_TOKEN environment variable is *required*.  GitLab and Bitbucket
@@ -83,11 +94,13 @@ $ uv run -m scripts.crawl --name GitSavvy
 
 ### 3. `generate_channel.py`
 
-Writes the valid packages into a final `channel.json` suitable for use in Sublime Text Package Control.
+Writes the valid packages and libraries into a final `channel.json` suitable for use in
+Sublime Text Package Control.
 
-- Reads the registry and workspace, validates/collates package entries.
-- Drops packages with no valid releases or required fields.
-- Outputs a `channel.json` with all valid packages grouped by repository.
+- Reads the registry and workspace, validates/collates package and library entries.
+- Drops entries with no valid releases or required fields.
+- Outputs a `channel.json` with valid items grouped by repository into `packages_cache`
+  and `libraries_cache`.
 
 ```bash
 $ uv run -m scripts.generate_channel
@@ -98,12 +111,19 @@ Use `--berlin` to format relative "since" timestamps in Europe/Berlin instead of
 
 ---
 
-### 4. `collate_channel.py`
+### 4. `compress_channel.py`
 
-Reads the channel from step 3, and collates libraries from https://github.com/packagecontrol/channel. 
-Finally produces compressed output for either 
-[st4](https://github.com/packagecontrol/thecrawl/releases/tag/the-channel) or 
-[st3](https://github.com/packagecontrol/thecrawl/releases/tag/the-st3-channel) only.   
+Reads the channel from step 3 and produces a compressed output suitable for either
+[st4](https://github.com/packagecontrol/thecrawl/releases/tag/the-channel) or
+[st3](https://github.com/packagecontrol/thecrawl/releases/tag/the-st3-channel).
+
+```bash
+$ uv run -m scripts.compress_channel
+$ uv run -m scripts.compress_channel --pretty
+$ uv run -m scripts.compress_channel --legacy
+```
+
+Use `--pretty` at home and `--legacy` to emit a Sublime Text 3 channel.
 
 ---
 

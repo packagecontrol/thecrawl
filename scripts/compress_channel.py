@@ -8,33 +8,60 @@ import json
 import os
 import sys
 
+from ._utils import pl, write_json
+
 
 NEW_CHANNEL = (
-    "https://github.com/packagecontrol/thecrawl/releases/download"
-    "/crawler-status/channel.json"
+    "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/channel.json"
 )
-v4_CHANNEL = "https://packagecontrol.github.io/channel/channel_v4.json"
 DEFAULT_OUTPUT_FILE = "./channel.json"
 
 type Release = dict
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Collate Package Control channels")
+    parser.add_argument(
+        "--channel",
+        "-i",
+        type=str,
+        default=NEW_CHANNEL,
+        help=f"Input channel URL or path (default: {NEW_CHANNEL})"
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=DEFAULT_OUTPUT_FILE,
+        help=f"Path to the output file (default: {DEFAULT_OUTPUT_FILE})"
+    )
+    parser.add_argument(
+        "--pretty",
+        action="store_true",
+        help="Pretty-print the output JSON with indent=2"
+    )
+    parser.add_argument(
+        "--legacy",
+        action="store_true",
+        help="Make a legacy channel, suitable for Sublime Text 3"
+    )
+    return parser.parse_args()
 
 
 async def main(
     output_file: str = DEFAULT_OUTPUT_FILE,
     pretty: bool = False,
     legacy: bool = False,
+    in_channel: str = NEW_CHANNEL,
 ) -> None:
     async with aiohttp.ClientSession() as session:
-        new_channel, v4_channel = await asyncio.gather(
-            http_get_json(NEW_CHANNEL, session),
-            http_get_json(v4_CHANNEL, session),
-        )
+        new_channel = await load_channel(in_channel, session)
 
     channel = {
         "schema_version": "4.0.0",
-        "repositories": v4_channel["repositories"] + new_channel["repositories"],
+        "repositories": new_channel["repositories"],
         "packages_cache": new_channel["packages_cache"],
-        "libraries_cache": v4_channel["libraries_cache"],
+        "libraries_cache": new_channel["libraries_cache"],
     }
 
     for repo_url, packages in channel["libraries_cache"].items():
@@ -66,21 +93,20 @@ async def main(
                 if key == "packages_cache":
                     p["last_modified"] = max((r["date"] for r in releases))
 
-    with open(output_file, "w") as f:
-        if pretty:
-            json.dump(channel, f, indent=2, ensure_ascii=True)
-        else:
-            json.dump(channel, f, separators=(',', ':'), ensure_ascii=True)
+    write_json(output_file, channel, pretty=pretty, ensure_ascii=True)
 
+    repository_count = len(channel["repositories"])
+    package_count = sum(len(pkgs) for pkgs in channel["packages_cache"].values())
+    library_count = sum(len(pkgs) for pkgs in channel["libraries_cache"].values())
     print(f"Wrote {output_file}")
     print(
-        f"Collated {len(channel['repositories'])} repositories with "
-        f"{sum(len(pkgs) for pkgs in channel['packages_cache'].values())} packages "
-        f"and {sum(len(pkgs) for pkgs in channel['libraries_cache'].values())} libraries."
+        f"Collated {pl(repository_count, 'repositories')} with "
+        f"{pl(package_count, 'packages')} and "
+        f"{pl(library_count, 'libraries')}."
     )
     print(
-        f"Dropped {drop_count['packages_cache']} outdated packages "
-        f"and {drop_count['libraries_cache']} outdated libraries."
+        f"Dropped {pl(drop_count['packages_cache'], 'outdated packages')} "
+        f"and {pl(drop_count['libraries_cache'], 'outdated libraries')}."
     )
 
     # print the ten most recent packages
@@ -111,6 +137,15 @@ def err(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
 
 
+async def load_channel(location: str, session: aiohttp.ClientSession) -> dict:
+    if location.startswith(("http://", "https://")):
+        return await http_get_json(location, session)
+
+    path = os.path.abspath(os.path.expanduser(location))
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 async def http_get_json(location: str, session: aiohttp.ClientSession) -> dict:
     text = await http_get(location, session)
     return json.loads(text)
@@ -126,29 +161,14 @@ async def http_get(location: str, session: aiohttp.ClientSession) -> str:
         return await resp.text()
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Collate Package Control channels")
-    parser.add_argument(
-        "--output",
-        "-o",
-        type=str,
-        default=DEFAULT_OUTPUT_FILE,
-        help=f"Path to the output file (default: {DEFAULT_OUTPUT_FILE})"
-    )
-    parser.add_argument(
-        "--pretty",
-        action="store_true",
-        help="Pretty-print the output JSON with indent=2"
-    )
-    parser.add_argument(
-        "--legacy",
-        action="store_true",
-        help="Make a legacy channel, suitable for Sublime Text 3"
-    )
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
     args = parse_args()
     args.output = os.path.abspath(args.output)
-    asyncio.run(main(args.output, pretty=args.pretty, legacy=args.legacy))
+    asyncio.run(
+        main(
+            args.output,
+            pretty=args.pretty,
+            legacy=args.legacy,
+            in_channel=args.channel
+        )
+    )

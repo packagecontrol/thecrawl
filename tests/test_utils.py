@@ -5,6 +5,7 @@ from scripts._utils import (
     is_semver,
     normalize_tz_aware_datetime,
     unique_values_preserving_order,
+    pl,
 )
 
 
@@ -104,3 +105,28 @@ def test_unique_values_preserving_order(values, expected):
 def test_unique_values_preserving_order_iterable():
     values = (value for value in ["a", "b", "a", "c"])
     assert unique_values_preserving_order(values) == ["a", "b", "c"]
+
+
+@pytest.mark.parametrize(
+    ("count", "word", "expected"),
+    [
+        (0, "packages", "0 packages"),
+        (1, "packages", "1 package"),
+        (2, "packages", "2 packages"),
+        (2, "libraries", "2 libraries"),
+        (2, "keys", "2 keys"),
+        (1, "boxes", "1 box"),
+        (1, "wishes", "1 wish"),
+        (1, "buses", "1 bus"),
+        (2, "outdated packages", "2 outdated packages"),
+        (1, "outdated packages", "1 outdated package"),
+        #
+        (0, "are", "0 are"),
+        (1, "are", "1 is"),
+        #
+        (0, "have", "0 have"),
+        (1, "have", "1 has"),
+    ],
+)
+def test_pl(count, word, expected):
+    assert pl(count, word) == expected

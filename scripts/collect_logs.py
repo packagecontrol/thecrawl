@@ -9,6 +9,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from ._utils import write_json
+
 DEFAULT_OUTPUT = "logs.json"
 HISTORY_DAYS = 32
 
@@ -116,7 +118,7 @@ def update_logs(args: Args):
         if datetime.fromisoformat(entry["date"]) >= cutoff
     ]
 
-    save_logs(output_path, kept_entries, pretty=args.pretty)
+    write_json(output_path, kept_entries, pretty=args.pretty, ensure_ascii=True)
 
 
 def now_utc() -> datetime:
@@ -135,14 +137,6 @@ def load_logs(path: Path) -> list[dict[str, Any]]:
         return json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return []
-
-
-def save_logs(path: Path, entries: list[dict[str, Any]], *, pretty: bool = False):
-    with path.open("w", encoding="utf-8") as handle:
-        if pretty:
-            json.dump(entries, handle, indent=2, ensure_ascii=True)
-        else:
-            json.dump(entries, handle, separators=(",", ":"), ensure_ascii=True)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,14 @@
 import argparse
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
+from itertools import chain
 from zoneinfo import ZoneInfo
 import json
 import sys
 import os
-from typing import TypedDict, Literal
+from typing import TypedDict, Literal, NotRequired
 
+from ._utils import pick, pl, write_json
 
 type RepositoryUrl = str
 type Platform = Literal["*", "windows", "osx", "linux"]
@@ -39,10 +41,30 @@ class Package(TypedDict, total=False):
     buy: Url | None
 
 
+class LibRelease(TypedDict):
+    sublime_text: BuildDescriptor
+    platforms: list[str]
+    python_versions: list[str]
+    version: Version
+    url: Url
+    date: IsoTimestamp
+    sha256: NotRequired[str]
+
+
+class Library(TypedDict):
+    name: str
+    releases: list[LibRelease]
+    author: NotRequired[str]
+    homepage: NotRequired[str]
+    description: NotRequired[str]
+    issues: NotRequired[Url]
+
+
 class Channel(TypedDict, total=False):
     schema_version: str
     repositories: list[RepositoryUrl]
     packages_cache: dict[RepositoryUrl, list[Package]]
+    libraries_cache: dict[RepositoryUrl, list[Library]]
 
 
 DEFAULT_REGISTRY = "./registry.json"
@@ -53,10 +75,47 @@ DEFAULT_CHANNEL = "./channel.json"
 # This step filters out removed/fatal/invalid packages and normalizes releases for channel.json.
 # A package is minimally defined with: name, author, last_modified, releases.
 # At least one release is required with the info: sublime_text, platforms, version, url, date.
-# Targeted ST3/ST4 filtering happens later in collate_channel.py.
+# Targeted ST3/ST4 filtering happens later in compress_channel.py.
 
 
-def main(registry_path, workspace_path, channel_path, berlin: bool):
+def parse_args():
+    parser = argparse.ArgumentParser(description="Generate channel from workspace and registry.")
+    parser.add_argument(
+        "--registry",
+        type=str,
+        default=DEFAULT_REGISTRY,
+        help=f"Path to the registry JSON file (default: {DEFAULT_REGISTRY})")
+    parser.add_argument(
+        "--workspace",
+        type=str,
+        default=DEFAULT_WORKSPACE,
+        help=f"Path to the workspace JSON file (default: {DEFAULT_WORKSPACE})")
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=DEFAULT_CHANNEL,
+        help=f"Path to the output channel JSON file (default: {DEFAULT_CHANNEL})")
+    parser.add_argument(
+        "--wd",
+        type=str,
+        default=".",
+        help="Working directory to resolve file paths (default: .)"
+    )
+    parser.add_argument(
+        "--berlin",
+        action="store_true",
+        help="Format relative times in Europe/Berlin (default: UTC)"
+    )
+    parser.add_argument(
+        "--pretty",
+        action="store_true",
+        help="Pretty-print channel JSON output"
+    )
+    return parser.parse_args()
+
+
+def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool):
     # Load registry
     try:
         with open(registry_path, "r", encoding="utf-8") as f:
@@ -78,59 +137,88 @@ def main(registry_path, workspace_path, channel_path, berlin: bool):
         "schema_version": "4.0.0",
         "repositories": [],
         "packages_cache": {},
+        "libraries_cache": {},
     }
 
     # Group packages by source
     packages_by_source: defaultdict[RepositoryUrl, list[Package]] = defaultdict(list)
-    drop_count = 0
-    removed_count = 0
+    drop_count_pkg = 0
+    removed_count_pkg = 0
     for pkg in workspace.get("packages", {}).values():
         if pkg.get("removed"):
-            removed_count += 1
+            removed_count_pkg += 1
             continue
         if pkg.get("fail_reason", "").startswith("fatal: "):
-            removed_count += 1
+            removed_count_pkg += 1
             continue
-        norm = normalize_package(pkg)
-        if not norm:
-            drop_count += 1
+        norm_pkg = normalize_package(pkg)
+        if not norm_pkg:
+            drop_count_pkg += 1
             continue
         source: Url = pkg["source"]
-        packages_by_source[source].append(norm)
+        packages_by_source[source].append(norm_pkg)
+
+    libraries_by_source: defaultdict[RepositoryUrl, list[Library]] = defaultdict(list)
+    drop_count_lib = 0
+    removed_count_lib = 0
+    for lib in workspace.get("libraries", {}).values():
+        if lib.get("removed"):
+            removed_count_lib += 1
+            continue
+        norm_lib = normalize_library(lib)
+        if not norm_lib:
+            drop_count_lib += 1
+            continue
+        source = lib["source"]
+        libraries_by_source[source].append(norm_lib)
 
     # Sort packages in each source by name
     for source, pkgs in packages_by_source.items():
         pkgs_sorted = sorted(pkgs, key=lambda p: p.get("name", ""))
         channel["packages_cache"][source] = pkgs_sorted
+    for source, libs in libraries_by_source.items():
+        libs_sorted = sorted(libs, key=lambda p: p.get("name", ""))
+        channel["libraries_cache"][source] = libs_sorted
 
     # Add repositories to channel in order of appearance in the registry
     channel["repositories"] = [
         r
         for r in registry.get("repositories", [])
-        if r in packages_by_source
+        if r in packages_by_source or r in libraries_by_source
     ]
 
     # Write channel.json
-    with open(channel_path, "w", encoding="utf-8") as f:
-        json.dump(channel, f, indent=2, ensure_ascii=False)
+    write_json(channel_path, channel, pretty=pretty, ensure_ascii=False)
+
+    source_count = len(packages_by_source) + len(libraries_by_source)
+    package_count = sum(len(pkgs) for pkgs in packages_by_source.values())
+    library_count = sum(len(libs) for libs in libraries_by_source.values())
     print(f"Wrote {channel_path}")
     print(
-        f"Collated {len(packages_by_source)} sources with "
-        f"{sum(len(pkgs) for pkgs in packages_by_source.values())} packages."
+        f"Collated {pl(source_count, 'sources')} with "
+        f"{pl(package_count, 'packages')} and "
+        f"{pl(library_count, 'libraries')}."
     )
     print(
-        f"Dropped {drop_count} incomplete packages.  "
-        f"{removed_count} are currently tombstoned."
+        f"Dropped {pl(drop_count_pkg, 'incomplete packages')}.  "
+        f"{pl(removed_count_pkg, 'are')} currently tombstoned."
+    )
+    print(
+        f"Dropped {pl(drop_count_lib, 'incomplete libraries')}.  "
+        f"{pl(removed_count_pkg, 'are')} currently tombstoned."
     )
     # Extract failing packages for reporting
-    if failing_packages := [
-        pkg for pkg in workspace.get("packages", {}).values()
+    if failing := [
+        pkg for pkg in chain(
+            workspace.get("packages", {}).values(),
+            workspace.get("libraries", {}).values()
+        )
         if pkg.get("failing_since") and not pkg.get("removed")
     ]:
         failing_info = "\n".join(
             f"- **{pkg['name']}** [{failing_since(pkg, berlin)}]\n"
             f"    {pkg['fail_reason'].strip().replace('\n', '\n    ')}"
-            for pkg in sorted(failing_packages, key=lambda p: p['name'].lower())
+            for pkg in sorted(failing, key=lambda p: p['name'].lower())
         )
         print(f"\n#### Currently failing\n{failing_info}")
 
@@ -204,6 +292,47 @@ def normalize_package(pkg) -> Package | None:
     return out
 
 
+def normalize_library(lib) -> Library | None:
+    name = lib.get("name")
+    if not name:
+        err(f"Drop library with no name: {lib}")
+        return None
+
+    releases: list[LibRelease] = []
+    for rel in lib.get("releases", []):
+        required_lib_rel_fields = (
+            "sublime_text",
+            "platforms",
+            "python_versions",
+            "version",
+            "url",
+            "date"
+        )
+        if not all(k in rel and rel[k] for k in required_lib_rel_fields):
+            continue
+
+        r: LibRelease = pick(required_lib_rel_fields + ("sha256",), rel)  # type: ignore[assignment]
+        r["date"] = format_utc_datetime(r["date"])
+        releases.append(r)
+
+    if not releases:
+        err(f"Drop library {name} with no valid releases")
+        return None
+
+    required_main_fields = ("name", "releases")
+    for field in required_main_fields:
+        if field not in lib or not lib[field]:
+            err(f"Drop library {name} with missing field '{field}'")
+            return None
+
+    out: Library = pick(  # type: ignore[assignment]
+        ("name", "author", "description", "homepage", "issues"),
+        lib
+    )
+    out["releases"] = releases
+    return out
+
+
 def format_utc_datetime(value: str) -> str:
     if "T" not in value:
         return value
@@ -251,38 +380,6 @@ def err(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Generate channel from workspace and registry.")
-    parser.add_argument(
-        "--registry",
-        type=str,
-        default=DEFAULT_REGISTRY,
-        help=f"Path to the registry JSON file (default: {DEFAULT_REGISTRY})")
-    parser.add_argument(
-        "--workspace",
-        type=str,
-        default=DEFAULT_WORKSPACE,
-        help=f"Path to the workspace JSON file (default: {DEFAULT_WORKSPACE})")
-    parser.add_argument(
-        "--output",
-        "-o",
-        type=str,
-        default=DEFAULT_CHANNEL,
-        help=f"Path to the output channel JSON file (default: {DEFAULT_CHANNEL})")
-    parser.add_argument(
-        "--wd",
-        type=str,
-        default=".",
-        help="Working directory to resolve file paths (default: .)"
-    )
-    parser.add_argument(
-        "--berlin",
-        action="store_true",
-        help="Format relative times in Europe/Berlin (default: UTC)"
-    )
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
     args = parse_args()
     wd = os.path.abspath(args.wd)
@@ -290,4 +387,4 @@ if __name__ == "__main__":
     args.registry = os.path.normpath(os.path.join(wd, args.registry))
     args.workspace = os.path.normpath(os.path.join(wd, args.workspace))
     args.output = os.path.normpath(os.path.join(wd, args.output))
-    main(args.registry, args.workspace, args.output, args.berlin)
+    main(args.registry, args.workspace, args.output, args.berlin, args.pretty)

@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ._utils import write_json
+
 
 @dataclass
 class Args:
@@ -101,7 +103,7 @@ def update_logs(args: Args):
         created += 1
 
     entries.sort(key=lambda entry: entry.get("date", ""), reverse=True)
-    save_json(Path(args.output), entries, pretty=args.pretty)
+    write_json(args.output, entries, pretty=args.pretty, ensure_ascii=True)
     print(f"Enriched entries: {enriched}, added missing runs: {created}")
 
 
@@ -110,14 +112,6 @@ def load_json(path: Path) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return None
-
-
-def save_json(path: Path, data: Any, *, pretty: bool):
-    with path.open("w", encoding="utf-8") as handle:
-        if pretty:
-            json.dump(data, handle, indent=2, ensure_ascii=True)
-        else:
-            json.dump(data, handle, separators=(",", ":"), ensure_ascii=True)
 
 
 if __name__ == "__main__":

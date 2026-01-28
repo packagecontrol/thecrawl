@@ -36,11 +36,12 @@ Fields:
 - `name` (string, required): Library identifier used by Package Control.
 - `description` (string, optional): Short human-readable description.
 - `author` (string, optional): Library author/maintainer.
+- `homepage` (string, optional): URL of the homepage of the project.
 - `issues` (string, optional): Issue tracker URL.
 - `releases` (list, required): One or more release definitions (see below).
 
-If `description`, `author`, or `issues` are missing, they are resolved from
-Pypi or GitHub metadata, whereby Pypi is preferred.
+If `description`, `author`, `homepage`, or `issues` are missing, they are resolved
+from Pypi or GitHub metadata, whereby Pypi is preferred.
 
 ## Release definitions
 
@@ -200,7 +201,6 @@ Common fields:
 
 - `asset` (string or list, optional): Asset glob(s) to match.
    default: generated for Pypi; required for GitHub unless `tags` is provided.
-
 
 - `tags` (bool or string, GitHub-only): Use tags and optionally a prefix filter.
 

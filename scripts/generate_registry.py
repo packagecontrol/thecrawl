@@ -11,7 +11,7 @@ import time
 from urllib.parse import urlparse
 from typing import Callable, Iterable, Mapping, NotRequired, TypedDict
 
-from ._utils import flatten, resolve_urls, update_url
+from ._utils import flatten, resolve_urls, update_url, write_json, pl
 
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
@@ -81,8 +81,7 @@ async def main(output_file: str, channels: list[str]) -> None:
     try:
         async with asyncio.timeout(GLOBAL_TIMEOUT):
             db = await fetch_packages(channels, prev_db)
-            with open(output_file, 'w') as f:
-                json.dump(db, f, indent=2, ensure_ascii=True)
+            write_json(output_file, db, pretty=True, ensure_ascii=True)
             print(f"Saved registry as {output_file}")
     except asyncio.TimeoutError:
         print(f"Timeout: script took more than {GLOBAL_TIMEOUT} seconds")
@@ -163,12 +162,12 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
                     add_library(fail_info | library)
 
     print(
-        f"Found {len(packages)} packages "
-        f"and {len(libraries)} libraries "
-        f"in {len(result)} repositories."
+        f"Found {pl(len(packages), 'packages')} "
+        f"and {pl(len(libraries), 'libraries')} "
+        f"in {pl(len(result), 'repositories')}."
     )
     elapsed = time.monotonic() - now
-    print(f"Prepared packages in {elapsed:.2f} seconds.")
+    print(f"Prepared registry in {elapsed:.2f} seconds.")
     return {
         "repositories": repos,
         "packages": packages,

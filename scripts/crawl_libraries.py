@@ -18,12 +18,11 @@ from rich.progress import track
 from ._resolve_lib import (
     ReleaseInfo,
     ReleaseEntry,
-    dump_json,
     explain_library,
     load_json,
     resolve_library,
 )
-from ._utils import err
+from ._utils import err, write_json
 
 
 DEFAULT_REGISTRY = "./registry.json"
@@ -186,7 +185,6 @@ async def run(args: Args) -> int:
     updated_names: list[str] = []
 
     workspace: Workspace = load_workspace(args.workspace)
-    dump_workspace = partial(dump_json, args.workspace, workspace)  # type: ignore[arg-type]
     workspace_entries = workspace["libraries"]
     registered_entries = {
         lib["name"]: lib
@@ -281,7 +279,7 @@ async def run(args: Args) -> int:
             version_label = f" {latest_version}" if latest_version else ""
             err(f"Resolved {name}{version_label} using {source_label}.")
 
-    dump_workspace()
+    write_json(args.workspace, workspace, pretty=True, ensure_ascii=True)
     print(f"Crawled {len(selected_libs)} libraries.")
     print(format_change_message(added_names, updated_names))
     return 0
@@ -303,7 +301,6 @@ async def handle_name(name: str, args: Args) -> int:
     updated_names: list[str] = []
 
     workspace: Workspace = load_workspace(args.workspace)
-    dump_workspace = partial(dump_json, args.workspace, workspace)  # type: ignore[arg-type]
     workspace_entries = workspace["libraries"]
 
     try:
@@ -324,7 +321,7 @@ async def handle_name(name: str, args: Args) -> int:
             updated_names.append(name)
         if args.write:
             workspace_entries[name] = entry
-            dump_workspace()
+            write_json(args.workspace, workspace, pretty=True, ensure_ascii=True)
 
         source_label = ", ".join(sources) if sources else "cache"
         version_label = f" {latest_version}" if latest_version else ""
@@ -339,7 +336,7 @@ async def handle_name(name: str, args: Args) -> int:
             mark_added(entry, timestamp)
             mark_failure(entry, timestamp, str(exc))
             workspace_entries[name] = entry
-            dump_workspace()
+            write_json(args.workspace, workspace, pretty=True, ensure_ascii=True)
         raise
 
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 from itertools import chain
 import hashlib
+import json
+import os
 import re
 import sys
 from urllib.parse import urljoin
@@ -8,9 +10,25 @@ from urllib.parse import urljoin
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Iterable, Iterator, Mapping, NamedTuple, Optional, overload
 
+import inflect
+
 
 def err(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
+
+
+def write_json(
+    path: str | os.PathLike[str],
+    data,
+    *,
+    pretty: bool = False,
+    ensure_ascii: bool = False
+) -> None:
+    with open(os.fspath(path), "w", encoding="utf-8") as f:
+        if pretty:
+            json.dump(data, f, indent=2, ensure_ascii=ensure_ascii)
+        else:
+            json.dump(data, f, separators=(",", ":"), ensure_ascii=ensure_ascii)
 
 
 # FUNC UTILS
@@ -23,6 +41,20 @@ def flatten[T](list_of_lists: Iterable[Iterable[T]]) -> Iterable[T]:
 
 def unique_values_preserving_order[T](values: Iterable[T]) -> list[T]:
     return list(dict.fromkeys(values))
+
+
+_INFLECT = inflect.engine()
+
+
+def pl(count: int, word: str) -> str:
+    match word:
+        case "are":
+            singular = "is"
+        case "have":
+            singular = "has"
+        case _:
+            singular = _INFLECT.singular_noun(word) or word
+    return f"{count} {_INFLECT.plural(singular, count)}"
 
 
 def pipe(v, *fns):
@@ -49,9 +81,9 @@ def apply(v, fn):
 
 def pick[K, V](keys: Iterable[K], d: Mapping[K, V]) -> Mapping[K, V]:
     return {
-        k: v
-        for k, v in d.items()
-        if k in keys
+        k: d[k]
+        for k in keys
+        if k in d
     }
 
 
@@ -59,9 +91,9 @@ def pick_and_map[K, V, Q](
     d: Mapping[K, V], keys: Iterable[K], lift: Callable[[V], Q]
 ) -> Mapping[K, Q]:
     return {
-        k: lift(v)
-        for k, v in d.items()
-        if k in keys
+        k: lift(d[k])
+        for k in keys
+        if k in d
     }
 
 

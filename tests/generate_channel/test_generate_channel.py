@@ -1,0 +1,215 @@
+import json
+
+from scripts.generate_channel import main, normalize_library, normalize_package
+
+
+def test_generate_channel_filters_removed_and_dropped_packages(tmp_path):
+    registry = {
+        "repositories": [
+            "https://repo.one",
+            "https://repo.two",
+        ]
+    }
+    workspace = {
+        "packages": {
+            "valid": {
+                "name": "Alpha",
+                "author": ["Ada"],
+                "last_modified": "2024-03-20T01:02:03Z",
+                "source": "https://repo.one",
+                "releases": [
+                    {
+                        "sublime_text": "4100",
+                        "platforms": ["*"],
+                        "version": "1.0.0",
+                        "url": "https://repo.one/alpha.zip",
+                        "date": "2024-03-20T01:02:03Z",
+                    }
+                ],
+            },
+            "removed": {
+                "name": "Removed",
+                "removed": True,
+                "source": "https://repo.two",
+            },
+            "fatal": {
+                "name": "Fatal",
+                "fail_reason": "fatal: no repo",
+                "source": "https://repo.two",
+            },
+            "dropped": {
+                "name": "Dropped",
+                "author": ["Missing Releases"],
+                "last_modified": "2024-03-20T01:02:03Z",
+                "source": "https://repo.two",
+                "releases": [],
+            },
+        },
+        "libraries": {},
+    }
+
+    registry_path = tmp_path / "registry.json"
+    workspace_path = tmp_path / "workspace.json"
+    output_path = tmp_path / "channel.json"
+
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    workspace_path.write_text(json.dumps(workspace), encoding="utf-8")
+
+    main(str(registry_path), str(workspace_path), str(output_path), False, False)
+
+    channel = json.loads(output_path.read_text(encoding="utf-8"))
+    assert channel["repositories"] == ["https://repo.one"]
+    assert list(channel["packages_cache"].keys()) == ["https://repo.one"]
+    assert [pkg["name"] for pkg in channel["packages_cache"]["https://repo.one"]] == [
+        "Alpha"
+    ]
+
+
+def test_generate_channel_filters_removed_and_dropped_libraries(tmp_path):
+    registry = {
+        "repositories": [
+            "https://repo.one",
+            "https://repo.two",
+        ]
+    }
+    workspace = {
+        "packages": {},
+        "libraries": {
+            "valid": {
+                "name": "Lib",
+                "source": "https://repo.one",
+                "releases": [
+                    {
+                        "sublime_text": "4100",
+                        "platforms": ["*"],
+                        "python_versions": ["3.8"],
+                        "version": "1.0.0",
+                        "url": "https://repo.one/lib.whl",
+                        "date": "2024-01-02T03:04:05Z",
+                    }
+                ],
+            },
+            "removed": {
+                "name": "RemovedLib",
+                "removed": True,
+                "source": "https://repo.two",
+            },
+            "dropped": {
+                "name": "DroppedLib",
+                "source": "https://repo.two",
+                "releases": [],
+            },
+        },
+    }
+
+    registry_path = tmp_path / "registry.json"
+    workspace_path = tmp_path / "workspace.json"
+    output_path = tmp_path / "channel.json"
+
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    workspace_path.write_text(json.dumps(workspace), encoding="utf-8")
+
+    main(str(registry_path), str(workspace_path), str(output_path), False, False)
+
+    channel = json.loads(output_path.read_text(encoding="utf-8"))
+    assert channel["repositories"] == ["https://repo.one"]
+    assert list(channel["libraries_cache"].keys()) == ["https://repo.one"]
+    assert [lib["name"] for lib in channel["libraries_cache"]["https://repo.one"]] == [
+        "Lib"
+    ]
+
+
+def test_normalize_package_formats_fields_and_defaults():
+    pkg = {
+        "name": "Example",
+        "author": "Ada",
+        "last_modified": "2024-03-22T12:13:14Z",
+        "source": "https://repo.example",
+        "details": "https://details.example",
+        "releases": [
+            {
+                "sublime_text": "4100",
+                "platforms": ["*"],
+                "version": "1.0.0",
+                "url": "https://repo.example/example.zip",
+                "date": "2024-03-22T12:13:14Z",
+                "extra": "drop",
+            },
+            {
+                "sublime_text": "4100",
+                "platforms": ["*"],
+                "version": "1.0.1",
+                "date": "2024-03-23T12:13:14Z",
+            },
+        ],
+        "extra_field": "drop",
+    }
+
+    normalized = normalize_package(pkg)
+
+    assert normalized == {
+        "name": "Example",
+        "author": ["Ada"],
+        "last_modified": "2024-03-22 12:13:14",
+        "releases": [
+            {
+                "sublime_text": "4100",
+                "platforms": ["*"],
+                "version": "1.0.0",
+                "url": "https://repo.example/example.zip",
+                "date": "2024-03-22 12:13:14",
+            }
+        ],
+        "homepage": "https://details.example",
+        "description": None,
+        "previous_names": [],
+        "labels": [],
+        "readme": None,
+        "issues": None,
+        "donate": None,
+        "buy": None,
+    }
+
+
+def test_normalize_library_formats_release_dates_and_pick_fields():
+    lib = {
+        "name": "Lib",
+        "author": "Bob",
+        "description": "Library description",
+        "homepage": "https://lib.example",
+        "issues": "https://lib.example/issues",
+        "releases": [
+            {
+                "sublime_text": "4100",
+                "platforms": ["*"],
+                "python_versions": ["3.11"],
+                "version": "2.0.0",
+                "url": "https://lib.example/lib.whl",
+                "date": "2024-02-02T03:04:05Z",
+                "sha256": "hash",
+                "extra": "drop",
+            }
+        ],
+        "extra_field": "drop",
+    }
+
+    normalized = normalize_library(lib)
+
+    assert normalized == {
+        "name": "Lib",
+        "author": "Bob",
+        "description": "Library description",
+        "homepage": "https://lib.example",
+        "issues": "https://lib.example/issues",
+        "releases": [
+            {
+                "sublime_text": "4100",
+                "platforms": ["*"],
+                "python_versions": ["3.11"],
+                "version": "2.0.0",
+                "url": "https://lib.example/lib.whl",
+                "date": "2024-02-02 03:04:05",
+                "sha256": "hash",
+            }
+        ],
+    }
