@@ -205,7 +205,7 @@ def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool
     )
     print(
         f"Dropped {pl(drop_count_lib, 'incomplete libraries')}.  "
-        f"{pl(removed_count_pkg, 'are')} currently tombstoned."
+        f"{pl(removed_count_lib, 'are')} currently tombstoned."
     )
     # Extract failing packages for reporting
     if failing := [
