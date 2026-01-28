@@ -647,6 +647,11 @@ def resolve_pypi_releases(
         for version, version_string in sorted(versions, reverse=True):
             if version.is_prerelease or version.is_devrelease:
                 continue
+            if version.is_postrelease:
+                # post releases are not picked up by PC
+                # https://github.com/sublimehq/package_control/issues/1716
+                # https://github.com/sublimehq/package_control/pull/1717
+                continue
             if not concrete.version.contains(version, prereleases=True):
                 continue
             assets = releases[version_string]
