@@ -9,13 +9,13 @@ __pycache__/
 
 # data files
 .pypi-cache/
-channel*.json
-libraries-metadb.json
-libraries.json
-logs.json
-prev_totals.json
-stats.json
-registry.json
-repository.json
-workspace.json
+/channel*.json
+/libraries-metadb.json
+/libraries.json
+/logs.json
+/prev_totals.json
+/stats.json
+/registry.json
+/repository.json
+/workspace.json
 wrk/

@@ -9,6 +9,7 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
 from typing import Iterable, Literal, NotRequired, Required, TypedDict
 from packaging.specifiers import SpecifierSet
 
@@ -248,6 +249,26 @@ def maintenance(registry: Registry, workspace: Workspace) -> None:
     packages = workspace["packages"]
     for name in packages.keys() - current_package_names:
         packages[name].setdefault("removed", now_string)
+
+    old_workspace = (
+        Path(__file__).resolve().parent.parent / "restore" / "workspace.json"
+    )
+    if not old_workspace.exists():
+        print("Didn't find the workspace.json")
+        return
+
+    with old_workspace.open(encoding="utf-8") as info_file:
+        old_info: Workspace = json.load(info_file)
+
+    for name, package in old_info.get("packages", {}).items():
+        if name not in packages:
+            continue
+        interesting_fields = ("first_seen", "removed", "failing_since", "fail_reason")
+        for field in interesting_fields:
+            if val := package.get(field):
+                packages[name][field] = val  # type: ignore[literal-required]
+
+    print("Ingested old workspace!")
 
 
 async def crawl(
