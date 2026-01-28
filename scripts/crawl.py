@@ -26,7 +26,7 @@ from ._resolve_lib import (
     normalize_st_build,
     normalize_version_spec,
 )
-from ._utils import next_run, parse_version, resolve_url, update_url, write_json
+from ._utils import next_run, parse_version, resolve_url, update_url, write_json, pl
 import traceback
 
 
@@ -78,6 +78,7 @@ class PackageEntry(TypedDict, total=False):
 
 class Workspace(TypedDict):
     packages: dict[PackageName, PackageEntry]
+    libraries: dict
 
 
 class HeartAttack(Exception):
@@ -155,7 +156,11 @@ async def main_(
                 print(json.dumps(new_entry, indent=2, ensure_ascii=False))
 
     print("---")
-    print(f"{len(workspace['packages'].keys())} packages in db.")
+    print(
+        f"{pl(len(workspace['packages'].keys()), 'packages')} "
+        f"and {pl(len(workspace.get('libraries', {}).keys()), 'libraries')}"
+        f"in db."
+    )
 
     if len(tocrawl) > 0:
         print("GitHub", rate_limit_info)
@@ -183,7 +188,7 @@ def next_packages_to_crawl(
         )
     ]
     print(
-        f"Found {len(packages_to_crawl)} packages to crawl.",
+        f"Found {pl(len(packages_to_crawl), 'packages')} to crawl.",
         f"Pick {limit} of them." if limit < len(packages_to_crawl) else ""
     )
     if len(packages_to_crawl) == 0:
@@ -212,9 +217,11 @@ def next_packages_to_crawl(
             delta = next_crawl_dt - now
             minutes = int(delta.total_seconds() // 60)
             if minutes > 0:
-                print(f"Next package runs in {minutes} minutes.")
+                print(f"Next package runs in {pl(minutes, 'minutes')}.")
             else:
-                print(f"Next package runs in {round(delta.total_seconds())} seconds.")
+                print(
+                    f"Next package runs in {pl(round(delta.total_seconds()), 'seconds')}."
+                )
 
     if presto:
         key = lambda pkg: (
@@ -296,9 +303,8 @@ async def crawl(
             interval = timedelta(hours=24)
 
         out["next_crawl"] = (now + interval).strftime(UTC_FORMAT)
-        hours_str = str(interval.total_seconds() / 3600).removesuffix(".0")
-        s = "s" if hours_str != "1" else ""
-        err(f"Retrying in {hours_str} hour{s}.")
+        hours = int(interval.total_seconds() // 3600)
+        err(f"Retrying in {pl(hours, 'hours')}.")
         return out
 
     out["first_seen"] = existing.get("first_seen", now_string)
