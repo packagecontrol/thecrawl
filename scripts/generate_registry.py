@@ -11,7 +11,7 @@ import time
 from urllib.parse import urlparse
 from typing import Callable, Iterable, Mapping, NotRequired, TypedDict
 
-from ._utils import flatten, resolve_urls, update_url, write_json
+from ._utils import flatten, resolve_urls, update_url, write_json, pl
 
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
@@ -162,12 +162,12 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
                     add_library(fail_info | library)
 
     print(
-        f"Found {len(packages)} packages "
-        f"and {len(libraries)} libraries "
-        f"in {len(result)} repositories."
+        f"Found {pl(len(packages), 'packages')} "
+        f"and {pl(len(libraries), 'libraries')} "
+        f"in {pl(len(result), 'repositories')}."
     )
     elapsed = time.monotonic() - now
-    print(f"Prepared packages in {elapsed:.2f} seconds.")
+    print(f"Prepared registry in {elapsed:.2f} seconds.")
     return {
         "repositories": repos,
         "packages": packages,
