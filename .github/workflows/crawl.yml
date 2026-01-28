@@ -42,7 +42,9 @@ jobs:
       - name: Restore wrk cache
         uses: actions/cache@v4
         with:
-          path: ./wrk
+          path: |
+            ./wrk
+            ./.pypi-cache
           key: wrk-cache-${{ github.run_id }}
           fail-on-cache-miss: true
           restore-keys: |
