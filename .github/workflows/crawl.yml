@@ -46,7 +46,7 @@ jobs:
             ./wrk
             ./.pypi-cache
           key: wrk-cache-${{ github.run_id }}
-          # fail-on-cache-miss: true
+          fail-on-cache-miss: true
           restore-keys: |
             wrk-cache-
 
