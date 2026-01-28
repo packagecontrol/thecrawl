@@ -240,8 +240,6 @@ def next_packages_to_crawl(
 
 
 def maintenance(registry: Registry, workspace: Workspace) -> None:
-    workspace.pop("dependencies", None)  # type: ignore[typeddict-item]
-
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
     now = datetime.now(timezone.utc)
