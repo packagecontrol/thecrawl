@@ -49,7 +49,11 @@ const readmeHeadingRenderer = {
     const slug = unique_heading_slug(text)
     const id = `readme-${slug}`
     return `\
-<h${level} id="${id}">${text}<a class="markdown-anchor" href="?readme#${slug}"></a></h${level}>`
+<h${level} id="${id}">${text}\
+<a class="markdown-anchor" href="?readme#${slug}" aria-labelledby="${id}">\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>\
+</a>\
+</h${level}>`
   },
 }
 
@@ -59,7 +63,7 @@ const target = document.getElementById('md')
 const source = target.dataset.readmeUrl
 
 const cacheKey = 'md:' + source
-const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')
+const cached = false && JSON.parse(sessionStorage.getItem(cacheKey) || 'null')
 
 const now = Math.floor(Date.now() / 1000)
 const ttl = 60 * 60 // 1 hour in seconds
@@ -79,7 +83,9 @@ else {
         headingSlugCounts = new Map()
         const html = marked.parse(md)
         const html_ = post_process_html(html, source)
-        const safe_content = DOMPurify.sanitize(html_)
+        const safe_content = DOMPurify.sanitize(html_, {
+          USE_PROFILES: { html: true, svg: true, svgFilters: true },
+        })
         target.innerHTML = safe_content
         scroll_readme_anchor()
       }

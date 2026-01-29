@@ -76,14 +76,22 @@
   }
 
   a {
-    color: hsl(31.78deg 88.74% 37.93%);
-    text-decoration-color: hsl(36.11deg 97.24% 42.55%);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    color: var(--foreground-1);
+    text-decoration-color: var(--foreground-4);
+    text-underline-offset: 4px;
+    transition: color .1s ease-in-out, outline .1s ease-in-out, text-decoration-color .1s ease-in-out;
 
     :root[data-theme='dark'] & {
-      color: hsl(32.41deg 73.83% 59.86%);
-      text-decoration-color: #d68a33;
+      text-decoration-color: var(--foreground-2);
+
+      &:hover {
+        text-decoration-color: var(--orange-2);
+      }
+    }
+
+    &:hover {
+      color: var(--orange-2);
+      text-decoration-color: var(--orange-2);
     }
   }
 
@@ -96,16 +104,9 @@
     &.markdown-alert-important,
     &.markdown-alert-warning,
     &.markdown-alert-caution {
-      border-left-color: hsl(29.62deg 66.08% 57.86%);
-    }
+      border-left-color: hsl(183.19deg 75.11% 44.29%);
 
-    :root[data-theme='dark'] & {
-      &.markdown-alert-note,
-      &.markdown-alert-tip,
-      &.markdown-alert-important,
-      &.markdown-alert-warning,
-      &.markdown-alert-caution {
-        border-left-color: hsl(32.77deg 70.44% 55.43%);
+      :root[data-theme='dark'] & {
       }
     }
 
@@ -130,14 +131,16 @@
 
   .markdown-anchor {
     opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
-    left: -1em;
-    bottom: 0.1em;
-    color: var(--foreground-3);
+    left: -1.3em;
+    bottom: 6px;
+    color: hsl(240deg 6.3% 43.09%);
+    color: var(--foreground-2);
     width: 1em;
+    height: 1em;
     text-decoration: none;
-  }
-  .markdown-anchor:after {
-    content: "⎆";
   }
 }
