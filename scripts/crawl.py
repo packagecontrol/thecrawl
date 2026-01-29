@@ -14,7 +14,7 @@ from packaging.specifiers import SpecifierSet
 
 
 from .bitbucket import fetch_bitbucket_info, RepoInfo as BitbucketRepoInfo
-from .generate_registry import Registry, PackageEntry as PackageEntryV1
+from .generate_registry import Registry, PackageEntry as RegistryEntry
 from .github import (
     fetch_github_info, rate_limit_info,
     QueryScope, RepoInfo as GithubRepoInfo, ReleaseAssetInfo
@@ -58,7 +58,7 @@ class Release(TypedDict, total=False):
     libraries: NotRequired[list[str]]  # ? really, actually not used
 
 
-class PackageEntry(TypedDict, total=False):
+class WorkspaceEntry(TypedDict, total=False):
     id: NotRequired[str]
     name: Required[str]
     details: NotRequired[Url]
@@ -68,7 +68,7 @@ class PackageEntry(TypedDict, total=False):
     schema_version: str
 
     fetching_source_failed: NotRequired[IsoTimestamp]  # fetching repo source failed
-    removed: NotRequired[IsoTimestamp]  # not listed in the registry anymore
+    removed: NotRequired[IsoTimestamp]                 # not listed in the registry anymore
     invalid: NotRequired[bool]
     first_seen: IsoTimestamp
     last_seen: IsoTimestamp
@@ -82,7 +82,7 @@ class PackageEntry(TypedDict, total=False):
 
 
 class Workspace(TypedDict):
-    packages: dict[PackageName, PackageEntry]
+    packages: dict[PackageName, WorkspaceEntry]
     libraries: dict
 
 
@@ -183,7 +183,7 @@ async def main_(
 
 def next_packages_to_crawl(
     registry: Registry, workspace: Workspace, limit: int = 200, presto: bool = False
-) -> list[PackageEntryV1]:
+) -> list[RegistryEntry]:
     """
     Returns a list of packages to crawl, sorted by next_crawl timestamp.
     If next_crawl is not set, it defaults to the current time.
@@ -267,10 +267,10 @@ def maintenance(registry: Registry, workspace: Workspace) -> None:
 
 async def crawl(
     session: aiohttp.ClientSession,
-    package: PackageEntryV1,
-    existing: PackageEntry
-) -> PackageEntry:
-    out: PackageEntry
+    package: RegistryEntry,
+    existing: WorkspaceEntry
+) -> WorkspaceEntry:
+    out: WorkspaceEntry
     now = datetime.now(timezone.utc)
     now_string = now.strftime(UTC_FORMAT)
 
@@ -360,14 +360,14 @@ async def crawl(
 
 async def crawl_package(
     session: aiohttp.ClientSession,
-    entry: PackageEntryV1,
-    existing: PackageEntry
-) -> PackageEntry:
+    entry: RegistryEntry,
+    existing: WorkspaceEntry
+) -> WorkspaceEntry:
     now = datetime.now(timezone.utc)
     maybe_skip_crawling(entry, existing, now)
     ensure_secure_source(entry, existing)
 
-    out: PackageEntry = {**entry}  # type: ignore[typeddict-item]
+    out: WorkspaceEntry = {**entry}  # type: ignore[typeddict-item]
     if "readme" in out:
         out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]
             resolve_url(out["source"], out["readme"])  # type: ignore[typeddict-item]
@@ -613,8 +613,8 @@ async def crawl_package(
 
 
 def maybe_skip_crawling(
-    entry: PackageEntryV1,
-    existing: PackageEntry,
+    entry: RegistryEntry,
+    existing: WorkspaceEntry,
     now: datetime
 ) -> None:
     fail_reason = existing.get("fail_reason", "")
@@ -648,8 +648,8 @@ def maybe_skip_crawling(
 
 
 def ensure_secure_source(
-    entry: PackageEntryV1,
-    existing: PackageEntry
+    entry: RegistryEntry,
+    existing: WorkspaceEntry
 ) -> None:
     if (
         existing.get("source")
