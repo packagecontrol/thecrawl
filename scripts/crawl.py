@@ -69,7 +69,6 @@ class WorkspaceEntry(TypedDict, total=False):
 
     fetching_source_failed: NotRequired[IsoTimestamp]  # fetching repo source failed
     removed: NotRequired[IsoTimestamp]                 # not listed in the registry anymore
-    invalid: NotRequired[bool]
     first_seen: IsoTimestamp
     last_seen: IsoTimestamp
     next_crawl: IsoTimestamp
@@ -331,7 +330,6 @@ async def crawl(
     releases = out["releases"]
     if not releases:
         err(f"No releases found for {out['name']}")
-        out["invalid"] = True
         out["next_crawl"] = (now + timedelta(hours=3)).strftime(UTC_FORMAT)
     else:
         out["last_modified"] = max((r["date"] for r in releases))

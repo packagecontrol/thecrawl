@@ -489,9 +489,14 @@ async def test_tag_missing_and_branch_missing_logs_tag_error(set_now, set_github
         "Release definition cannot be fulfilled."
     ) in err
 
+    assert "No releases found for NoTagNoBranch" in err
+
     package = workspace["packages"].get("NoTagNoBranch")
     assert package is not None
-    assert package.get("invalid") is True
+    assert package.get("releases") == []
+    assert package.get("description") == "Fixture package with no tags and no branch"
+    assert package.get("author") == "example"
+    assert package.get("homepage") == "https://github.com/example/no-tag-no-branch"
 
 
 @pytest.mark.asyncio
@@ -543,9 +548,10 @@ async def test_branch_missing_logs_branch_error(set_now, set_github_info, capsys
         "Release definition cannot be fulfilled."
     ) in err
 
+    assert "No releases found for BranchMissing" in err
+
     package = workspace["packages"].get("BranchMissing")
     assert package is not None
-    assert package.get("invalid") is True
 
 
 @pytest.mark.asyncio
@@ -739,9 +745,10 @@ async def test_branch_specific_missing_does_not_fallback(set_now, set_github_inf
         "Release definition cannot be fulfilled."
     ) in err
 
+    assert "No releases found for BranchSpecificMissing" in err
+
     package = workspace["packages"].get("BranchSpecificMissing")
     assert package is not None
-    assert package.get("invalid") is True
 
 
 @pytest.mark.asyncio
