@@ -121,6 +121,8 @@
 
   h1, h2, h3, h4 {
     position: relative;
+    padding-left: 1.3em;
+    margin-left: -1.3em;
 
     &:hover, &:focus-within {
       .markdown-anchor {
@@ -135,7 +137,7 @@
     align-items: center;
     justify-content: center;
     position: absolute;
-    left: -1.3em;
+    left: 0;
     bottom: 6px;
     color: hsl(240deg 6.3% 43.09%);
     color: var(--foreground-2);
