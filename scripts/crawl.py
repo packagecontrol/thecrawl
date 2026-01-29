@@ -34,6 +34,11 @@ DEFAULT_REGISTRY = "./registry.json"
 DEFAULT_WORKSPACE = "./workspace.json"
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 STYLIZED_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+TRUSTED_SOURCES = {
+    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+    "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+    "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
+}
 
 type PackageName = str
 type Url = str
@@ -83,6 +88,16 @@ class Workspace(TypedDict):
 
 class HeartAttack(Exception):
     """Raised when a repository ID mismatch is detected."""
+    pass
+
+
+class DeniedUpdating(Exception):
+    """Raised when a package update is denied but should be recoverable."""
+    pass
+
+
+class SkipCrawling(Exception):
+    """Raised when a package crawl should be skipped while keeping prior state."""
     pass
 
 
@@ -275,6 +290,11 @@ async def crawl(
             )
             fatal = "fatal: " if e.status == 404 else ""
             out["fail_reason"] = f"{fatal}{e.status} {e.message}"
+        elif isinstance(e, SkipCrawling):
+            err(f"skip *{package['name']}*: {e}")
+        elif isinstance(e, DeniedUpdating):
+            err(f"Denied update during crawl for {package['name']}: {e}")
+            out["fail_reason"] = f"denied: {e}"
         elif isinstance(e, HeartAttack):
             err(f"Heart attack during crawl for {package['name']}: {e}")
             out["fail_reason"] = f"fatal: {e}"
@@ -307,11 +327,6 @@ async def crawl(
 
     out["first_seen"] = existing.get("first_seen", now_string)
     out["last_seen"] = now_string
-    # TODO: We need to think about if "fatal" states can be recovered from.
-    #       The tendency is that 404's and `HeartAttack`s are final states.
-    if not out.get("fail_reason", "").startswith("fatal: "):
-        out.pop("failing_since", None)
-        out.pop("fail_reason", None)
 
     releases = out["releases"]
     if not releases:
@@ -348,6 +363,10 @@ async def crawl_package(
     entry: PackageEntryV1,
     existing: PackageEntry
 ) -> PackageEntry:
+    now = datetime.now(timezone.utc)
+    maybe_skip_crawling(entry, existing, now)
+    ensure_secure_source(entry, existing)
+
     out: PackageEntry = {**entry}  # type: ignore[typeddict-item]
     if "readme" in out:
         out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]
@@ -591,6 +610,57 @@ async def crawl_package(
             release_definitions.remove(r)
 
     return out
+
+
+def maybe_skip_crawling(
+    entry: PackageEntryV1,
+    existing: PackageEntry,
+    now: datetime
+) -> None:
+    fail_reason = existing.get("fail_reason", "")
+    if not fail_reason.startswith("fatal: "):
+        return
+    resurrecting = (
+        (existing_details := existing.get("details"))
+        and (entry_details := entry.get("details"))
+        and (entry_source := entry.get("source"))
+        and existing_details != entry_details
+        and (
+            entry_source == existing.get("source")
+            or entry_source in TRUSTED_SOURCES
+        )
+    )
+    if resurrecting:
+        return
+    if fail_reason.startswith("fatal: 404"):
+        # For 404's we have "auto-resurrection" aka retries for 30 days
+        if failing_since := existing.get("failing_since"):
+            try:
+                failing_since_dt = datetime.strptime(failing_since, UTC_FORMAT)
+            except ValueError:
+                pass
+            else:
+                failing_since_dt = failing_since_dt.replace(tzinfo=timezone.utc)
+                if now - failing_since_dt >= timedelta(days=30):
+                    raise SkipCrawling(fail_reason)
+    else:
+        raise SkipCrawling(fail_reason)
+
+
+def ensure_secure_source(
+    entry: PackageEntryV1,
+    existing: PackageEntry
+) -> None:
+    if (
+        existing.get("source")
+        and entry.get("source")
+        and existing.get("source") != entry.get("source")
+        and entry.get("source") not in TRUSTED_SOURCES
+    ):
+        raise DeniedUpdating(
+            f"Repository source changed for *{entry.get('name')}* from "
+            f"{existing.get('source')} to untrusted {entry.get('source')}"
+        )
 
 
 def pluck[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
