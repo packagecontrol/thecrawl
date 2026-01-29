@@ -55,7 +55,6 @@ class Release(TypedDict, total=False):
     version: Version
     url: Url
     date: IsoTimestamp
-    libraries: NotRequired[list[str]]  # ? really, actually not used
 
 
 class WorkspaceEntry(TypedDict, total=False):
