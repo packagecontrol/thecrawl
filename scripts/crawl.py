@@ -46,7 +46,9 @@ type IsoTimestamp = str
 type Version = str
 type BuildDescriptor = str
 type Platform = Literal["*", "windows", "osx", "linux"]
+type ErrorMsg = str
 type ReleaseDescription = dict
+type HubRepoInfo = GithubRepoInfo | BitbucketRepoInfo | GitlabRepoInfo | CodebergRepoInfo
 
 
 class Release(TypedDict, total=False):
@@ -391,7 +393,6 @@ async def crawl_package(
             if "asset" in r:
                 uow[base].add("RELEASES")
 
-    type HubRepoInfo = GithubRepoInfo | BitbucketRepoInfo | GitlabRepoInfo | CodebergRepoInfo
     for url, scopes in uow.items():
         info: HubRepoInfo
         match which_hub(url):
@@ -439,150 +440,34 @@ async def crawl_package(
             if r.get("base") != url:
                 continue
 
-            if asset_pattern := r.get("asset"):
-                if "releases" not in info:
-                    err(f"Release assets are not supported for {url}")
-                    release_definitions.remove(r)
-                    continue
-
-                st_builds = r.get("sublime_text", "*")
-                if isinstance(st_builds, str):
-                    st_builds = [st_builds]
-                platforms = r.get("platforms", ["*"])
-                targets = list(product(platforms, st_builds))
-
-                tag_definition = r.get("tags", True)
-                tag_prefix = "" if tag_definition is True else tag_definition
-
-                spec_set = None
-                if version_spec := r.get("version"):
-                    normalized_spec = normalize_version_spec(version_spec)
-                    spec_set = SpecifierSet(normalized_spec) if normalized_spec else None
-
-                resolved_releases: list[dict] = []
-                async for release in info["releases"]:  # type: ignore[typeddict-item]
-                    if release.get("is_draft"):
-                        continue
-                    tag_name = release.get("tag_name")
-                    if not tag_name:
-                        continue
-                    tag_match = match_tag_version(tag_name, tag_prefix)
-                    if not tag_match:
-                        continue
-                    version, version_str = tag_match
-                    if spec_set and not spec_set.contains(version, prereleases=True):
-                        continue
-                    assets = release.get("assets", [])
-
-                    for platform, st_build in targets[:]:
-                        if asset := match_release_asset_pattern(
-                            assets,
-                            asset_pattern,
-                            version_str,
-                            normalize_st_build(st_build),
-                            "any" if platform == "*" else platform
-                        ):
-                            r_ = {
-                                "sublime_text": st_build,
-                                "platforms": [platform],
-                                "version": version_str,
-                                "url": asset["url"],
-                                "date": release["date"],
-                            }
-                            resolved_releases.append(r_)
-                            targets.remove((platform, st_build))
-
-                    if not targets:
-                        break
-
-                if targets:
-                    missing_formatted = (
-                        f"({platform}, st_build={build})"
-                        for platform, st_build in sorted(targets)
-                        if (
-                            build := st_build
-                            if st_build == "*" or st_build.isnumeric()
-                            else repr(st_build)
-                        )
-                    )
-                    err(f"Missing release assets for {url} for: {', '.join(missing_formatted)}")
-
+            if r.get("asset"):
+                resolved_releases = await resolve_assets(info, r)
                 if resolved_releases:
                     first = resolved_releases[0]
                     r.clear()
                     r.update(first)
                     for extra in resolved_releases[1:]:
-                        release_definitions.append(extra)
+                        release_definitions.append(extra)  # type: ignore[arg-type]
                 else:
                     err(f"No matching release asset found for {url}")
                     release_definitions.remove(r)
                 continue
 
             tag_error = None
-
-            if tag_definition := r.get("tags"):
-                tag_prefix = "" if tag_definition is True else tag_definition
-                # preleases are rare, but if used there can be many pre-releases
-                # before a valid final release.  We only need the first (newest)
-                # one, and `prerelease_pushed` is used to track that.
-                prerelease_pushed = False
-                prerelease_version = None
-                async for tag in info["tags"]:
-                    if (
-                        tag["name"].startswith(tag_prefix)
-                        and (version_string := (
-                            tag["name"].removeprefix(tag_prefix)
-                            if tag_prefix
-                            else tag["name"].removeprefix("v")
-                        ))
-                        and (version := parse_version(version_string))  # type: ignore[assignment]
-                    ):
-                        if version.is_prerelease and not prerelease_pushed:
-                            r_ = deepcopy(r)
-                            r_.pop("tags")
-                            r_ |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
-                            r_ |= {"version": version_string}
-                            release_definitions.append(r_)
-                            prerelease_pushed = True
-                            prerelease_version = version_string
-                            continue
-
-                        elif version.is_final:
-                            r.pop("tags")
-                            r |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
-                            r |= {"version": version_string}
-                            break
-
-                if "version" in r:
+            if r.get("tags"):
+                resolved_releases, tag_error = await resolve_tags(info, r)
+                if resolved_releases:
+                    first = resolved_releases[0]
+                    r.clear()
+                    r.update(first)
+                    for extra in resolved_releases[1:]:
+                        release_definitions.append(extra)  # type: ignore[arg-type]
                     continue
 
-                if prerelease_pushed:
-                    version_note = f" {prerelease_version}" if prerelease_version else ""
-                    err(f"No final tag found for {url}; using prerelease{version_note}.")
-                    continue
-
-                if tag_prefix:
-                    tag_error = f"No tag found for {url} matching the prefix ^{tag_prefix}"
-                else:
-                    tag_error = f"No valid version found for {url}"
-
-            # `True` == Fallback to the default branch
-            branches_definition = r.get("branch", True)
-            default_branch = info["metadata"].get("default_branch", "master")
-            wanted_branch = (
-                default_branch
-                if branches_definition is True
-                else branches_definition
-            )
-            async for branch in info["branches"]:
-                if branch["name"] == wanted_branch:
-                    r.pop("branch", None)
-                    branch_version = re.sub(r"\D", ".", branch["date"]).rstrip(".")
-                    r |= pluck(branch, ("url", "date"))  # type: ignore[arg-type]
-                    r |= {"version": branch_version}
-                    break
-
-            if "version" in r:
+            branch_release, wanted_branch = await resolve_branches(info, r)
+            if branch_release:
+                r.clear()
+                r.update(branch_release)
                 if tag_error:
                     err(f"{tag_error}.  Falling back to tip of {wanted_branch}.")
                 continue
@@ -607,6 +492,166 @@ async def crawl_package(
             release_definitions.remove(r)
 
     return out
+
+
+async def resolve_tags(
+    info: HubRepoInfo,
+    definition: ReleaseDescription,
+) -> tuple[list[Release], ErrorMsg | None]:
+    tag_definition = definition.get("tags")
+    if not tag_definition:
+        return [], None
+
+    tag_prefix = "" if tag_definition is True else tag_definition
+    resolved_releases: list[Release] = []
+
+    # preleases are rare, but if used there can be many pre-releases
+    # before a valid final release.  We only need the first (newest)
+    # one, and `prerelease_pushed` is used to track that.
+    prerelease_pushed = False
+    prerelease_version = None
+    found_final = False
+    async for tag in info["tags"]:
+        if (
+            tag["name"].startswith(tag_prefix)
+            and (version_string := (
+                tag["name"].removeprefix(tag_prefix)
+                if tag_prefix
+                else tag["name"].removeprefix("v")
+            ))
+            and (version := parse_version(version_string))
+        ):
+            if version.is_prerelease and not prerelease_pushed:
+                r_ = deepcopy(definition)
+                r_.pop("tags")
+                r_ |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
+                r_ |= {"version": version_string}
+                resolved_releases.append(r_)  # type: ignore[arg-type]
+                prerelease_pushed = True
+                prerelease_version = version_string
+                continue
+
+            elif version.is_final:
+                r_ = deepcopy(definition)
+                r_.pop("tags")
+                r_ |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
+                r_ |= {"version": version_string}
+                resolved_releases.append(r_)  # type: ignore[arg-type]
+                found_final = True
+                break
+
+    if found_final:
+        return resolved_releases, None
+
+    if prerelease_pushed:
+        version_note = f" {prerelease_version}" if prerelease_version else ""
+        base_url = definition.get("base")
+        err(f"No final tag found for {base_url}; using prerelease{version_note}.")
+        return resolved_releases, None
+
+    base_url = definition.get("base")
+    if tag_prefix:
+        return [], f"No tag found for {base_url} matching the prefix ^{tag_prefix}"
+    return [], f"No valid version found for {base_url}"
+
+
+async def resolve_branches(
+    info: HubRepoInfo,
+    definition: ReleaseDescription,
+) -> tuple[Release | None, str]:
+    # `True` == Fallback to the default branch
+    branches_definition = definition.get("branch", True)
+    default_branch = info["metadata"].get("default_branch", "master")
+    wanted_branch = (
+        default_branch
+        if branches_definition is True
+        else branches_definition
+    )
+    async for branch in info["branches"]:
+        if branch["name"] == wanted_branch:
+            resolved = deepcopy(definition)
+            resolved.pop("branch", None)
+            branch_version = re.sub(r"\D", ".", branch["date"]).rstrip(".")
+            resolved |= pluck(branch, ("url", "date"))  # type: ignore[arg-type]
+            resolved |= {"version": branch_version}
+            return resolved, wanted_branch  # type: ignore[return-value]
+    return None, wanted_branch
+
+
+async def resolve_assets(
+    info: HubRepoInfo,
+    definition: ReleaseDescription,
+) -> list[Release]:
+    base_url = definition.get("base")
+    asset_pattern = definition.get("asset")
+    if not asset_pattern:
+        return []
+    if "releases" not in info:
+        err(f"Release assets are not supported for {base_url}")
+        return []
+
+    st_builds = definition.get("sublime_text", "*")
+    if isinstance(st_builds, str):
+        st_builds = [st_builds]
+    platforms = definition.get("platforms", ["*"])
+    targets = list(product(platforms, st_builds))
+
+    tag_definition = definition.get("tags", True)
+    tag_prefix = "" if tag_definition is True else tag_definition
+
+    spec_set = None
+    if version_spec := definition.get("version"):
+        normalized_spec = normalize_version_spec(version_spec)
+        spec_set = SpecifierSet(normalized_spec) if normalized_spec else None
+
+    resolved_releases: list[Release] = []
+    async for release in info["releases"]:  # type: ignore[typeddict-item]
+        if release.get("is_draft"):
+            continue
+        tag_name = release.get("tag_name")
+        if not tag_name:
+            continue
+        tag_match = match_tag_version(tag_name, tag_prefix)
+        if not tag_match:
+            continue
+        version, version_str = tag_match
+        if spec_set and not spec_set.contains(version, prereleases=True):
+            continue
+        assets = release.get("assets", [])
+
+        for platform, st_build in targets[:]:
+            if asset := match_release_asset_pattern(
+                assets,
+                asset_pattern,
+                version_str,
+                normalize_st_build(st_build),
+                "any" if platform == "*" else platform
+            ):
+                resolved_releases.append({
+                    "sublime_text": st_build,
+                    "platforms": [platform],
+                    "version": version_str,
+                    "url": asset["url"],
+                    "date": release["date"],
+                })
+                targets.remove((platform, st_build))
+
+        if not targets:
+            break
+
+    if targets:
+        missing_formatted = (
+            f"({platform}, st_build={build})"
+            for platform, st_build in sorted(targets)
+            if (
+                build := st_build
+                if st_build == "*" or st_build.isnumeric()
+                else repr(st_build)
+            )
+        )
+        err(f"Missing release assets for {base_url} for: {', '.join(missing_formatted)}")
+
+    return resolved_releases
 
 
 def maybe_skip_crawling(
