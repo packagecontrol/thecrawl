@@ -381,7 +381,7 @@ async def crawl_package(
 
     def extend(new_releases: list[Release]):
         for r in new_releases:
-            if missing_keys := missing_from_release_definition(r):
+            if missing_keys := keys_missing_from_release(r):
                 s = "s" if len(missing_keys) > 1 else ""
                 err(
                     f"Release definition for *{entry['name']}* incomplete.  "
@@ -704,7 +704,7 @@ def pluck[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
     }
 
 
-def missing_from_release_definition(release: Mapping) -> set[str]:
+def keys_missing_from_release(release: Mapping) -> set[str]:
     return {"sublime_text", "platforms", "version", "url", "date"} - release.keys()
 
 
@@ -712,7 +712,7 @@ def is_fulfilled_release_definition(release: ReleaseDescription) -> bool:
     return not (
         "tags" in release
         or "branch" in release
-        or missing_from_release_definition(release)
+        or keys_missing_from_release(release)
     )
 
 
