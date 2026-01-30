@@ -359,8 +359,8 @@ async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_i
     await main_(registry, workspace, None, 100)
     err = capsys.readouterr().err
     assert (
-        "No final tag found for https://github.com/example/pre-release-only; "
-        "using prerelease 0.0.1-beta."
+        "No final tag found for https://github.com/example/pre-release-only.  "
+        "Using the pre-release 0.0.1-beta."
     ) in err
 
     package = workspace["packages"].get("PreReleaseOnly")

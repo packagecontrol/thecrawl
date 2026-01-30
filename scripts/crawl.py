@@ -384,7 +384,7 @@ async def crawl_package(
             if missing_keys := keys_missing_from_release(r):
                 s = "s" if len(missing_keys) > 1 else ""
                 err(
-                    f"Release definition for *{entry['name']}* incomplete.  "
+                    f"Release for *{entry['name']}* incomplete.  "
                     f"Got `{r}`. "
                     f"Missing key{s}: `{', '.join(missing_keys)}`."
                 )
@@ -536,13 +536,14 @@ async def resolve_tags(
 
     if prerelease_pushed:
         version_note = f" {prerelease_version}" if prerelease_version else ""
+        the = "the" if version_note else "a"
         base_url = definition.get("base")
-        err(f"No final tag found for {base_url}; using prerelease{version_note}.")
+        err(f"No final tag found for {base_url}.  Using {the} pre-release{version_note}.")
         return resolved_releases, None
 
     base_url = definition.get("base")
     if tag_prefix:
-        return [], f"No tag found for {base_url} matching the prefix ^{tag_prefix}"
+        return [], f"No tag found for {base_url} matching the prefix *{tag_prefix}*"
     return [], f"No valid version found for {base_url}"
 
 
