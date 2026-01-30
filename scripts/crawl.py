@@ -9,7 +9,7 @@ import json
 import os
 import re
 import sys
-from typing import Iterable, Literal, NotRequired, Required, TypedDict
+from typing import Iterable, Literal, Mapping, NotRequired, Required, TypedDict
 from packaging.specifiers import SpecifierSet
 
 
@@ -381,8 +381,23 @@ async def crawl_package(
     if details:
         uow[details].add("METADATA")
 
-    for r in release_definitions[:]:
+    releases: list[Release] = []
+
+    def extend(new_releases: list[Release]):
+        for r in new_releases:
+            if missing_keys := missing_from_release_definition(r):
+                s = "s" if len(missing_keys) > 1 else ""
+                err(
+                    f"Release definition for *{entry['name']}* incomplete.  "
+                    f"Got `{r}`. "
+                    f"Missing key{s}: `{', '.join(missing_keys)}`."
+                )
+            else:
+                releases.append(r)
+
+    for r in release_definitions:
         if is_fulfilled_release_definition(r):
+            extend([r])  # type: ignore[list-item]
             continue
         if base := r.get("base"):
             uow[base].add("METADATA")
@@ -434,7 +449,7 @@ async def crawl_package(
                 hints = out.get("hints", [])
                 err(f"Hints for {url} changed to: {', '.join(hints) if hints else 'None'}")
 
-        for r in release_definitions[:]:
+        for r in release_definitions:
             if is_fulfilled_release_definition(r):
                 continue
             if r.get("base") != url:
@@ -442,32 +457,21 @@ async def crawl_package(
 
             if r.get("asset"):
                 resolved_releases = await resolve_assets(info, r)
-                if resolved_releases:
-                    first = resolved_releases[0]
-                    r.clear()
-                    r.update(first)
-                    for extra in resolved_releases[1:]:
-                        release_definitions.append(extra)  # type: ignore[arg-type]
-                else:
+                extend(resolved_releases)
+                if not resolved_releases:
                     err(f"No matching release asset found for {url}")
-                    release_definitions.remove(r)
                 continue
 
             tag_error = None
             if r.get("tags"):
                 resolved_releases, tag_error = await resolve_tags(info, r)
+                extend(resolved_releases)
                 if resolved_releases:
-                    first = resolved_releases[0]
-                    r.clear()
-                    r.update(first)
-                    for extra in resolved_releases[1:]:
-                        release_definitions.append(extra)  # type: ignore[arg-type]
                     continue
 
             branch_release, wanted_branch = await resolve_branches(info, r)
             if branch_release:
-                r.clear()
-                r.update(branch_release)
+                extend([branch_release])
                 if tag_error:
                     err(f"{tag_error}.  Falling back to tip of {wanted_branch}.")
                 continue
@@ -479,18 +483,8 @@ async def crawl_package(
                     f"No branch named {wanted_branch} found on {url}.  "
                     f"Release definition cannot be fulfilled."
                 )
-            release_definitions.remove(r)
 
-    for r in release_definitions[:]:
-        if missing_keys := missing_from_release_definition(r):
-            s = "s" if len(missing_keys) > 1 else ""
-            err(
-                f"Release definition for *{entry['name']}* incomplete.  "
-                f"Got `{r}`. "
-                f"Missing key{s}: `{', '.join(missing_keys)}`."
-            )
-            release_definitions.remove(r)
-
+    out["releases"] = releases
     return out
 
 
@@ -713,7 +707,7 @@ def pluck[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
     }
 
 
-def missing_from_release_definition(release: ReleaseDescription) -> set[str]:
+def missing_from_release_definition(release: Mapping) -> set[str]:
     return {"sublime_text", "platforms", "version", "url", "date"} - release.keys()
 
 
