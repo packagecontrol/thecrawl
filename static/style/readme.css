@@ -121,8 +121,9 @@
 
   h1, h2, h3, h4 {
     position: relative;
-    padding-left: 2.4rem;
-    margin-left: -2.4rem;
+    /* Widen the hover area:   */
+    padding-left: calc(var(--side-padding) * 2);
+    margin-left: calc(var(--side-padding) * -2);
 
     &:hover, &:focus-within {
       .markdown-anchor {
@@ -138,11 +139,13 @@
     justify-content: center;
     position: absolute;
     left: 0;
-    bottom: 0.25em;
-    color: hsl(240deg 6.3% 43.09%);
-    color: var(--foreground-2);
+    bottom: 0em;
+    color: var(--foreground-1);
     width: 28px;
-    height: 28px;
     text-decoration: none;
+
+    &:after {
+      content: "#";
+    }
   }
 }
