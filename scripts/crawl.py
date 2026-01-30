@@ -17,7 +17,7 @@ from .bitbucket import fetch_bitbucket_info, RepoInfo as BitbucketRepoInfo
 from .generate_registry import Registry, PackageEntry as RegistryEntry
 from .github import (
     fetch_github_info, rate_limit_info,
-    QueryScope, RepoInfo as GithubRepoInfo, ReleaseAssetInfo
+    RepoInfo as GithubRepoInfo, ReleaseAssetInfo
 )
 from .gitlab import fetch_gitlab_info, RepoInfo as GitlabRepoInfo
 from .codeberg import fetch_codeberg_info, RepoInfo as CodebergRepoInfo
@@ -377,10 +377,6 @@ async def crawl_package(
     migrate_release_definitions_from_v2(release_definitions)
     normalize_release_definition(release_definitions, out["source"], details)
 
-    uow: defaultdict[Url, set[QueryScope]] = defaultdict(set)
-    if details:
-        uow[details].add("METADATA")
-
     releases: list[Release] = []
 
     def extend(new_releases: list[Release]):
@@ -395,20 +391,26 @@ async def crawl_package(
             else:
                 releases.append(r)
 
+    uow: defaultdict[Url, list[ReleaseDescription]] = defaultdict(list)
+    if details:
+        uow[details] = []
+
     for r in release_definitions:
         if is_fulfilled_release_definition(r):
             extend([r])  # type: ignore[list-item]
-            continue
-        if base := r.get("base"):
-            uow[base].add("METADATA")
-            if "tags" in r:
-                uow[base].add("TAGS")
-            if "branch" in r:
-                uow[base].add("BRANCHES")
-            if "asset" in r:
-                uow[base].add("RELEASES")
+        elif base := r.get("base"):
+            uow[base].append(r)
 
-    for url, scopes in uow.items():
+    for url, defs in uow.items():
+        scopes = {"METADATA"}
+        for d in defs:
+            if "tags" in r:
+                scopes.add("TAGS")
+            if "branch" in r:
+                scopes.add("BRANCHES")
+            if "asset" in r:
+                scopes.add("RELEASES")
+
         info: HubRepoInfo
         match which_hub(url):
             case "github":
@@ -449,12 +451,7 @@ async def crawl_package(
                 hints = out.get("hints", [])
                 err(f"Hints for {url} changed to: {', '.join(hints) if hints else 'None'}")
 
-        for r in release_definitions:
-            if is_fulfilled_release_definition(r):
-                continue
-            if r.get("base") != url:
-                continue
-
+        for r in defs:
             if r.get("asset"):
                 resolved_releases = await resolve_assets(info, r)
                 extend(resolved_releases)
