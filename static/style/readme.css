@@ -37,25 +37,11 @@
 
   code {
     background: var(--highlight);
-    background: hsl(208.12deg 80% 92.16%);
-    :root[data-theme='dark'] & {
-      background: hsl(212.96deg 29.41% 23.46%);
-      background: hsl(212.96deg 34.44% 29.83%);
-    }
   }
 
   pre {
     border-radius: 6px;
     background: var(--highlight);
-    background: hsl(36.74deg 100% 94.71%);
-    background: hsl(36.74deg 100% 97.06%);
-    :root[data-theme='dark'] & {
-      background: hsl(9.05deg 16.96% 23.44%);
-      background: hsl(231.22deg 13.01% 25.35%);
-      code {
-        background: transparent;
-      }
-    }
   }
   pre.fallback {
     background: var(--background-1);
@@ -72,10 +58,6 @@
     padding: 0px 4px;
     box-shadow: inset 0px -1px 0px var(--background-1);
     background: var(--highlight);
-    background: hsl(208deg 100% 97.06%);
-    :root[data-theme='dark'] & {
-      background: hsl(208deg 31.75% 24.45%);
-    }
   }
 
   table {
@@ -94,15 +76,18 @@
   }
 
   a {
-    color: var(--foreground-1);
-    text-decoration-color: var(--foreground-4);
-    text-underline-offset: 4px;
+    color: hsl(32deg 5.26% 28.36%);
+    text-decoration-color: hsl(207.91deg 71.14% 47.81%);
+    text-underline-offset: 3px;
     transition: color .1s ease-in-out, outline .1s ease-in-out, text-decoration-color .1s ease-in-out;
 
     :root[data-theme='dark'] & {
-      text-decoration-color: var(--foreground-2);
+      color: hsl(32deg 20.52% 81.99%);
+      text-decoration-color: hsl(210.05deg 74.64% 53.69%);
+      text-underline-offset: 3px;
 
       &:hover {
+        color: var(--orange-2);
         text-decoration-color: var(--orange-2);
       }
     }
@@ -116,20 +101,6 @@
   .markdown-alert {
     border-left: 4px solid var(--foreground-2);
     padding-left: 1em;
-
-    &.markdown-alert-note,
-    &.markdown-alert-tip,
-    &.markdown-alert-important,
-    &.markdown-alert-warning,
-    &.markdown-alert-caution {
-      border-left-color: hsl(183.19deg 75.11% 44.29%);
-      border-left-color: hsl(193.02deg 75.11% 44.29%);
-      border-left-color: hsl(198.05deg 72.54% 54.62%);
-
-      :root[data-theme='dark'] & {
-        border-left-color: hsl(198.05deg 85.95% 41.54%);
-      }
-    }
 
     .markdown-alert-title {
       font-weight: 700;
