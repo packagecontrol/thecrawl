@@ -171,6 +171,111 @@ def test_normalize_package_formats_fields_and_defaults():
     }
 
 
+def test_normalize_package_compresses_versions_by_build_and_platform():
+    pkg = {
+        "name": "Monokai Pro",
+        "author": ["Monokai"],
+        "last_modified": "2026-01-11T10:00:00Z",
+        "source": "https://repo.example",
+        "releases": [
+            {
+                "sublime_text": ">=3000",
+                "platforms": ["*"],
+                "version": "2.0.3",
+                "url": "https://repo.example/2.0.3.zip",
+                "date": "2024-12-04T14:00:00Z",
+            },
+            {
+                "sublime_text": ">=3000",
+                "platforms": ["*"],
+                "version": "2.0.6",
+                "url": "https://repo.example/2.0.6.zip",
+                "date": "2025-01-15T13:30:00Z",
+            },
+            {
+                "sublime_text": ">=4050",
+                "platforms": ["*"],
+                "version": "2.1.5",
+                "url": "https://repo.example/2.1.5.zip",
+                "date": "2025-12-17T10:00:00Z",
+            },
+            {
+                "sublime_text": ">=4050",
+                "platforms": ["*"],
+                "version": "2.1.6",
+                "url": "https://repo.example/2.1.6.zip",
+                "date": "2026-01-07T10:00:00Z",
+            },
+            {
+                "sublime_text": ">=4050",
+                "platforms": ["*"],
+                "version": "2.2.0-rc1",
+                "url": "https://repo.example/2.2.0-rc1.zip",
+                "date": "2026-01-10T10:00:00Z",
+            },
+        ],
+    }
+
+    normalized = normalize_package(pkg)
+
+    versions = sorted(rel["version"] for rel in normalized["releases"])
+    assert versions == ["2.0.6", "2.1.6", "2.2.0-rc1"]
+
+
+def test_normalize_package_drops_prerelease_older_than_final():
+    pkg = {
+        "name": "Example",
+        "author": ["Ada"],
+        "last_modified": "2024-03-22T12:13:14Z",
+        "source": "https://repo.example",
+        "releases": [
+            {
+                "sublime_text": ">=4100",
+                "platforms": ["*"],
+                "version": "1.0.0-rc1",
+                "url": "https://repo.example/1.0.0-rc1.zip",
+                "date": "2024-03-20T12:13:14Z",
+            },
+            {
+                "sublime_text": ">=4100",
+                "platforms": ["*"],
+                "version": "1.0.0",
+                "url": "https://repo.example/1.0.0.zip",
+                "date": "2024-03-21T12:13:14Z",
+            },
+        ],
+    }
+
+    normalized = normalize_package(pkg)
+
+    versions = [rel["version"] for rel in normalized["releases"]]
+    assert versions == ["1.0.0"]
+
+
+def test_normalize_package_handles_non_semver_release():
+    pkg = {
+        "name": "Repeat Macro",
+        "author": ["Siva"],
+        "last_modified": "2018-05-27T17:41:14Z",
+        "source": "https://repo.example",
+        "releases": [
+            {
+                "sublime_text": "*",
+                "platforms": ["*"],
+                "version": "2018.05.27.17.41.14",
+                "url": "https://repo.example/repeat-macro.zip",
+                "date": "2018-05-27 17:41:14",
+            }
+        ],
+    }
+
+    normalized = normalize_package(pkg)
+
+    assert [rel["version"] for rel in normalized["releases"]] == [
+        "2018.05.27.17.41.14"
+    ]
+
+
 def test_normalize_library_formats_release_dates_and_pick_fields():
     lib = {
         "name": "Lib",

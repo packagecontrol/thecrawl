@@ -6,9 +6,9 @@ from zoneinfo import ZoneInfo
 import json
 import sys
 import os
-from typing import TypedDict, Literal, NotRequired
+from typing import Generator, Literal, NotRequired, TypedDict
 
-from ._utils import pick, pl, write_json
+from ._utils import flatten, pick, pl, write_json, parse_version
 
 type RepositoryUrl = str
 type Platform = Literal["*", "windows", "osx", "linux"]
@@ -249,6 +249,9 @@ def normalize_package(pkg) -> Package | None:
             "url": rel["url"],
             "date": format_utc_datetime(rel["date"]),
         })
+
+    releases = remove_older_releases(releases)
+
     if not releases:
         err(f"Drop package {name} with no valid releases")
         return None
@@ -290,6 +293,37 @@ def normalize_package(pkg) -> Package | None:
         "buy": pkg.get("buy"),
     }
     return out
+
+
+def remove_older_releases(releases: list[Release]) -> list[Release]:
+    grouped: dict[tuple[str, tuple[Platform, ...]], list[Release]] = defaultdict(list)
+    for rel in releases:
+        grouped[(rel["sublime_text"], tuple(rel["platforms"]))].append(rel)
+
+    compressed: list[Release] = list(flatten(
+        compress_release_group(rels)
+        for rels in grouped.values()
+    ))
+    compressed.sort(
+        key=lambda rel: (
+            rel.get("sublime_text"),
+            rel.get("platforms"),
+            rel.get("date")
+        )
+    )
+    return compressed
+
+
+def compress_release_group(releases: list[Release]) -> Generator[Release]:
+    prerelease_found = False
+    for rel in sorted(releases, key=lambda rel: rel["date"], reverse=True):
+        version = parse_version(rel["version"])
+        if not version or version.is_final:
+            yield rel
+            break
+        if version.is_prerelease and not prerelease_found:
+            prerelease_found = True
+            yield rel
 
 
 def normalize_library(lib) -> Library | None:
