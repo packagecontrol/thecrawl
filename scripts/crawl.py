@@ -9,7 +9,7 @@ import json
 import os
 import re
 import sys
-from typing import Iterable, Literal, Mapping, NotRequired, Required, TypedDict
+from typing import Literal, Mapping, NotRequired, Required, TypedDict
 from packaging.specifiers import SpecifierSet
 
 
@@ -26,7 +26,7 @@ from ._resolve_lib import (
     normalize_st_build,
     normalize_version_spec,
 )
-from ._utils import next_run, parse_version, resolve_url, update_url, write_json, pl
+from ._utils import next_run, parse_version, resolve_url, update_url, write_json, pl, pick
 import traceback
 
 
@@ -515,7 +515,7 @@ async def resolve_tags(
             if version.is_prerelease and not prerelease_pushed:
                 r_ = deepcopy(definition)
                 r_.pop("tags")
-                r_ |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
+                r_ |= pick(("url", "date"), tag)
                 r_ |= {"version": version_string}
                 resolved_releases.append(r_)  # type: ignore[arg-type]
                 prerelease_pushed = True
@@ -525,7 +525,7 @@ async def resolve_tags(
             elif version.is_final:
                 r_ = deepcopy(definition)
                 r_.pop("tags")
-                r_ |= pluck(tag, ("url", "date"))  # type: ignore[arg-type]
+                r_ |= pick(("url", "date"), tag)
                 r_ |= {"version": version_string}
                 resolved_releases.append(r_)  # type: ignore[arg-type]
                 found_final = True
@@ -564,7 +564,7 @@ async def resolve_branches(
             resolved = deepcopy(definition)
             resolved.pop("branch", None)
             branch_version = re.sub(r"\D", ".", branch["date"]).rstrip(".")
-            resolved |= pluck(branch, ("url", "date"))  # type: ignore[arg-type]
+            resolved |= pick(("url", "date"), branch)
             resolved |= {"version": branch_version}
             return resolved, wanted_branch  # type: ignore[return-value]
     return None, wanted_branch
@@ -695,14 +695,6 @@ def ensure_secure_source(
             f"Repository source changed for *{entry.get('name')}* from "
             f"{existing.get('source')} to untrusted {entry.get('source')}"
         )
-
-
-def pluck[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
-    return {
-        k: v
-        for k, v in d.items()
-        if k in keys
-    }
 
 
 def keys_missing_from_release(release: Mapping) -> set[str]:
