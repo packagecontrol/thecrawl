@@ -495,12 +495,13 @@ async def resolve_tags(
 
     tag_prefix = "" if tag_definition is True else tag_definition
     resolved_releases: list[Release] = []
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(weeks=53)
 
-    # preleases are rare, but if used there can be many pre-releases
-    # before a valid final release.  We only need the first (newest)
-    # one, and `prerelease_pushed` is used to track that.
-    prerelease_pushed = False
-    prerelease_version = None
+    # We take all releases from the current (rolling) year, but if there
+    # aren't any, things get trickier; and we get at most one leading
+    # prerelease before exactly one final version.
+    prerelease_found: str | None = None
     found_final = False
     async for tag in info["tags"]:
         if (
@@ -512,30 +513,29 @@ async def resolve_tags(
             ))
             and (version := parse_version(version_string))
         ):
-            if version.is_prerelease and not prerelease_pushed:
-                r_ = deepcopy(definition)
-                r_.pop("tags")
-                r_ |= pick(("url", "date"), tag)
-                r_ |= {"version": version_string}
-                resolved_releases.append(r_)  # type: ignore[arg-type]
-                prerelease_pushed = True
-                prerelease_version = version_string
-                continue
-
-            elif version.is_final:
-                r_ = deepcopy(definition)
-                r_.pop("tags")
-                r_ |= pick(("url", "date"), tag)
-                r_ |= {"version": version_string}
-                resolved_releases.append(r_)  # type: ignore[arg-type]
-                found_final = True
+            tag_date = datetime.strptime(tag["date"], UTC_FORMAT).replace(tzinfo=timezone.utc)
+            if tag_date < cutoff and found_final:
                 break
+
+            if tag_date >= cutoff or (
+                version.is_final or
+                (version.is_prerelease and not prerelease_found)
+            ):
+                r_ = deepcopy(definition)
+                r_.pop("tags")
+                r_ |= pick(("url", "date"), tag)
+                r_ |= {"version": version_string}
+                resolved_releases.append(r_)  # type: ignore[arg-type]
+                if version.is_final:
+                    found_final = True
+                elif version.is_prerelease:
+                    prerelease_found = version_string
 
     if found_final:
         return resolved_releases, None
 
-    if prerelease_pushed:
-        version_note = f" {prerelease_version}" if prerelease_version else ""
+    if prerelease_found:
+        version_note = f" {prerelease_found}" if prerelease_found else ""
         the = "the" if version_note else "a"
         base_url = definition.get("base")
         err(f"No final tag found for {base_url}.  Using {the} pre-release{version_note}.")
