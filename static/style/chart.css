@@ -144,6 +144,21 @@ section:has(.chart-container)::after {
     stroke-width: 1;
     pointer-events: none; /* tooltip is on the hit circle */
   }
+  .release-point-alt {
+    stroke-width: 0.3px;
+    stroke: var(--background-1);
+  }
+  .release-point-in-the-void {
+    opacity: 0.5;
+    stroke: var(--orange-3);
+    stroke-width: 0px;
+    :root[data-theme='dark'] {
+      fill: var(--orange-2);
+    }
+  }
+  .release-point-hit:hover + .release-point.release-point-in-the-void {
+    opacity: 1;
+  }
   .release-callout {
     stroke: var(--foreground-3);
     stroke-width: 1;
@@ -152,14 +167,22 @@ section:has(.chart-container)::after {
     fill: var(--foreground-3);
     font-size: 10px;
   }
+  .release-week .release-callout-group {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .release-week.is-default .release-callout-group {
+    opacity: 1;
+  }
+  .release-week:hover .release-callout-group {
+    opacity: 1;
+  }
   .upgrades-line {
     opacity: 1;
     transition: stroke-width .2s ease-in-out;
   }
   &:has(.upgrades-axis:hover),
-  &:has(.upgrades-line:hover),
   &:has(.upgrades-point:hover),
-  &:has(.upgrades-line-hit:hover),
   &:has(.upgrades-point-hit:hover) {
     .upgrades-line {
       stroke-width: 2.8px;
@@ -168,7 +191,11 @@ section:has(.chart-container)::after {
       stroke-width: 0.2px;
     }
   }
-
+  &:has(.release-week.release-week-near-default:hover) {
+    .release-week.is-default .release-callout-group {
+      opacity: 0;
+    }
+  }
   /* averages */
   .avg-line {
     stroke: var(--avg-line-color);

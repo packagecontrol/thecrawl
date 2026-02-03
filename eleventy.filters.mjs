@@ -115,6 +115,10 @@ export function max(arr, defaultValue = 0) {
   return Math.max(defaultValue, ...(Array.isArray(arr) ? arr : [arr]))
 }
 
+export function max_length(arr, defaultValue = 0) {
+  return Math.max(defaultValue, ...arr.map(val => val.length))
+}
+
 // min: provide Math.min to the templates
 export function min(arr, defaultValue = Number.POSITIVE_INFINITY) {
   return Math.min(defaultValue, ...(Array.isArray(arr) ? arr : [arr]))
@@ -126,6 +130,10 @@ export function at_least(v, defaultValue = 0) {
 
 export function at_most(v, defaultValue = Number.POSITIVE_INFINITY) {
   return Math.min(defaultValue, v)
+}
+
+export function clamp(v, min, max) {
+  return Math.min(max, Math.max(min, v))
 }
 
 export function sum(arr) {
@@ -299,6 +307,93 @@ export function iso_week_index(dates, dateInput) {
 
   const diff = Math.round((anchor - target) / MS_PER_WEEK)
   return diff >= 0 ? diff : null
+}
+
+// given releases and a list of ISO week strings, return week indexes and their versions
+export function release_week_model(releases, dates, max_week_idx) {
+  if (!Array.isArray(releases) || !Array.isArray(dates) || dates.length === 0) {
+    return []
+  }
+
+  const weeks = []
+  const versionsByWeek = new Map()
+
+  for (const release of releases) {
+    if (!release || !release.date) continue
+    const idx = iso_week_index(dates, release.date)
+    if (idx === null || idx === undefined) continue
+    if (idx >= max_week_idx) continue
+
+    if (!versionsByWeek.has(idx)) {
+      weeks.push(idx)
+      versionsByWeek.set(idx, [])
+    }
+
+    const version = release.version ?? 'unknown'
+    versionsByWeek.get(idx).push(String(version))
+  }
+
+  const versions_list = weeks.map(idx => versionsByWeek.get(idx) ?? [])
+  return weeks.map((week_idx, i) => ({
+    week_idx,
+    versions: versions_list[i],
+  }))
+}
+
+// given release weeks, compute x/y coordinates and stats flags
+export function release_week_coords(release_weeks, upgrades, dim, r_axis, default_y) {
+  if (!Array.isArray(release_weeks)) return []
+  const upgradesList = Array.isArray(upgrades) ? upgrades : []
+  const coords = []
+
+  for (const release of release_weeks) {
+    const week_idx = release.week_idx
+    const has_stats = week_idx < upgradesList.length
+    const x = week_idx * dim.bar_w_gap + (dim.bar_w / 2)
+    const y = has_stats
+      ? r_axis.y_for(upgradesList[week_idx])
+      : default_y
+    coords.push({ x, y, has_stats })
+  }
+
+  return coords
+}
+
+export function compute_hit_area(release_coords, index, min_radius, max_radius) {
+  const coord = release_coords[index]
+  let left_r = max_radius
+  let right_r = max_radius
+
+  if (index > 0) {
+    const prev = release_coords[index - 1]
+    if (prev) {
+      left_r = gap_radius(coord, prev, min_radius, max_radius)
+    }
+  }
+
+  if (index + 1 < release_coords.length) {
+    const next = release_coords[index + 1]
+    if (next) {
+      right_r = gap_radius(next, coord, min_radius, max_radius)
+    }
+  }
+
+  const hit_v = Math.min(left_r, right_r)
+  return {
+    x: coord.x - left_r,
+    y: coord.y - hit_v,
+    w: left_r + right_r,
+    h: hit_v * 2,
+    rx: hit_v,
+    ry: hit_v,
+  }
+}
+
+function gap_radius(a, b, min_radius, max_radius) {
+  const dx = a.x - b.x
+  const dy = a.y - b.y
+  const gap = Math.max(Math.abs(dx), Math.abs(dy))
+  return clamp((gap / 2) - 1, min_radius, max_radius)
 }
 
 const shortMonthFormatter = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' })
