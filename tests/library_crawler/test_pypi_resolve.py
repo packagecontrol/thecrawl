@@ -97,7 +97,7 @@ def test_pypi_version_spec_wildcard():
     assert by_platform["windows-x64"]["version"] == "4.2.6"
 
 
-def _test_pypi_backrefs_post_release_py38():
+def test_pypi_backrefs_post_release_py38():
     release = {
         "base": "https://pypi.org/project/backrefs",
         "asset": "backrefs-*-py${py_version}-none-any.whl",
