@@ -825,6 +825,168 @@ async def test_tag_true_includes_prerelease_and_final(set_now, set_github_info):
 
 
 @pytest.mark.asyncio
+async def test_tag_true_filters_to_running_year(set_now, set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "TagRunningYear",
+                "details": "https://github.com/example/tag-running-year",
+                "releases": [
+                    {
+                        "sublime_text": "*",
+                        "tags": True
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}}
+
+    github_info = {
+        "metadata": {
+            "id": "R_tagrunningyear",
+            "name": "TagRunningYear",
+            "description": "Fixture package with running year tags",
+            "homepage": "https://github.com/example/tag-running-year",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/tag-running-year/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [
+            {
+                "name": "v1.2.0",
+                "sha": "new123",
+                "date": "2026-06-01T00:00:00Z",
+                "url": "https://codeload.github.com/example/tag-running-year/zip/v1.2.0"
+            },
+            {
+                "name": "v1.2.1-beta.1",
+                "sha": "beta123",
+                "date": "2026-04-01T00:00:00Z",
+                "url": "https://codeload.github.com/example/tag-running-year/zip/v1.2.1-beta.1"
+            },
+            {
+                "name": "v1.1.0",
+                "sha": "mid123",
+                "date": "2025-08-01T00:00:00Z",
+                "url": "https://codeload.github.com/example/tag-running-year/zip/v1.1.0"
+            },
+            {
+                "name": "v1.0.0",
+                "sha": "old123",
+                "date": "2025-05-01T00:00:00Z",
+                "url": "https://codeload.github.com/example/tag-running-year/zip/v1.0.0"
+            }
+        ],
+        "branches": []
+    }
+
+    set_now("2026-07-01T00:00:00Z")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("TagRunningYear")
+    assert package is not None
+    releases = package.get("releases", [])
+    assert len(releases) == 3
+    versions = {release["version"] for release in releases}
+    assert versions == {"1.2.0", "1.2.1-beta.1", "1.1.0"}
+
+
+@pytest.mark.asyncio
+async def test_tag_true_returns_latest_when_running_year_empty(
+    set_now, set_github_info, capsys
+):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "TagLatestRelease",
+                "details": "https://github.com/example/tag-latest-release",
+                "releases": [
+                    {
+                        "sublime_text": "*",
+                        "tags": True
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}}
+
+    github_info = {
+        "metadata": {
+            "id": "R_taglatestrelease",
+            "name": "TagLatestRelease",
+            "description": "Fixture package with old tags",
+            "homepage": "https://github.com/example/tag-latest-release",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/tag-latest-release/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [
+            {
+                "name": "v2.1.0-beta.1",
+                "sha": "beta123",
+                "date": "2024-02-01T00:00:00Z",
+                "url": "https://codeload.github.com/example/tag-latest-release/zip/v2.1.0-beta.1"
+            },
+            {
+                "name": "v2.0.0",
+                "sha": "new123",
+                "date": "2024-01-01T00:00:00Z",
+                "url": "https://codeload.github.com/example/tag-latest-release/zip/v2.0.0"
+            },
+            {
+                "name": "v1.5.0",
+                "sha": "old123",
+                "date": "2023-06-01T00:00:00Z",
+                "url": "https://codeload.github.com/example/tag-latest-release/zip/v1.5.0"
+            }
+        ],
+        "branches": [
+            {
+                "name": "main",
+                "version": "2024.01.01.00.00.00",
+                "sha": "main123",
+                "date": "2024-01-01T00:00:00Z",
+                "url": "https://codeload.github.com/example/tag-latest-release/zip/main"
+            }
+        ]
+    }
+
+    set_now("2026-07-01T00:00:00Z")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+    err = capsys.readouterr().err
+    assert "Falling back to tip of" not in err
+
+    package = workspace["packages"].get("TagLatestRelease")
+    assert package is not None
+    releases = package.get("releases", [])
+    assert len(releases) == 2
+    versions = {release["version"] for release in releases}
+    assert versions == {"2.1.0-beta.1", "2.0.0"}
+
+
+@pytest.mark.asyncio
 async def test_tag_prefixes_do_not_apply_when_tags_true(set_now, set_github_info):
     registry = {
         "repositories": [
