@@ -12,6 +12,7 @@
     gap: 1,
     upgrade_pt_r: 2,
     upgrade_pt_hit_r: 8,
+    release_pt_hit_r: 24,
     top: 14,
     bottom: 42,
     left: 50,
@@ -242,68 +243,100 @@
 
         {# release dots and callouts #}
         {% if releases and (releases | length) > 0 %}
-          {% set latest_release = releases | first %}
-          {% if latest_release.date %}
-            {% set release_index = dates | iso_week_index(latest_release.date) %}
-            {% if release_index is not none and release_index < padded_count %}
-              {% set gap_to_line_start = 4 %}
-              {% set gap_to_text = 4 %}
-              {% set minimum_line_length = 12 %}
-              {% set max_line_length = 52 %}
-              {% set void_line_length = 24 %}  {# the default line length when we have a version and no stats around it #}
+          {% set release_weeks = releases | release_week_model(dates, padded_count) %}
 
-              {# the red circle #}
-              {% set release_has_stats = release_index < count and release_index < (upgrades | length) %}
-              {% set release_version = latest_release.version | default('unknown', true) %}
-              {% set release_x = release_index * (dim.bar_w_gap) + (dim.bar_w / 2) %}
-              {% if release_has_stats %}
-                {% set release_val = upgrades[release_index] | default(0, true) %}
-                {% set release_y = r_axis.y_for(release_val) %}
-                {% set release_title = dates[release_index] ~ ' | upgrades: ' ~ (release_val | grouping) %}
-              {% else %}
-                {% set release_y = (y_avg_net is defined and y_avg_net is not none) and y_avg_net or l_axis.y_for(0) %}
-                {% set release_title = (latest_release.date | date_time_format) %}
-              {% endif %}
-              {# Large invisible hit circle for release tooltip #}
-              <circle cx="{{ release_x }}" cy="{{ release_y }}" r="{{ dim.upgrade_pt_hit_r }}" class="upgrades-point-hit release-point-hit">
-                <title>{{ release_title }}</title>
-              </circle>
-              {# Visible release point without title #}
-              <circle cx="{{ release_x }}" cy="{{ release_y }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point release-point" />
+          {% set default_y = y_avg_net | default(l_axis.y_for(0), true) %}
+          {% set release_coords = release_weeks | release_week_coords(upgrades, dim, r_axis, default_y) %}
 
-              {# callout line heading North #}
-              {% set line_start_y = (release_y - dim.upgrade_pt_r - gap_to_line_start) | at_least(0) %}
-              {# Watch out +- 4 weeks and compute `line_end_y` to stay visually above everything else #}
-              {% set look_start = (release_index - 4) | at_least(0) %}
-              {% set look_end = (release_index + 4) | at_most(padded_count - 1) %}
-              {% set max_upgrade_val = upgrades | slice(look_start, look_end + 1) | max %}
-              {% set max_install_val = installs | slice(look_start, look_end + 1) | max %}
+          {% set latest_release_index = release_weeks[0].week_idx %}
+          {% for i in range(0, release_weeks | length) %}
+            {% set release = release_weeks[i] %}
+            {% set is_latest_week = i == 0 %}
+            {% set bars_from_latest = (release.week_idx - latest_release_index) | abs %}
+            {% set is_near_latest = (not is_latest_week) and (bars_from_latest <= 5) %}
+            {% set r_coord = release_coords[i] %}
+            {% set release_has_stats = r_coord.has_stats %}
 
-              {% if max_upgrade_val == 0 and max_install_val == 0 %}  {# no stats around #}
-                {% set line_end_y = (line_start_y - void_line_length) | at_least(0) %}
-              {% else %}
-                {% set upgrade_top = r_axis.y_for(max_upgrade_val) - dim.upgrade_pt_r - gap_to_line_start %}
-                {% set install_top = l_axis.y_for(max_install_val) - gap_to_line_start %}
-                {% set y_points = [line_start_y - minimum_line_length, upgrade_top, install_top] %}
-                {% set line_end_y = y_points | min | at_least(0) %}
-              {% endif %}
-
-              {% set line_length = line_start_y - line_end_y %}
-              {% set clipped = line_length > max_line_length %}
-              {% if clipped %}
-                {% set line_start_y = (line_end_y + max_line_length) | at_most(line_start_y) %}
-              {% endif %}
-
-              <line x1="{{ release_x }}" y1="{{ line_start_y }}" x2="{{ release_x }}" y2="{{ line_end_y }}" class="release-callout" />
-              {% if clipped %}
-                {{ draw_arrow(release_x, line_start_y, 3, 2) }}
-              {% endif %}
-              {# If line_start_y == 0 we draw a point at the top edge with no callout line #}
-              {# but just the text.  Increase the gap_to_text slightly by 2 in that case. #}
-              {% set label_y = line_end_y - gap_to_text - (line_start_y == 0 and 2 or 0) %}
-              {{ draw_callout_label(release_version, release_x, label_y, dim) }}
+            {% set release_title = dates[release.week_idx] %}
+            {% if release_has_stats %}
+              {% set release_val = upgrades[release.week_idx] | default(0, true) %}
+              {% set release_title = release_title ~ ' | upgrades: ' ~ (release_val | grouping) %}
             {% endif %}
-          {% endif %}
+
+            {% set release_week_class = 'release-week' %}
+            {% if is_latest_week %}
+              {% set release_week_class = release_week_class ~ ' is-default' %}
+            {% elif is_near_latest %}
+              {% set release_week_class = release_week_class ~ ' release-week-near-default' %}
+            {% endif %}
+            <g class="{{ release_week_class }}">
+              {# Large invisible asymmetric hit area for release tooltip #}
+              {% set hit_area = release_coords | compute_hit_area(i, dim.upgrade_pt_hit_r, dim.release_pt_hit_r) %}
+              <rect
+                x="{{ hit_area.x }}"
+                y="{{ hit_area.y }}"
+                width="{{ hit_area.w }}"
+                height="{{ hit_area.h }}"
+                rx="{{ hit_area.rx }}"
+                ry="{{ hit_area.ry }}"
+                class="upgrades-point-hit release-point-hit">
+                <title>{{ release_title }}</title>
+              </rect>
+
+              {# Visible release point without title #}
+              {% set release_point_classes = 'upgrades-point release-point' %}
+              {% if not is_latest_week %}
+                {% set release_point_classes = release_point_classes ~ ' release-point-alt' %}
+              {% endif %}
+              {% if not release_has_stats %}
+                {% set release_point_classes = release_point_classes ~ ' release-point-in-the-void' %}
+              {% endif %}
+              <circle cx="{{ r_coord.x }}" cy="{{ r_coord.y }}" r="{{ dim.upgrade_pt_r }}" class="{{ release_point_classes }}" />
+
+              <g class="release-callout-group">
+                {% set gap_to_line_start = 4 %}
+                {% set gap_to_text = 4 %}
+                {% set minimum_line_length = 12 %}
+                {% set max_line_length = 52 %}
+                {% set void_line_length = 24 %}  {# the default line length when we have a version and no stats around it #}
+
+                {# callout line heading North #}
+                {% set line_start_y = (r_coord.y - dim.upgrade_pt_r - gap_to_line_start) | at_least(0) %}
+                {# Watch out +- 4 weeks and compute `line_end_y` to stay visually above everything else #}
+                {% set look_start = (release.week_idx - 4) | at_least(0) %}
+                {% set look_end = (release.week_idx + 4) | at_most(padded_count - 1) %}
+                {% set max_upgrade_val = upgrades | slice(look_start, look_end + 1) | max %}
+                {% set max_install_val = installs | slice(look_start, look_end + 1) | max %}
+
+                {% if max_upgrade_val == 0 and max_install_val == 0 %}  {# no stats around #}
+                  {% set line_end_y = (line_start_y - void_line_length) | at_least(0) %}
+                {% else %}
+                  {% set upgrade_top = r_axis.y_for(max_upgrade_val) - dim.upgrade_pt_r - gap_to_line_start %}
+                  {% set install_top = l_axis.y_for(max_install_val) - gap_to_line_start %}
+                  {% set y_points = [line_start_y - minimum_line_length, upgrade_top, install_top] %}
+                  {% set line_end_y = y_points | min | at_least(0) %}
+                {% endif %}
+
+                {% set line_length = line_start_y - line_end_y %}
+                {% set clipped = line_length > max_line_length %}
+                {% if clipped %}
+                  {% set line_start_y = (line_end_y + max_line_length) | at_most(line_start_y) %}
+                {% endif %}
+
+                <line x1="{{ r_coord.x }}" y1="{{ line_start_y }}" x2="{{ r_coord.x }}" y2="{{ line_end_y }}" class="release-callout" />
+                {% if clipped %}
+                  {{ draw_arrow(r_coord.x, line_start_y, 3, 2) }}
+                {% endif %}
+
+                {# If line_start_y == 0 we draw a point at the top edge with no callout line #}
+                {# but just the text.  Increase the gap_to_text slightly by 2 in that case. #}
+                {% set label_y = line_end_y - gap_to_text - (line_start_y == 0 and 2 or 0) %}
+                {% set line_height = 12 %}
+                {% set label_top_y = label_y - ((release.versions | length) - 1) * line_height %}
+                {{ draw_callout_label(release.versions, r_coord.x, label_top_y, dim.chart_w) }}
+              </g>
+            </g>
+          {% endfor %}
         {% endif %}
       </g>
     </svg>
@@ -362,12 +395,18 @@
   <polygon points="{{ x }},{{ y }} {{ x - side_width }},{{ base_y }} {{ x + side_width }},{{ base_y }}" class="{{ class }}" />
 {% endmacro %}
 
-{% macro draw_callout_label(text_value, x, label_y, dim, margin=4, char_width=6, class='release-label') %}
-  {% set label_chars = text_value | length %}
-  {% set half_width = (label_chars * char_width) / 2 %}
-  {% set x_left = x - half_width %}
-  {% set x_right = x + half_width %}
-  {% set chart_right = dim.chart_w - margin %}
+{% macro draw_callout_label(
+  lines, base_x, label_y, chart_w,
+  line_height=12,
+  margin=4,
+  char_width=6,
+  class='release-label')
+%}
+  {% set max_len = lines | max_length %}
+  {% set half_width = (max_len * char_width) / 2 %}
+  {% set x_left = base_x - half_width %}
+  {% set x_right = base_x + half_width %}
+  {% set chart_right = chart_w - margin %}
   {% if x_left < margin %}
     {% set anchor = 'start' %}
     {% set label_x = margin %}
@@ -376,9 +415,9 @@
     {% set label_x = chart_right %}
   {% else %}
     {% set anchor = 'middle' %}
-    {% set label_x = x %}
+    {% set label_x = base_x %}
   {% endif %}
-  {{ text(text_value, label_x, label_y, class, anchor, 'alphabetic') }}
+  {{ multiline_text(lines, label_x, label_y, class, anchor, line_height) }}
 {% endmacro %}
 
 {% macro text(t, x, y, class='', anchor='start', baseline='middle') %}
