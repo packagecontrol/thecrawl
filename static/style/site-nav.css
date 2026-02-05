@@ -1,0 +1,62 @@
+/* Thin secondary navigation bar below the header */
+.site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: var(--max-content);
+  margin: -13px auto 16px auto;
+  padding: 3px var(--side-padding);
+  font-size: 16px;
+  color: var(--foreground-3);
+  border-top: 1px solid var(--background-4);
+
+  a {
+    color: inherit;
+    transition: color 0.1s ease-in-out;
+
+    &:hover {
+      color: var(--foreground-1);
+    }
+  }
+}
+
+/* On homepage (header has h1), pull nav closer to tagline */
+header:has(h1) + .site-nav {
+  margin: -48px auto 51px auto;
+}
+
+.site-nav-links {
+  display: flex;
+  gap: 1.5em;
+}
+
+.site-nav-meta {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.site-nav-github {
+  display: flex;
+  align-items: center;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* On very narrow screens, hide less essential links */
+@media (max-width: 400px) {
+  .site-nav {
+    font-size: 14px;
+  }
+
+  .site-nav-links {
+    gap: 1em;
+  }
+
+  .site-nav-meta {
+    gap: 0.75em;
+  }
+}
