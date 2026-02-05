@@ -312,9 +312,7 @@
                 {# If line_start_y == 0 we draw a point at the top edge with no callout line #}
                 {# but just the text.  Increase the gap_to_text slightly by 2 in that case. #}
                 {% set label_y = line_end_y - gap_to_text - (line_start_y == 0 and 2 or 0) %}
-                {% set line_height = 12 %}
-                {% set label_top_y = label_y - ((release.versions | length) - 1) * line_height %}
-                {{ draw_callout_label(release.versions, r_coord.x, label_top_y, dim.chart_w) }}
+                {{ draw_callout_label(release.versions, r_coord.x, label_y, dim.chart_w) }}
               </g>
             </g>
           {% endfor %}
@@ -408,13 +406,24 @@
 {% endmacro %}
 
 {% macro draw_callout_label(
-  lines, base_x, label_y, chart_w,
-  line_height=12,
+  versions, base_x, label_y, chart_w,
   margin=4,
   char_width=6,
   class='release-label')
 %}
-  {% set max_len = lines | max_length %}
+  {% set label = versions[0] | default('', true) %}
+  {% set stop = false %}
+  {% for version in versions | slice(1) %}
+    {% if not stop %}
+      {% if (label | length) + (version | length) > 16 %}
+        {% set label = label ~ ' /…' %}
+        {% set stop = true %}
+      {% else %}
+        {% set label = label ~ ' / ' ~ version %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  {% set max_len = label | length %}
   {% set half_width = (max_len * char_width) / 2 %}
   {% set x_left = base_x - half_width %}
   {% set x_right = base_x + half_width %}
@@ -429,7 +438,7 @@
     {% set anchor = 'middle' %}
     {% set label_x = base_x %}
   {% endif %}
-  {{ multiline_text(lines, label_x, label_y, class, anchor, line_height) }}
+  {{ text(label, label_x, label_y, class, anchor, 'alphabetic') }}
 {% endmacro %}
 
 {% macro text(t, x, y, class='', anchor='start', baseline='middle') %}
