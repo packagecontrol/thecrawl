@@ -7,9 +7,9 @@
   --upgrade-point-fill-color: var(--blue-3);
   --release-point-fill-color: var(--red-1);
   --release-point-stroke-color: hsl(7deg 91.82% 41.44%);
+  --release-point-stroke-alt-color: hsl(0deg 100% 82.7%);
   --avg-line-color: var(--orange-3);
   --install-legend-color: var(--orange-1);
-  --upgrade-hit-stroke-width: 12px;
 
   --spacing: calc(1.75 * var(--side-padding));
   max-width: calc(var(--max-content) * 2/3 - var(--spacing));
@@ -109,14 +109,6 @@ section:has(.chart-container)::after {
   }
 
   /* upgrades lines */
-  /* Wide invisible hit areas to make line/points easier to hover */
-  .upgrades-line-hit {
-    stroke: transparent;
-    stroke-width: var(--upgrade-hit-stroke-width);
-    fill: none;
-    pointer-events: stroke;
-  }
-  .upgrades-point-hit,
   .release-point-hit {
     fill: transparent;
     stroke: none;
@@ -128,6 +120,9 @@ section:has(.chart-container)::after {
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
+    opacity: 1;
+    pointer-events: none;
+    transition: stroke-width .2s ease-in-out;
   }
   .upgrades-line-dashed {
     stroke-dasharray: 1 4;
@@ -144,9 +139,9 @@ section:has(.chart-container)::after {
     stroke-width: 1;
     pointer-events: none; /* tooltip is on the hit circle */
   }
-  .release-point-alt {
+  .release-week:not(.is-default) .release-point {
     stroke-width: 0.3px;
-    stroke: var(--background-1);
+    stroke: var(--release-point-stroke-alt-color);
   }
   .release-point-in-the-void {
     opacity: 0.5;
@@ -170,30 +165,43 @@ section:has(.chart-container)::after {
   .release-week .release-callout-group {
     opacity: 0;
     pointer-events: none;
+    transition: opacity .3s ease-out;
   }
   .release-week.is-default .release-callout-group {
     opacity: 1;
+    transition-duration: .1s;
   }
-  .release-week:hover .release-callout-group {
+  .release-week:has(.release-point-hit:hover) .release-callout-group {
     opacity: 1;
+    transition-duration: .1s;
   }
-  .upgrades-line {
+  .release-week:has(.release-point-hit:hover) .release-point {
+    stroke-width: 1px;
+    stroke: var(--release-point-stroke-color);
+  }
+  &:has(.release-point-hit:hover) .release-week.is-default .release-point {
+    stroke-width: 0.3px;
+    stroke: var(--release-point-stroke-alt-color);
+  }
+  .release-week.is-default:has(.release-point-hit:hover) .release-point {
+    stroke-width: 1px;
+    stroke: var(--release-point-stroke-color);
+  }
+  &:has(.release-point-hit:hover) .release-week.is-default .release-callout-group {
+    opacity: 0;
+  }
+  .release-week.is-default:has(.release-point-hit:hover) .release-callout-group {
     opacity: 1;
-    transition: stroke-width .2s ease-in-out;
+    transition-duration: .1s;
   }
   &:has(.upgrades-axis:hover),
-  &:has(.upgrades-point:hover),
-  &:has(.upgrades-point-hit:hover) {
+  &:has(.release-point-hit:hover) {
     .upgrades-line {
       stroke-width: 2.8px;
     }
     .upgrades-point {
       stroke-width: 0.2px;
-    }
-  }
-  &:has(.release-week.release-week-near-default:hover) {
-    .release-week.is-default .release-callout-group {
-      opacity: 0;
+      transition: .5s opacity;
     }
   }
   /* averages */
