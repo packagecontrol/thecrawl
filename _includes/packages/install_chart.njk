@@ -412,9 +412,17 @@
                       stroke: var(--release-point-stroke-color);
                     }
                   }
+                  {# if nearest release is not default, #}
                   {% if nearest_week_idx != default_week_idx %}
-                    {# if nearest release is not default, hide the default callout during this hover #}
-                    .release-week.is-default .release-callout-group { opacity: 0; }
+                    .release-week.is-default {
+                    {# hide the default callout #}
+                      .release-callout-group { opacity: 0; }
+                    {# and demote the release point #}
+                      .release-point {
+                        stroke-width: 0.3px;
+                        stroke: var(--release-point-stroke-alt-color);
+                      }
+                    }
                   {% endif %}
                 }
               {% endif %}
