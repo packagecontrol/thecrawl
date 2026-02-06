@@ -88,9 +88,8 @@ isPackagePage: true
   {% set stats_sum = (pkg.weekly_installs | sum) + (pkg.weekly_removals | sum) + (pkg.weekly_upgrades | sum) %}
   {% set has_install_stats = stats_sum > 0 %}
   {% set has_release_in_window = false %}
-  {% set chart_releases = (pkg.releases or []).concat(pkg.otherReleases or []) %}
-  {% if chart_releases and (chart_releases | length) > 0 and pkg.weekly_dates and (pkg.weekly_dates | length) > 0 %}
-    {% set latest_release = chart_releases | first %}
+  {% if (pkg.allReleases | length) > 0 and pkg.weekly_dates and (pkg.weekly_dates | length) > 0 %}
+    {% set latest_release = pkg.allReleases | first %}
     {% if latest_release.date %}
       {% set release_index = pkg.weekly_dates | iso_week_index(latest_release.date) %}
       {% if release_index is not none and release_index < (pkg.weekly_dates | length) %}
@@ -101,7 +100,7 @@ isPackagePage: true
 
   {% if has_install_stats or has_release_in_window %}
     <div class="chart-container">
-      {{ charts.chart(pkg.installed, pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates, chart_releases) }}
+      {{ charts.chart(pkg.installed, pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates, pkg.allReleases) }}
     </div>
   {% endif %}
 
