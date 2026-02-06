@@ -7,9 +7,9 @@
   --upgrade-point-fill-color: var(--blue-3);
   --release-point-fill-color: var(--red-1);
   --release-point-stroke-color: hsl(7deg 91.82% 41.44%);
+  --release-point-stroke-alt-color: hsl(0deg 100% 82.7%);
   --avg-line-color: var(--orange-3);
   --install-legend-color: var(--orange-1);
-  --upgrade-hit-stroke-width: 12px;
 
   --spacing: calc(1.75 * var(--side-padding));
   max-width: calc(var(--max-content) * 2/3 - var(--spacing));
@@ -109,14 +109,6 @@ section:has(.chart-container)::after {
   }
 
   /* upgrades lines */
-  /* Wide invisible hit areas to make line/points easier to hover */
-  .upgrades-line-hit {
-    stroke: transparent;
-    stroke-width: var(--upgrade-hit-stroke-width);
-    fill: none;
-    pointer-events: stroke;
-  }
-  .upgrades-point-hit,
   .release-point-hit {
     fill: transparent;
     stroke: none;
@@ -128,6 +120,9 @@ section:has(.chart-container)::after {
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
+    opacity: 1;
+    pointer-events: none;
+    transition: stroke-width .2s ease-in-out;
   }
   .upgrades-line-dashed {
     stroke-dasharray: 1 4;
@@ -138,15 +133,20 @@ section:has(.chart-container)::after {
     fill: var(--upgrade-point-fill-color);
     pointer-events: none; /* tooltip is on the hit circle */
   }
+  /*
+    Interaction-heavy release callout selectors live in the template's
+    dynamic <style> block in _includes/packages/install_chart.njk.
+    Only baseline visual styles are in this shared stylesheet.
+  */
   .release-point {
     fill: var(--release-point-fill-color);
     stroke: var(--release-point-stroke-color);
     stroke-width: 1;
     pointer-events: none; /* tooltip is on the hit circle */
   }
-  .release-point-alt {
+  .release-week:not(.is-default) .release-point {
     stroke-width: 0.3px;
-    stroke: var(--background-1);
+    stroke: var(--release-point-stroke-alt-color);
   }
   .release-point-in-the-void {
     opacity: 0.5;
@@ -156,9 +156,6 @@ section:has(.chart-container)::after {
       fill: var(--orange-2);
     }
   }
-  .release-point-hit:hover + .release-point.release-point-in-the-void {
-    opacity: 1;
-  }
   .release-callout {
     stroke: var(--foreground-3);
     stroke-width: 1;
@@ -166,35 +163,6 @@ section:has(.chart-container)::after {
   .release-label {
     fill: var(--foreground-3);
     font-size: 10px;
-  }
-  .release-week .release-callout-group {
-    opacity: 0;
-    pointer-events: none;
-  }
-  .release-week.is-default .release-callout-group {
-    opacity: 1;
-  }
-  .release-week:hover .release-callout-group {
-    opacity: 1;
-  }
-  .upgrades-line {
-    opacity: 1;
-    transition: stroke-width .2s ease-in-out;
-  }
-  &:has(.upgrades-axis:hover),
-  &:has(.upgrades-point:hover),
-  &:has(.upgrades-point-hit:hover) {
-    .upgrades-line {
-      stroke-width: 2.8px;
-    }
-    .upgrades-point {
-      stroke-width: 0.2px;
-    }
-  }
-  &:has(.release-week.release-week-near-default:hover) {
-    .release-week.is-default .release-callout-group {
-      opacity: 0;
-    }
   }
   /* averages */
   .avg-line {

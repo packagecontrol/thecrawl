@@ -193,20 +193,18 @@ function basePackage(pkg, stat) {
     }
   }
 
-  // sort releases primarily by Sublime Text selector (higher min build first),
-  // secondary by date, newest first
-  releases.sort((a, b) => {
-    const minA = util.parseSublimeTextMin(a.sublime_text)
-    const minB = util.parseSublimeTextMin(b.sublime_text)
-    if (minA !== minB) {
-      return minB - minA // Higher min build first
-    }
+  const { mainReleases, otherReleases } = util.weightReleases(releases)
+
+  const allReleases = [...releases].sort((a, b) => {
     const dateA = new Date(a.date ?? '1970-01-01 00:00:00')
     const dateB = new Date(b.date ?? '1970-01-01 00:00:00')
-    return dateB - dateA // Newest first
+    if (dateA.getTime() !== dateB.getTime()) {
+      return dateB - dateA // Newest first
+    }
+    const minA = util.parseSublimeTextMin(a.sublime_text)
+    const minB = util.parseSublimeTextMin(b.sublime_text)
+    return minB - minA // Higher min build first
   })
-
-  const { mainReleases, otherReleases } = util.weightReleases(releases)
 
   const labels = pkg.labels?.slice() ?? []
   if (!supportsModernSublime) labels.push('ST2')
@@ -231,6 +229,7 @@ function basePackage(pkg, stat) {
     removed: pkg.removed,
     releases: mainReleases,
     otherReleases,
+    allReleases,
     labels: labels,
     // Aggregated platform tokens for search indexing and platform: filtering.
     platforms: platforms,

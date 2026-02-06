@@ -11,8 +11,7 @@
     bar_w: 12,
     gap: 1,
     upgrade_pt_r: 2,
-    upgrade_pt_hit_r: 8,
-    release_pt_hit_r: 24,
+    release_pt_hit_r: 14,
     top: 14,
     bottom: 42,
     left: 50,
@@ -73,7 +72,6 @@
           {% set up = upgrades[i] %}
           {% set net_val = ((inst - rem) | at_least(0)) %}
           {% set rem_draw = (rem | at_most(inst)) %}
-
           {% set net_h  = l_axis.to_px(net_val) %}
           {% set rem_h  = l_axis.to_px(rem_draw) %}
 
@@ -83,9 +81,15 @@
           {% set y_rem      = y_net - rem_h %}
           {% set slice_w = dim.slice_width_at(i) %}
 
-          {% set title_text = dates[i] ~ ' | installs: ' ~ (inst | grouping) ~ ' | removals: ' ~ (rem | grouping) %}
+          {% set title_parts = [
+            dates[i],
+            'installs: ' ~ (inst | grouping),
+            'removals: ' ~ (rem | grouping),
+            'upgrades: ' ~ (up | grouping)
+          ] %}
+          {% set title_text = title_parts | join(' | ') %}
 
-          <g class="week">
+          <g class="week" data-week="{{ i }}">
             {# subtle hover background spanning the full slice #}
             {{ rect(x, 0, slice_w, dim.chart_h, 'week-slice-bg') }}
 
@@ -106,7 +110,7 @@
         {% for i in range(count, padded_count) %}
           {% set x = i * (dim.bar_w_gap) %}
           {% set slice_w = dim.slice_width_at(i) %}
-          <g class="week">
+          <g class="week" data-week="{{ i }}">
             {{ draw_grid_lines(i, x, slice_w, dim, l_axis) }}
           </g>
         {% endfor %}
@@ -201,16 +205,12 @@
             {% endfor %}
           {% endif %}
           <path d="{{ d }}" class="upgrades-line" />
-          {# Wide invisible hit path to improve hover over the curve #}
-          <path d="{{ d }}" class="upgrades-line-hit" />
           {% if count > 1 %}
             {% set x_week0 = dim.bar_w / 2 %}
             {% set y_week0 = r_axis.y_for(upgrades[0]) %}
             {% set x_week1 = 1 * (dim.bar_w_gap) + (dim.bar_w / 2) %}
             {% set y_week1 = r_axis.y_for(upgrades[1]) %}
             {{ line(x_week0, y_week0, x_week1, y_week1, 'upgrades-line upgrades-line-dashed') }}
-            {# Hit area for the initial dashed segment #}
-            {{ line(x_week0, y_week0, x_week1, y_week1, 'upgrades-line-hit upgrades-line-dashed') }}
           {% endif %}
 
           {# Points with tooltips #}
@@ -218,12 +218,6 @@
             {% set i = loop.index0 %}
             {% set y2 = r_axis.y_for(val) %}
             {% set x2 = i * (dim.bar_w_gap) + (dim.bar_w / 2) %}
-            {% set inst_i = installs[i] %}
-            {% set rem_i = removals[i] %}
-            {# Large invisible hit circle with the tooltip title #}
-            <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ dim.upgrade_pt_hit_r }}" class="upgrades-point-hit">
-              <title>{{ dates[i] }} | upgrades: {{ val | grouping }}</title>
-            </circle>
             {# Visible point without title #}
             <circle cx="{{ x2 }}" cy="{{ y2 }}" r="{{ dim.upgrade_pt_r }}" class="upgrades-point" />
           {% endfor %}
@@ -242,18 +236,14 @@
         {{ line(0, dim.chart_h, dim.chart_w, dim.chart_h, 'axis') }}
 
         {# release dots and callouts #}
-        {% if releases and (releases | length) > 0 %}
-          {% set release_weeks = releases | release_week_model(dates, padded_count) %}
-
+        {% set release_weeks = releases | release_week_model(dates, padded_count) %}
+        {% if release_weeks and (release_weeks | length) > 0 %}
           {% set default_y = y_avg_net | default(l_axis.y_for(0), true) %}
           {% set release_coords = release_weeks | release_week_coords(upgrades, dim, r_axis, default_y) %}
 
-          {% set latest_release_index = release_weeks[0].week_idx %}
           {% for i in range(0, release_weeks | length) %}
             {% set release = release_weeks[i] %}
-            {% set is_latest_week = i == 0 %}
-            {% set bars_from_latest = (release.week_idx - latest_release_index) | abs %}
-            {% set is_near_latest = (not is_latest_week) and (bars_from_latest <= 5) %}
+            {% set is_latest_release = i == 0 %}
             {% set r_coord = release_coords[i] %}
             {% set release_has_stats = r_coord.has_stats %}
 
@@ -264,30 +254,21 @@
             {% endif %}
 
             {% set release_week_class = 'release-week' %}
-            {% if is_latest_week %}
+            {% if is_latest_release %}
               {% set release_week_class = release_week_class ~ ' is-default' %}
-            {% elif is_near_latest %}
-              {% set release_week_class = release_week_class ~ ' release-week-near-default' %}
             {% endif %}
-            <g class="{{ release_week_class }}">
-              {# Large invisible asymmetric hit area for release tooltip #}
-              {% set hit_area = release_coords | compute_hit_area(i, dim.upgrade_pt_hit_r, dim.release_pt_hit_r) %}
-              <rect
-                x="{{ hit_area.x }}"
-                y="{{ hit_area.y }}"
-                width="{{ hit_area.w }}"
-                height="{{ hit_area.h }}"
-                rx="{{ hit_area.rx }}"
-                ry="{{ hit_area.ry }}"
-                class="upgrades-point-hit release-point-hit">
+            <g class="{{ release_week_class }}" data-week="{{ release.week_idx }}">
+              {# Simple hit circle for release tooltip #}
+              <circle
+                cx="{{ r_coord.x }}"
+                cy="{{ r_coord.y }}"
+                r="{{ dim.release_pt_hit_r }}"
+                class="release-point-hit">
                 <title>{{ release_title }}</title>
-              </rect>
+              </circle>
 
               {# Visible release point without title #}
               {% set release_point_classes = 'upgrades-point release-point' %}
-              {% if not is_latest_week %}
-                {% set release_point_classes = release_point_classes ~ ' release-point-alt' %}
-              {% endif %}
               {% if not release_has_stats %}
                 {% set release_point_classes = release_point_classes ~ ' release-point-in-the-void' %}
               {% endif %}
@@ -331,12 +312,134 @@
                 {# If line_start_y == 0 we draw a point at the top edge with no callout line #}
                 {# but just the text.  Increase the gap_to_text slightly by 2 in that case. #}
                 {% set label_y = line_end_y - gap_to_text - (line_start_y == 0 and 2 or 0) %}
-                {% set line_height = 12 %}
-                {% set label_top_y = label_y - ((release.versions | length) - 1) * line_height %}
-                {{ draw_callout_label(release.versions, r_coord.x, label_top_y, dim.chart_w) }}
+                {{ draw_callout_label(release.versions, r_coord.x, label_y, dim.chart_w) }}
               </g>
             </g>
           {% endfor %}
+
+          {% set release_nearest = release_weeks | release_week_nearest_map(padded_count) %}
+          {% set default_week_idx = release_weeks[0].week_idx %}
+          <style>
+            {#
+              Release callout interaction model (CSS-only, no JS)
+              ===================================================
+
+              A .release-week or .release-week[data-week="N"] groups a red .release-point,
+              the hit area of that point (.release-point-hit), and the .release-callout-group.
+
+                - .release-point             : visible point on upgrades line
+                - .release-point-hit         : large transparent hit target
+                - .release-callout-group     : vertical callout + version label
+
+              Base visibility rules:
+              - Latest release has .is-default and starts visible.
+              - All other release callouts start hidden.
+
+            #}
+            .install-chart {
+              {# every release callout starts hidden #}
+              .release-week .release-callout-group {
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity .3s ease-out;
+              }
+              {# except the leading release (.is-default), which starts visible #}
+              .release-week.is-default .release-callout-group {
+                opacity: 1;
+                transition-duration: .1s;
+              }
+              {# when hovering a release hit-target, #}
+              .release-week:has(.release-point-hit:hover) {
+              {# show its release callout #}
+                .release-callout-group {
+                  opacity: 1;
+                  transition-duration: .1s;
+                }
+              {# and promote its release point #}
+                .release-point {
+                  stroke-width: 1px;
+                  stroke: var(--release-point-stroke-color);
+                }
+              {# "void" release points are faded by default so make them fully visible too #}
+                .release-point-in-the-void {
+                  opacity: 1;
+                }
+              }
+              {# while any release is hovered, demote the default release point #}
+              &:has(.release-point-hit:hover) .release-week.is-default .release-point {
+                stroke-width: 0.3px;
+                stroke: var(--release-point-stroke-alt-color);
+              }
+              {# unless the hovered release is itself the default release #}
+              .release-week.is-default:has(.release-point-hit:hover) .release-point {
+                stroke-width: 1px;
+                stroke: var(--release-point-stroke-color);
+              }
+              {# while any release is hovered, hide the default callout #}
+              &:has(.release-point-hit:hover) .release-week.is-default .release-callout-group {
+                opacity: 0;
+              }
+              {# unless the hovered release is itself the default release #}
+              .release-week.is-default:has(.release-point-hit:hover) .release-callout-group {
+                opacity: 1;
+                transition-duration: .1s;
+              }
+              {# hovering upgrades axis OR any release point thickens upgrades line/points #}
+              &:has(.upgrades-axis:hover),
+              &:has(.release-point-hit:hover) {
+                .upgrades-line {
+                  stroke-width: 2.8px;
+                }
+                .upgrades-point {
+                  stroke-width: 0.2px;
+                  transition: .5s opacity;
+                }
+              }
+            }
+            {% for week_idx in range(0, padded_count) %}
+              {% set nearest_week_idx = release_nearest[week_idx] %}
+              {% if nearest_week_idx is not none %}
+                {# hovering a specific week ({{ week_idx }}) #}
+                .install-chart:has(.week[data-week="{{ week_idx }}"]:hover) {
+                  {# promotes the nearest release week {{ nearest_week_idx }} #}
+                  .release-week[data-week="{{ nearest_week_idx }}"] {
+                    .release-callout-group {
+                      opacity: 1;
+                      transition-duration: .1s;
+                    }
+                    .release-point {
+                      stroke-width: 1px;
+                      stroke: var(--release-point-stroke-color);
+                    }
+                    .release-point-in-the-void {
+                      opacity: 1;
+                    }
+                  }
+                  {# if nearest release is not default, #}
+                  {% if nearest_week_idx != default_week_idx %}
+                    .release-week.is-default {
+                    {# hide the default callout #}
+                      .release-callout-group { opacity: 0; }
+                    {# and demote the release point #}
+                      .release-point {
+                        stroke-width: 0.3px;
+                        stroke: var(--release-point-stroke-alt-color);
+                      }
+                    }
+                  {% endif %}
+                }
+              {% endif %}
+            {% endfor %}
+            {% for i in range(0, release_weeks | length) %}
+              {% set week_idx = release_weeks[i].week_idx %}
+              {# hovering a release week {{ week_idx }} also highlights its install bar #}
+              .install-chart:has(.release-week[data-week="{{ week_idx }}"] .release-point-hit:hover) {
+                .week[data-week="{{ week_idx }}"] .bar {
+                  fill: var(--install-bar-hover-color);
+                }
+              }
+            {% endfor %}
+          </style>
         {% endif %}
       </g>
     </svg>
@@ -396,13 +499,24 @@
 {% endmacro %}
 
 {% macro draw_callout_label(
-  lines, base_x, label_y, chart_w,
-  line_height=12,
+  versions, base_x, label_y, chart_w,
   margin=4,
   char_width=6,
   class='release-label')
 %}
-  {% set max_len = lines | max_length %}
+  {% set label = versions[0] | default('', true) %}
+  {% set stop = false %}
+  {% for version in versions | slice(1) %}
+    {% if not stop %}
+      {% if (label | length) + (version | length) > 16 %}
+        {% set label = label ~ ' /…' %}
+        {% set stop = true %}
+      {% else %}
+        {% set label = label ~ ' / ' ~ version %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  {% set max_len = label | length %}
   {% set half_width = (max_len * char_width) / 2 %}
   {% set x_left = base_x - half_width %}
   {% set x_right = base_x + half_width %}
@@ -417,7 +531,7 @@
     {% set anchor = 'middle' %}
     {% set label_x = base_x %}
   {% endif %}
-  {{ multiline_text(lines, label_x, label_y, class, anchor, line_height) }}
+  {{ text(label, label_x, label_y, class, anchor, 'alphabetic') }}
 {% endmacro %}
 
 {% macro text(t, x, y, class='', anchor='start', baseline='middle') %}

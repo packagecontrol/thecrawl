@@ -230,13 +230,25 @@ export function cleanAuthors(author) {
 
 /**
  * Split releases with same sublime build and same platform set.
- * As we're sorted, keep the first one; if it's a pre-release, also keep the next stable.
+ * Sorting is internal: higher min build first, then newest date first.
+ * Keep the first one; if it's a pre-release, also keep the next stable.
  */
 export function weightReleases(releases) {
+  const sortedReleases = [...(releases ?? [])].sort((a, b) => {
+    const minA = parseSublimeTextMin(a?.sublime_text)
+    const minB = parseSublimeTextMin(b?.sublime_text)
+    if (minA !== minB) {
+      return minB - minA
+    }
+    const dateA = new Date(a?.date ?? '1970-01-01 00:00:00')
+    const dateB = new Date(b?.date ?? '1970-01-01 00:00:00')
+    return dateB - dateA
+  })
+
   const seen = new Map()
   const mainReleases = []
   const otherReleases = []
-  for (const release of releases) {
+  for (const release of sortedReleases) {
     const platforms = [...(release.platforms ?? [])].sort().join('|')
     const key = `${release.sublime_text}|${platforms}`
     const isPreRelease = (release.version ?? '').includes('-')
@@ -304,6 +316,8 @@ export function getReadmeUrl(readme) {
  * - "NNNN-MMMM" -> NNNN (strip after '-')
  * - plain "NNNN" -> NNNN
  * If parsing fails, return 0.
+ * @param {string} selector
+ * @returns {number}
  */
 export function parseSublimeTextMin(selector) {
   if (typeof selector !== 'string') {
@@ -628,6 +642,17 @@ if (import.meta.vitest) {
   })
 
   describe('weightReleases', () => {
+    it('sorts internally by build then date before splitting', () => {
+      const releases = [
+        { version: '1.8', date: '2024-02-01T00:00:00Z', sublime_text: '4100', platforms: ['windows'] },
+        { version: '1.10', date: '2024-04-01T00:00:00Z', sublime_text: '4137', platforms: ['windows'] },
+        { version: '1.9', date: '2024-03-01T00:00:00Z', sublime_text: '4137', platforms: ['windows'] },
+      ]
+      const { mainReleases, otherReleases } = weightReleases(releases)
+      expect(mainReleases.map(r => r.version)).toEqual(['1.10', '1.8'])
+      expect(otherReleases.map(r => r.version)).toEqual(['1.9'])
+    })
+
     it('keeps the prerelease and next stable for the same key', () => {
       const releases = [
         { version: '5.0.0-beta.1', sublime_text: '*', platforms: ['windows'] },

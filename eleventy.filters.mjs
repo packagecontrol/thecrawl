@@ -340,6 +340,35 @@ export function release_week_model(releases, dates, max_week_idx) {
   }))
 }
 
+// for each week index, find the nearest release week index
+export function release_week_nearest_map(release_weeks, max_week_idx) {
+  if (!Array.isArray(release_weeks) || !Number.isFinite(max_week_idx) || max_week_idx <= 0) {
+    return []
+  }
+
+  const week_idxs = release_weeks
+    .map(release => release?.week_idx)
+    .filter(idx => Number.isInteger(idx))
+
+  if (week_idxs.length === 0) return []
+
+  const map = []
+  for (let i = 0; i < max_week_idx; i += 1) {
+    let nearest = week_idxs[0]
+    let best_dist = Math.abs(i - nearest)
+    for (const week_idx of week_idxs) {
+      const dist = Math.abs(i - week_idx)
+      if (dist < best_dist || (dist === best_dist && week_idx < nearest)) {
+        nearest = week_idx
+        best_dist = dist
+      }
+    }
+    map.push(nearest)
+  }
+
+  return map
+}
+
 // given release weeks, compute x/y coordinates and stats flags
 export function release_week_coords(release_weeks, upgrades, dim, r_axis, default_y) {
   if (!Array.isArray(release_weeks)) return []
@@ -357,43 +386,6 @@ export function release_week_coords(release_weeks, upgrades, dim, r_axis, defaul
   }
 
   return coords
-}
-
-export function compute_hit_area(release_coords, index, min_radius, max_radius) {
-  const coord = release_coords[index]
-  let left_r = max_radius
-  let right_r = max_radius
-
-  if (index > 0) {
-    const prev = release_coords[index - 1]
-    if (prev) {
-      left_r = gap_radius(coord, prev, min_radius, max_radius)
-    }
-  }
-
-  if (index + 1 < release_coords.length) {
-    const next = release_coords[index + 1]
-    if (next) {
-      right_r = gap_radius(next, coord, min_radius, max_radius)
-    }
-  }
-
-  const hit_v = Math.min(left_r, right_r)
-  return {
-    x: coord.x - left_r,
-    y: coord.y - hit_v,
-    w: left_r + right_r,
-    h: hit_v * 2,
-    rx: hit_v,
-    ry: hit_v,
-  }
-}
-
-function gap_radius(a, b, min_radius, max_radius) {
-  const dx = a.x - b.x
-  const dy = a.y - b.y
-  const gap = Math.max(Math.abs(dx), Math.abs(dy))
-  return clamp((gap / 2) - 1, min_radius, max_radius)
 }
 
 const shortMonthFormatter = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' })
