@@ -337,10 +337,6 @@
 
             #}
             .install-chart {
-              {# hovering the big invisible hit-target makes a "void" release point fully visible #}
-              .release-point-hit:hover + .release-point.release-point-in-the-void {
-                opacity: 1;
-              }
               {# every release callout starts hidden #}
               .release-week .release-callout-group {
                 opacity: 0;
@@ -354,15 +350,19 @@
               }
               {# when hovering a release hit-target, #}
               .release-week:has(.release-point-hit:hover) {
-              {# show that release callout #}
+              {# show its release callout #}
                 .release-callout-group {
                   opacity: 1;
                   transition-duration: .1s;
                 }
-              {# and promote that release point #}
+              {# and promote its release point #}
                 .release-point {
                   stroke-width: 1px;
                   stroke: var(--release-point-stroke-color);
+                }
+              {# "void" release points are faded by default so make them fully visible too #}
+                .release-point-in-the-void {
+                  opacity: 1;
                 }
               }
               {# while any release is hovered, demote the default release point #}
@@ -410,6 +410,9 @@
                     .release-point {
                       stroke-width: 1px;
                       stroke: var(--release-point-stroke-color);
+                    }
+                    .release-point-in-the-void {
+                      opacity: 1;
                     }
                   }
                   {# if nearest release is not default, #}
