@@ -320,19 +320,100 @@
           {% set release_nearest = release_weeks | release_week_nearest_map(padded_count) %}
           {% set default_week_idx = release_weeks[0].week_idx %}
           <style>
-            {% for week_idx in range(0, padded_count) %}
-              {% set nearest_week_idx = release_nearest[week_idx] %}
-              {% if nearest_week_idx is not none %}
-                .install-chart:has(.week[data-week="{{ week_idx }}"]:hover) {
-                  .release-week[data-week="{{ nearest_week_idx }}"] .release-callout-group {
+            {#
+              Release callout interaction model (CSS-only, no JS)
+              ===================================================
+
+              A .release-week or .release-week[data-week="N"] groups a red .release-point,
+              the hit area of that point (.release-point-hit), and the .release-callout-group.
+
+                - .release-point             : visible point on upgrades line
+                - .release-point-hit         : large transparent hit target
+                - .release-callout-group     : vertical callout + version label
+
+              Base visibility rules:
+              - Latest release has .is-default and starts visible.
+              - All other release callouts start hidden.
+
+            #}
+            .install-chart {
+              {# hovering the big invisible hit-target makes a "void" release point fully visible #}
+              .release-point-hit:hover + .release-point.release-point-in-the-void {
+                opacity: 1;
+              }
+              {# every release callout starts hidden #}
+              .release-week .release-callout-group {
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity .3s ease-out;
+              }
+              {# except the leading release (.is-default), which starts visible #}
+              .release-week.is-default .release-callout-group {
+                opacity: 1;
+                transition-duration: .1s;
+              }
+              {# when hovering a release hit-target, #}
+              .release-week:has(.release-point-hit:hover) {
+              {# show that release callout #}
+                .release-callout-group {
                   opacity: 1;
                   transition-duration: .1s;
                 }
-                  .release-week[data-week="{{ nearest_week_idx }}"] .release-point {
-                    stroke-width: 1px;
-                    stroke: var(--release-point-stroke-color);
+              {# and promote that release point #}
+                .release-point {
+                  stroke-width: 1px;
+                  stroke: var(--release-point-stroke-color);
+                }
+              }
+              {# while any release is hovered, demote the default release point #}
+              &:has(.release-point-hit:hover) .release-week.is-default .release-point {
+                stroke-width: 0.3px;
+                stroke: var(--release-point-stroke-alt-color);
+              }
+              {# unless the hovered release is itself the default release #}
+              .release-week.is-default:has(.release-point-hit:hover) .release-point {
+                stroke-width: 1px;
+                stroke: var(--release-point-stroke-color);
+              }
+              {# while any release is hovered, hide the default callout #}
+              &:has(.release-point-hit:hover) .release-week.is-default .release-callout-group {
+                opacity: 0;
+              }
+              {# unless the hovered release is itself the default release #}
+              .release-week.is-default:has(.release-point-hit:hover) .release-callout-group {
+                opacity: 1;
+                transition-duration: .1s;
+              }
+              {# hovering upgrades axis OR any release point thickens upgrades line/points #}
+              &:has(.upgrades-axis:hover),
+              &:has(.release-point-hit:hover) {
+                .upgrades-line {
+                  stroke-width: 2.8px;
+                }
+                .upgrades-point {
+                  stroke-width: 0.2px;
+                  transition: .5s opacity;
+                }
+              }
+            }
+            {% for week_idx in range(0, padded_count) %}
+              {% set nearest_week_idx = release_nearest[week_idx] %}
+              {% if nearest_week_idx is not none %}
+                {# hovering a specific week ({{ week_idx }}) #}
+                .install-chart:has(.week[data-week="{{ week_idx }}"]:hover) {
+                  {# promotes the nearest release week {{ nearest_week_idx }} #}
+                  .release-week[data-week="{{ nearest_week_idx }}"] {
+                    .release-callout-group {
+                      opacity: 1;
+                      transition-duration: .1s;
+                    }
+                    .release-point {
+                      stroke-width: 1px;
+                      stroke: var(--release-point-stroke-color);
+                    }
                   }
                   {% if nearest_week_idx != default_week_idx %}
+                    {# if nearest release is not default, hide the default callout during this hover #}
                     .release-week.is-default .release-callout-group { opacity: 0; }
                   {% endif %}
                 }
@@ -340,6 +421,7 @@
             {% endfor %}
             {% for i in range(0, release_weeks | length) %}
               {% set week_idx = release_weeks[i].week_idx %}
+              {# hovering a release week {{ week_idx }} also highlights its install bar #}
               .install-chart:has(.release-week[data-week="{{ week_idx }}"] .release-point-hit:hover) {
                 .week[data-week="{{ week_idx }}"] .bar {
                   fill: var(--install-bar-hover-color);

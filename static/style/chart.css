@@ -133,6 +133,11 @@ section:has(.chart-container)::after {
     fill: var(--upgrade-point-fill-color);
     pointer-events: none; /* tooltip is on the hit circle */
   }
+  /*
+    Interaction-heavy release callout selectors live in the template's
+    dynamic <style> block in _includes/packages/install_chart.njk.
+    Only baseline visual styles are in this shared stylesheet.
+  */
   .release-point {
     fill: var(--release-point-fill-color);
     stroke: var(--release-point-stroke-color);
@@ -151,9 +156,6 @@ section:has(.chart-container)::after {
       fill: var(--orange-2);
     }
   }
-  .release-point-hit:hover + .release-point.release-point-in-the-void {
-    opacity: 1;
-  }
   .release-callout {
     stroke: var(--foreground-3);
     stroke-width: 1;
@@ -161,48 +163,6 @@ section:has(.chart-container)::after {
   .release-label {
     fill: var(--foreground-3);
     font-size: 10px;
-  }
-  .release-week .release-callout-group {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .3s ease-out;
-  }
-  .release-week.is-default .release-callout-group {
-    opacity: 1;
-    transition-duration: .1s;
-  }
-  .release-week:has(.release-point-hit:hover) .release-callout-group {
-    opacity: 1;
-    transition-duration: .1s;
-  }
-  .release-week:has(.release-point-hit:hover) .release-point {
-    stroke-width: 1px;
-    stroke: var(--release-point-stroke-color);
-  }
-  &:has(.release-point-hit:hover) .release-week.is-default .release-point {
-    stroke-width: 0.3px;
-    stroke: var(--release-point-stroke-alt-color);
-  }
-  .release-week.is-default:has(.release-point-hit:hover) .release-point {
-    stroke-width: 1px;
-    stroke: var(--release-point-stroke-color);
-  }
-  &:has(.release-point-hit:hover) .release-week.is-default .release-callout-group {
-    opacity: 0;
-  }
-  .release-week.is-default:has(.release-point-hit:hover) .release-callout-group {
-    opacity: 1;
-    transition-duration: .1s;
-  }
-  &:has(.upgrades-axis:hover),
-  &:has(.release-point-hit:hover) {
-    .upgrades-line {
-      stroke-width: 2.8px;
-    }
-    .upgrades-point {
-      stroke-width: 0.2px;
-      transition: .5s opacity;
-    }
   }
   /* averages */
   .avg-line {
