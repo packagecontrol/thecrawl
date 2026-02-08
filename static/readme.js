@@ -41,15 +41,18 @@ const markdownAlertExtension = {
 let headingSlugCounts = new Map()
 
 const readmeHeadingRenderer = {
-  heading({ text, depth: level } = {}) {
+  heading({ tokens, depth: level } = {}) {
+    const html = this.parser.parseInline(tokens)
+    const plain = tokens.map(token => token.text || '').join('')
+
     if (level > 4) {
-      return `<h${level}>${text}</h${level}>`
+      return `<h${level}>${html}</h${level}>`
     }
 
-    const slug = unique_heading_slug(text)
+    const slug = unique_heading_slug(plain)
     const id = `readme-${slug}`
     return `\
-<h${level} id="${id}">${text}\
+<h${level} id="${id}">${html}\
 <a class="markdown-anchor" href="?readme#${slug}" aria-labelledby="${id}"></a>\
 </h${level}>`
   },
