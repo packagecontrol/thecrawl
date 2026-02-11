@@ -153,12 +153,22 @@ jobs:
           gh release edit ${{ env.RELEASE_TAG }} --notes-file notes.txt
 
           echo "Updating logs history..."
-          gh release download ${{ env.RELEASE_TAG }} --pattern "logs.json" --output ./wrk/logs.json --clobber || true
+          ASSET_NAMES="$(gh release view ${{ env.RELEASE_TAG }} --json assets --jq '.assets[].name')"
+          if printf '%s\n' "$ASSET_NAMES" | grep -Fxq "logs.json"; then
+            gh release download ${{ env.RELEASE_TAG }} \
+              --pattern "logs.json" \
+              --output ./wrk/logs.json \
+              --clobber
+          else
+            echo "No logs.json asset yet; starting fresh."
+          fi
+
           uv run -m scripts.collect_logs \
             --run-id "${{ github.run_id }}" \
             --timestamp "$DATE_TS" \
             -o ./wrk/logs.json \
             notes.txt
+
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/logs.json --clobber
 
       - name: Upload wrk backup

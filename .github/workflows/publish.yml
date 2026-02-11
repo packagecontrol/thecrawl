@@ -279,7 +279,15 @@ jobs:
 
       - name: Enrich logs.json
         run: |
-          gh release download ${{ env.RELEASE_TAG }} --pattern "logs.json" --output ./wrk/logs.json || echo "logs.json missing"
+          ASSET_NAMES="$(gh release view ${{ env.RELEASE_TAG }} --json assets --jq '.assets[].name')"
+          if printf '%s\n' "$ASSET_NAMES" | grep -Fxq "logs.json"; then
+            gh release download ${{ env.RELEASE_TAG }} \
+              --pattern "logs.json" \
+              --output ./wrk/logs.json \
+              --clobber
+          else
+            echo "No logs.json asset yet; starting fresh."
+          fi
           uv run -m scripts.enrich_logs \
             --runs ./wrk/workflow_runs.json \
             -i ./wrk/logs.json \
