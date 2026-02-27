@@ -51,6 +51,22 @@ def test_does_not_autofill_tags_for_static_url_release() -> None:
 
     assert "tags" not in releases[0]
     assert releases[0]["url"] == "https://example.com/pkg.zip"
+    assert releases[0]["version"] == "1.2.3"
+
+
+def test_normalizes_version_constraint_for_dynamic_release() -> None:
+    releases = [{
+        "sublime_text": "<4000",
+        "version": "2.5.*",
+    }]
+
+    normalize_release_definition(
+        releases,
+        REPO_URL,
+        "https://github.com/example/version-spec",
+    )
+
+    assert releases[0]["version"] == "==2.5.*"
 
 
 @pytest.mark.parametrize("field", ["asset", "branch", "tags"])

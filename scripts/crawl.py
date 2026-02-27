@@ -501,8 +501,7 @@ async def resolve_tags(
     tag_prefix = "" if tag_definition is True else tag_definition
     version_set = None
     if version_spec := definition.get("version"):
-        normalized_spec = normalize_version_spec(version_spec)
-        version_set = SpecifierSet(normalized_spec) if normalized_spec else None
+        version_set = SpecifierSet(version_spec)
 
     resolved_releases: list[Release] = []
     now = datetime.now(timezone.utc)
@@ -621,8 +620,7 @@ async def resolve_assets(
 
     spec_set = None
     if version_spec := definition.get("version"):
-        normalized_spec = normalize_version_spec(version_spec)
-        spec_set = SpecifierSet(normalized_spec) if normalized_spec else None
+        spec_set = SpecifierSet(version_spec)
 
     resolved_releases: list[Release] = []
     async for release in info["releases"]:  # type: ignore[typeddict-item]
@@ -778,6 +776,9 @@ def normalize_release_entry(
 
     if release.keys().isdisjoint({"url", "asset", "branch", "tags"}):
         release["tags"] = True
+
+    if "url" not in release and (version_spec := release.get("version")):
+        release["version"] = normalize_version_spec(version_spec)
 
     if base := release.get("base", details):
         release["base"] = resolve_url(repo_url, base)
