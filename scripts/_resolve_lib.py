@@ -384,14 +384,17 @@ def normalize_st_build(st_specifier: str) -> str:
     return st_specifier[2:]
 
 
-def explain_library(library: RegistryEntry) -> list[dict]:
-    releases = list(map(normalize_release_def, library.get("releases", [])))
-    output: list[dict] = []
-    for release in releases:
+def explain_library(library: RegistryEntry) -> list[tuple[dict, list[dict]]]:
+    raw_libraries = library.get("releases", [])
+    normalized = list(map(normalize_release_def, library.get("releases", [])))
+    output: list[tuple[dict, list[dict]]] = []
+    for left, release in zip(raw_libraries, normalized):
         if "url" in release:
+            output.append((left, [release]))  # type: ignore[arg-type, list-item]
             continue
         base = release.get("base")
         auto_assets = "pypi.org/project/" in base
+        right = []
         for concrete in spell_out_constraint_variations(release, auto_assets=auto_assets):
             entry: dict[str, object] = {
                 "base": base,
@@ -402,7 +405,8 @@ def explain_library(library: RegistryEntry) -> list[dict]:
                 "version": release["version"] or "*",
                 "tag_prefix": release["tag_prefix"] or "v?"
             }
-            output.append(entry)
+            right.append(entry)
+        output.append((left, right))  # type: ignore[arg-type]
     return output
 
 

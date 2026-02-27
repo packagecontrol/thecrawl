@@ -511,6 +511,62 @@ async def test_name_and_explain_reject_removed_library(monkeypatch, tmp_path):
         await crawl_libraries.run(args)
 
 
+@pytest.mark.asyncio
+async def test_handle_explain_renders_release_variation_rows(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    release_defs = [{"base": "https://pypi.org/project/example", "version": "*"}]
+    write_json(repo_path, {"libraries": [{"name": "alpha", "releases": release_defs}]})
+    output_path = tmp_path / "libraries.json"
+    args = make_args(tmp_path, repo_path, output_path, explain="alpha")
+
+    explain_rows = [
+        (
+            release_defs[0],
+            [
+                {
+                    "base": "https://pypi.org/project/example",
+                    "asset": ["example-win-py38-${version}.zip"],
+                    "platform": "windows",
+                    "python_version": "3.8",
+                    "sublime_text": "*",
+                    "version": "*",
+                    "tag_prefix": "v?",
+                },
+                {
+                    "base": "https://pypi.org/project/example",
+                    "asset": ["example-win-py33-${version}.zip"],
+                    "platform": "windows",
+                    "python_version": "3.3",
+                    "sublime_text": "*",
+                    "version": "*",
+                    "tag_prefix": "v?",
+                },
+            ],
+        ),
+    ]
+    captured = {}
+
+    monkeypatch.setattr(crawl_libraries, "explain_library", lambda _: explain_rows)
+
+    def fake_print_library_explain(name, rows, metadata=None):
+        captured["name"] = name
+        captured["rows"] = rows
+        captured["metadata"] = metadata
+
+    monkeypatch.setattr(
+        crawl_libraries,
+        "print_library_explain",
+        fake_print_library_explain,
+    )
+
+    result = await crawl_libraries.run(args)
+
+    assert result == 0
+    assert captured["name"] == "alpha"
+    assert captured["rows"] == explain_rows
+    assert captured["metadata"] == {"name": "alpha"}
+
+
 @pytest.mark.parametrize(
     ("names", "expected"),
     [

@@ -32,6 +32,59 @@ def print_package_explain(
     )
 
 
+def print_library_explain(
+    name: str,
+    rows: list[tuple[dict[str, Any], list[dict[str, Any]]]],
+    metadata: dict[str, Any] | None = None,
+    console: Console | None = None,
+) -> None:
+    console = console or Console()
+
+    if metadata is not None:
+        console.print(_to_pretty_json(metadata))
+        console.print()
+
+    console.rule(f"{name}: input release definitions and normalized variations")
+
+    table = Table(
+        box=box.SIMPLE_HEAD,
+        expand=True,
+        show_header=True,
+        show_lines=False,
+    )
+    table.add_column("#", style="yellow", no_wrap=True)
+    table.add_column("Input definition", ratio=1, overflow="fold")
+    table.add_column("Normalized variation", ratio=1, overflow="fold")
+
+    if not rows:
+        table.add_row("-", "(empty)", "(empty)")
+    else:
+        for release_no, (left, right_variations) in enumerate(rows, start=1):
+            if release_no > 1:
+                table.add_row("", "", "")
+
+            if not right_variations:
+                table.add_row(str(release_no), _to_pretty_json(left), "(empty)")
+                continue
+
+            if len(right_variations) == 1:
+                table.add_row(
+                    str(release_no),
+                    _to_pretty_json(left),
+                    _to_pretty_json(right_variations[0]),
+                )
+                continue
+
+            for variation_no, right in enumerate(right_variations, start=1):
+                table.add_row(
+                    f"{release_no}-{variation_no}",
+                    _to_pretty_json(left) if variation_no == 1 else "",
+                    _to_pretty_json(right),
+                )
+
+    console.print(table)
+
+
 def _render_json_diff_table(
     title: str,
     left_obj: dict[str, Any] | list[Any],
@@ -130,6 +183,9 @@ def _make_line(number: int, marker: str, content: str, style: str = "") -> Text:
     return line
 
 
+def _to_pretty_json(obj: dict[str, Any] | list[Any]) -> str:
+    return json.dumps(obj, indent=2, ensure_ascii=False, sort_keys=True)
+
+
 def _to_json_lines(obj: dict[str, Any] | list[Any]) -> list[str]:
-    dumped = json.dumps(obj, indent=2, ensure_ascii=False, sort_keys=True)
-    return dumped.splitlines()
+    return _to_pretty_json(obj).splitlines()
