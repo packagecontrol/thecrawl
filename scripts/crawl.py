@@ -837,8 +837,11 @@ def which_hub(url: str) -> str:
     return "unknown"
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Crawl the registry and update the workspace.")
+def parse_args(argv: list[str] | None = None):
+    parser = argparse.ArgumentParser(
+        description="Crawl the registry and update the workspace.",
+        epilog="Numeric shorthand: -<n> sets crawl limit, e.g. -1000 == --limit 1000.",
+    )
     parser.add_argument(
         "--registry",
         type=str,
@@ -876,7 +879,30 @@ def parse_args():
         default=".",
         help="Working directory to resolve file paths (default: .)"
     )
-    return parser.parse_args()
+    normalized_argv = normalize_limit_argv(sys.argv[1:] if argv is None else argv)
+    if count_limit_occurrences(normalized_argv) > 1:
+        parser.error("--limit/-n can only be specified once")
+    return parser.parse_args(normalized_argv)
+
+
+def normalize_limit_argv(argv: list[str]) -> list[str]:
+    normalized = []
+    for arg in argv:
+        if re.fullmatch(r"-\d+", arg):
+            normalized.extend(["--limit", arg[1:]])
+            continue
+        normalized.append(arg)
+    return normalized
+
+
+def count_limit_occurrences(argv: list[str]) -> int:
+    count = 0
+    for arg in argv:
+        if arg in {"--limit", "-n"}:
+            count += 1
+        elif arg.startswith("--limit="):
+            count += 1
+    return count
 
 
 def env_flag(name: str, default: bool = False) -> bool:
