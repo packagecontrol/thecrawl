@@ -30,7 +30,17 @@ def test_parse_args_rejects_duplicate_limit_flags() -> None:
         parse_args(["-n", "100", "-n", "75"])
 
 
-
 def test_parse_args_rejects_shorthand_plus_limit_flag() -> None:
     with pytest.raises(SystemExit):
         parse_args(["-100", "--limit", "24"])
+
+
+def test_parse_args_accepts_explain_mode() -> None:
+    args = parse_args(["--explain", "Example"])
+
+    assert args.explain == "Example"
+
+
+def test_parse_args_rejects_name_and_explain_together() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--name", "Foo", "--explain", "Foo"])

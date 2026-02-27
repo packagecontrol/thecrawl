@@ -32,6 +32,7 @@ from ._utils import (
     next_run, parse_version, resolve_url, update_url, write_json, pl, pick,
     VersionInfo
 )
+from ._explain_package import print_package_explain
 import traceback
 
 
@@ -110,6 +111,28 @@ def err(*args, **kwargs) -> None:
     print(*args, **kwargs, file=sys.stderr)
 
 
+def explain_main(registry: str, name: str) -> int:
+    if not os.path.exists(registry):
+        err(f"FATAL: Registry file '{registry}' does not exist.")
+        return 1
+
+    try:
+        with open(registry, "r") as reg_file:
+            registry_data = json.load(reg_file)
+    except Exception as e:
+        err(f"FATAL: Could not read registry file '{registry}': {e}")
+        return 1
+
+    package = find_registry_package(registry_data, name)
+    if not package:
+        err(f"Package '{name}' not found in registry.")
+        return 1
+
+    normalized = normalize_registry_entry(deepcopy(package))
+    print_package_explain(name, package, normalized)  # type: ignore[arg-type]
+    return 0
+
+
 async def main(
     registry: str,
     workspace: str,
@@ -148,13 +171,11 @@ async def main_(
 ) -> None:
     name_requested = bool(name)
     if name:
-        for entry in registry["packages"]:
-            if entry.get("name") == name:
-                tocrawl = [entry]
-                break
-        else:
+        package = find_registry_package(registry, name)
+        if not package:
             err(f"Package '{name}' not found in registry.")
             return
+        tocrawl = [package]
     else:
         maintenance(registry, workspace)
         tocrawl = next_packages_to_crawl(registry, workspace, limit=limit, presto=presto)
@@ -371,16 +392,10 @@ async def crawl_package(
     maybe_skip_crawling(entry, existing, now)
     ensure_secure_source(entry, existing)
 
-    out: WorkspaceEntry = {**entry}  # type: ignore[typeddict-item]
-    if "readme" in out:
-        out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]
-            resolve_url(out["source"], out["readme"])  # type: ignore[typeddict-item]
-        )
+    out = normalize_registry_entry(entry)
     details = out.get("details")
     release_definitions: list[ReleaseDescription] = \
         out.get("releases", [])  # type: ignore[assignment]
-    migrate_release_definitions_from_v2(release_definitions)
-    normalize_release_definition(release_definitions, out["source"], details)
 
     releases: list[Release] = []
 
@@ -487,6 +502,28 @@ async def crawl_package(
                 )
 
     out["releases"] = releases
+    return out
+
+
+def find_registry_package(registry: Registry, name: str) -> RegistryEntry | None:
+    for entry in registry.get("packages", []):
+        if entry.get("name") == name:
+            return entry
+    return None
+
+
+def normalize_registry_entry(entry: RegistryEntry) -> WorkspaceEntry:
+    out: WorkspaceEntry = {**entry}  # type: ignore[typeddict-item]
+    if "readme" in out:
+        out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]
+            resolve_url(out["source"], out["readme"])  # type: ignore[typeddict-item]
+        )
+
+    details = out.get("details")
+    release_definitions: list[ReleaseDescription] = \
+        out.setdefault("releases", [])  # type: ignore[assignment]
+    migrate_release_definitions_from_v2(release_definitions)
+    normalize_release_definition(release_definitions, out["source"], details)
     return out
 
 
@@ -980,6 +1017,15 @@ def parse_args(argv: list[str] | None = None):
             "Optional name of a package to crawl. "
             "If not provided, all packages will be crawled."))
     parser.add_argument(
+        "--explain",
+        type=str,
+        default=None,
+        help=(
+            "Show the normalized package entry for the named package and "
+            "exit without writing the workspace."
+        ),
+    )
+    parser.add_argument(
         "--limit", "-n",
         type=int,
         default=200,
@@ -1002,7 +1048,11 @@ def parse_args(argv: list[str] | None = None):
     normalized_argv = normalize_limit_argv(sys.argv[1:] if argv is None else argv)
     if count_limit_occurrences(normalized_argv) > 1:
         parser.error("--limit/-n can only be specified once")
-    return parser.parse_args(normalized_argv)
+
+    args = parser.parse_args(normalized_argv)
+    if args.name and args.explain:
+        parser.error("Use either --name or --explain, not both")
+    return args
 
 
 def normalize_limit_argv(argv: list[str]) -> list[str]:
@@ -1038,4 +1088,8 @@ if __name__ == "__main__":
     os.makedirs(wd, exist_ok=True)
     args.registry = os.path.normpath(os.path.join(wd, args.registry))
     args.workspace = os.path.normpath(os.path.join(wd, args.workspace))
+
+    if args.explain:
+        raise SystemExit(explain_main(args.registry, args.explain))
+
     asyncio.run(main(args.registry, args.workspace, args.name, args.limit, args.presto))

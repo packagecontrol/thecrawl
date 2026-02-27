@@ -63,6 +63,9 @@ A minimal definition the crawler understands is:
 
 However, adding a name really helps in readability.
 
+Tip: Use `$ uv run -m scripts.crawl --explain GitSavvy` to show the
+     normalized/expanded package definition.
+
 ## Release definitions
 
 For packages, there are three dynamic release modes:
