@@ -4,14 +4,16 @@ import asyncio
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
+from functools import partial
 from itertools import product
 import json
 import os
 import re
 import sys
 from typing import Literal, Mapping, NotRequired, Required, TypedDict
-from packaging.specifiers import SpecifierSet
 
+import packaging
+from packaging.specifiers import SpecifierSet
 
 from .bitbucket import fetch_bitbucket_info, RepoInfo as BitbucketRepoInfo
 from .generate_registry import Registry, PackageEntry as RegistryEntry
@@ -26,7 +28,10 @@ from ._resolve_lib import (
     normalize_st_build,
     normalize_version_spec,
 )
-from ._utils import next_run, parse_version, resolve_url, update_url, write_json, pl, pick
+from ._utils import (
+    next_run, parse_version, resolve_url, update_url, write_json, pl, pick,
+    VersionInfo
+)
 import traceback
 
 
@@ -494,6 +499,11 @@ async def resolve_tags(
         return [], None
 
     tag_prefix = "" if tag_definition is True else tag_definition
+    version_set = None
+    if version_spec := definition.get("version"):
+        normalized_spec = normalize_version_spec(version_spec)
+        version_set = SpecifierSet(normalized_spec) if normalized_spec else None
+
     resolved_releases: list[Release] = []
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(weeks=53)
@@ -504,32 +514,50 @@ async def resolve_tags(
     prerelease_found: str | None = None
     found_final = False
     async for tag in info["tags"]:
-        if (
-            tag["name"].startswith(tag_prefix)
-            and (version_string := (
-                tag["name"].removeprefix(tag_prefix)
-                if tag_prefix
-                else tag["name"].removeprefix("v")
-            ))
-            and (version := parse_version(version_string))
-        ):
-            tag_date = datetime.strptime(tag["date"], UTC_FORMAT).replace(tzinfo=timezone.utc)
-            if tag_date < cutoff and found_final:
-                break
+        tag_name = tag["name"]
 
-            if tag_date >= cutoff or (
-                version.is_final or
-                (version.is_prerelease and not prerelease_found)
-            ):
-                r_ = deepcopy(definition)
-                r_.pop("tags")
-                r_ |= pick(("url", "date"), tag)
-                r_ |= {"version": version_string}
-                resolved_releases.append(r_)  # type: ignore[arg-type]
-                if version.is_final:
-                    found_final = True
-                elif version.is_prerelease:
-                    prerelease_found = version_string
+        is_prerelease = False
+        if version_set:
+            # For constrained tags, use packaging.Version against SpecifierSet.
+            tag_match = match_tag_version(tag_name, tag_prefix)
+            if not tag_match:
+                continue
+            version: packaging.version.Version
+            version, version_string = tag_match
+            if not version_set.contains(version, prereleases=True):
+                continue
+            is_final_version = not (version.is_prerelease or version.is_devrelease)
+            is_prerelease = version.is_prerelease
+        else:
+            # Standard tag semantics use our custom, strict semver parser.
+            if not tag_name.startswith(tag_prefix):
+                continue
+            version_string = (
+                tag_name.removeprefix(tag_prefix)
+                if tag_prefix
+                else tag_name.removeprefix("v")
+            )
+            version_: VersionInfo | None
+            version_ = parse_version(version_string)
+            if not version_:
+                continue
+            is_final_version = version_.is_final
+            is_prerelease = version_.is_prerelease
+
+        tag_date = datetime.strptime(tag["date"], UTC_FORMAT).replace(tzinfo=timezone.utc)
+        if tag_date < cutoff and found_final:
+            break
+
+        if tag_date >= cutoff or (is_final_version or (is_prerelease and not prerelease_found)):
+            r_ = deepcopy(definition)
+            r_.pop("tags")
+            r_ |= pick(("url", "date"), tag)
+            r_ |= {"version": version_string}
+            resolved_releases.append(r_)  # type: ignore[arg-type]
+            if is_final_version:
+                found_final = True
+            elif is_prerelease:
+                prerelease_found = version_string
 
     if found_final:
         return resolved_releases, None
@@ -714,38 +742,120 @@ def normalize_release_definition(
     repo_url: str,
     details: str | None = None
 ):
+    normalize_ = partial(normalize_release_entry, releases, repo_url, details)
+
     if not releases:
         releases.append({
             "sublime_text": "*",
             "tags": True
         })
 
-    for r in releases[:]:
-        r.setdefault("platforms", ["*"])
-        if isinstance(r["platforms"], str):
-            r["platforms"] = [r["platforms"]]
+    auto_release = maybe_make_auto_open_ended_tags_release(releases)
 
-        r.setdefault("sublime_text", "*")
-        if isinstance(r["sublime_text"], list):
-            if "asset" not in r:
-                err(f"sublime_text as a list is only valid in conjunction with 'asset', {repo_url}")
-                releases.remove(r)
+    for release in releases[:]:
+        normalize_(release)
 
-        if r.keys().isdisjoint({"url", "asset", "branch", "tags"}):
-            r["tags"] = True
+    if auto_release:
+        normalize_(auto_release)
+        releases.append(auto_release)
 
-        if base := r.get("base", details):
-            r["base"] = resolve_url(repo_url, base)
 
-        if "url" in r:
-            r["url"] = update_url(resolve_url(repo_url, r["url"]))
+def normalize_release_entry(
+    releases: list[ReleaseDescription],
+    repo_url: str,
+    details: str | None,
+    release: ReleaseDescription,
+) -> None:
+    release.setdefault("platforms", ["*"])
+    if isinstance(release["platforms"], str):
+        release["platforms"] = [release["platforms"]]
 
-        if "date" in r:
-            try:
-                r["date"] = normalize_datetime_str(r["date"])
-            except ValueError:
-                err(f"date {r['date']} is not formatted correctly, {repo_url}")
-                releases.remove(r)
+    release.setdefault("sublime_text", "*")
+    if isinstance(release["sublime_text"], list) and "asset" not in release:
+        err(f"sublime_text as a list is only valid in conjunction with 'asset', {repo_url}")
+        releases.remove(release)
+        return
+
+    if release.keys().isdisjoint({"url", "asset", "branch", "tags"}):
+        release["tags"] = True
+
+    if base := release.get("base", details):
+        release["base"] = resolve_url(repo_url, base)
+
+    if "url" in release:
+        release["url"] = update_url(resolve_url(repo_url, release["url"]))
+
+    if "date" in release:
+        try:
+            release["date"] = normalize_datetime_str(release["date"])
+        except ValueError:
+            err(f"date {release['date']} is not formatted correctly, {repo_url}")
+            releases.remove(release)
+
+
+def maybe_make_auto_open_ended_tags_release(
+    releases: list[ReleaseDescription],
+) -> ReleaseDescription | None:
+    max_build = -1
+
+    for release in releases:
+        if not release.get("version"):
+            return None
+
+        if "url" in release or "asset" in release or "branch" in release:
+            return None
+
+        if release.get("tags") is True:
+            return None
+
+        st_max = parse_sublime_text_max(release.get("sublime_text"))
+        if st_max == float("inf"):
+            return None
+
+        max_build = max(max_build, int(st_max))
+
+    if max_build < 0:
+        return None
+
+    return {
+        "sublime_text": f">{max_build}",
+        "tags": True,
+    }
+
+
+def parse_sublime_text_max(selector) -> float:
+    if not isinstance(selector, str):
+        return float("inf")
+
+    s = re.sub(r"\s+", "", selector)
+    if s in ("", "*"):
+        return float("inf")
+
+    range_index = s.find("-")
+    if range_index != -1:
+        right = s[range_index + 1:]
+        n = parse_int_prefix(right)
+        return float(n) if n is not None else float("inf")
+
+    if s.startswith("<="):
+        n = parse_int_prefix(s[2:])
+        return float(n) if n is not None else float("inf")
+
+    if s.startswith("<"):
+        n = parse_int_prefix(s[1:])
+        return float(max(0, n - 1)) if n is not None else float("inf")
+
+    if s.startswith(">=") or s.startswith(">"):
+        return float("inf")
+
+    n = parse_int_prefix(s)
+    return float(n) if n is not None else float("inf")
+
+
+def parse_int_prefix(text: str) -> int | None:
+    if match := re.match(r"^\d+", text):
+        return int(match.group(0))
+    return None
 
 
 def compile_release_asset_pattern(

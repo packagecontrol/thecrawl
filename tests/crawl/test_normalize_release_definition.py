@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.crawl import normalize_release_definition
+from scripts.crawl import normalize_release_definition, parse_sublime_text_max
 
 
 REPO_URL = "https://raw.githubusercontent.com/example/channel/main/repository.json"
@@ -64,6 +64,130 @@ def test_does_not_overwrite_existing_release_source(field: str) -> None:
     )
 
     assert "tags" not in releases[0] or field == "tags"
+
+
+@pytest.mark.parametrize(
+    ("selector", "expected"),
+    [
+        (None, float("inf")),
+        ("", float("inf")),
+        ("*", float("inf")),
+        ("  *  ", float("inf")),
+        ("3092", 3092),
+        ("3092 - 4000", 4000),
+        ("3092-4000", 4000),
+        ("<3092", 3091),
+        ("<=3092", 3092),
+        (">3092", float("inf")),
+        (">=3092", float("inf")),
+        (" >=  4075 ", float("inf")),
+        (">  4075", float("inf")),
+        ("n/a", float("inf")),
+    ],
+)
+def test_parse_sublime_text_max(selector, expected: float) -> None:
+    assert parse_sublime_text_max(selector) == expected
+
+
+def test_adds_open_ended_tags_release_for_version_constrained_tags() -> None:
+    releases = [{
+        "sublime_text": "<4000",
+        "version": "<3.0.0",
+    }]
+
+    normalize_release_definition(
+        releases,
+        REPO_URL,
+        "https://github.com/example/constrained-tags",
+    )
+
+    assert len(releases) == 2
+    first, second = releases
+    assert first["tags"] is True
+    assert first["sublime_text"] == "<4000"
+    assert second["tags"] is True
+    assert second["sublime_text"] == ">3999"
+
+
+def test_does_not_add_open_ended_when_unconstrained_tags_exists() -> None:
+    releases = [
+        {"sublime_text": "3000 - 4000", "version": "<3.0.0"},
+        {"sublime_text": ">4000", "tags": True},
+    ]
+
+    normalize_release_definition(
+        releases,
+        REPO_URL,
+        "https://github.com/example/constrained-tags",
+    )
+
+    assert len(releases) == 2
+
+
+def test_does_not_add_open_ended_without_any_version_key() -> None:
+    releases = [{"sublime_text": "3000 - 4000"}]
+
+    normalize_release_definition(
+        releases,
+        REPO_URL,
+        "https://github.com/example/constrained-tags",
+    )
+
+    assert len(releases) == 1
+    assert releases[0]["sublime_text"] == "3000 - 4000"
+    assert releases[0]["tags"] is True
+
+
+def test_does_not_add_open_ended_for_empty_version() -> None:
+    releases = [{"sublime_text": "3000 - 4000", "version": ""}]
+
+    normalize_release_definition(
+        releases,
+        REPO_URL,
+        "https://github.com/example/constrained-tags",
+    )
+
+    assert len(releases) == 1
+    assert releases[0]["sublime_text"] == "3000 - 4000"
+
+
+def test_does_not_add_open_ended_when_any_release_lacks_version() -> None:
+    releases = [
+        {"sublime_text": "3000 - 4000", "version": "<3.0.0"},
+        {"sublime_text": "4001 - 4200"},
+    ]
+
+    normalize_release_definition(
+        releases,
+        REPO_URL,
+        "https://github.com/example/constrained-tags",
+    )
+
+    assert len(releases) == 2
+
+
+def test_does_not_add_open_ended_when_branch_or_asset_exists() -> None:
+    releases = [
+        {"sublime_text": "3000 - 4000", "version": "<3.0.0"},
+        {"sublime_text": "*", "branch": True},
+    ]
+
+    normalize_release_definition(releases, REPO_URL, "https://github.com/example/pkg")
+
+    assert len(releases) == 2
+
+
+def test_does_not_add_open_ended_for_static_releases() -> None:
+    releases = [{
+        "sublime_text": "*",
+        "version": "1.2.3",
+        "url": "https://example.com/pkg.zip",
+        "date": "2024-05-10T12:00:00Z",
+    }]
+
+    normalize_release_definition(releases, REPO_URL, "https://github.com/example/pkg")
+
+    assert len(releases) == 1
 
 
 def test_normalizes_platforms_string_to_list() -> None:
