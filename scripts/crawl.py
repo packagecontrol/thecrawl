@@ -714,6 +714,12 @@ def normalize_release_definition(
     repo_url: str,
     details: str | None = None
 ):
+    if not releases:
+        releases.append({
+            "sublime_text": "*",
+            "tags": True
+        })
+
     for r in releases[:]:
         r.setdefault("platforms", ["*"])
         if isinstance(r["platforms"], str):
@@ -724,6 +730,9 @@ def normalize_release_definition(
             if "asset" not in r:
                 err(f"sublime_text as a list is only valid in conjunction with 'asset', {repo_url}")
                 releases.remove(r)
+
+        if r.keys().isdisjoint({"url", "asset", "branch", "tags"}):
+            r["tags"] = True
 
         if base := r.get("base", details):
             r["base"] = resolve_url(repo_url, base)

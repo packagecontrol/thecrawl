@@ -300,6 +300,136 @@ async def test_accept_stylized_dates_for_static_releases(
 
 
 @pytest.mark.asyncio
+async def test_missing_release_definitions_default_to_tags(set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "ImplicitRelease",
+                "details": "https://github.com/example/implicit-release",
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}}
+
+    github_info = {
+        "metadata": {
+            "id": "R_implicitrelease",
+            "name": "ImplicitRelease",
+            "description": "Fixture package with implicit release definition",
+            "homepage": "https://github.com/example/implicit-release",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/implicit-release/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [
+            {
+                "name": "1.2.3",
+                "sha": "abc123",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/implicit-release/zip/1.2.3"
+            }
+        ],
+        "branches": [
+            {
+                "name": "main",
+                "version": "2024.05.11.12.00.00",
+                "sha": "def456",
+                "date": "2024-05-11T12:00:00Z",
+                "url": "https://codeload.github.com/example/implicit-release/zip/main"
+            }
+        ]
+    }
+
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("ImplicitRelease")
+    assert package is not None
+
+    releases = package.get("releases", [])
+    assert len(releases) == 1
+    assert releases[0]["sublime_text"] == "*"
+    assert releases[0]["platforms"] == ["*"]
+    assert releases[0]["version"] == "1.2.3"
+    assert releases[0]["url"].endswith("/1.2.3")
+
+
+@pytest.mark.asyncio
+async def test_release_without_asset_or_branch_defaults_to_tags(set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "AutoTags",
+                "details": "https://github.com/example/auto-tags",
+                "releases": [
+                    {
+                        "sublime_text": "*"
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}}
+
+    github_info = {
+        "metadata": {
+            "id": "R_autotags",
+            "name": "AutoTags",
+            "description": "Fixture package with implicit tags",
+            "homepage": "https://github.com/example/auto-tags",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/auto-tags/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [
+            {
+                "name": "2.0.0",
+                "sha": "abc123",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/auto-tags/zip/2.0.0"
+            }
+        ],
+        "branches": [
+            {
+                "name": "main",
+                "version": "2024.05.11.12.00.00",
+                "sha": "def456",
+                "date": "2024-05-11T12:00:00Z",
+                "url": "https://codeload.github.com/example/auto-tags/zip/main"
+            }
+        ]
+    }
+
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("AutoTags")
+    assert package is not None
+
+    release = package["releases"][0]
+    assert release["version"] == "2.0.0"
+    assert release["url"].endswith("/2.0.0")
+
+
+@pytest.mark.asyncio
 async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
