@@ -167,6 +167,19 @@ def test_does_not_add_open_ended_for_empty_version() -> None:
     assert releases[0]["sublime_text"] == "3000 - 4000"
 
 
+def test_does_not_add_open_ended_for_star_version() -> None:
+    releases = [{"sublime_text": "3000 - 4000", "version": "*"}]
+
+    normalize_release_definition(
+        releases,
+        REPO_URL,
+        "https://github.com/example/constrained-tags",
+    )
+
+    assert len(releases) == 1
+    assert releases[0]["sublime_text"] == "3000 - 4000"
+
+
 def test_does_not_add_open_ended_when_any_release_lacks_version() -> None:
     releases = [
         {"sublime_text": "3000 - 4000", "version": "<3.0.0"},

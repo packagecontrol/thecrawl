@@ -800,7 +800,7 @@ def maybe_make_auto_open_ended_tags_release(
     max_build = -1
 
     for release in releases:
-        if not release.get("version"):
+        if release.get("version", "") in ("*", ""):
             return None
 
         if "url" in release or "asset" in release or "branch" in release:
