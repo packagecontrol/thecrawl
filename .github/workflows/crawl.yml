@@ -169,7 +169,22 @@ jobs:
             -o ./wrk/logs.json \
             notes.txt
 
-          gh release upload ${{ env.RELEASE_TAG }} ./wrk/logs.json --clobber
+          retry_5() {
+            local n=1
+            local max=5
+            local delay=2
+            while true; do
+              "$@" && return 0
+              if [ "$n" -ge "$max" ]; then
+                return 1
+              fi
+              sleep $((delay + RANDOM % 3))
+              delay=$((delay * 2))
+              n=$((n + 1))
+            done
+          }
+
+          retry_5 gh release upload ${{ env.RELEASE_TAG }} ./wrk/logs.json --clobber
 
       - name: Upload wrk backup
         id: crawl-backup-step
