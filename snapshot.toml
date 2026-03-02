@@ -1,0 +1,15 @@
+[snapshot]
+packages = [
+  "ABNF-sublime-syntax",
+  "Affixify",
+  "Bison",
+  "4GL",
+  "LSP",
+  "SublimeLinter",
+  "GitSavvy",
+  "Package Control",
+  "SFTP",
+  "Theme - Monokai Pro",
+  "CodeIgniter 3 Snippets",
+  "AlignComment",
+]

@@ -167,6 +167,25 @@ The command above reuses the same layout as [CI](https://github.com/packagecontr
 - You can choose another directory via `--restore-from <path>` if you want to stage the backup elsewhere.
 - Try this locally first, then commit and push to actually replace/update/restore the GitHub action cache
 
+---
+
+### `snapshot_test.py`
+
+Creates a compact, single-file snapshot for regression testing (`registry + channel`) from a reduced package set.
+
+```bash
+uv run -m scripts.snapshot_test
+uv run -m scripts.snapshot_test --base snapshot.yml --conf snapshot.toml
+uv run -m scripts.snapshot_test shoot
+uv run -m scripts.snapshot_test diff snapshot-2026-03-02-1210-abcd123
+```
+
+- Default mode (no subcommand):
+  - if base exists, writes a new `snapshot-<timestamp>-<hash>.yml` and prints a line-based diff vs base
+  - if base does not exist, writes/creates the base snapshot, using `shoot`.
+- `shoot` explicitly creates/overwrites a target snapshot (default: `snapshot.yml`).
+- Noise is sent to a temporary folder (`tmp--<timestamp>-<hash>`), which is removed on success.
+
 ## Tests
 
 We use `pytest`. Execute everything via uv so dependencies come from `pyproject.toml`/`uv.lock`:
