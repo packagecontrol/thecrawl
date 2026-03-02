@@ -261,8 +261,20 @@ jobs:
       - name: Install uv
         run: pip install uv
 
-      - name: Prepare wrk
-        run: mkdir -p wrk
+      - name: Ensure wrk directory exists
+        run: mkdir -p ./wrk
+
+      - name: Restore wrk cache
+        id: restore-wrk-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./wrk
+            ./.pypi-cache
+          key: wrk-cache-${{ github.run_id }}
+          fail-on-cache-miss: false
+          restore-keys: |
+            wrk-cache-
 
       - name: Fetch recent workflow runs
         run: |
@@ -275,22 +287,18 @@ jobs:
             -f created=">=$SINCE" \
             --paginate \
             --jq '[.workflow_runs[] | {id, conclusion, run_started_at}]' \
-            > ./wrk/workflow_runs.json
+            > "$RUNNER_TEMP/workflow_runs.json"
 
       - name: Enrich logs.json
         run: |
-          ASSET_NAMES="$(gh release view ${{ env.RELEASE_TAG }} --json assets --jq '.assets[].name')"
-          if printf '%s\n' "$ASSET_NAMES" | grep -Fxq "logs.json"; then
-            gh release download ${{ env.RELEASE_TAG }} \
-              --pattern "logs.json" \
-              --output ./wrk/logs.json \
-              --clobber
-          else
-            echo "Missing logs.json asset on release ${{ env.RELEASE_TAG }}; failing." >&2
+          if [ ! -f ./wrk/logs.json ]; then
+            echo "Missing cached ./wrk/logs.json; failing." >&2
             exit 1
           fi
+          echo "Using cached ./wrk/logs.json"
+
           uv run -m scripts.enrich_logs \
-            --runs ./wrk/workflow_runs.json \
+            --runs "$RUNNER_TEMP/workflow_runs.json" \
             -i ./wrk/logs.json \
             -o ./wrk/logs.json
 
