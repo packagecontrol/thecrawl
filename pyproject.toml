@@ -8,6 +8,7 @@ dependencies = [
     "aiohttp>=3.11.18",
     "inflect>=7.5.0",
     "packaging>=24.2",
+    "readchar>=4.2.1",
     "rich>=13.7",
     "tzdata; platform_system == 'Windows'",
 ]

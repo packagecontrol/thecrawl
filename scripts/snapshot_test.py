@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 import difflib
@@ -12,7 +13,12 @@ import sys
 import tomllib
 from typing import TextIO
 
+from readchar import key as readchar_key
+from readchar import readkey
 from rich.console import Console
+from rich.live import Live
+from rich.panel import Panel
+from rich.text import Text
 
 
 DEFAULT_BASE = "snapshot.yml"
@@ -23,7 +29,8 @@ RED_ON_BLACK = "\x1b[31;40m"
 YELLOW_ON_BLACK = "\x1b[33;40m"
 RESET = "\x1b[0m"
 
-CONSOLE = Console(stderr=True)
+STDOUT_CONSOLE = Console()
+STDERR_CONSOLE = Console(stderr=True)
 
 
 @dataclass
@@ -86,10 +93,28 @@ def run_diff(args: argparse.Namespace) -> int:
         raise SystemExit("diff accepts at most two snapshot files")
 
     if not files:
-        snapshots = sorted(Path.cwd().glob("snapshot-*"))
+        snapshots = list_available_snapshots()
         if not snapshots:
             print("No snapshots found matching 'snapshot-*'.")
             return 0
+
+        if len(snapshots) == 1:
+            left = Path(args.base)
+            right = snapshots[0]
+            print(f"Comparing {left} to {right}")
+            print_snapshot_diff(left, right)
+            return 0
+
+        if is_interactive_terminal():
+            selected = select_snapshot_interactively(snapshots)
+            if selected is None:
+                return 0
+            left = Path(args.base)
+            right = selected
+            print(f"Comparing {left} to {right}")
+            print_snapshot_diff(left, right)
+            return 0
+
         for path in snapshots:
             print(path.name)
         return 0
@@ -106,12 +131,101 @@ def run_diff(args: argparse.Namespace) -> int:
     return 0
 
 
+def list_available_snapshots() -> list[Path]:
+    candidates = {
+        path
+        for pattern in ("snapshot-*.yml", "snapshot-*")
+        for path in Path.cwd().glob(pattern)
+        if path.is_file()
+    }
+    return sorted(candidates, key=lambda path: path.name)
+
+
+def is_interactive_terminal() -> bool:
+    return sys.stdin.isatty() and sys.stdout.isatty()
+
+
+def select_snapshot_interactively(
+    snapshots: list[Path],
+    key_reader: Callable[[], str] | None = None,
+    console: Console | None = None,
+) -> Path | None:
+    if not snapshots:
+        return None
+
+    selected = 0
+    key_reader = read_key_action if key_reader is None else key_reader
+    console = STDOUT_CONSOLE if console is None else console
+
+    with Live(
+        render_snapshot_selector(snapshots, selected),
+        console=console,
+        transient=True,
+        auto_refresh=False,
+    ) as live:
+        while True:
+            action = key_reader()
+
+            if action == "enter":
+                return snapshots[selected]
+            if action in {"q", "esc", "ctrl_c"}:
+                return None
+
+            next_selected = move_selection(selected, len(snapshots), action)
+            if next_selected != selected:
+                selected = next_selected
+                live.update(render_snapshot_selector(snapshots, selected), refresh=True)
+
+
+def render_snapshot_selector(snapshots: list[Path], selected: int) -> Panel:
+    body = Text("Use ↑/↓ to choose a snapshot, Enter to diff, q to cancel\n\n")
+    for index, path in enumerate(snapshots):
+        prefix = "❯" if index == selected else " "
+        style = "bold cyan" if index == selected else ""
+        body.append(f"{prefix} {path.name}\n", style=style)
+    return Panel(body, title="Available snapshots")
+
+
+def move_selection(current: int, total: int, key: str) -> int:
+    if total <= 0:
+        return 0
+    if key == "up":
+        return (current - 1) % total
+    if key == "down":
+        return (current + 1) % total
+    return current
+
+
+def read_key_action() -> str:
+    try:
+        pressed = readkey()
+    except KeyboardInterrupt:
+        return "ctrl_c"
+    return normalize_key_press(pressed)
+
+
+def normalize_key_press(pressed: str) -> str:
+    if pressed == readchar_key.UP:
+        return "up"
+    if pressed == readchar_key.DOWN:
+        return "down"
+    if pressed in {readchar_key.ENTER, "\r", "\n"}:
+        return "enter"
+    if pressed == readchar_key.ESC:
+        return "esc"
+    if pressed == readchar_key.CTRL_C:
+        return "ctrl_c"
+    if pressed.lower() == "q":
+        return "q"
+    return "other"
+
+
 def create_snapshot_with_spinner(
     output_path: Path,
     conf_path: Path,
     ctx: ShootContext,
 ) -> None:
-    with CONSOLE.status("Creating snapshot", spinner="dots"):
+    with STDERR_CONSOLE.status("Creating snapshot", spinner="dots"):
         create_snapshot(output_path, conf_path, ctx)
 
 

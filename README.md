@@ -177,7 +177,8 @@ Creates a compact, single-file snapshot for regression testing (`registry + chan
 uv run -m scripts.snapshot_test
 uv run -m scripts.snapshot_test --base snapshot.yml --conf snapshot.toml
 uv run -m scripts.snapshot_test shoot
-uv run -m scripts.snapshot_test diff snapshot-2026-03-02-1210-abcd123
+uv run -m scripts.snapshot_test diff
+uv run -m scripts.snapshot_test diff snapshot-2026-03-02-1210-abcd123.yml
 ```
 
 - Default mode (no subcommand):

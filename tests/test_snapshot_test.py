@@ -1,3 +1,4 @@
+import argparse
 from datetime import datetime
 from pathlib import Path
 import sys
@@ -5,11 +6,13 @@ import sys
 from scripts.snapshot_test import (
     ShootContext,
     load_snapshot_packages,
+    move_selection,
     normalize_argv,
     ordinal,
     parse_args,
     print_snapshot_diff,
     resolve_auto_output_path,
+    run_diff,
     run_step,
 )
 
@@ -109,6 +112,35 @@ def test_print_snapshot_diff_hides_unified_file_headers(
     assert not any(line.startswith("--- ") for line in lines)
     assert not any(line.startswith("+++ ") for line in lines)
     assert any(line.startswith("@@") for line in lines)
+
+
+def test_run_diff_with_single_candidate_without_files_shows_diff(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    base = tmp_path / "snapshot.yml"
+    candidate = tmp_path / "snapshot-2026-03-02-1253-abc1234.yml"
+    base.write_text("value: old\n", encoding="utf-8")
+    candidate.write_text("value: new\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    result = run_diff(argparse.Namespace(files=[], base=str(base)))
+
+    out = capsys.readouterr().out
+    assert result == 0
+    assert "Comparing" in out
+    assert candidate.name in out
+    assert "@@" in out
+
+
+def test_move_selection_wraps_for_up_and_down() -> None:
+    assert move_selection(0, 3, "up") == 2
+    assert move_selection(2, 3, "down") == 0
+
+
+def test_move_selection_ignores_unknown_keys() -> None:
+    assert move_selection(1, 3, "x") == 1
 
 
 def test_ordinal_suffixes() -> None:
