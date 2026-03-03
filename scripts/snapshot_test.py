@@ -340,11 +340,21 @@ def create_snapshot_with_spinner(
     conf_path: Path,
     ctx: ShootContext,
 ) -> None:
-    with STDERR_CONSOLE.status("Creating snapshot", spinner="dots"):
-        create_snapshot(output_path, conf_path, ctx)
+    with STDERR_CONSOLE.status("Creating snapshot", spinner="dots") as status:
+        create_snapshot(
+            output_path,
+            conf_path,
+            ctx,
+            update_status=status.update,
+        )
 
 
-def create_snapshot(output_path: Path, conf_path: Path, ctx: ShootContext) -> None:
+def create_snapshot(
+    output_path: Path,
+    conf_path: Path,
+    ctx: ShootContext,
+    update_status: Callable[[str], None],
+) -> None:
     names = load_snapshot_packages(conf_path)
     if not names:
         raise ValueError(f"{conf_path} does not contain any snapshot packages.")
@@ -360,7 +370,12 @@ def create_snapshot(output_path: Path, conf_path: Path, ctx: ShootContext) -> No
             write_log(log_file, f"temp_dir: {temp_dir}")
             write_log(log_file, f"output: {output_path}")
 
-            reduced_registry, channel = build_snapshot_payload(temp_dir, names, log_file)
+            reduced_registry, channel = build_snapshot_payload(
+                temp_dir,
+                names,
+                log_file,
+                update_status=update_status,
+            )
             snapshot_text = render_snapshot(ctx, names, reduced_registry, channel)
 
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -391,12 +406,14 @@ def build_snapshot_payload(
     temp_dir: Path,
     names: list[str],
     log_file: TextIO,
+    update_status: Callable[[str], None],
 ) -> tuple[dict, dict]:
     full_registry = temp_dir / "registry-full.json"
     reduced_registry_path = temp_dir / "registry.json"
     workspace_path = temp_dir / "workspace.json"
     channel_path = temp_dir / "channel.json"
 
+    update_status("Generating registry")
     run_step([
         sys.executable,
         "-m",
@@ -408,6 +425,7 @@ def build_snapshot_payload(
     write_log(log_file, f"Reducing registry to {len(names)} configured packages")
     reduced_registry = write_reduced_registry(full_registry, reduced_registry_path, names)
 
+    update_status("Crawling packages")
     run_step([
         sys.executable,
         "-m",
@@ -420,6 +438,7 @@ def build_snapshot_payload(
         str(max(len(names), 1)),
     ], log_file)
 
+    update_status("Generating final channel.json")
     run_step([
         sys.executable,
         "-m",
