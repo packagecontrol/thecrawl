@@ -40,20 +40,6 @@ class ShootContext:
     commit_subject: str
 
 
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    raw_argv = list(sys.argv[1:] if argv is None else argv)
-
-    if raw_argv and raw_argv[0] == "auto":
-        return parse_auto_args(raw_argv[1:])
-
-    if is_auto_mode_argv(raw_argv):
-        return parse_auto_args(raw_argv)
-
-    parser = build_main_parser()
-    normalized_argv = normalize_argv(raw_argv)
-    return parser.parse_args(normalized_argv)
-
-
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.command == "shoot":
@@ -220,13 +206,18 @@ def normalize_key_press(pressed: str) -> str:
     return "other"
 
 
-def create_snapshot_with_spinner(
-    output_path: Path,
-    conf_path: Path,
-    ctx: ShootContext,
-) -> None:
-    with STDERR_CONSOLE.status("Creating snapshot", spinner="dots"):
-        create_snapshot(output_path, conf_path, ctx)
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    raw_argv = list(sys.argv[1:] if argv is None else argv)
+
+    if raw_argv and raw_argv[0] == "auto":
+        return parse_auto_args(raw_argv[1:])
+
+    if is_auto_mode_argv(raw_argv):
+        return parse_auto_args(raw_argv)
+
+    parser = build_main_parser()
+    normalized_argv = normalize_argv(raw_argv)
+    return parser.parse_args(normalized_argv)
 
 
 def normalize_argv(argv: list[str]) -> list[str]:
@@ -342,6 +333,15 @@ def resolve_auto_output_path(
 
     stamp = ctx.now.strftime("%Y-%m-%d-%H%M")
     return Path(f"snapshot-{stamp}-{ctx.commit_hash}.yml")
+
+
+def create_snapshot_with_spinner(
+    output_path: Path,
+    conf_path: Path,
+    ctx: ShootContext,
+) -> None:
+    with STDERR_CONSOLE.status("Creating snapshot", spinner="dots"):
+        create_snapshot(output_path, conf_path, ctx)
 
 
 def create_snapshot(output_path: Path, conf_path: Path, ctx: ShootContext) -> None:
