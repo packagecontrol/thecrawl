@@ -300,6 +300,339 @@ async def test_accept_stylized_dates_for_static_releases(
 
 
 @pytest.mark.asyncio
+async def test_missing_release_definitions_default_to_tags(set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "ImplicitRelease",
+                "details": "https://github.com/example/implicit-release",
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}}
+
+    github_info = {
+        "metadata": {
+            "id": "R_implicitrelease",
+            "name": "ImplicitRelease",
+            "description": "Fixture package with implicit release definition",
+            "homepage": "https://github.com/example/implicit-release",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/implicit-release/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [
+            {
+                "name": "1.2.3",
+                "sha": "abc123",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/implicit-release/zip/1.2.3"
+            }
+        ],
+        "branches": [
+            {
+                "name": "main",
+                "version": "2024.05.11.12.00.00",
+                "sha": "def456",
+                "date": "2024-05-11T12:00:00Z",
+                "url": "https://codeload.github.com/example/implicit-release/zip/main"
+            }
+        ]
+    }
+
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("ImplicitRelease")
+    assert package is not None
+
+    releases = package.get("releases", [])
+    assert len(releases) == 1
+    assert releases[0]["sublime_text"] == "*"
+    assert releases[0]["platforms"] == ["*"]
+    assert releases[0]["version"] == "1.2.3"
+    assert releases[0]["url"].endswith("/1.2.3")
+
+
+@pytest.mark.asyncio
+async def test_release_without_asset_or_branch_defaults_to_tags(set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "AutoTags",
+                "details": "https://github.com/example/auto-tags",
+                "releases": [
+                    {
+                        "sublime_text": "*"
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}}
+
+    github_info = {
+        "metadata": {
+            "id": "R_autotags",
+            "name": "AutoTags",
+            "description": "Fixture package with implicit tags",
+            "homepage": "https://github.com/example/auto-tags",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/auto-tags/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [
+            {
+                "name": "2.0.0",
+                "sha": "abc123",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/auto-tags/zip/2.0.0"
+            }
+        ],
+        "branches": [
+            {
+                "name": "main",
+                "version": "2024.05.11.12.00.00",
+                "sha": "def456",
+                "date": "2024-05-11T12:00:00Z",
+                "url": "https://codeload.github.com/example/auto-tags/zip/main"
+            }
+        ]
+    }
+
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("AutoTags")
+    assert package is not None
+
+    release = package["releases"][0]
+    assert release["version"] == "2.0.0"
+    assert release["url"].endswith("/2.0.0")
+
+
+@pytest.mark.asyncio
+async def test_version_constrained_tags_and_auto_open_ended_release(set_now, set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "ConstrainedTags",
+                "details": "https://github.com/example/constrained-tags",
+                "releases": [
+                    {
+                        "sublime_text": "<4000",
+                        "version": "<3.0.0"
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}}
+
+    github_info = {
+        "metadata": {
+            "id": "R_constrainedtags",
+            "name": "ConstrainedTags",
+            "description": "Fixture package with constrained tags",
+            "homepage": "https://github.com/example/constrained-tags",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/constrained-tags/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [
+            {
+                "name": "3.1.0",
+                "sha": "sha310",
+                "date": "2025-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/constrained-tags/zip/3.1.0"
+            },
+            {
+                "name": "2.9.9",
+                "sha": "sha299",
+                "date": "2024-01-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/constrained-tags/zip/2.9.9"
+            }
+        ],
+        "branches": [
+            {
+                "name": "main",
+                "version": "2025.05.10.12.00.00",
+                "sha": "def456",
+                "date": "2025-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/constrained-tags/zip/main"
+            }
+        ]
+    }
+
+    set_now("2025-08-13T21:44:16Z")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("ConstrainedTags")
+    assert package is not None
+
+    by_st = {release["sublime_text"]: release for release in package["releases"]}
+    assert by_st["<4000"]["version"] == "2.9.9"
+    assert by_st[">3999"]["version"] == "3.1.0"
+
+
+@pytest.mark.asyncio
+async def test_unconstrained_tags_keep_legacy_semver_parsing(set_now, set_github_info, capsys):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "LegacySemverTags",
+                "details": "https://github.com/example/legacy-semver-tags",
+                "releases": [
+                    {
+                        "sublime_text": "*",
+                        "tags": True
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}}
+
+    github_info = {
+        "metadata": {
+            "id": "R_legacysemvertags",
+            "name": "LegacySemverTags",
+            "description": "Fixture package for legacy semver tags",
+            "homepage": "https://github.com/example/legacy-semver-tags",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/legacy-semver-tags/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [
+            {
+                "name": "1.0rc1",
+                "sha": "abc123",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/legacy-semver-tags/zip/1.0rc1"
+            }
+        ],
+        "branches": [
+            {
+                "name": "main",
+                "version": "2024.05.10.12.00.00",
+                "sha": "def456",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/legacy-semver-tags/zip/main"
+            }
+        ]
+    }
+
+    set_now("2024-05-11T00:00:00Z")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    err = capsys.readouterr().err
+    assert (
+        "No valid version found for https://github.com/example/legacy-semver-tags.  "
+        "Falling back to tip of main."
+    ) in err
+
+    package = workspace["packages"].get("LegacySemverTags")
+    assert package is not None
+    assert package["releases"][0]["version"] == "2024.05.10.12.00.00"
+
+
+@pytest.mark.asyncio
+async def test_constrained_tags_use_packaging_version_parsing(set_now, set_github_info):
+    registry = {
+        "repositories": [
+            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+        ],
+        "packages": [
+            {
+                "name": "ConstrainedPep440Tags",
+                "details": "https://github.com/example/constrained-pep440-tags",
+                "releases": [
+                    {
+                        "sublime_text": "*",
+                        "tags": True,
+                        "version": ">=1.0rc1"
+                    }
+                ],
+                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "schema_version": "3.0.0"
+            }
+        ]
+    }
+
+    workspace = {"packages": {}}
+
+    github_info = {
+        "metadata": {
+            "id": "R_constrainedpep440tags",
+            "name": "ConstrainedPep440Tags",
+            "description": "Fixture package for constrained pep440 tags",
+            "homepage": "https://github.com/example/constrained-pep440-tags",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/constrained-pep440-tags/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [
+            {
+                "name": "1.0rc1",
+                "sha": "abc123",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/constrained-pep440-tags/zip/1.0rc1"
+            }
+        ],
+        "branches": []
+    }
+
+    set_now("2024-05-11T00:00:00Z")
+    set_github_info(github_info)
+
+    await main_(registry, workspace, None, 100)
+
+    package = workspace["packages"].get("ConstrainedPep440Tags")
+    assert package is not None
+    assert package["releases"][0]["version"] == "1.0rc1"
+
+
+@pytest.mark.asyncio
 async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_info, capsys):
     registry = {
         "repositories": [

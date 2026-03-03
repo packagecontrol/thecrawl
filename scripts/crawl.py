@@ -4,14 +4,16 @@ import asyncio
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
+from functools import partial
 from itertools import product
 import json
 import os
 import re
 import sys
 from typing import Literal, Mapping, NotRequired, Required, TypedDict
-from packaging.specifiers import SpecifierSet
 
+import packaging
+from packaging.specifiers import SpecifierSet
 
 from .bitbucket import fetch_bitbucket_info, RepoInfo as BitbucketRepoInfo
 from .generate_registry import Registry, PackageEntry as RegistryEntry
@@ -26,7 +28,11 @@ from ._resolve_lib import (
     normalize_st_build,
     normalize_version_spec,
 )
-from ._utils import next_run, parse_version, resolve_url, update_url, write_json, pl, pick
+from ._utils import (
+    next_run, parse_version, resolve_url, update_url, write_json, pl, pick,
+    VersionInfo
+)
+from ._explain_package import print_package_explain
 import traceback
 
 
@@ -105,6 +111,28 @@ def err(*args, **kwargs) -> None:
     print(*args, **kwargs, file=sys.stderr)
 
 
+def explain_main(registry: str, name: str) -> int:
+    if not os.path.exists(registry):
+        err(f"FATAL: Registry file '{registry}' does not exist.")
+        return 1
+
+    try:
+        with open(registry, "r") as reg_file:
+            registry_data = json.load(reg_file)
+    except Exception as e:
+        err(f"FATAL: Could not read registry file '{registry}': {e}")
+        return 1
+
+    package = find_registry_package(registry_data, name)
+    if not package:
+        err(f"Package '{name}' not found in registry.")
+        return 1
+
+    normalized = normalize_registry_entry(deepcopy(package))
+    print_package_explain(name, package, normalized)  # type: ignore[arg-type]
+    return 0
+
+
 async def main(
     registry: str,
     workspace: str,
@@ -143,13 +171,11 @@ async def main_(
 ) -> None:
     name_requested = bool(name)
     if name:
-        for entry in registry["packages"]:
-            if entry.get("name") == name:
-                tocrawl = [entry]
-                break
-        else:
+        package = find_registry_package(registry, name)
+        if not package:
             err(f"Package '{name}' not found in registry.")
             return
+        tocrawl = [package]
     else:
         maintenance(registry, workspace)
         tocrawl = next_packages_to_crawl(registry, workspace, limit=limit, presto=presto)
@@ -366,16 +392,10 @@ async def crawl_package(
     maybe_skip_crawling(entry, existing, now)
     ensure_secure_source(entry, existing)
 
-    out: WorkspaceEntry = {**entry}  # type: ignore[typeddict-item]
-    if "readme" in out:
-        out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]
-            resolve_url(out["source"], out["readme"])  # type: ignore[typeddict-item]
-        )
+    out = normalize_registry_entry(entry)
     details = out.get("details")
     release_definitions: list[ReleaseDescription] = \
         out.get("releases", [])  # type: ignore[assignment]
-    migrate_release_definitions_from_v2(release_definitions)
-    normalize_release_definition(release_definitions, out["source"], details)
 
     releases: list[Release] = []
 
@@ -485,6 +505,28 @@ async def crawl_package(
     return out
 
 
+def find_registry_package(registry: Registry, name: str) -> RegistryEntry | None:
+    for entry in registry.get("packages", []):
+        if entry.get("name") == name:
+            return entry
+    return None
+
+
+def normalize_registry_entry(entry: RegistryEntry) -> WorkspaceEntry:
+    out: WorkspaceEntry = {**entry}  # type: ignore[typeddict-item]
+    if "readme" in out:
+        out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]
+            resolve_url(out["source"], out["readme"])  # type: ignore[typeddict-item]
+        )
+
+    details = out.get("details")
+    release_definitions: list[ReleaseDescription] = \
+        out.setdefault("releases", [])  # type: ignore[assignment]
+    migrate_release_definitions_from_v2(release_definitions)
+    normalize_release_definition(release_definitions, out["source"], details)
+    return out
+
+
 async def resolve_tags(
     info: HubRepoInfo,
     definition: ReleaseDescription,
@@ -494,6 +536,10 @@ async def resolve_tags(
         return [], None
 
     tag_prefix = "" if tag_definition is True else tag_definition
+    version_set = None
+    if version_spec := definition.get("version"):
+        version_set = SpecifierSet(version_spec)
+
     resolved_releases: list[Release] = []
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(weeks=53)
@@ -504,32 +550,50 @@ async def resolve_tags(
     prerelease_found: str | None = None
     found_final = False
     async for tag in info["tags"]:
-        if (
-            tag["name"].startswith(tag_prefix)
-            and (version_string := (
-                tag["name"].removeprefix(tag_prefix)
-                if tag_prefix
-                else tag["name"].removeprefix("v")
-            ))
-            and (version := parse_version(version_string))
-        ):
-            tag_date = datetime.strptime(tag["date"], UTC_FORMAT).replace(tzinfo=timezone.utc)
-            if tag_date < cutoff and found_final:
-                break
+        tag_name = tag["name"]
 
-            if tag_date >= cutoff or (
-                version.is_final or
-                (version.is_prerelease and not prerelease_found)
-            ):
-                r_ = deepcopy(definition)
-                r_.pop("tags")
-                r_ |= pick(("url", "date"), tag)
-                r_ |= {"version": version_string}
-                resolved_releases.append(r_)  # type: ignore[arg-type]
-                if version.is_final:
-                    found_final = True
-                elif version.is_prerelease:
-                    prerelease_found = version_string
+        is_prerelease = False
+        if version_set:
+            # For constrained tags, use packaging.Version against SpecifierSet.
+            tag_match = match_tag_version(tag_name, tag_prefix)
+            if not tag_match:
+                continue
+            version: packaging.version.Version
+            version, version_string = tag_match
+            if not version_set.contains(version, prereleases=True):
+                continue
+            is_final_version = not (version.is_prerelease or version.is_devrelease)
+            is_prerelease = version.is_prerelease
+        else:
+            # Standard tag semantics use our custom, strict semver parser.
+            if not tag_name.startswith(tag_prefix):
+                continue
+            version_string = (
+                tag_name.removeprefix(tag_prefix)
+                if tag_prefix
+                else tag_name.removeprefix("v")
+            )
+            version_: VersionInfo | None
+            version_ = parse_version(version_string)
+            if not version_:
+                continue
+            is_final_version = version_.is_final
+            is_prerelease = version_.is_prerelease
+
+        tag_date = datetime.strptime(tag["date"], UTC_FORMAT).replace(tzinfo=timezone.utc)
+        if tag_date < cutoff and found_final:
+            break
+
+        if tag_date >= cutoff or (is_final_version or (is_prerelease and not prerelease_found)):
+            r_ = deepcopy(definition)
+            r_.pop("tags")
+            r_ |= pick(("url", "date"), tag)
+            r_ |= {"version": version_string}
+            resolved_releases.append(r_)  # type: ignore[arg-type]
+            if is_final_version:
+                found_final = True
+            elif is_prerelease:
+                prerelease_found = version_string
 
     if found_final:
         return resolved_releases, None
@@ -593,8 +657,7 @@ async def resolve_assets(
 
     spec_set = None
     if version_spec := definition.get("version"):
-        normalized_spec = normalize_version_spec(version_spec)
-        spec_set = SpecifierSet(normalized_spec) if normalized_spec else None
+        spec_set = SpecifierSet(version_spec)
 
     resolved_releases: list[Release] = []
     async for release in info["releases"]:  # type: ignore[typeddict-item]
@@ -714,29 +777,123 @@ def normalize_release_definition(
     repo_url: str,
     details: str | None = None
 ):
-    for r in releases[:]:
-        r.setdefault("platforms", ["*"])
-        if isinstance(r["platforms"], str):
-            r["platforms"] = [r["platforms"]]
+    normalize_ = partial(normalize_release_entry, releases, repo_url, details)
 
-        r.setdefault("sublime_text", "*")
-        if isinstance(r["sublime_text"], list):
-            if "asset" not in r:
-                err(f"sublime_text as a list is only valid in conjunction with 'asset', {repo_url}")
-                releases.remove(r)
+    if not releases:
+        releases.append({
+            "sublime_text": "*",
+            "tags": True
+        })
 
-        if base := r.get("base", details):
-            r["base"] = resolve_url(repo_url, base)
+    auto_release = maybe_make_auto_open_ended_tags_release(releases)
 
-        if "url" in r:
-            r["url"] = update_url(resolve_url(repo_url, r["url"]))
+    for release in releases[:]:
+        normalize_(release)
 
-        if "date" in r:
-            try:
-                r["date"] = normalize_datetime_str(r["date"])
-            except ValueError:
-                err(f"date {r['date']} is not formatted correctly, {repo_url}")
-                releases.remove(r)
+    if auto_release:
+        normalize_(auto_release)
+        releases.append(auto_release)
+
+
+def normalize_release_entry(
+    releases: list[ReleaseDescription],
+    repo_url: str,
+    details: str | None,
+    release: ReleaseDescription,
+) -> None:
+    release.setdefault("platforms", ["*"])
+    if isinstance(release["platforms"], str):
+        release["platforms"] = [release["platforms"]]
+
+    release.setdefault("sublime_text", "*")
+    if isinstance(release["sublime_text"], list) and "asset" not in release:
+        err(f"sublime_text as a list is only valid in conjunction with 'asset', {repo_url}")
+        releases.remove(release)
+        return
+
+    if release.keys().isdisjoint({"url", "asset", "branch", "tags"}):
+        release["tags"] = True
+
+    if "url" not in release and (version_spec := release.get("version")):
+        release["version"] = normalize_version_spec(version_spec)
+
+    if base := release.get("base", details):
+        release["base"] = resolve_url(repo_url, base)
+
+    if "url" in release:
+        release["url"] = update_url(resolve_url(repo_url, release["url"]))
+
+    if "date" in release:
+        try:
+            release["date"] = normalize_datetime_str(release["date"])
+        except ValueError:
+            err(f"date {release['date']} is not formatted correctly, {repo_url}")
+            releases.remove(release)
+
+
+def maybe_make_auto_open_ended_tags_release(
+    releases: list[ReleaseDescription],
+) -> ReleaseDescription | None:
+    max_build = -1
+
+    for release in releases:
+        if release.get("version", "") in ("*", ""):
+            return None
+
+        if "url" in release or "asset" in release or "branch" in release:
+            return None
+
+        if release.get("tags") is True:
+            return None
+
+        st_max = parse_sublime_text_max(release.get("sublime_text"))
+        if st_max == float("inf"):
+            return None
+
+        max_build = max(max_build, int(st_max))
+
+    if max_build < 0:
+        return None
+
+    return {
+        "sublime_text": f">{max_build}",
+        "tags": True,
+    }
+
+
+def parse_sublime_text_max(selector) -> float:
+    if not isinstance(selector, str):
+        return float("inf")
+
+    s = re.sub(r"\s+", "", selector)
+    if s in ("", "*"):
+        return float("inf")
+
+    range_index = s.find("-")
+    if range_index != -1:
+        right = s[range_index + 1:]
+        n = parse_int_prefix(right)
+        return float(n) if n is not None else float("inf")
+
+    if s.startswith("<="):
+        n = parse_int_prefix(s[2:])
+        return float(n) if n is not None else float("inf")
+
+    if s.startswith("<"):
+        n = parse_int_prefix(s[1:])
+        return float(max(0, n - 1)) if n is not None else float("inf")
+
+    if s.startswith(">=") or s.startswith(">"):
+        return float("inf")
+
+    n = parse_int_prefix(s)
+    return float(n) if n is not None else float("inf")
+
+
+def parse_int_prefix(text: str) -> int | None:
+    if match := re.match(r"^\d+", text):
+        return int(match.group(0))
+    return None
 
 
 def compile_release_asset_pattern(
@@ -837,8 +994,11 @@ def which_hub(url: str) -> str:
     return "unknown"
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Crawl the registry and update the workspace.")
+def parse_args(argv: list[str] | None = None):
+    parser = argparse.ArgumentParser(
+        description="Crawl the registry and update the workspace.",
+        epilog="Numeric shorthand: -<n> sets crawl limit, e.g. -1000 == --limit 1000.",
+    )
     parser.add_argument(
         "--registry",
         type=str,
@@ -856,6 +1016,15 @@ def parse_args():
         help=(
             "Optional name of a package to crawl. "
             "If not provided, all packages will be crawled."))
+    parser.add_argument(
+        "--explain",
+        type=str,
+        default=None,
+        help=(
+            "Show the normalized package entry for the named package and "
+            "exit without writing the workspace."
+        ),
+    )
     parser.add_argument(
         "--limit", "-n",
         type=int,
@@ -876,7 +1045,34 @@ def parse_args():
         default=".",
         help="Working directory to resolve file paths (default: .)"
     )
-    return parser.parse_args()
+    normalized_argv = normalize_limit_argv(sys.argv[1:] if argv is None else argv)
+    if count_limit_occurrences(normalized_argv) > 1:
+        parser.error("--limit/-n can only be specified once")
+
+    args = parser.parse_args(normalized_argv)
+    if args.name and args.explain:
+        parser.error("Use either --name or --explain, not both")
+    return args
+
+
+def normalize_limit_argv(argv: list[str]) -> list[str]:
+    normalized = []
+    for arg in argv:
+        if re.fullmatch(r"-\d+", arg):
+            normalized.extend(["--limit", arg[1:]])
+            continue
+        normalized.append(arg)
+    return normalized
+
+
+def count_limit_occurrences(argv: list[str]) -> int:
+    count = 0
+    for arg in argv:
+        if arg in {"--limit", "-n"}:
+            count += 1
+        elif arg.startswith("--limit="):
+            count += 1
+    return count
 
 
 def env_flag(name: str, default: bool = False) -> bool:
@@ -892,4 +1088,8 @@ if __name__ == "__main__":
     os.makedirs(wd, exist_ok=True)
     args.registry = os.path.normpath(os.path.join(wd, args.registry))
     args.workspace = os.path.normpath(os.path.join(wd, args.workspace))
+
+    if args.explain:
+        raise SystemExit(explain_main(args.registry, args.explain))
+
     asyncio.run(main(args.registry, args.workspace, args.name, args.limit, args.presto))

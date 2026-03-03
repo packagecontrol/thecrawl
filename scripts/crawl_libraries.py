@@ -23,6 +23,7 @@ from ._resolve_lib import (
     resolve_library,
 )
 from ._utils import err, write_json
+from ._explain_package import print_library_explain
 
 
 DEFAULT_REGISTRY = "./registry.json"
@@ -347,8 +348,10 @@ async def handle_explain(name: str, args: Args) -> int:
         raise ValueError(
             f'Library "{name}" not found in {args.registry.name}.'
         )
-    concrete_defs = explain_library(library)
-    print(json.dumps(concrete_defs, indent=2, ensure_ascii=False))
+
+    explain_rows = explain_library(library)
+    metadata = {key: value for key, value in library.items() if key != "releases"}
+    print_library_explain(name, explain_rows, metadata=metadata)
     return 0
 
 
