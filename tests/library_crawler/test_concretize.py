@@ -4,6 +4,7 @@ from scripts._resolve_lib import (
     combine_releases,
     spell_out_constraint_variations,
     normalize_release_def,
+    sort_releases,
 )
 
 
@@ -141,3 +142,53 @@ def test_combine_releases_all_platforms_to_star():
 
     assert len(combined) == 1
     assert combined[0]["platforms"] == ["*"]
+
+
+def test_sort_releases_by_python_versions_platforms_and_date():
+    releases = [
+        {
+            "python_versions": ["3.13"],
+            "platforms": ["windows-x64"],
+            "date": "2026-01-03T00:00:00Z",
+        },
+        {
+            "python_versions": ["3.8"],
+            "platforms": ["windows-x64"],
+            "date": "2026-01-02T00:00:00Z",
+        },
+        {
+            "python_versions": ["3.13"],
+            "platforms": ["linux-x64"],
+            "date": "2026-01-01T00:00:00Z",
+        },
+        {
+            "python_versions": ["3.13"],
+            "platforms": ["windows-x64"],
+            "date": "2026-01-01T00:00:00Z",
+        },
+    ]
+
+    sorted_releases = sort_releases(releases)
+
+    assert sorted_releases == [
+        {
+            "python_versions": ["3.13"],
+            "platforms": ["linux-x64"],
+            "date": "2026-01-01T00:00:00Z",
+        },
+        {
+            "python_versions": ["3.13"],
+            "platforms": ["windows-x64"],
+            "date": "2026-01-01T00:00:00Z",
+        },
+        {
+            "python_versions": ["3.13"],
+            "platforms": ["windows-x64"],
+            "date": "2026-01-03T00:00:00Z",
+        },
+        {
+            "python_versions": ["3.8"],
+            "platforms": ["windows-x64"],
+            "date": "2026-01-02T00:00:00Z",
+        },
+    ]

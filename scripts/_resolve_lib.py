@@ -520,15 +520,13 @@ def pypi_homepage(info: dict) -> str | None:
 
 def sort_releases(releases: list[dict]) -> list[dict]:
     def key(item: dict):
-        version = item.get("version", "")
-        try:
-            parsed = Version(version)
-        except InvalidVersion:
-            parsed = Version("0")
-        platforms = item.get("platforms", [])
-        return (parsed, platforms)
+        return (
+            item.get("python_versions", []),
+            item.get("platforms", []),
+            item.get("date", ""),
+        )
 
-    return sorted(releases, key=key, reverse=True)
+    return sorted(releases, key=key)
 
 
 def combine_releases(releases: list[Release]) -> list[dict]:
