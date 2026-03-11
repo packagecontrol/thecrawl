@@ -112,7 +112,7 @@ isPackagePage: true
     </ul>
   {% endif %}
 
-  {{ pack.labels(pkg) }}
+  {{ pack.labels(pkg, true) }}
 
   {% if not pkg.removed %}
     {# once a package is removed none of the links or the readme are still reliable #}
