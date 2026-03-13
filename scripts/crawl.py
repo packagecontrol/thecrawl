@@ -10,7 +10,7 @@ import json
 import os
 import re
 import sys
-from typing import Literal, Mapping, NotRequired, Required, TypedDict
+from typing import Any, Literal, Mapping, NotRequired, Required, TypedDict
 
 import packaging
 from packaging.specifiers import SpecifierSet
@@ -38,6 +38,7 @@ import traceback
 
 DEFAULT_REGISTRY = "./registry.json"
 DEFAULT_WORKSPACE = "./workspace.json"
+EXPLAIN_EFFECTIVE_ENV = "EFFECTIVE"
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 STYLIZED_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 TRUSTED_SOURCES = {
@@ -129,8 +130,79 @@ def explain_main(registry: str, name: str) -> int:
         return 1
 
     normalized = normalize_registry_entry(deepcopy(package))
+    if env_flag(EXPLAIN_EFFECTIVE_ENV):
+        print_package_explain_effective(name, normalized)  # type: ignore[arg-type]
+        return 0
+
     print_package_explain(name, package, normalized)  # type: ignore[arg-type]
     return 0
+
+
+def print_package_explain_effective(name: str, normalized: dict[str, Any]) -> None:
+    releases = normalized.get("releases", [])
+    sorted_releases = sorted_release_definitions(releases)
+    tags_mode = classify_tags_mode(sorted_releases)
+
+    normalized_effective = deepcopy(normalized)
+    normalized_effective["releases"] = keep_newest_release_definitions(sorted_releases)
+
+    if tags_mode:
+        effectively = "(effectively) " if tags_mode == "effective" else ""
+        print(f"{name} uses {effectively}the tags-mode.")
+    print(json.dumps(normalized_effective, ensure_ascii=False, sort_keys=True))
+
+
+def classify_tags_mode(
+    sorted_releases: list[dict[str, Any]],
+) -> bool | Literal["effective"]:
+    if not sorted_releases:
+        return False
+
+    if all(release_uses_tags_mode(release) for release in sorted_releases):
+        return True
+
+    if release_uses_tags_mode(sorted_releases[-1]):
+        return "effective"
+
+    return False
+
+
+def sorted_release_definitions(releases: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(releases, key=release_definition_sort_key)
+
+
+def keep_newest_release_definitions(
+    releases: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if not releases:
+        return []
+
+    newest_build = parse_sublime_text_max(releases[-1].get("sublime_text"))
+    return [
+        release
+        for release in releases
+        if parse_sublime_text_max(release.get("sublime_text")) == newest_build
+    ]
+
+
+def release_definition_sort_key(release: dict[str, Any]) -> tuple[float, str]:
+    return (
+        parse_sublime_text_max(release.get("sublime_text")),
+        tags_sort_value(release.get("tags")),
+    )
+
+
+def tags_sort_value(value: Any) -> str:
+    # Place plain `True` after common prefixes like `st2-`.
+    if value is True:
+        return "~~true"
+    if isinstance(value, str):
+        return value
+    return ""
+
+
+def release_uses_tags_mode(release: dict[str, Any]) -> bool:
+    return bool(release.get("tags", False))
 
 
 async def main(
@@ -1022,7 +1094,8 @@ def parse_args(argv: list[str] | None = None):
         default=None,
         help=(
             "Show the normalized package entry for the named package and "
-            "exit without writing the workspace."
+            "exit without writing the workspace. Set "
+            f"{EXPLAIN_EFFECTIVE_ENV}=1 to print a short machine-friendly variant."
         ),
     )
     parser.add_argument(

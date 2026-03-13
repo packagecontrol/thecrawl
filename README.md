@@ -77,7 +77,9 @@ stores it in a workspace file (`workspace.json`).
 Supports crawling all packages, or a single package via the `--name` option.
 Use `--presto` (or set `PRESTO_PRESTO_CRAWL=1`) to bypass `next_crawl` scheduling
 and fast-forward the workspace by crawling up to `--limit` packages.
-Use `--explain` to show the normalized package entry for a package
+Use `--explain` to show the normalized package entry for a package.
+Set `EFFECTIVE=1` to switch `--explain` to machine-friendly plain text version of the "newest"
+release definition.
 
 - Integrates with GitHub, GitLab, and Bitbucket APIs to fetch detailed info and releases.
 - Requires a valid `GITHUB_TOKEN` in your environment for GitHub API access because GitHub's GraphQl
@@ -90,6 +92,7 @@ Use `--explain` to show the normalized package entry for a package
 $ GITHUB_TOKEN=ghp_yourgithubtokenhere uv run -m scripts.crawl
 $ uv run -m scripts.crawl --name GitSavvy
 $ uv run -m scripts.crawl --explain GitSavvy
+$ EFFECTIVE=1 uv run -m scripts.crawl --explain GitSavvy
 ```
 
 ---
