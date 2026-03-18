@@ -6,6 +6,7 @@ const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
 const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
+const tagDataEl = document.querySelector('[data-status-tag-dates]')
 /** @type {HTMLButtonElement | null} */
 const prevButton = document.querySelector('[data-control="prev"]')
 /** @type {HTMLButtonElement | null} */
@@ -23,12 +24,20 @@ const lastButton = document.querySelector('[data-control="last"]')
  *  }} LogEntry
  */
 
+/** @typedef {{
+ *    tag: string,
+ *    date: string,
+ *  }} TagMarker
+ */
+
 /** @type {LogEntry[]} */
 let logs = []
 let index = 0
 /** @type {StatusChart | null} */
 let chart = null
 let emptyStateMessage = ''
+/** @type {TagMarker[]} */
+const tagMarkers = loadTagMarkers()
 
 function filterEntriesToWindow(entries, days) {
   const now = new Date()
@@ -54,6 +63,7 @@ function init() {
       onSelect: renderEntry,
       onHover: showHoverPreview,
     })
+    chart.setTagMarkers(tagMarkers)
     chartEl.addEventListener('mouseleave', restoreActiveEntry)
   }
 
@@ -453,11 +463,14 @@ class StatusChart {
     this.gridLayer.setAttribute('class', 'grid')
     this.labelLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.labelLayer.setAttribute('class', 'labels')
+    this.tagLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.tagLayer.setAttribute('class', 'tag-lines')
     this.glitchLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.glitchLayer.setAttribute('class', 'glitch-links')
     this.dotLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.svg.appendChild(this.gridLayer)
     this.svg.appendChild(this.labelLayer)
+    this.svg.appendChild(this.tagLayer)
     this.svg.appendChild(this.glitchLayer)
     this.svg.appendChild(this.dotLayer)
 
@@ -474,6 +487,7 @@ class StatusChart {
 
     this.points = []
     this.entries = []
+    this.tagMarkers = []
 
     this.resizeObserver = new ResizeObserver(() => this.layout())
     this.resizeObserver.observe(this.el)
@@ -595,11 +609,18 @@ class StatusChart {
     this.redrawDots()
   }
 
+  setTagMarkers(markers) {
+    this.tagMarkers = markers || []
+    this.redrawDots()
+  }
+
   redrawDots() {
     this.points = []
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
     while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
+    while (this.tagLayer.firstChild) this.tagLayer.firstChild.remove()
 
+    this.drawTagMarkers()
     if (!this.entries.length) return
 
     const now = new Date()
@@ -613,17 +634,13 @@ class StatusChart {
     this.entries.forEach((entry, idx) => {
       const ts = Date.parse(entry.date || 0)
       if (!Number.isFinite(ts)) return
-      const d = new Date(ts)
-      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-      const diffDays = Math.floor((todayStart - dayStart) / msInDay)
-      if (diffDays < 0 || diffDays >= this.days) return
+      const position = this.positionForTimestamp(ts, { todayStart, msInDay })
+      if (!position) return
 
-      const hour = d.getHours() + d.getMinutes() / 60
-      const x = crisp(this.padding.left + (this.days - 1 - diffDays + 0.5) * this.barWidth)
-      const y = this.yForHour(hour)
+      const { x, y, dayIndex } = position
       const radius = radiusForEntry(entry, this.radius)
       const node = this.makeDot(entry, x, y, radius)
-      positions[idx] = { x, y, radius, dayIndex: diffDays }
+      positions[idx] = { x, y, radius, dayIndex }
 
       const cls = classForEntry(entry)
       const isNeutral = cls === '' || cls === 'muted'
@@ -641,6 +658,50 @@ class StatusChart {
     otherNodes.forEach(({ entry, node }) => {
       this.dotLayer.appendChild(node)
       this.points.push({ entry, node })
+    })
+  }
+
+  drawTagMarkers() {
+    if (!this.tagMarkers.length) return
+
+    const runout = cssNumber(this.el, '--status-tag-runout', 9)
+    const topY = cssNumber(this.el, '--status-tag-top-y', 10)
+    const leanDeg = cssNumber(this.el, '--status-tag-lean-deg', 0.6)
+    const labelOffsetX = cssNumber(this.el, '--status-tag-label-offset-x', 0)
+    const labelOffsetY = cssNumber(this.el, '--status-tag-label-offset-y', 2)
+    const leanRatio = Math.tan((leanDeg * Math.PI) / 180)
+
+    const now = new Date()
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const msInDay = 24 * 60 * 60 * 1000
+
+    this.tagMarkers.forEach((marker) => {
+      const ts = Date.parse(marker.date || 0)
+      if (!Number.isFinite(ts)) return
+      const position = this.positionForTimestamp(ts, { todayStart, msInDay })
+      if (!position) return
+
+      const { x, y } = position
+      const elbowX = x + runout
+      const dy = Math.max(0, y - topY)
+      const topX = elbowX + dy * leanRatio
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      line.setAttribute('class', 'tag-line')
+      line.setAttribute('d', [
+        `M ${crisp(x)} ${crisp(y)}`,
+        `L ${crisp(elbowX)} ${crisp(y)}`,
+        `L ${crisp(topX)} ${crisp(topY)}`,
+      ].join(' '))
+      line.dataset.tag = marker.tag
+      this.tagLayer.appendChild(line)
+
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+      label.setAttribute('class', 'tag-label')
+      label.setAttribute('x', String(crisp(topX + labelOffsetX)))
+      label.setAttribute('y', String(crisp(topY - labelOffsetY)))
+      label.textContent = marker.tag
+      this.tagLayer.appendChild(label)
     })
   }
 
@@ -703,6 +764,24 @@ class StatusChart {
     })
   }
 
+  positionForTimestamp(ts, { todayStart, msInDay } = {}) {
+    const now = new Date()
+    const startOfToday = typeof todayStart === 'number'
+      ? todayStart
+      : new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const dayMs = typeof msInDay === 'number' ? msInDay : 24 * 60 * 60 * 1000
+
+    const d = new Date(ts)
+    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+    const diffDays = Math.floor((startOfToday - dayStart) / dayMs)
+    if (diffDays < 0 || diffDays >= this.days) return null
+
+    const hour = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600
+    const x = this.padding.left + (this.days - 1 - diffDays + 0.5) * this.barWidth
+    const y = this.yForHour(hour)
+    return { x, y, dayIndex: diffDays }
+  }
+
   yForHour(hour) {
     return this.padding.top + hour * this.hourHeight
   }
@@ -757,6 +836,35 @@ function linkToRun(runId, label = 'logs') {
 function missingRunMessage(runId) {
   const link = linkToRun(runId, 'GitHub')
   return `No data for this run_id. Maybe it is still on ${link}.`
+}
+
+function loadTagMarkers() {
+  if (!tagDataEl || !tagDataEl.textContent) return []
+
+  try {
+    const raw = JSON.parse(tagDataEl.textContent)
+    if (!Array.isArray(raw)) return []
+
+    return raw
+      .map((item) => {
+        if (!item || typeof item !== 'object') return null
+        const tag = String(item.tag || '').trim()
+        const date = String(item.date || '').trim()
+        if (!tag || !date) return null
+        if (!isSemverTag(tag)) return null
+        if (!safeDate(date)) return null
+        return { tag, date }
+      })
+      .filter(Boolean)
+  }
+  catch (err) {
+    console.warn('Failed to parse status tag markers:', err)
+    return []
+  }
+}
+
+function isSemverTag(tag) {
+  return /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(tag)
 }
 
 /**
@@ -841,6 +949,13 @@ function extractPackagesCrawled(notes) {
   if (!match) return null
   const value = Number(match[1].replace(/,/g, ''))
   return Number.isFinite(value) ? value : null
+}
+
+function cssNumber(el, variableName, fallback) {
+  if (!el) return fallback
+  const value = getComputedStyle(el).getPropertyValue(variableName)
+  const parsed = Number.parseFloat(value)
+  return Number.isFinite(parsed) ? parsed : fallback
 }
 
 function crisp(value) {

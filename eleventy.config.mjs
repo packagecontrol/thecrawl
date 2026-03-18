@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { spawnSync } from 'child_process'
 import { minify } from 'terser'
 import * as util from './eleventy.util.mjs'
 import * as filters from './eleventy.filters.mjs'
@@ -23,6 +24,8 @@ const MAGIC_WEIGHTS = {
   longevity: 0.1,
   recency: 0.05,
 }
+const STATUS_TAG_WINDOW_DAYS = 30
+const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
 
 const clamp01 = value => Math.max(0, Math.min(1, value))
 // GitHub-style emoji shortcode mapping, loaded from JSON.
@@ -82,6 +85,39 @@ function toTimestamp(value) {
     : `${str.replace(' ', 'T')}Z`
   const parsed = Date.parse(isoCandidate)
   return Number.isNaN(parsed) ? null : parsed
+}
+
+function collectStatusTagDates({ days = STATUS_TAG_WINDOW_DAYS } = {}) {
+  const cutoff = Date.now() - days * MS_IN_DAY
+  const git = spawnSync(
+    'git',
+    [
+      'for-each-ref',
+      '--sort=-taggerdate',
+      '--format=%(refname:short)\t%(taggerdate:iso-strict)',
+      'refs/tags',
+    ],
+    { encoding: 'utf8' },
+  )
+
+  if (git.status !== 0) {
+    const reason = (git.stderr || git.stdout || '').trim() || `exit code ${git.status}`
+    console.warn(`[eleventy] Failed to load git tags for status markers: ${reason}`)
+    return []
+  }
+
+  return git.stdout
+    .split(/\r?\n/)
+    .map((line) => {
+      const [tag, taggerDate] = line.split('\t')
+      return { tag: String(tag || '').trim(), date: String(taggerDate || '').trim() }
+    })
+    .filter(({ tag, date }) => tag && date)
+    .filter(({ tag }) => SEMVER_TAG_RE.test(tag))
+    .filter(({ date }) => {
+      const ts = Date.parse(date)
+      return Number.isFinite(ts) && ts >= cutoff
+    })
 }
 
 function computeMagicMetadata(packages) {
@@ -496,6 +532,10 @@ export default function (eleventyConfig) {
     prodOrigin,
     devOrigin,
     disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
+  })
+
+  eleventyConfig.addGlobalData('status_tag_dates_json', () => {
+    return JSON.stringify(collectStatusTagDates())
   })
 
   // Default permalink: output files with their extension (e.g., /page.html)
