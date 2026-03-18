@@ -7,6 +7,7 @@ const badgeEl = document.querySelector('[data-status-badge]')
 const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
+const overflowTagDataEl = document.querySelector('[data-status-tag-overflow]')
 /** @type {HTMLButtonElement | null} */
 const prevButton = document.querySelector('[data-control="prev"]')
 /** @type {HTMLButtonElement | null} */
@@ -30,6 +31,12 @@ const lastButton = document.querySelector('[data-control="last"]')
  *  }} TagMarker
  */
 
+/** @typedef {{
+ *    tag: string,
+ *    date: string,
+ *  }} OverflowTagMarker
+ */
+
 /** @type {LogEntry[]} */
 let logs = []
 let index = 0
@@ -38,6 +45,8 @@ let chart = null
 let emptyStateMessage = ''
 /** @type {TagMarker[]} */
 const tagMarkers = loadTagMarkers()
+/** @type {OverflowTagMarker | null} */
+const overflowTagMarker = loadOverflowTagMarker()
 
 function filterEntriesToWindow(entries, days) {
   const now = new Date()
@@ -64,6 +73,7 @@ function init() {
       onHover: showHoverPreview,
     })
     chart.setTagMarkers(tagMarkers)
+    chart.setOverflowTagMarker(overflowTagMarker)
     chartEl.addEventListener('mouseleave', restoreActiveEntry)
   }
 
@@ -488,6 +498,7 @@ class StatusChart {
     this.points = []
     this.entries = []
     this.tagMarkers = []
+    this.overflowTagMarker = null
 
     this.resizeObserver = new ResizeObserver(() => this.layout())
     this.resizeObserver.observe(this.el)
@@ -614,6 +625,11 @@ class StatusChart {
     this.redrawDots()
   }
 
+  setOverflowTagMarker(marker) {
+    this.overflowTagMarker = marker || null
+    this.redrawDots()
+  }
+
   redrawDots() {
     this.points = []
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
@@ -621,6 +637,7 @@ class StatusChart {
     while (this.tagLayer.firstChild) this.tagLayer.firstChild.remove()
 
     this.drawTagMarkers()
+    this.drawOverflowTagMarker()
     if (!this.entries.length) return
 
     const now = new Date()
@@ -705,6 +722,79 @@ class StatusChart {
     })
   }
 
+  drawOverflowTagMarker() {
+    if (!this.overflowTagMarker) return
+    if (this.hasTagMarkersInOldestDays()) {
+      return
+    }
+
+    const topY = cssNumber(this.el, '--status-tag-top-y', 10)
+    const labelOffsetY = cssNumber(this.el, '--status-tag-label-offset-y', 3)
+    const labelY = topY - labelOffsetY
+    const centerOffset = cssNumber(this.el, '--status-tag-overflow-center-offset', 3)
+    const overflowY = labelY - centerOffset
+    const shaftLength = cssNumber(this.el, '--status-tag-overflow-shaft', 30)
+    const shiftX = cssNumber(this.el, '--status-tag-overflow-shift-x', -3)
+    const arrowHeadLength = cssNumber(this.el, '--status-tag-overflow-arrow-length', 4)
+    const arrowHalfWidth = cssNumber(this.el, '--status-tag-overflow-arrow-half-width', 3)
+    const labelGap = cssNumber(this.el, '--status-tag-overflow-label-gap', 6)
+
+    const tipX = this.xForDayIndex(this.days - 1)
+    const shaftStartX = tipX + arrowHeadLength
+    const shaftEndX = shaftStartX + shaftLength
+
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    group.setAttribute('class', 'tag-overflow')
+    group.setAttribute('transform', `translate(${shiftX} 0)`)
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    line.setAttribute('class', 'tag-overflow-line')
+    line.setAttribute('x1', String(crisp(shaftStartX)))
+    line.setAttribute('x2', String(crisp(shaftEndX)))
+    line.setAttribute('y1', String(crisp(overflowY)))
+    line.setAttribute('y2', String(crisp(overflowY)))
+    group.appendChild(line)
+
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+    arrow.setAttribute('class', 'tag-overflow-arrow')
+    arrow.setAttribute('points', [
+      `${crisp(tipX)},${crisp(overflowY)}`,
+      `${crisp(shaftStartX)},${crisp(overflowY - arrowHalfWidth)}`,
+      `${crisp(shaftStartX)},${crisp(overflowY + arrowHalfWidth)}`,
+    ].join(' '))
+    group.appendChild(arrow)
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+    label.setAttribute('class', 'tag-overflow-label')
+    label.setAttribute('x', String(crisp(shaftEndX + labelGap)))
+    label.setAttribute('y', String(crisp(labelY)))
+    label.textContent = this.overflowTagMarker.tag
+
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
+    title.textContent = formatTagDateShort(this.overflowTagMarker.date)
+    label.appendChild(title)
+
+    group.appendChild(label)
+    this.tagLayer.appendChild(group)
+  }
+
+  hasTagMarkersInOldestDays() {
+    if (!this.tagMarkers.length) return false
+
+    const now = new Date()
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const msInDay = 24 * 60 * 60 * 1000
+    const OLDEST_DAYS = 12
+    const oldestStart = Math.max(0, this.days - OLDEST_DAYS)
+
+    return this.tagMarkers.some((marker) => {
+      const ts = Date.parse(marker.date || 0)
+      if (!Number.isFinite(ts)) return false
+      const pos = this.positionForTimestamp(ts, { todayStart, msInDay })
+      return Boolean(pos && pos.dayIndex >= oldestStart)
+    })
+  }
+
   makeDot(entry, x, y, radius) {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
     circle.setAttribute('cx', x)
@@ -777,9 +867,13 @@ class StatusChart {
     if (diffDays < 0 || diffDays >= this.days) return null
 
     const hour = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600
-    const x = this.padding.left + (this.days - 1 - diffDays + 0.5) * this.barWidth
+    const x = this.xForDayIndex(diffDays)
     const y = this.yForHour(hour)
     return { x, y, dayIndex: diffDays }
+  }
+
+  xForDayIndex(dayIndex) {
+    return this.padding.left + (this.days - 1 - dayIndex + 0.5) * this.barWidth
   }
 
   yForHour(hour) {
@@ -863,8 +957,38 @@ function loadTagMarkers() {
   }
 }
 
+function loadOverflowTagMarker() {
+  if (!overflowTagDataEl || !overflowTagDataEl.textContent) return null
+
+  try {
+    const raw = JSON.parse(overflowTagDataEl.textContent)
+    if (!raw || typeof raw !== 'object') return null
+
+    const tag = String(raw.tag || '').trim()
+    const date = String(raw.date || '').trim()
+    if (!tag || !date) return null
+    if (!isSemverTag(tag)) return null
+    if (!safeDate(date)) return null
+
+    return { tag, date }
+  }
+  catch (err) {
+    console.warn('Failed to parse status overflow tag marker:', err)
+    return null
+  }
+}
+
 function isSemverTag(tag) {
   return /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(tag)
+}
+
+function formatTagDateShort(value) {
+  const direct = /^(\d{4}-\d{2}-\d{2})/.exec(String(value || '').trim())
+  if (direct) return direct[1]
+
+  const ts = safeDate(value)
+  if (!ts) return String(value || '').trim()
+  return new Date(ts).toISOString().slice(0, 10)
 }
 
 /**

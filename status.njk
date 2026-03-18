@@ -40,4 +40,8 @@ description: "Latest crawler runs and notes."
 {{ (status_tag_dates_json or '[]') | safe }}
 </script>
 
+<script type="application/json" data-status-tag-overflow>
+{{ (status_tag_overflow_json or 'null') | safe }}
+</script>
+
 <script src="{{ '/static/status.js' | bust }}" type="module" async></script>

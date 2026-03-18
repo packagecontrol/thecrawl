@@ -87,8 +87,30 @@ function toTimestamp(value) {
   return Number.isNaN(parsed) ? null : parsed
 }
 
-function collectStatusTagDates({ days = STATUS_TAG_WINDOW_DAYS } = {}) {
+function collectStatusTagData({ days = STATUS_TAG_WINDOW_DAYS } = {}) {
   const cutoff = Date.now() - days * MS_IN_DAY
+  const semverTags = readStatusSemverTags()
+
+  const windowTags = []
+  let overflowTag = null
+
+  for (const tag of semverTags) {
+    const ts = Date.parse(tag.date)
+    if (!Number.isFinite(ts)) continue
+
+    if (ts >= cutoff) {
+      windowTags.push(tag)
+      continue
+    }
+
+    overflowTag = tag
+    break
+  }
+
+  return { windowTags, overflowTag }
+}
+
+function readStatusSemverTags() {
   const git = spawnSync(
     'git',
     [
@@ -114,10 +136,6 @@ function collectStatusTagDates({ days = STATUS_TAG_WINDOW_DAYS } = {}) {
     })
     .filter(({ tag, date }) => tag && date)
     .filter(({ tag }) => SEMVER_TAG_RE.test(tag))
-    .filter(({ date }) => {
-      const ts = Date.parse(date)
-      return Number.isFinite(ts) && ts >= cutoff
-    })
 }
 
 function computeMagicMetadata(packages) {
@@ -534,8 +552,12 @@ export default function (eleventyConfig) {
     disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
   })
 
+  const statusTagData = collectStatusTagData()
   eleventyConfig.addGlobalData('status_tag_dates_json', () => {
-    return JSON.stringify(collectStatusTagDates())
+    return JSON.stringify(statusTagData.windowTags)
+  })
+  eleventyConfig.addGlobalData('status_tag_overflow_json', () => {
+    return statusTagData.overflowTag ? JSON.stringify(statusTagData.overflowTag) : 'null'
   })
 
   // Default permalink: output files with their extension (e.g., /page.html)

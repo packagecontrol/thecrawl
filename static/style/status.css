@@ -27,6 +27,12 @@ html.status main {
   --status-tag-lean-deg: 0.6;
   --status-tag-label-offset-x: 0;
   --status-tag-label-offset-y: 3;
+  --status-tag-overflow-shaft: 30;
+  --status-tag-overflow-center-offset: 3;
+  --status-tag-overflow-shift-x: -3;
+  --status-tag-overflow-arrow-length: 4;
+  --status-tag-overflow-arrow-half-width: 3;
+  --status-tag-overflow-label-gap: 6;
   --status-change-dot: hsl(32deg 90.32% 61.77%);
   --status-error-dot: hsl(7deg 90.45% 50.1%);
 
@@ -97,6 +103,26 @@ html.status main {
     font-size: 9px;
     text-anchor: middle;
     pointer-events: none;
+  }
+
+  .tag-overflow-line {
+    stroke: var(--status-tag-line);
+    stroke-width: var(--status-tag-line-stroke);
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+
+  .tag-overflow-arrow {
+    fill: var(--status-tag-line);
+    pointer-events: none;
+  }
+
+  .tag-overflow-label {
+    fill: var(--status-tag-label);
+    font-size: 9px;
+    text-anchor: start;
+    pointer-events: auto;
+    cursor: default;
   }
 
   .dot {
