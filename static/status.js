@@ -6,6 +6,8 @@ const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
 const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
+const tagDataEl = document.querySelector('[data-status-tag-dates]')
+const overflowTagDataEl = document.querySelector('[data-status-tag-overflow]')
 /** @type {HTMLButtonElement | null} */
 const prevButton = document.querySelector('[data-control="prev"]')
 /** @type {HTMLButtonElement | null} */
@@ -23,12 +25,28 @@ const lastButton = document.querySelector('[data-control="last"]')
  *  }} LogEntry
  */
 
+/** @typedef {{
+ *    tag: string,
+ *    date: string,
+ *  }} TagMarker
+ */
+
+/** @typedef {{
+ *    tag: string,
+ *    date: string,
+ *  }} OverflowTagMarker
+ */
+
 /** @type {LogEntry[]} */
 let logs = []
 let index = 0
 /** @type {StatusChart | null} */
 let chart = null
 let emptyStateMessage = ''
+/** @type {TagMarker[]} */
+const tagMarkers = loadTagMarkers()
+/** @type {OverflowTagMarker | null} */
+const overflowTagMarker = loadOverflowTagMarker()
 
 function filterEntriesToWindow(entries, days) {
   const now = new Date()
@@ -54,6 +72,8 @@ function init() {
       onSelect: renderEntry,
       onHover: showHoverPreview,
     })
+    chart.setTagMarkers(tagMarkers)
+    chart.setOverflowTagMarker(overflowTagMarker)
     chartEl.addEventListener('mouseleave', restoreActiveEntry)
   }
 
@@ -453,11 +473,14 @@ class StatusChart {
     this.gridLayer.setAttribute('class', 'grid')
     this.labelLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.labelLayer.setAttribute('class', 'labels')
+    this.tagLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.tagLayer.setAttribute('class', 'tag-lines')
     this.glitchLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.glitchLayer.setAttribute('class', 'glitch-links')
     this.dotLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.svg.appendChild(this.gridLayer)
     this.svg.appendChild(this.labelLayer)
+    this.svg.appendChild(this.tagLayer)
     this.svg.appendChild(this.glitchLayer)
     this.svg.appendChild(this.dotLayer)
 
@@ -474,6 +497,8 @@ class StatusChart {
 
     this.points = []
     this.entries = []
+    this.tagMarkers = []
+    this.overflowTagMarker = null
 
     this.resizeObserver = new ResizeObserver(() => this.layout())
     this.resizeObserver.observe(this.el)
@@ -595,11 +620,24 @@ class StatusChart {
     this.redrawDots()
   }
 
+  setTagMarkers(markers) {
+    this.tagMarkers = markers || []
+    this.redrawDots()
+  }
+
+  setOverflowTagMarker(marker) {
+    this.overflowTagMarker = marker || null
+    this.redrawDots()
+  }
+
   redrawDots() {
     this.points = []
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
     while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
+    while (this.tagLayer.firstChild) this.tagLayer.firstChild.remove()
 
+    this.drawTagMarkers()
+    this.drawOverflowTagMarker()
     if (!this.entries.length) return
 
     const now = new Date()
@@ -613,17 +651,13 @@ class StatusChart {
     this.entries.forEach((entry, idx) => {
       const ts = Date.parse(entry.date || 0)
       if (!Number.isFinite(ts)) return
-      const d = new Date(ts)
-      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-      const diffDays = Math.floor((todayStart - dayStart) / msInDay)
-      if (diffDays < 0 || diffDays >= this.days) return
+      const position = this.positionForTimestamp(ts, { todayStart, msInDay })
+      if (!position) return
 
-      const hour = d.getHours() + d.getMinutes() / 60
-      const x = crisp(this.padding.left + (this.days - 1 - diffDays + 0.5) * this.barWidth)
-      const y = this.yForHour(hour)
+      const { x, y, dayIndex } = position
       const radius = radiusForEntry(entry, this.radius)
       const node = this.makeDot(entry, x, y, radius)
-      positions[idx] = { x, y, radius, dayIndex: diffDays }
+      positions[idx] = { x, y, radius, dayIndex }
 
       const cls = classForEntry(entry)
       const isNeutral = cls === '' || cls === 'muted'
@@ -641,6 +675,233 @@ class StatusChart {
     otherNodes.forEach(({ entry, node }) => {
       this.dotLayer.appendChild(node)
       this.points.push({ entry, node })
+    })
+  }
+
+  drawTagMarkers() {
+    if (!this.tagMarkers.length) return
+
+    const runout = cssNumber(this.el, '--status-tag-runout', 9)
+    const topY = cssNumber(this.el, '--status-tag-top-y', 10)
+    const topYCrisp = crisp(topY)
+    const topLineYCrisp = crisp(this.yForHour(0))
+    const leanDeg = cssNumber(this.el, '--status-tag-lean-deg', 0.6)
+    const labelOffsetX = cssNumber(this.el, '--status-tag-label-offset-x', 0)
+    const labelOffsetY = cssNumber(this.el, '--status-tag-label-offset-y', 2)
+    const leanRatio = Math.tan((leanDeg * Math.PI) / 180)
+
+    const now = new Date()
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const msInDay = 24 * 60 * 60 * 1000
+
+    const visibleMarkers = this.tagMarkers
+      .map((marker) => {
+        const ts = Date.parse(marker.date || 0)
+        if (!Number.isFinite(ts)) return null
+        const position = this.positionForTimestamp(ts, { todayStart, msInDay })
+        if (!position) return null
+        return { marker, ts, position }
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.ts - b.ts)
+
+    if (!visibleMarkers.length) return
+
+    const groupsByDay = new Map()
+    visibleMarkers.forEach((item) => {
+      const dayKey = localDayKey(item.ts)
+      const existing = groupsByDay.get(dayKey)
+      if (existing) {
+        existing.push(item)
+      }
+      else {
+        groupsByDay.set(dayKey, [item])
+      }
+    })
+
+    const labelEntries = []
+
+    for (const dayGroup of groupsByDay.values()) {
+      let oldestTopX = null
+      const dayElbowX = crisp(dayGroup[0].position.x + runout)
+      const oldestTag = dayGroup[0]?.marker?.tag || ''
+      const latestTag = dayGroup[dayGroup.length - 1]?.marker?.tag || ''
+      const hoverLabel = (dayGroup.length > 1 && oldestTag && latestTag)
+        ? `${oldestTag}..${latestTag}`
+        : latestTag
+
+      dayGroup.forEach((item, indexInDay) => {
+        const { marker, position } = item
+        const { x, y } = position
+        const dy = Math.max(0, y - topY)
+        const projectedTopX = x + runout + dy * leanRatio
+
+        if (oldestTopX === null) {
+          oldestTopX = crisp(projectedTopX)
+        }
+
+        const topX = oldestTopX + indexInDay
+
+        const startYCrisp = crisp(y)
+        const defaultPath = [
+          `M ${crisp(x)} ${startYCrisp}`,
+          `L ${dayElbowX} ${startYCrisp}`,
+          `L ${topX} ${topYCrisp}`,
+        ].join(' ')
+        const topLinePath = [
+          `M ${crisp(x)} ${startYCrisp}`,
+          `L ${dayElbowX} ${startYCrisp}`,
+          `L ${topX} ${topLineYCrisp}`,
+        ].join(' ')
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        line.setAttribute('class', 'tag-line')
+        line.setAttribute('d', defaultPath)
+        line.dataset.tag = marker.tag
+        this.tagLayer.appendChild(line)
+
+        const isLatestInDay = indexInDay === dayGroup.length - 1
+        if (isLatestInDay) {
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+          label.setAttribute('class', 'tag-label')
+          label.setAttribute('x', String(crisp(topX + labelOffsetX)))
+          label.setAttribute('y', String(crisp(topY - labelOffsetY)))
+          label.textContent = marker.tag
+          this.tagLayer.appendChild(label)
+
+          labelEntries.push({
+            node: label,
+            lineNode: line,
+            lineDefaultPath: defaultPath,
+            lineTopPath: topLinePath,
+            x: topX,
+            defaultText: marker.tag,
+            hoverText: hoverLabel,
+            expandsOnHover: hoverLabel !== marker.tag,
+          })
+        }
+      })
+    }
+
+    this.setupTagLabelHover(labelEntries)
+  }
+
+  setupTagLabelHover(entries) {
+    if (!entries.length) return
+
+    const ordered = [...entries].sort((a, b) => a.x - b.x)
+    ordered.forEach((entry, idx) => {
+      if (!entry.expandsOnHover) return
+      const left = ordered[idx - 1] || null
+      const right = ordered[idx + 1] || null
+
+      entry.node.addEventListener('mouseenter', () => {
+        this.activateTagLabelHover(entry, left, right, ordered)
+      })
+      entry.node.addEventListener('mouseleave', () => {
+        this.resetTagLabelHover(ordered)
+      })
+    })
+  }
+
+  activateTagLabelHover(activeEntry, leftEntry, rightEntry, entries) {
+    this.resetTagLabelHover(entries)
+    activeEntry.node.textContent = activeEntry.hoverText
+
+    if (leftEntry) {
+      leftEntry.node.classList.add('tag-label-neighbor-hidden')
+      if (leftEntry.lineNode && leftEntry.lineTopPath) {
+        leftEntry.lineNode.setAttribute('d', leftEntry.lineTopPath)
+      }
+    }
+    if (rightEntry) {
+      rightEntry.node.classList.add('tag-label-neighbor-hidden')
+      if (rightEntry.lineNode && rightEntry.lineTopPath) {
+        rightEntry.lineNode.setAttribute('d', rightEntry.lineTopPath)
+      }
+    }
+  }
+
+  resetTagLabelHover(entries) {
+    entries.forEach((entry) => {
+      entry.node.textContent = entry.defaultText
+      entry.node.classList.remove('tag-label-neighbor-hidden')
+      if (entry.lineNode && entry.lineDefaultPath) {
+        entry.lineNode.setAttribute('d', entry.lineDefaultPath)
+      }
+    })
+  }
+
+  drawOverflowTagMarker() {
+    if (!this.overflowTagMarker) return
+    if (this.hasTagMarkersInOldestDays()) {
+      return
+    }
+
+    const topY = cssNumber(this.el, '--status-tag-top-y', 10)
+    const labelOffsetY = cssNumber(this.el, '--status-tag-label-offset-y', 3)
+    const labelY = topY - labelOffsetY
+    const centerOffset = cssNumber(this.el, '--status-tag-overflow-center-offset', 3)
+    const overflowY = labelY - centerOffset
+    const shaftLength = cssNumber(this.el, '--status-tag-overflow-shaft', 30)
+    const shiftX = cssNumber(this.el, '--status-tag-overflow-shift-x', -3)
+    const arrowHeadLength = cssNumber(this.el, '--status-tag-overflow-arrow-length', 4)
+    const arrowHalfWidth = cssNumber(this.el, '--status-tag-overflow-arrow-half-width', 3)
+    const labelGap = cssNumber(this.el, '--status-tag-overflow-label-gap', 6)
+
+    const tipX = this.xForDayIndex(this.days - 1)
+    const shaftStartX = tipX + arrowHeadLength
+    const shaftEndX = shaftStartX + shaftLength
+
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    group.setAttribute('class', 'tag-overflow')
+    group.setAttribute('transform', `translate(${shiftX} 0)`)
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    line.setAttribute('class', 'tag-overflow-line')
+    line.setAttribute('x1', String(crisp(shaftStartX)))
+    line.setAttribute('x2', String(crisp(shaftEndX)))
+    line.setAttribute('y1', String(crisp(overflowY)))
+    line.setAttribute('y2', String(crisp(overflowY)))
+    group.appendChild(line)
+
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon')
+    arrow.setAttribute('class', 'tag-overflow-arrow')
+    arrow.setAttribute('points', [
+      `${crisp(tipX)},${crisp(overflowY)}`,
+      `${crisp(shaftStartX)},${crisp(overflowY - arrowHalfWidth)}`,
+      `${crisp(shaftStartX)},${crisp(overflowY + arrowHalfWidth)}`,
+    ].join(' '))
+    group.appendChild(arrow)
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+    label.setAttribute('class', 'tag-overflow-label')
+    label.setAttribute('x', String(crisp(shaftEndX + labelGap)))
+    label.setAttribute('y', String(crisp(labelY)))
+    label.textContent = this.overflowTagMarker.tag
+
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
+    title.textContent = formatTagDateShort(this.overflowTagMarker.date)
+    label.appendChild(title)
+
+    group.appendChild(label)
+    this.tagLayer.appendChild(group)
+  }
+
+  hasTagMarkersInOldestDays() {
+    if (!this.tagMarkers.length) return false
+
+    const now = new Date()
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const msInDay = 24 * 60 * 60 * 1000
+    const OLDEST_DAYS = 12
+    const oldestStart = Math.max(0, this.days - OLDEST_DAYS)
+
+    return this.tagMarkers.some((marker) => {
+      const ts = Date.parse(marker.date || 0)
+      if (!Number.isFinite(ts)) return false
+      const pos = this.positionForTimestamp(ts, { todayStart, msInDay })
+      return Boolean(pos && pos.dayIndex >= oldestStart)
     })
   }
 
@@ -703,6 +964,28 @@ class StatusChart {
     })
   }
 
+  positionForTimestamp(ts, { todayStart, msInDay } = {}) {
+    const now = new Date()
+    const startOfToday = typeof todayStart === 'number'
+      ? todayStart
+      : new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const dayMs = typeof msInDay === 'number' ? msInDay : 24 * 60 * 60 * 1000
+
+    const d = new Date(ts)
+    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+    const diffDays = Math.floor((startOfToday - dayStart) / dayMs)
+    if (diffDays < 0 || diffDays >= this.days) return null
+
+    const hour = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600
+    const x = this.xForDayIndex(diffDays)
+    const y = this.yForHour(hour)
+    return { x, y, dayIndex: diffDays }
+  }
+
+  xForDayIndex(dayIndex) {
+    return this.padding.left + (this.days - 1 - dayIndex + 0.5) * this.barWidth
+  }
+
   yForHour(hour) {
     return this.padding.top + hour * this.hourHeight
   }
@@ -748,6 +1031,11 @@ function formatHourLabel(hour) {
   return `${h}:00`
 }
 
+function localDayKey(timestamp) {
+  const d = new Date(timestamp)
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+}
+
 function linkToRun(runId, label = 'logs') {
   if (!runId) return ''
   const href = `https://github.com/packagecontrol/thecrawl/actions/runs/${runId}`
@@ -757,6 +1045,65 @@ function linkToRun(runId, label = 'logs') {
 function missingRunMessage(runId) {
   const link = linkToRun(runId, 'GitHub')
   return `No data for this run_id. Maybe it is still on ${link}.`
+}
+
+function loadTagMarkers() {
+  if (!tagDataEl || !tagDataEl.textContent) return []
+
+  try {
+    const raw = JSON.parse(tagDataEl.textContent)
+    if (!Array.isArray(raw)) return []
+
+    return raw
+      .map((item) => {
+        if (!item || typeof item !== 'object') return null
+        const tag = String(item.tag || '').trim()
+        const date = String(item.date || '').trim()
+        if (!tag || !date) return null
+        if (!isSemverTag(tag)) return null
+        if (!safeDate(date)) return null
+        return { tag, date }
+      })
+      .filter(Boolean)
+  }
+  catch (err) {
+    console.warn('Failed to parse status tag markers:', err)
+    return []
+  }
+}
+
+function loadOverflowTagMarker() {
+  if (!overflowTagDataEl || !overflowTagDataEl.textContent) return null
+
+  try {
+    const raw = JSON.parse(overflowTagDataEl.textContent)
+    if (!raw || typeof raw !== 'object') return null
+
+    const tag = String(raw.tag || '').trim()
+    const date = String(raw.date || '').trim()
+    if (!tag || !date) return null
+    if (!isSemverTag(tag)) return null
+    if (!safeDate(date)) return null
+
+    return { tag, date }
+  }
+  catch (err) {
+    console.warn('Failed to parse status overflow tag marker:', err)
+    return null
+  }
+}
+
+function isSemverTag(tag) {
+  return /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(tag)
+}
+
+function formatTagDateShort(value) {
+  const direct = /^(\d{4}-\d{2}-\d{2})/.exec(String(value || '').trim())
+  if (direct) return direct[1]
+
+  const ts = safeDate(value)
+  if (!ts) return String(value || '').trim()
+  return new Date(ts).toISOString().slice(0, 10)
 }
 
 /**
@@ -841,6 +1188,13 @@ function extractPackagesCrawled(notes) {
   if (!match) return null
   const value = Number(match[1].replace(/,/g, ''))
   return Number.isFinite(value) ? value : null
+}
+
+function cssNumber(el, variableName, fallback) {
+  if (!el) return fallback
+  const value = getComputedStyle(el).getPropertyValue(variableName)
+  const parsed = Number.parseFloat(value)
+  return Number.isFinite(parsed) ? parsed : fallback
 }
 
 function crisp(value) {
