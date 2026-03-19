@@ -684,6 +684,7 @@ class StatusChart {
     const runout = cssNumber(this.el, '--status-tag-runout', 9)
     const topY = cssNumber(this.el, '--status-tag-top-y', 10)
     const topYCrisp = crisp(topY)
+    const topLineYCrisp = crisp(this.yForHour(0))
     const leanDeg = cssNumber(this.el, '--status-tag-lean-deg', 0.6)
     const labelOffsetX = cssNumber(this.el, '--status-tag-label-offset-x', 0)
     const labelOffsetY = cssNumber(this.el, '--status-tag-label-offset-y', 2)
@@ -718,9 +719,16 @@ class StatusChart {
       }
     })
 
+    const labelEntries = []
+
     for (const dayGroup of groupsByDay.values()) {
       let oldestTopX = null
       const dayElbowX = crisp(dayGroup[0].position.x + runout)
+      const oldestTag = dayGroup[0]?.marker?.tag || ''
+      const latestTag = dayGroup[dayGroup.length - 1]?.marker?.tag || ''
+      const hoverLabel = (dayGroup.length > 1 && oldestTag && latestTag)
+        ? `${oldestTag}..${latestTag}`
+        : latestTag
 
       dayGroup.forEach((item, indexInDay) => {
         const { marker, position } = item
@@ -734,13 +742,21 @@ class StatusChart {
 
         const topX = oldestTopX + indexInDay
 
+        const startYCrisp = crisp(y)
+        const defaultPath = [
+          `M ${crisp(x)} ${startYCrisp}`,
+          `L ${dayElbowX} ${startYCrisp}`,
+          `L ${topX} ${topYCrisp}`,
+        ].join(' ')
+        const topLinePath = [
+          `M ${crisp(x)} ${startYCrisp}`,
+          `L ${dayElbowX} ${startYCrisp}`,
+          `L ${topX} ${topLineYCrisp}`,
+        ].join(' ')
+
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'path')
         line.setAttribute('class', 'tag-line')
-        line.setAttribute('d', [
-          `M ${crisp(x)} ${crisp(y)}`,
-          `L ${dayElbowX} ${crisp(y)}`,
-          `L ${topX} ${topYCrisp}`,
-        ].join(' '))
+        line.setAttribute('d', defaultPath)
         line.dataset.tag = marker.tag
         this.tagLayer.appendChild(line)
 
@@ -752,9 +768,68 @@ class StatusChart {
           label.setAttribute('y', String(crisp(topY - labelOffsetY)))
           label.textContent = marker.tag
           this.tagLayer.appendChild(label)
+
+          labelEntries.push({
+            node: label,
+            lineNode: line,
+            lineDefaultPath: defaultPath,
+            lineTopPath: topLinePath,
+            x: topX,
+            defaultText: marker.tag,
+            hoverText: hoverLabel,
+            expandsOnHover: hoverLabel !== marker.tag,
+          })
         }
       })
     }
+
+    this.setupTagLabelHover(labelEntries)
+  }
+
+  setupTagLabelHover(entries) {
+    if (!entries.length) return
+
+    const ordered = [...entries].sort((a, b) => a.x - b.x)
+    ordered.forEach((entry, idx) => {
+      if (!entry.expandsOnHover) return
+      const left = ordered[idx - 1] || null
+      const right = ordered[idx + 1] || null
+
+      entry.node.addEventListener('mouseenter', () => {
+        this.activateTagLabelHover(entry, left, right, ordered)
+      })
+      entry.node.addEventListener('mouseleave', () => {
+        this.resetTagLabelHover(ordered)
+      })
+    })
+  }
+
+  activateTagLabelHover(activeEntry, leftEntry, rightEntry, entries) {
+    this.resetTagLabelHover(entries)
+    activeEntry.node.textContent = activeEntry.hoverText
+
+    if (leftEntry) {
+      leftEntry.node.classList.add('tag-label-neighbor-hidden')
+      if (leftEntry.lineNode && leftEntry.lineTopPath) {
+        leftEntry.lineNode.setAttribute('d', leftEntry.lineTopPath)
+      }
+    }
+    if (rightEntry) {
+      rightEntry.node.classList.add('tag-label-neighbor-hidden')
+      if (rightEntry.lineNode && rightEntry.lineTopPath) {
+        rightEntry.lineNode.setAttribute('d', rightEntry.lineTopPath)
+      }
+    }
+  }
+
+  resetTagLabelHover(entries) {
+    entries.forEach((entry) => {
+      entry.node.textContent = entry.defaultText
+      entry.node.classList.remove('tag-label-neighbor-hidden')
+      if (entry.lineNode && entry.lineDefaultPath) {
+        entry.lineNode.setAttribute('d', entry.lineDefaultPath)
+      }
+    })
   }
 
   drawOverflowTagMarker() {

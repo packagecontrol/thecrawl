@@ -102,7 +102,13 @@ html.status main {
     fill: var(--status-tag-label);
     font-size: 9px;
     text-anchor: middle;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: default;
+    transition: opacity .1s ease;
+  }
+
+  .tag-label-neighbor-hidden {
+    opacity: 0;
   }
 
   .tag-overflow-line {
