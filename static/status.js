@@ -683,6 +683,7 @@ class StatusChart {
 
     const runout = cssNumber(this.el, '--status-tag-runout', 9)
     const topY = cssNumber(this.el, '--status-tag-top-y', 10)
+    const topYCrisp = crisp(topY)
     const leanDeg = cssNumber(this.el, '--status-tag-lean-deg', 0.6)
     const labelOffsetX = cssNumber(this.el, '--status-tag-label-offset-x', 0)
     const labelOffsetY = cssNumber(this.el, '--status-tag-label-offset-y', 2)
@@ -692,34 +693,68 @@ class StatusChart {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
     const msInDay = 24 * 60 * 60 * 1000
 
-    this.tagMarkers.forEach((marker) => {
-      const ts = Date.parse(marker.date || 0)
-      if (!Number.isFinite(ts)) return
-      const position = this.positionForTimestamp(ts, { todayStart, msInDay })
-      if (!position) return
+    const visibleMarkers = this.tagMarkers
+      .map((marker) => {
+        const ts = Date.parse(marker.date || 0)
+        if (!Number.isFinite(ts)) return null
+        const position = this.positionForTimestamp(ts, { todayStart, msInDay })
+        if (!position) return null
+        return { marker, ts, position }
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.ts - b.ts)
 
-      const { x, y } = position
-      const elbowX = x + runout
-      const dy = Math.max(0, y - topY)
-      const topX = elbowX + dy * leanRatio
+    if (!visibleMarkers.length) return
 
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-      line.setAttribute('class', 'tag-line')
-      line.setAttribute('d', [
-        `M ${crisp(x)} ${crisp(y)}`,
-        `L ${crisp(elbowX)} ${crisp(y)}`,
-        `L ${crisp(topX)} ${crisp(topY)}`,
-      ].join(' '))
-      line.dataset.tag = marker.tag
-      this.tagLayer.appendChild(line)
-
-      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-      label.setAttribute('class', 'tag-label')
-      label.setAttribute('x', String(crisp(topX + labelOffsetX)))
-      label.setAttribute('y', String(crisp(topY - labelOffsetY)))
-      label.textContent = marker.tag
-      this.tagLayer.appendChild(label)
+    const groupsByDay = new Map()
+    visibleMarkers.forEach((item) => {
+      const dayKey = localDayKey(item.ts)
+      const existing = groupsByDay.get(dayKey)
+      if (existing) {
+        existing.push(item)
+      }
+      else {
+        groupsByDay.set(dayKey, [item])
+      }
     })
+
+    for (const dayGroup of groupsByDay.values()) {
+      let oldestTopX = null
+      const dayElbowX = crisp(dayGroup[0].position.x + runout)
+
+      dayGroup.forEach((item, indexInDay) => {
+        const { marker, position } = item
+        const { x, y } = position
+        const dy = Math.max(0, y - topY)
+        const projectedTopX = x + runout + dy * leanRatio
+
+        if (oldestTopX === null) {
+          oldestTopX = crisp(projectedTopX)
+        }
+
+        const topX = oldestTopX + indexInDay
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        line.setAttribute('class', 'tag-line')
+        line.setAttribute('d', [
+          `M ${crisp(x)} ${crisp(y)}`,
+          `L ${dayElbowX} ${crisp(y)}`,
+          `L ${topX} ${topYCrisp}`,
+        ].join(' '))
+        line.dataset.tag = marker.tag
+        this.tagLayer.appendChild(line)
+
+        const isLatestInDay = indexInDay === dayGroup.length - 1
+        if (isLatestInDay) {
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+          label.setAttribute('class', 'tag-label')
+          label.setAttribute('x', String(crisp(topX + labelOffsetX)))
+          label.setAttribute('y', String(crisp(topY - labelOffsetY)))
+          label.textContent = marker.tag
+          this.tagLayer.appendChild(label)
+        }
+      })
+    }
   }
 
   drawOverflowTagMarker() {
@@ -919,6 +954,11 @@ function classForConclusion(conclusion) {
 function formatHourLabel(hour) {
   const h = String(hour).padStart(2, '0')
   return `${h}:00`
+}
+
+function localDayKey(timestamp) {
+  const d = new Date(timestamp)
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 }
 
 function linkToRun(runId, label = 'logs') {
