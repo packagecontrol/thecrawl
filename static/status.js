@@ -647,6 +647,14 @@ class StatusChart {
     const neutralNodes = []
     const otherNodes = []
     const positions = new Array(this.entries.length).fill(null)
+    const glitchDotIndexes = new Set()
+
+    this.entries.forEach((entry, idx) => {
+      const startIndex = entry.glitchStartIndex
+      if (typeof startIndex !== 'number' || startIndex <= idx) return
+      glitchDotIndexes.add(startIndex)
+      glitchDotIndexes.add(idx)
+    })
 
     this.entries.forEach((entry, idx) => {
       const ts = Date.parse(entry.date || 0)
@@ -656,7 +664,7 @@ class StatusChart {
 
       const { x, y, dayIndex } = position
       const radius = radiusForEntry(entry, this.radius)
-      const node = this.makeDot(entry, x, y, radius)
+      const node = this.makeDot(entry, x, y, radius, glitchDotIndexes.has(idx))
       positions[idx] = { x, y, radius, dayIndex }
 
       const cls = classForEntry(entry)
@@ -905,13 +913,18 @@ class StatusChart {
     })
   }
 
-  makeDot(entry, x, y, radius) {
+  makeDot(entry, x, y, radius, isGlitch = false) {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
     circle.setAttribute('cx', x)
     circle.setAttribute('cy', y)
     circle.setAttribute('r', radius)
     circle.dataset.key = (entry.run_id || '') + '|' + (entry.date || '')
-    const classes = ['dot', classForEntry(entry), entry.notes ? '' : 'no-notes']
+    const classes = [
+      'dot',
+      classForEntry(entry),
+      isGlitch ? 'glitch' : '',
+      entry.notes ? '' : 'no-notes',
+    ]
       .filter(Boolean)
       .join(' ')
     circle.setAttribute('class', classes)
