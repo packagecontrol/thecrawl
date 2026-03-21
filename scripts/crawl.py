@@ -81,6 +81,7 @@ class WorkspaceEntry(TypedDict, total=False):
     last_seen: IsoTimestamp
     next_crawl: IsoTimestamp
     last_modified: IsoTimestamp
+    update_detected: IsoTimestamp
     failing_since: IsoTimestamp
     fail_reason: str
 
@@ -432,6 +433,10 @@ async def crawl(
         out["next_crawl"] = (now + timedelta(hours=3)).strftime(UTC_FORMAT)
     else:
         out["last_modified"] = max((r["date"] for r in releases))
+
+        previous_last_modified = existing.get("last_modified")
+        if previous_last_modified and out["last_modified"] != previous_last_modified:
+            out["update_detected"] = now_string
 
         # Determine next_crawl interval
         last_modified_dt = (
