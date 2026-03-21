@@ -29,8 +29,8 @@ from ._resolve_lib import (
     normalize_version_spec,
 )
 from ._utils import (
-    next_run, parse_version, resolve_url, update_url, write_json, pl, pick,
-    VersionInfo
+    format_name_list, next_run, parse_version, resolve_url, update_url, write_json, pl, pick,
+    VersionInfo,
 )
 from ._explain_package import print_package_explain
 import traceback
@@ -253,6 +253,7 @@ async def main_(
         maintenance(registry, workspace)
         tocrawl = next_packages_to_crawl(registry, workspace, limit=limit, presto=presto)
 
+    updated_packages: list[str] = []
     async with aiohttp.ClientSession() as session:
         tasks = [
             crawl(
@@ -266,6 +267,8 @@ async def main_(
         results = await asyncio.gather(*tasks)
         for new_entry in results:
             workspace["packages"][new_entry["name"]] = new_entry
+            if "update_detected" in new_entry:
+                updated_packages.append(new_entry["name"])
             if name_requested:
                 print(json.dumps(new_entry, indent=2, ensure_ascii=False))
 
@@ -275,6 +278,11 @@ async def main_(
         f"and {pl(len(workspace.get('libraries', {}).keys()), 'libraries')} "
         f"in db."
     )
+
+    updated_packages = sorted(updated_packages)
+    if updated_packages:
+        s = "" if len(updated_packages) == 1 else "s"
+        print(f"Found update{s} for {format_name_list(updated_packages)}.")
 
     if len(tocrawl) > 0:
         print("GitHub", rate_limit_info)

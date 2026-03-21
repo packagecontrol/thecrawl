@@ -22,7 +22,7 @@ from ._resolve_lib import (
     load_json,
     resolve_library,
 )
-from ._utils import err, write_json
+from ._utils import err, format_name_list, write_json
 from ._explain_package import print_library_explain
 
 
@@ -463,14 +463,6 @@ def format_updated_message(names: list[str]) -> str:
     if len(names) == 1:
         return f"{names[0]} has been updated."
     return f"{format_name_list(names)} have been updated."
-
-
-def format_name_list(names: list[str]) -> str:
-    if len(names) == 1:
-        return names[0]
-    if len(names) == 2:
-        return f"{names[0]} and {names[1]}"
-    return f"{', '.join(names[:-1])}, and {names[-1]}"
 
 
 if __name__ == "__main__":

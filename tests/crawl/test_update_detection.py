@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.crawl import crawl
+from scripts.crawl import crawl, main_
 
 
 @pytest.mark.asyncio
@@ -71,3 +71,69 @@ async def test_drops_previous_update_detected_when_last_modified_is_unchanged(
     result = await crawl(object(), package, existing)
 
     assert "update_detected" not in result
+
+
+@pytest.mark.asyncio
+async def test_main_prints_sorted_oxford_list_for_updates(set_now, monkeypatch, capsys):
+    registry = {
+        "packages": [
+            {"name": "gamma"},
+            {"name": "alpha"},
+            {"name": "beta"},
+        ]
+    }
+    workspace = {"packages": {}}
+
+    async def stub_crawl(session, package, existing):
+        return {"name": package["name"], "update_detected": "2024-06-01T00:00:00Z"}
+
+    set_now("2024-06-01T00:00:00Z")
+    monkeypatch.setattr("scripts.crawl.crawl", stub_crawl)
+
+    await main_(registry, workspace, None, 100)
+
+    out = capsys.readouterr().out
+    assert "Found updates for alpha, beta, and gamma." in out
+
+
+@pytest.mark.asyncio
+async def test_main_prints_singular_update_summary(set_now, monkeypatch, capsys):
+    registry = {"packages": [{"name": "alpha"}, {"name": "beta"}]}
+    workspace = {"packages": {}}
+
+    async def stub_crawl(session, package, existing):
+        if package["name"] == "alpha":
+            return {"name": package["name"], "update_detected": "2024-06-01T00:00:00Z"}
+        return {"name": package["name"]}
+
+    set_now("2024-06-01T00:00:00Z")
+    monkeypatch.setattr("scripts.crawl.crawl", stub_crawl)
+
+    await main_(registry, workspace, None, 100)
+
+    out = capsys.readouterr().out
+    assert "Found update for alpha." in out
+
+
+@pytest.mark.asyncio
+async def test_main_does_not_report_first_seen_as_update(
+    set_now,
+    monkeypatch,
+    capsys,
+):
+    registry = {"packages": [{"name": "alpha"}]}
+    workspace = {"packages": {}}
+
+    async def stub_crawl_package(session, package, existing):
+        return {
+            "name": package["name"],
+            "releases": [{"date": "2024-05-31T00:00:00Z"}],
+        }
+
+    set_now("2024-06-01T00:00:00Z")
+    monkeypatch.setattr("scripts.crawl.crawl_package", stub_crawl_package)
+
+    await main_(registry, workspace, None, 100)
+
+    out = capsys.readouterr().out
+    assert "Found update" not in out
