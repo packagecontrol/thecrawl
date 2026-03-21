@@ -39,6 +39,9 @@ jobs:
       - name: Ensure wrk directory exists
         run: mkdir -p ./wrk
 
+      - name: Freeze run timestamp
+        run: echo "NOW_TS=$(date +%s)" >> "$GITHUB_ENV"
+
       - name: Restore wrk cache
         uses: actions/cache@v4
         with:
@@ -130,8 +133,7 @@ jobs:
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/registry.json --clobber
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/workspace.json --clobber
 
-          DATE_TS=$(date +%s)
-          DATE=$(TZ=Europe/Berlin date -d "@$DATE_TS" +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
+          DATE=$(TZ=Europe/Berlin date -d "@$NOW_TS" +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
           REPO_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           # Build new notes
           {
@@ -165,7 +167,7 @@ jobs:
 
           uv run -m scripts.collect_logs \
             --run-id "${{ github.run_id }}" \
-            --timestamp "$DATE_TS" \
+            --timestamp "$NOW_TS" \
             -o ./wrk/logs.json \
             notes.txt
 
