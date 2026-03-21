@@ -1,6 +1,7 @@
+from datetime import datetime, timezone
 import pytest
 
-from scripts.crawl import crawl, main_
+from scripts.crawl import crawl, main_, now_ts
 
 
 @pytest.mark.asyncio
@@ -137,3 +138,15 @@ async def test_main_does_not_report_first_seen_as_update(
 
     out = capsys.readouterr().out
     assert "Found update" not in out
+
+
+def test_now_ts_prefers_now_ts_env(monkeypatch, set_now):
+    set_now("2024-06-01T00:00:00Z")
+    monkeypatch.setenv("NOW_TS", "1717286400")
+
+    expected = (
+        datetime
+        .strptime("2024-06-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
+        .replace(tzinfo=timezone.utc)
+    )
+    assert now_ts() == expected

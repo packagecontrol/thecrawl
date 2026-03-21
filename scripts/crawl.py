@@ -295,7 +295,7 @@ def next_packages_to_crawl(
     Returns a list of packages to crawl, sorted by next_crawl timestamp.
     If next_crawl is not set, it defaults to the current time.
     """
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     now_string = now.strftime(UTC_FORMAT)
     packages = registry["packages"]
     packages_to_crawl = [
@@ -364,7 +364,7 @@ def next_packages_to_crawl(
 def maintenance(registry: Registry, workspace: Workspace) -> None:
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     now_string = now.strftime(UTC_FORMAT)
     current_package_names = {entry["name"] for entry in registry["packages"]}
     packages = workspace["packages"]
@@ -378,7 +378,7 @@ async def crawl(
     existing: WorkspaceEntry
 ) -> WorkspaceEntry:
     out: WorkspaceEntry
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     now_string = now.strftime(UTC_FORMAT)
 
     try:
@@ -473,7 +473,7 @@ async def crawl_package(
     entry: RegistryEntry,
     existing: WorkspaceEntry
 ) -> WorkspaceEntry:
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     maybe_skip_crawling(entry, existing, now)
     ensure_secure_source(entry, existing)
 
@@ -626,7 +626,7 @@ async def resolve_tags(
         version_set = SpecifierSet(version_spec)
 
     resolved_releases: list[Release] = []
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     cutoff = now - timedelta(weeks=53)
 
     # We take all releases from the current (rolling) year, but if there
@@ -1159,6 +1159,12 @@ def count_limit_occurrences(argv: list[str]) -> int:
         elif arg.startswith("--limit="):
             count += 1
     return count
+
+
+def now_ts() -> datetime:
+    if value := os.getenv("NOW_TS"):
+        return datetime.fromtimestamp(float(value.strip()), tz=timezone.utc)
+    return datetime.now(timezone.utc)
 
 
 def env_flag(name: str, default: bool = False) -> bool:
