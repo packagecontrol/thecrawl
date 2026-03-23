@@ -30,6 +30,7 @@ class Args:
     notes: str
     run_id: str | None
     timestamp: float | None
+    workspace: str | None
     history_days: int
     pretty: bool
 
@@ -56,6 +57,14 @@ def parse_args() -> Args:
         help="Unix timestamp (seconds) when the notes were produced.",
     )
     parser.add_argument(
+        "--workspace",
+        default=None,
+        help=(
+            "Optional workspace JSON path. When provided, "
+            "collect found_updates from matching package entries."
+        ),
+    )
+    parser.add_argument(
         "--history-days",
         type=int,
         default=HISTORY_DAYS,
@@ -76,6 +85,7 @@ def parse_args() -> Args:
         notes=ns.notes,
         run_id=ns.run_id,
         timestamp=ns.timestamp,
+        workspace=ns.workspace,
         history_days=ns.history_days,
         pretty=ns.pretty,
     )
@@ -99,21 +109,25 @@ def update_logs(args: Args):
         timestamp = float(now_ts.strip())
 
     runtime_ts = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    run_timestamp_iso = runtime_ts.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     output_path = Path(args.output).expanduser().resolve()
     output_dir = output_path.parent
     if output_dir and not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    entries = load_logs(output_path)
+    entries: list[dict[str, Any]] = load_json(output_path)
     run_id_str = str(run_id)
     entries = [entry for entry in entries if entry.get("run_id") != run_id_str]
 
-    entries.append({
+    entry: dict[str, Any] = {
         "date": runtime_ts.isoformat(),
         "run_id": run_id_str,
         "notes": notes_text,
-    })
+    }
+    if args.workspace:
+        entry["found_updates"] = derive_found_updates(args.workspace, run_timestamp_iso)
+    entries.append(entry)
 
     entries.sort(key=lambda entry: entry["date"], reverse=True)
 
@@ -124,6 +138,38 @@ def update_logs(args: Args):
     ]
 
     write_json(output_path, kept_entries, pretty=args.pretty, ensure_ascii=True)
+
+
+def derive_found_updates(workspace_path: str, run_timestamp_iso: str) -> list[dict[str, Any]]:
+    packages = load_workspace_packages(workspace_path)
+    found_updates = []
+    for entry in packages.values():
+        detected_at = entry.get("update_detected")
+        if detected_at == run_timestamp_iso:
+            found_updates.append({
+                "name": entry["name"],
+                "detected_at": detected_at,
+                "published_at": entry.get("last_modified"),
+            })
+
+    found_updates.sort(key=lambda item: item["name"].casefold())
+    return found_updates
+
+
+def load_workspace_packages(path: str) -> dict[str, dict]:
+    workspace_path = Path(path)
+    if not workspace_path.is_file():
+        raise SystemExit(f"collect_logs: workspace file not found: {workspace_path}")
+
+    workspace = load_json(workspace_path)
+    if not isinstance(workspace, dict):
+        raise SystemExit(f"collect_logs: workspace must be a JSON object: {workspace_path}")
+
+    packages: dict[str, dict] = workspace.get("packages", {})
+    if not isinstance(packages, dict):
+        raise SystemExit(f"collect_logs: workspace packages must be an object: {workspace_path}")
+
+    return packages
 
 
 def now_utc() -> datetime:
@@ -137,7 +183,7 @@ def retention_cutoff(keep_days: int, *, reference: datetime | None = None) -> da
     return reference - timedelta(days=keep_days)
 
 
-def load_logs(path: Path) -> list[dict[str, Any]]:
+def load_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:

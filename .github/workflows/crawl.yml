@@ -185,6 +185,7 @@ jobs:
 
           uv run -m scripts.collect_logs \
             --run-id "${{ github.run_id }}" \
+            --workspace ./wrk/workspace.json \
             -o ./wrk/logs.json \
             notes.txt
 
