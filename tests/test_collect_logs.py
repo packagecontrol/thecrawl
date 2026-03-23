@@ -84,6 +84,7 @@ def test_collect_logs_adds_found_updates_from_workspace(tmp_path, monkeypatch):
                     "alpha": {
                         "name": "alpha",
                         "update_detected": "2024-10-05T09:30:00Z",
+                        "last_modified": "2024-10-05T08:00:00Z",
                     },
                     "foo": {
                         "name": "Foo and Bar",
@@ -119,7 +120,7 @@ def test_collect_logs_adds_found_updates_from_workspace(tmp_path, monkeypatch):
         {
             "name": "alpha",
             "detected_at": "2024-10-05T09:30:00Z",
-            "published_at": None,
+            "published_at": "2024-10-05T08:00:00Z",
         },
         {
             "name": "Foo and Bar",

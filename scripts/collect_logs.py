@@ -26,7 +26,7 @@ class LogEntry(TypedDict):
 class FoundUpdateEntry(TypedDict):
     name: str
     detected_at: str
-    published_at: str | None
+    published_at: str
 
 
 def main():
@@ -163,7 +163,7 @@ def derive_found_updates(workspace_path: str, run_timestamp_iso: str) -> list[Fo
             found_updates.append({
                 "name": entry["name"],
                 "detected_at": detected_at,
-                "published_at": entry.get("last_modified"),
+                "published_at": entry["last_modified"],
             })
 
     found_updates.sort(key=lambda item: item["name"].casefold())
