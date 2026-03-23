@@ -85,15 +85,20 @@ def update_logs(args: Args):
     run_id = args.run_id or os.environ.get("GITHUB_RUN_ID")
     if not run_id:
         raise SystemExit("collect_logs: missing --run-id or GITHUB_RUN_ID")
-    if args.timestamp is None:
-        raise SystemExit("collect_logs: missing --timestamp")
 
     notes_path = Path(args.notes)
     if not notes_path.is_file():
         raise SystemExit(f"collect_logs: notes file not found: {notes_path}")
 
     notes_text = notes_path.read_text(encoding="utf-8")
-    forced_timestamp = datetime.fromtimestamp(args.timestamp, tz=timezone.utc)
+    timestamp = args.timestamp
+    if timestamp is None:
+        now_ts = os.environ.get("NOW_TS")
+        if now_ts is None:
+            raise SystemExit("collect_logs: missing --timestamp")
+        timestamp = float(now_ts.strip())
+
+    forced_timestamp = datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
     output_path = Path(args.output).expanduser().resolve()
     output_dir = output_path.parent
