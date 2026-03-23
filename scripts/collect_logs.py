@@ -103,10 +103,10 @@ def update_logs(args: Args):
     notes_text = notes_path.read_text(encoding="utf-8")
     timestamp = args.timestamp
     if timestamp is None:
-        now_ts = os.environ.get("NOW_TS")
-        if now_ts is None:
+        env_now_ts = os.environ.get("NOW_TS")
+        if env_now_ts is None:
             raise SystemExit("collect_logs: missing --timestamp")
-        timestamp = float(now_ts.strip())
+        timestamp = float(env_now_ts.strip())
 
     runtime_ts = datetime.fromtimestamp(timestamp, tz=timezone.utc)
     run_timestamp_iso = runtime_ts.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -131,7 +131,7 @@ def update_logs(args: Args):
 
     entries.sort(key=lambda entry: entry["date"], reverse=True)
 
-    cutoff = now_utc() - timedelta(days=args.history_days)
+    cutoff = now_ts() - timedelta(days=args.history_days)
     kept_entries = [
         entry for entry in entries
         if datetime.fromisoformat(entry["date"]) >= cutoff
@@ -172,7 +172,9 @@ def load_workspace_packages(path: str) -> dict[str, dict]:
     return packages
 
 
-def now_utc() -> datetime:
+def now_ts() -> datetime:
+    if value := os.getenv("NOW_TS"):
+        return datetime.fromtimestamp(float(value.strip()), tz=timezone.utc)
     return datetime.now(timezone.utc)
 
 

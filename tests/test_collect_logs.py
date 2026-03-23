@@ -15,7 +15,7 @@ def test_collect_logs_deduplicates_run_id(tmp_path, monkeypatch):
     )
 
     fixed_now = datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc)
-    monkeypatch.setattr(collect_logs, "now_utc", lambda: fixed_now)
+    monkeypatch.setattr(collect_logs, "now_ts", lambda: fixed_now)
     monkeypatch.setenv("GITHUB_RUN_ID", "12345")
 
     logs_path = tmp_path / "logs.json"
@@ -67,7 +67,7 @@ def test_collect_logs_adds_found_updates_from_workspace(tmp_path, monkeypatch):
     ts = datetime(2024, 10, 5, 9, 30, tzinfo=timezone.utc).timestamp()
     monkeypatch.setattr(
         collect_logs,
-        "now_utc",
+        "now_ts",
         lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
     )
 
@@ -141,7 +141,7 @@ def test_collect_logs_writes_empty_found_updates_list_when_no_matches(tmp_path, 
     ts = datetime(2024, 10, 5, 9, 30, tzinfo=timezone.utc).timestamp()
     monkeypatch.setattr(
         collect_logs,
-        "now_utc",
+        "now_ts",
         lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
     )
 
@@ -185,7 +185,7 @@ def test_collect_logs_dedupes_run_id_with_found_updates(tmp_path, monkeypatch):
     monkeypatch.setenv("GITHUB_RUN_ID", "500")
     monkeypatch.setattr(
         collect_logs,
-        "now_utc",
+        "now_ts",
         lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
     )
 
@@ -286,7 +286,7 @@ def test_collect_logs_prunes_entries_outside_retention(tmp_path, monkeypatch):
     )
 
     fixed_now = datetime(2024, 10, 5, 12, 0, tzinfo=timezone.utc)
-    monkeypatch.setattr(collect_logs, "now_utc", lambda: fixed_now)
+    monkeypatch.setattr(collect_logs, "now_ts", lambda: fixed_now)
 
     args = collect_logs.Args(
         output=str(logs_path),
@@ -315,7 +315,7 @@ def test_collect_logs_uses_now_ts_when_timestamp_is_missing(tmp_path, monkeypatc
     monkeypatch.setenv("NOW_TS", str(ts))
     monkeypatch.setattr(
         collect_logs,
-        "now_utc",
+        "now_ts",
         lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
     )
 
@@ -345,7 +345,7 @@ def test_collect_logs_timestamp_arg_wins_over_now_ts(tmp_path, monkeypatch):
     monkeypatch.setenv("NOW_TS", str(env_ts))
     monkeypatch.setattr(
         collect_logs,
-        "now_utc",
+        "now_ts",
         lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
     )
 
