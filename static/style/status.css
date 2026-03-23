@@ -328,4 +328,39 @@ html.status main {
   a {
     word-break: break-word;
   }
+
+}
+
+.status-artifacts {
+  --grid-line: 24px;
+  margin-top: var(--grid-line);
+  background: var(--background-1);
+  border-radius: 6px;
+  padding: calc(var(--grid-line) * 0.75) calc(var(--side-padding) * 2);
+  max-width: var(--max-line);
+
+  a {
+    word-break: break-word;
+  }
+}
+
+.status-artifacts[hidden] {
+  display: none;
+}
+
+.status-artifact-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  td {
+    padding: 3px 0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  td:nth-child(2),
+  td:nth-child(3) {
+    text-align: right;
+    white-space: nowrap;
+  }
 }

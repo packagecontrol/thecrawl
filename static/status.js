@@ -2,6 +2,7 @@ import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.mjs
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
 
 const notesEl = document.getElementById('status-notes')
+const artifactsEl = document.getElementById('status-artifacts')
 const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
 const badgeLabelEl = document.querySelector('[data-status-label]')
@@ -16,10 +17,19 @@ const nextButton = document.querySelector('[data-control="next"]')
 const lastButton = document.querySelector('[data-control="last"]')
 
 /** @typedef {{
+ *    id: number,
+ *    name: string,
+ *    size: number,
+ *    url: string,
+ *  }} LogArtifact
+ */
+
+/** @typedef {{
  *    date: string,
  *    run_id?: string,
  *    notes?: string,
  *    conclusion?: string,
+ *    artifacts?: LogArtifact[],
  *    failuresChanged?: boolean,
  *    glitchStartIndex?: number | null
  *  }} LogEntry
@@ -280,6 +290,7 @@ function renderNotes(entry) {
     notesEl.innerHTML = `
       <p>No notes for this run. (${linkToRun(entry.run_id)})</p>
     `
+    renderArtifacts(entry)
     return
   }
 
@@ -288,6 +299,83 @@ function renderNotes(entry) {
   notesEl.innerHTML = DOMPurify.isSupported
     ? DOMPurify.sanitize(html)
     : html
+  renderArtifacts(entry)
+}
+
+/**
+ * @param {LogEntry} entry
+ */
+function renderArtifacts(entry) {
+  if (!artifactsEl) return
+
+  const artifacts = artifactsForEntry(entry)
+  if (!artifacts.length) {
+    artifactsEl.replaceChildren()
+    artifactsEl.hidden = true
+    return
+  }
+
+  artifactsEl.hidden = false
+
+  const table = document.createElement('table')
+  table.className = 'status-artifact-table'
+
+  const tbody = document.createElement('tbody')
+  for (const artifact of artifacts) {
+    const row = document.createElement('tr')
+
+    const nameCell = document.createElement('td')
+    nameCell.textContent = artifact.name
+    row.appendChild(nameCell)
+
+    const sizeCell = document.createElement('td')
+    sizeCell.textContent = formatArtifactSize(artifact.size)
+    row.appendChild(sizeCell)
+
+    const linkCell = document.createElement('td')
+    const link = document.createElement('a')
+    link.href = artifact.url
+    link.textContent = 'Download'
+    link.target = '_blank'
+    link.rel = 'noopener noreferrer'
+    linkCell.appendChild(link)
+    row.appendChild(linkCell)
+
+    tbody.appendChild(row)
+  }
+
+  table.appendChild(tbody)
+  artifactsEl.replaceChildren(table)
+}
+
+/**
+ * @param {LogEntry} entry
+ */
+function artifactsForEntry(entry) {
+  return normalizeArtifacts(entry.artifacts)
+}
+
+/**
+ * @param {LogArtifact[] | undefined} artifacts
+ */
+function normalizeArtifacts(artifacts) {
+  if (!Array.isArray(artifacts)) return []
+  return artifacts
+}
+
+/**
+ * @param {number} size
+ */
+function formatArtifactSize(size) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let value = size
+  let unitIndex = 0
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024
+    unitIndex += 1
+  }
+  const digits = value < 10 && unitIndex > 0 ? 1 : 0
+  return `${value.toFixed(digits)} ${units[unitIndex]}`
 }
 
 function updateButtons() {
@@ -304,6 +392,10 @@ function renderEmptyState(message) {
   badgeLabelEl.textContent = '¯\\_(ツ)_/¯'
   badgeEl.className = 'status-badge status-badge-muted'
   notesEl.innerHTML = `<p>${message}</p>`
+  if (artifactsEl) {
+    artifactsEl.replaceChildren()
+    artifactsEl.hidden = true
+  }
   emptyStateMessage = message
 
   ;[prevButton, nextButton, lastButton].forEach((btn) => {
