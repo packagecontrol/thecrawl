@@ -7,12 +7,26 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, NotRequired, TypedDict
 
 from ._utils import write_json
 
 DEFAULT_OUTPUT = "logs.json"
 HISTORY_DAYS = 32
+
+
+class LogEntry(TypedDict):
+    # Canonical log entry shape written by collect_logs.
+    date: str
+    run_id: str
+    notes: str
+    found_updates: NotRequired[list[FoundUpdateEntry]]
+
+
+class FoundUpdateEntry(TypedDict):
+    name: str
+    detected_at: str
+    published_at: str | None
 
 
 def main():
@@ -116,11 +130,11 @@ def update_logs(args: Args):
     if output_dir and not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    entries: list[dict[str, Any]] = load_json(output_path)
+    entries: list[LogEntry] = load_json(output_path)
     run_id_str = str(run_id)
     entries = [entry for entry in entries if entry.get("run_id") != run_id_str]
 
-    entry: dict[str, Any] = {
+    entry: LogEntry = {
         "date": runtime_ts.isoformat(),
         "run_id": run_id_str,
         "notes": notes_text,
@@ -140,9 +154,9 @@ def update_logs(args: Args):
     write_json(output_path, kept_entries, pretty=args.pretty, ensure_ascii=True)
 
 
-def derive_found_updates(workspace_path: str, run_timestamp_iso: str) -> list[dict[str, Any]]:
+def derive_found_updates(workspace_path: str, run_timestamp_iso: str) -> list[FoundUpdateEntry]:
     packages = load_workspace_packages(workspace_path)
-    found_updates = []
+    found_updates: list[FoundUpdateEntry] = []
     for entry in packages.values():
         detected_at = entry.get("update_detected")
         if detected_at == run_timestamp_iso:
