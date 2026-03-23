@@ -176,10 +176,8 @@ def now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def retention_cutoff(keep_days: int, *, reference: datetime | None = None) -> datetime:
+def retention_cutoff(keep_days: int, *, reference: datetime) -> datetime:
     """Compute the earliest UTC timestamp we must retain."""
-    if reference is None:
-        reference = now_utc()
     return reference - timedelta(days=keep_days)
 
 
