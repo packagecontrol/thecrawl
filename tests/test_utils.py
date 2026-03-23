@@ -5,6 +5,7 @@ from scripts._utils import (
     is_semver,
     normalize_tz_aware_datetime,
     unique_values_preserving_order,
+    format_name_list,
     pl,
 )
 
@@ -105,6 +106,18 @@ def test_unique_values_preserving_order(values, expected):
 def test_unique_values_preserving_order_iterable():
     values = (value for value in ["a", "b", "a", "c"])
     assert unique_values_preserving_order(values) == ["a", "b", "c"]
+
+
+@pytest.mark.parametrize(
+    ("names", "expected"),
+    [
+        (["alpha"], "alpha"),
+        (["alpha", "beta"], "alpha and beta"),
+        (["alpha", "beta", "gamma"], "alpha, beta, and gamma"),
+    ],
+)
+def test_format_name_list(names, expected):
+    assert format_name_list(names) == expected
 
 
 @pytest.mark.parametrize(

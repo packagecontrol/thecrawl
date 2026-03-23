@@ -2,6 +2,8 @@ import json
 import sys
 from datetime import datetime, timezone
 
+import pytest
+
 import scripts.collect_logs as collect_logs
 
 
@@ -13,7 +15,7 @@ def test_collect_logs_deduplicates_run_id(tmp_path, monkeypatch):
     )
 
     fixed_now = datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc)
-    monkeypatch.setattr(collect_logs, "now_utc", lambda: fixed_now)
+    monkeypatch.setattr(collect_logs, "now_ts", lambda: fixed_now)
     monkeypatch.setenv("GITHUB_RUN_ID", "12345")
 
     logs_path = tmp_path / "logs.json"
@@ -58,6 +60,212 @@ def test_collect_logs_deduplicates_run_id(tmp_path, monkeypatch):
     assert entries[0]["date"] == "2024-10-05T08:20:00+00:00"
 
 
+def test_collect_logs_adds_found_updates_from_workspace(tmp_path, monkeypatch):
+    notes_path = tmp_path / "notes.txt"
+    notes_path.write_text("line\n", encoding="utf-8")
+
+    ts = datetime(2024, 10, 5, 9, 30, tzinfo=timezone.utc).timestamp()
+    monkeypatch.setattr(
+        collect_logs,
+        "now_ts",
+        lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
+    )
+
+    workspace_path = tmp_path / "workspace.json"
+    workspace_path.write_text(
+        json.dumps(
+            {
+                "packages": {
+                    "zeta": {
+                        "name": "Zeta",
+                        "update_detected": "2024-10-05T09:30:00Z",
+                        "last_modified": "2024-10-04T00:00:00Z",
+                    },
+                    "alpha": {
+                        "name": "alpha",
+                        "update_detected": "2024-10-05T09:30:00Z",
+                        "last_modified": "2024-10-05T08:00:00Z",
+                    },
+                    "foo": {
+                        "name": "Foo and Bar",
+                        "update_detected": "2024-10-05T09:30:00Z",
+                        "last_modified": "2024-10-03T00:00:00Z",
+                    },
+                    "no-match": {
+                        "name": "No Match",
+                        "update_detected": "2024-10-05T09:31:00Z",
+                        "last_modified": "2024-10-01T00:00:00Z",
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    logs_path = tmp_path / "logs.json"
+    args = collect_logs.Args(
+        output=str(logs_path),
+        notes=str(notes_path),
+        run_id="200",
+        timestamp=ts,
+        workspace=str(workspace_path),
+        history_days=collect_logs.HISTORY_DAYS,
+        pretty=False,
+    )
+
+    collect_logs.update_logs(args)
+
+    entries = json.loads(logs_path.read_text(encoding="utf-8"))
+    assert entries[0]["found_updates"] == [
+        {
+            "name": "alpha",
+            "detected_at": "2024-10-05T09:30:00Z",
+            "published_at": "2024-10-05T08:00:00Z",
+        },
+        {
+            "name": "Foo and Bar",
+            "detected_at": "2024-10-05T09:30:00Z",
+            "published_at": "2024-10-03T00:00:00Z",
+        },
+        {
+            "name": "Zeta",
+            "detected_at": "2024-10-05T09:30:00Z",
+            "published_at": "2024-10-04T00:00:00Z",
+        },
+    ]
+
+
+def test_collect_logs_writes_empty_found_updates_list_when_no_matches(tmp_path, monkeypatch):
+    notes_path = tmp_path / "notes.txt"
+    notes_path.write_text("line\n", encoding="utf-8")
+
+    ts = datetime(2024, 10, 5, 9, 30, tzinfo=timezone.utc).timestamp()
+    monkeypatch.setattr(
+        collect_logs,
+        "now_ts",
+        lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
+    )
+
+    workspace_path = tmp_path / "workspace.json"
+    workspace_path.write_text(
+        json.dumps(
+            {
+                "packages": {
+                    "alpha": {
+                        "name": "alpha",
+                        "update_detected": "2024-10-05T09:31:00Z",
+                        "last_modified": "2024-10-01T00:00:00Z",
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    logs_path = tmp_path / "logs.json"
+    args = collect_logs.Args(
+        output=str(logs_path),
+        notes=str(notes_path),
+        run_id="201",
+        timestamp=ts,
+        workspace=str(workspace_path),
+        history_days=collect_logs.HISTORY_DAYS,
+        pretty=False,
+    )
+
+    collect_logs.update_logs(args)
+
+    entries = json.loads(logs_path.read_text(encoding="utf-8"))
+    assert entries[0]["found_updates"] == []
+
+
+def test_collect_logs_dedupes_run_id_with_found_updates(tmp_path, monkeypatch):
+    notes_path = tmp_path / "notes.txt"
+    notes_path.write_text("first\n", encoding="utf-8")
+
+    monkeypatch.setenv("GITHUB_RUN_ID", "500")
+    monkeypatch.setattr(
+        collect_logs,
+        "now_ts",
+        lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
+    )
+
+    workspace_path = tmp_path / "workspace.json"
+    workspace_path.write_text(
+        json.dumps(
+            {
+                "packages": {
+                    "alpha": {
+                        "name": "alpha",
+                        "update_detected": "2024-10-05T09:30:00Z",
+                        "last_modified": "2024-10-01T00:00:00Z",
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    logs_path = tmp_path / "logs.json"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "collect-logs",
+            "-o",
+            str(logs_path),
+            "--timestamp",
+            str(datetime(2024, 10, 5, 9, 30, tzinfo=timezone.utc).timestamp()),
+            "--workspace",
+            str(workspace_path),
+            str(notes_path),
+        ],
+    )
+    collect_logs.main()
+
+    notes_path.write_text("second\n", encoding="utf-8")
+    workspace_path.write_text(
+        json.dumps(
+            {
+                "packages": {
+                    "beta": {
+                        "name": "beta",
+                        "update_detected": "2024-10-05T10:00:00Z",
+                        "last_modified": "2024-10-02T00:00:00Z",
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "collect-logs",
+            "-o",
+            str(logs_path),
+            "--timestamp",
+            str(datetime(2024, 10, 5, 10, 0, tzinfo=timezone.utc).timestamp()),
+            "--workspace",
+            str(workspace_path),
+            str(notes_path),
+        ],
+    )
+    collect_logs.main()
+
+    entries = json.loads(logs_path.read_text(encoding="utf-8"))
+    assert len(entries) == 1
+    assert entries[0]["notes"] == "second\n"
+    assert entries[0]["found_updates"] == [
+        {
+            "name": "beta",
+            "detected_at": "2024-10-05T10:00:00Z",
+            "published_at": "2024-10-02T00:00:00Z",
+        }
+    ]
+
+
 def test_collect_logs_prunes_entries_outside_retention(tmp_path, monkeypatch):
     logs_path = tmp_path / "logs.json"
     old_entry = {
@@ -79,13 +287,14 @@ def test_collect_logs_prunes_entries_outside_retention(tmp_path, monkeypatch):
     )
 
     fixed_now = datetime(2024, 10, 5, 12, 0, tzinfo=timezone.utc)
-    monkeypatch.setattr(collect_logs, "now_utc", lambda: fixed_now)
+    monkeypatch.setattr(collect_logs, "now_ts", lambda: fixed_now)
 
     args = collect_logs.Args(
         output=str(logs_path),
         notes=str(notes_path),
         run_id="99",
         timestamp=fixed_now.timestamp(),
+        workspace=None,
         history_days=collect_logs.HISTORY_DAYS,
         pretty=True,
     )
@@ -97,3 +306,80 @@ def test_collect_logs_prunes_entries_outside_retention(tmp_path, monkeypatch):
     assert all(entry["run_id"] != "1" for entry in entries)
     # Ordering should keep the newest entry first
     assert entries[0]["run_id"] == "99"
+
+
+def test_collect_logs_uses_now_ts_when_timestamp_is_missing(tmp_path, monkeypatch):
+    notes_path = tmp_path / "notes.txt"
+    notes_path.write_text("line\n", encoding="utf-8")
+
+    ts = datetime(2024, 10, 5, 9, 30, tzinfo=timezone.utc).timestamp()
+    monkeypatch.setenv("NOW_TS", str(ts))
+    monkeypatch.setattr(
+        collect_logs,
+        "now_ts",
+        lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
+    )
+
+    logs_path = tmp_path / "logs.json"
+    args = collect_logs.Args(
+        output=str(logs_path),
+        notes=str(notes_path),
+        run_id="42",
+        timestamp=None,
+        workspace=None,
+        history_days=collect_logs.HISTORY_DAYS,
+        pretty=False,
+    )
+
+    collect_logs.update_logs(args)
+
+    entries = json.loads(logs_path.read_text(encoding="utf-8"))
+    assert entries[0]["date"] == "2024-10-05T09:30:00+00:00"
+
+
+def test_collect_logs_timestamp_arg_wins_over_now_ts(tmp_path, monkeypatch):
+    notes_path = tmp_path / "notes.txt"
+    notes_path.write_text("line\n", encoding="utf-8")
+
+    arg_ts = datetime(2024, 10, 5, 10, 0, tzinfo=timezone.utc).timestamp()
+    env_ts = datetime(2024, 10, 5, 11, 0, tzinfo=timezone.utc).timestamp()
+    monkeypatch.setenv("NOW_TS", str(env_ts))
+    monkeypatch.setattr(
+        collect_logs,
+        "now_ts",
+        lambda: datetime(2024, 10, 6, 0, 0, tzinfo=timezone.utc),
+    )
+
+    logs_path = tmp_path / "logs.json"
+    args = collect_logs.Args(
+        output=str(logs_path),
+        notes=str(notes_path),
+        run_id="43",
+        timestamp=arg_ts,
+        workspace=None,
+        history_days=collect_logs.HISTORY_DAYS,
+        pretty=False,
+    )
+
+    collect_logs.update_logs(args)
+
+    entries = json.loads(logs_path.read_text(encoding="utf-8"))
+    assert entries[0]["date"] == "2024-10-05T10:00:00+00:00"
+
+
+def test_collect_logs_raises_same_error_when_no_timestamp_available(tmp_path):
+    notes_path = tmp_path / "notes.txt"
+    notes_path.write_text("line\n", encoding="utf-8")
+
+    args = collect_logs.Args(
+        output=str(tmp_path / "logs.json"),
+        notes=str(notes_path),
+        run_id="44",
+        timestamp=None,
+        workspace=None,
+        history_days=collect_logs.HISTORY_DAYS,
+        pretty=False,
+    )
+
+    with pytest.raises(SystemExit, match="collect_logs: missing --timestamp"):
+        collect_logs.update_logs(args)

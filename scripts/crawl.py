@@ -29,8 +29,8 @@ from ._resolve_lib import (
     normalize_version_spec,
 )
 from ._utils import (
-    next_run, parse_version, resolve_url, update_url, write_json, pl, pick,
-    VersionInfo
+    format_name_list, next_run, parse_version, resolve_url, update_url, write_json, pl, pick,
+    VersionInfo,
 )
 from ._explain_package import print_package_explain
 import traceback
@@ -81,6 +81,7 @@ class WorkspaceEntry(TypedDict, total=False):
     last_seen: IsoTimestamp
     next_crawl: IsoTimestamp
     last_modified: IsoTimestamp
+    update_detected: IsoTimestamp
     failing_since: IsoTimestamp
     fail_reason: str
 
@@ -252,6 +253,7 @@ async def main_(
         maintenance(registry, workspace)
         tocrawl = next_packages_to_crawl(registry, workspace, limit=limit, presto=presto)
 
+    updated_packages: list[str] = []
     async with aiohttp.ClientSession() as session:
         tasks = [
             crawl(
@@ -265,6 +267,8 @@ async def main_(
         results = await asyncio.gather(*tasks)
         for new_entry in results:
             workspace["packages"][new_entry["name"]] = new_entry
+            if "update_detected" in new_entry:
+                updated_packages.append(new_entry["name"])
             if name_requested:
                 print(json.dumps(new_entry, indent=2, ensure_ascii=False))
 
@@ -274,6 +278,11 @@ async def main_(
         f"and {pl(len(workspace.get('libraries', {}).keys()), 'libraries')} "
         f"in db."
     )
+
+    updated_packages = sorted(updated_packages)
+    if updated_packages:
+        s = "" if len(updated_packages) == 1 else "s"
+        print(f"Found update{s} for {format_name_list(updated_packages)}.")
 
     if len(tocrawl) > 0:
         print("GitHub", rate_limit_info)
@@ -286,7 +295,7 @@ def next_packages_to_crawl(
     Returns a list of packages to crawl, sorted by next_crawl timestamp.
     If next_crawl is not set, it defaults to the current time.
     """
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     now_string = now.strftime(UTC_FORMAT)
     packages = registry["packages"]
     packages_to_crawl = [
@@ -355,7 +364,7 @@ def next_packages_to_crawl(
 def maintenance(registry: Registry, workspace: Workspace) -> None:
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     now_string = now.strftime(UTC_FORMAT)
     current_package_names = {entry["name"] for entry in registry["packages"]}
     packages = workspace["packages"]
@@ -369,7 +378,7 @@ async def crawl(
     existing: WorkspaceEntry
 ) -> WorkspaceEntry:
     out: WorkspaceEntry
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     now_string = now.strftime(UTC_FORMAT)
 
     try:
@@ -433,6 +442,10 @@ async def crawl(
     else:
         out["last_modified"] = max((r["date"] for r in releases))
 
+        previous_last_modified = existing.get("last_modified")
+        if previous_last_modified and out["last_modified"] != previous_last_modified:
+            out["update_detected"] = now_string
+
         # Determine next_crawl interval
         last_modified_dt = (
             datetime
@@ -460,7 +473,7 @@ async def crawl_package(
     entry: RegistryEntry,
     existing: WorkspaceEntry
 ) -> WorkspaceEntry:
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     maybe_skip_crawling(entry, existing, now)
     ensure_secure_source(entry, existing)
 
@@ -613,7 +626,7 @@ async def resolve_tags(
         version_set = SpecifierSet(version_spec)
 
     resolved_releases: list[Release] = []
-    now = datetime.now(timezone.utc)
+    now = now_ts()
     cutoff = now - timedelta(weeks=53)
 
     # We take all releases from the current (rolling) year, but if there
@@ -1146,6 +1159,12 @@ def count_limit_occurrences(argv: list[str]) -> int:
         elif arg.startswith("--limit="):
             count += 1
     return count
+
+
+def now_ts() -> datetime:
+    if value := os.getenv("NOW_TS"):
+        return datetime.fromtimestamp(float(value.strip()), tz=timezone.utc)
+    return datetime.now(timezone.utc)
 
 
 def env_flag(name: str, default: bool = False) -> bool:

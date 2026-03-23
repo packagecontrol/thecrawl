@@ -57,6 +57,14 @@ def pl(count: int, word: str) -> str:
     return f"{count} {_INFLECT.plural(singular, count)}"
 
 
+def format_name_list(names: list[str]) -> str:
+    if len(names) == 1:
+        return names[0]
+    if len(names) == 2:
+        return f"{names[0]} and {names[1]}"
+    return f"{', '.join(names[:-1])}, and {names[-1]}"
+
+
 def pipe(v, *fns):
     for fn in fns:
         v = fn(v)

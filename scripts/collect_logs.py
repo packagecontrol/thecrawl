@@ -7,12 +7,26 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, NotRequired, TypedDict
 
 from ._utils import write_json
 
 DEFAULT_OUTPUT = "logs.json"
 HISTORY_DAYS = 32
+
+
+class LogEntry(TypedDict):
+    # Canonical log entry shape written by collect_logs.
+    date: str
+    run_id: str
+    notes: str
+    found_updates: NotRequired[list[FoundUpdateEntry]]
+
+
+class FoundUpdateEntry(TypedDict):
+    name: str
+    detected_at: str
+    published_at: str
 
 
 def main():
@@ -30,6 +44,7 @@ class Args:
     notes: str
     run_id: str | None
     timestamp: float | None
+    workspace: str | None
     history_days: int
     pretty: bool
 
@@ -56,6 +71,14 @@ def parse_args() -> Args:
         help="Unix timestamp (seconds) when the notes were produced.",
     )
     parser.add_argument(
+        "--workspace",
+        default=None,
+        help=(
+            "Optional workspace JSON path. When provided, "
+            "collect found_updates from matching package entries."
+        ),
+    )
+    parser.add_argument(
         "--history-days",
         type=int,
         default=HISTORY_DAYS,
@@ -76,6 +99,7 @@ def parse_args() -> Args:
         notes=ns.notes,
         run_id=ns.run_id,
         timestamp=ns.timestamp,
+        workspace=ns.workspace,
         history_days=ns.history_days,
         pretty=ns.pretty,
     )
@@ -85,34 +109,43 @@ def update_logs(args: Args):
     run_id = args.run_id or os.environ.get("GITHUB_RUN_ID")
     if not run_id:
         raise SystemExit("collect_logs: missing --run-id or GITHUB_RUN_ID")
-    if args.timestamp is None:
-        raise SystemExit("collect_logs: missing --timestamp")
 
     notes_path = Path(args.notes)
     if not notes_path.is_file():
         raise SystemExit(f"collect_logs: notes file not found: {notes_path}")
 
     notes_text = notes_path.read_text(encoding="utf-8")
-    forced_timestamp = datetime.fromtimestamp(args.timestamp, tz=timezone.utc)
+    timestamp = args.timestamp
+    if timestamp is None:
+        env_now_ts = os.environ.get("NOW_TS")
+        if env_now_ts is None:
+            raise SystemExit("collect_logs: missing --timestamp")
+        timestamp = float(env_now_ts.strip())
+
+    runtime_ts = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    run_timestamp_iso = runtime_ts.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     output_path = Path(args.output).expanduser().resolve()
     output_dir = output_path.parent
     if output_dir and not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    entries = load_logs(output_path)
+    entries: list[LogEntry] = load_json(output_path)
     run_id_str = str(run_id)
     entries = [entry for entry in entries if entry.get("run_id") != run_id_str]
 
-    entries.append({
-        "date": forced_timestamp.isoformat(),
+    entry: LogEntry = {
+        "date": runtime_ts.isoformat(),
         "run_id": run_id_str,
         "notes": notes_text,
-    })
+    }
+    if args.workspace:
+        entry["found_updates"] = derive_found_updates(args.workspace, run_timestamp_iso)
+    entries.append(entry)
 
     entries.sort(key=lambda entry: entry["date"], reverse=True)
 
-    cutoff = retention_cutoff(args.history_days, reference=now_utc())
+    cutoff = now_ts() - timedelta(days=args.history_days)
     kept_entries = [
         entry for entry in entries
         if datetime.fromisoformat(entry["date"]) >= cutoff
@@ -121,18 +154,45 @@ def update_logs(args: Args):
     write_json(output_path, kept_entries, pretty=args.pretty, ensure_ascii=True)
 
 
-def now_utc() -> datetime:
+def derive_found_updates(workspace_path: str, run_timestamp_iso: str) -> list[FoundUpdateEntry]:
+    packages = load_workspace_packages(workspace_path)
+    found_updates: list[FoundUpdateEntry] = []
+    for entry in packages.values():
+        detected_at = entry.get("update_detected")
+        if detected_at == run_timestamp_iso:
+            found_updates.append({
+                "name": entry["name"],
+                "detected_at": detected_at,
+                "published_at": entry["last_modified"],
+            })
+
+    found_updates.sort(key=lambda item: item["name"].casefold())
+    return found_updates
+
+
+def load_workspace_packages(path: str) -> dict[str, dict]:
+    workspace_path = Path(path)
+    if not workspace_path.is_file():
+        raise SystemExit(f"collect_logs: workspace file not found: {workspace_path}")
+
+    workspace = load_json(workspace_path)
+    if not isinstance(workspace, dict):
+        raise SystemExit(f"collect_logs: workspace must be a JSON object: {workspace_path}")
+
+    packages: dict[str, dict] = workspace.get("packages", {})
+    if not isinstance(packages, dict):
+        raise SystemExit(f"collect_logs: workspace packages must be an object: {workspace_path}")
+
+    return packages
+
+
+def now_ts() -> datetime:
+    if value := os.getenv("NOW_TS"):
+        return datetime.fromtimestamp(float(value.strip()), tz=timezone.utc)
     return datetime.now(timezone.utc)
 
 
-def retention_cutoff(keep_days: int, *, reference: datetime | None = None) -> datetime:
-    """Compute the earliest UTC timestamp we must retain."""
-    if reference is None:
-        reference = now_utc()
-    return reference - timedelta(days=keep_days)
-
-
-def load_logs(path: Path) -> list[dict[str, Any]]:
+def load_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:

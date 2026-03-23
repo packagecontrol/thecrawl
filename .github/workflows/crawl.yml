@@ -26,10 +26,10 @@ jobs:
       PRESTO_PRESTO_CRAWL: ${{ vars.PRESTO_PRESTO_CRAWL }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
@@ -39,8 +39,29 @@ jobs:
       - name: Ensure wrk directory exists
         run: mkdir -p ./wrk
 
+      # --------------------------------------------------------------------
+      # Freeze one run-level timestamp for the entire crawl job.
+      #
+      # Why:
+      # - We want all artifacts and logs from a single workflow run to agree
+      #   on one exact point in time.
+      # - This avoids subtle drift where separate `date` calls differ by
+      #   seconds and make later analysis harder.
+      #
+      # Consumers of this frozen timestamp:
+      # - scripts/crawl.py      (run timestamp for crawl/update detection)
+      # - scripts/collect_logs.py (log entry timestamp fallback via NOW_TS)
+      #
+      # Notes:
+      # - We export via $GITHUB_ENV so NOW_TS is available to subsequent steps
+      #   in this job.
+      # - Use epoch seconds (`date +%s`) to stay timezone-agnostic.
+      # --------------------------------------------------------------------
+      - name: Freeze run timestamp
+        run: echo "NOW_TS=$(date +%s)" >> "$GITHUB_ENV"
+
       - name: Restore wrk cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ./wrk
@@ -130,8 +151,7 @@ jobs:
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/registry.json --clobber
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/workspace.json --clobber
 
-          DATE_TS=$(date +%s)
-          DATE=$(TZ=Europe/Berlin date -d "@$DATE_TS" +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
+          DATE=$(TZ=Europe/Berlin date -d "@$NOW_TS" +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
           REPO_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           # Build new notes
           {
@@ -165,13 +185,13 @@ jobs:
 
           uv run -m scripts.collect_logs \
             --run-id "${{ github.run_id }}" \
-            --timestamp "$DATE_TS" \
+            --workspace ./wrk/workspace.json \
             -o ./wrk/logs.json \
             notes.txt
 
       - name: Upload wrk backup
         id: crawl-backup-step
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: crawl-backup
           path: wrk/
@@ -185,10 +205,10 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
@@ -199,7 +219,7 @@ jobs:
         run: mkdir -p ./wrk
 
       - name: Restore wrk cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ./wrk
           key: stats-cache-${{ github.run_id }}
@@ -217,7 +237,7 @@ jobs:
 
       - name: Upload wrk backup
         id: stats-backup-step
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: stats-backup
           path: wrk/
