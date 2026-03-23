@@ -276,18 +276,11 @@ jobs:
           restore-keys: |
             wrk-cache-
 
-      - name: Fetch recent workflow runs
+      - name: Fetch workflow metadata for logs enrichment
         run: |
-          SINCE=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
-          gh api \
-            repos/${{ github.repository }}/actions/workflows/${{ env.WORKFLOW_ID }}/runs \
-            --method GET \
-            -f per_page=100 \
-            -f status=completed \
-            -f created=">=$SINCE" \
-            --paginate \
-            --jq '[.workflow_runs[] | {id, conclusion, run_started_at}]' \
-            > "$RUNNER_TEMP/workflow_runs.json"
+          uv run -m scripts.fetch_logs_metadata \
+            --runs-output "$RUNNER_TEMP/workflow_runs.json" \
+            --artifacts-output "$RUNNER_TEMP/workflow_artifacts.json"
 
       - name: Enrich logs.json
         run: |
@@ -299,6 +292,7 @@ jobs:
 
           uv run -m scripts.enrich_logs \
             --runs "$RUNNER_TEMP/workflow_runs.json" \
+            --artifacts "$RUNNER_TEMP/workflow_artifacts.json" \
             -i ./wrk/logs.json \
             -o ./wrk/logs.json
 

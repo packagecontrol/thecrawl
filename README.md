@@ -174,6 +174,33 @@ The command above reuses the same layout as [CI](https://github.com/packagecontr
 
 ---
 
+### `refresh_logs.py` (plus lower-level helpers)
+
+Use this when you want to reproduce/update `logs.json` locally with GitHub Actions metadata.
+`gh` is required for the ad-hoc queries I make herein.
+
+```bash
+# one-shot: download logs (if missing), fetch metadata, enrich logs
+uv run -m scripts.refresh_logs --pretty
+```
+
+Defaults are tuned for local use:
+- repo: inferred from `GITHUB_REPOSITORY` or local `git origin`
+- workflow id: inferred from `crawl.yml` if not set
+- since window: `--since-hours 24`
+- metadata files: `./workflow_runs.json`, `./workflow_artifacts.json`
+- artifact scan cap: `--artifacts-max-pages 10`
+- logs path: `./logs.json`
+
+If you want explicit control, run the two low-level commands, that's what we do in publish.yml:
+
+```bash
+uv run -m scripts.fetch_logs_metadata --pretty
+uv run -m scripts.enrich_logs -i ./logs.json -o ./logs.json --pretty
+```
+
+---
+
 ### `snapshot_test.py`
 
 Creates a compact, single-file snapshot for regression testing (`registry + channel`) from a reduced package set.
