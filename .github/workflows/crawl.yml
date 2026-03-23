@@ -39,6 +39,24 @@ jobs:
       - name: Ensure wrk directory exists
         run: mkdir -p ./wrk
 
+      # --------------------------------------------------------------------
+      # Freeze one run-level timestamp for the entire crawl job.
+      #
+      # Why:
+      # - We want all artifacts and logs from a single workflow run to agree
+      #   on one exact point in time.
+      # - This avoids subtle drift where separate `date` calls differ by
+      #   seconds and make later analysis harder.
+      #
+      # Consumers of this frozen timestamp:
+      # - scripts/crawl.py      (run timestamp for crawl/update detection)
+      # - scripts/collect_logs.py (log entry timestamp fallback via NOW_TS)
+      #
+      # Notes:
+      # - We export via $GITHUB_ENV so NOW_TS is available to subsequent steps
+      #   in this job.
+      # - Use epoch seconds (`date +%s`) to stay timezone-agnostic.
+      # --------------------------------------------------------------------
       - name: Freeze run timestamp
         run: echo "NOW_TS=$(date +%s)" >> "$GITHUB_ENV"
 
