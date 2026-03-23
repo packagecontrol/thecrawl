@@ -1,4 +1,5 @@
 import json
+import sys
 
 import scripts.enrich_logs as enrich_logs
 
@@ -116,3 +117,21 @@ def test_enrich_attaches_artifacts_by_run_id(tmp_path):
         "size": 4321,
         "url": "https://github.com/owner/repo/actions/runs/2/artifacts/202",
     }]
+
+
+def test_parse_args_defaults_output_to_input(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "enrich_logs.py",
+            "./wrk/logs.json",
+            "--runs",
+            "./workflow_runs.json",
+        ],
+    )
+
+    args = enrich_logs.parse_args()
+
+    assert args.input == "./wrk/logs.json"
+    assert args.output == "./wrk/logs.json"

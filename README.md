@@ -196,7 +196,7 @@ If you want explicit control, run the two low-level commands, that's what we do 
 
 ```bash
 uv run -m scripts.fetch_logs_metadata --pretty
-uv run -m scripts.enrich_logs -i ./logs.json -o ./logs.json --pretty
+uv run -m scripts.enrich_logs --pretty
 ```
 
 ---

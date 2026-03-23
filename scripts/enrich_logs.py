@@ -50,16 +50,16 @@ def parse_args() -> Args:
         )
     )
     parser.add_argument(
-        "-i",
-        "--input",
+        "input",
+        nargs="?",
         default="logs.json",
         help="Input logs file (default: logs.json).",
     )
     parser.add_argument(
         "-o",
         "--output",
-        default="logs.json",
-        help="Output logs file (default: logs.json).",
+        default=None,
+        help="Output logs file (defaults to INPUT).",
     )
     parser.add_argument(
         "-r",
@@ -86,7 +86,7 @@ def parse_args() -> Args:
     ns = parser.parse_args()
     return Args(
         input=ns.input,
-        output=ns.output,
+        output=ns.output or ns.input,
         runs=ns.runs,
         artifacts=ns.artifacts,
         pretty=ns.pretty,

@@ -293,8 +293,7 @@ jobs:
           uv run -m scripts.enrich_logs \
             --runs "$RUNNER_TEMP/workflow_runs.json" \
             --artifacts "$RUNNER_TEMP/workflow_artifacts.json" \
-            -i ./wrk/logs.json \
-            -o ./wrk/logs.json
+            ./wrk/logs.json
 
           retry_5() {
             local n=1
