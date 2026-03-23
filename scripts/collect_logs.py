@@ -131,7 +131,7 @@ def update_logs(args: Args):
 
     entries.sort(key=lambda entry: entry["date"], reverse=True)
 
-    cutoff = retention_cutoff(args.history_days, reference=now_utc())
+    cutoff = now_utc() - timedelta(days=args.history_days)
     kept_entries = [
         entry for entry in entries
         if datetime.fromisoformat(entry["date"]) >= cutoff
@@ -174,11 +174,6 @@ def load_workspace_packages(path: str) -> dict[str, dict]:
 
 def now_utc() -> datetime:
     return datetime.now(timezone.utc)
-
-
-def retention_cutoff(keep_days: int, *, reference: datetime) -> datetime:
-    """Compute the earliest UTC timestamp we must retain."""
-    return reference - timedelta(days=keep_days)
 
 
 def load_json(path: Path) -> Any:
