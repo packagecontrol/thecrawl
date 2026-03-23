@@ -98,7 +98,7 @@ def update_logs(args: Args):
             raise SystemExit("collect_logs: missing --timestamp")
         timestamp = float(now_ts.strip())
 
-    forced_timestamp = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    runtime_ts = datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
     output_path = Path(args.output).expanduser().resolve()
     output_dir = output_path.parent
@@ -110,7 +110,7 @@ def update_logs(args: Args):
     entries = [entry for entry in entries if entry.get("run_id") != run_id_str]
 
     entries.append({
-        "date": forced_timestamp.isoformat(),
+        "date": runtime_ts.isoformat(),
         "run_id": run_id_str,
         "notes": notes_text,
     })
