@@ -167,7 +167,6 @@ jobs:
 
           uv run -m scripts.collect_logs \
             --run-id "${{ github.run_id }}" \
-            --timestamp "$NOW_TS" \
             -o ./wrk/logs.json \
             notes.txt
 
