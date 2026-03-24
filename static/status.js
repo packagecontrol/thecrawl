@@ -316,13 +316,15 @@ function applyFailureChangeMarkers(entry, entryIndex) {
   const previousEntry = findComparablePreviousEntryForMarkers(entryIndex)
   if (!previousEntry) return
 
-  const changedNames = changedFailingPackageNames(entry.notes || '', previousEntry.notes || '')
+  const diff = diffFailingPackages(entry.notes || '', previousEntry.notes || '')
   const heading = findCurrentlyFailingHeading(notesEl)
   if (!heading) return
 
   const sectionNodes = collectSectionNodesAfterHeading(heading)
-  const highlighted = highlightPackageNamesInNodes(sectionNodes, changedNames)
-  if (highlighted === 0) {
+  const highlighted = highlightPackageNamesInNodes(sectionNodes, diff.changedNames)
+  const insertedRemoved = insertRemovedFailingItemsInList(sectionNodes, diff.removedBlocks)
+
+  if (highlighted === 0 && insertedRemoved === 0) {
     highlightHeadingText(heading)
   }
 }
@@ -1390,24 +1392,49 @@ function extractCurrentlyFailing(notes) {
     .join('\n')
 }
 
-function changedFailingPackageNames(currentNotes, previousNotes) {
+function diffFailingPackages(currentNotes, previousNotes) {
   const currentBlocks = extractCurrentlyFailingBlocks(currentNotes)
   const previousBlocks = extractCurrentlyFailingBlocks(previousNotes)
-  const previousByName = new Map()
+  const currentByKey = new Map()
+  const previousByKey = new Map()
 
+  for (const block of currentBlocks) {
+    currentByKey.set(block.nameKey, block)
+  }
   for (const block of previousBlocks) {
-    previousByName.set(block.name, block.signature)
+    previousByKey.set(block.nameKey, block)
   }
 
   const changedNames = new Set()
   for (const block of currentBlocks) {
-    const previousSignature = previousByName.get(block.name)
-    if (typeof previousSignature === 'undefined' || previousSignature !== block.signature) {
-      changedNames.add(block.name)
+    const previous = previousByKey.get(block.nameKey)
+    if (!previous || previous.signature !== block.signature) {
+      changedNames.add(block.nameKey)
     }
   }
 
-  return changedNames
+  const removedBlocks = []
+  for (let i = 0; i < previousBlocks.length; i += 1) {
+    const block = previousBlocks[i]
+    if (currentByKey.has(block.nameKey)) continue
+
+    let anchorNameKey = null
+    for (let j = i + 1; j < previousBlocks.length; j += 1) {
+      const anchor = previousBlocks[j]
+      if (currentByKey.has(anchor.nameKey)) {
+        anchorNameKey = anchor.nameKey
+        break
+      }
+    }
+
+    removedBlocks.push({
+      name: block.name,
+      nameKey: block.nameKey,
+      anchorNameKey,
+    })
+  }
+
+  return { changedNames, removedBlocks }
 }
 
 function extractCurrentlyFailingBlocks(notes) {
@@ -1427,12 +1454,14 @@ function extractCurrentlyFailingBlocks(notes) {
       if (current) {
         blocks.push({
           name: current.name,
-          signature: current.details.join('\n'),
+          nameKey: current.nameKey,
+          signature: [current.name, ...current.details].join('\n'),
         })
       }
       current = {
-        name: normalizePackageNameKey(packageMatch[1]),
-        details: [line],
+        name: packageMatch[1].trim(),
+        nameKey: normalizePackageNameKey(packageMatch[1]),
+        details: [],
       }
       continue
     }
@@ -1445,7 +1474,8 @@ function extractCurrentlyFailingBlocks(notes) {
   if (current) {
     blocks.push({
       name: current.name,
-      signature: current.details.join('\n'),
+      nameKey: current.nameKey,
+      signature: [current.name, ...current.details].join('\n'),
     })
   }
 
@@ -1499,6 +1529,75 @@ function highlightPackageNamesInNodes(nodes, changedNames) {
   }
 
   return highlighted
+}
+
+function insertRemovedFailingItemsInList(sectionNodes, removedBlocks) {
+  if (!removedBlocks.length) return 0
+
+  const list = findCurrentlyFailingPackageList(sectionNodes)
+  if (!list) return 0
+
+  let inserted = 0
+  for (const block of removedBlocks) {
+    const item = makeRemovedFailingListItem(block.name)
+    const anchorItem = findListItemByPackageKey(list, block.anchorNameKey)
+    if (anchorItem) {
+      list.insertBefore(item, anchorItem)
+    }
+    else {
+      list.appendChild(item)
+    }
+    inserted += 1
+  }
+
+  return inserted
+}
+
+function findCurrentlyFailingPackageList(sectionNodes) {
+  const candidates = []
+
+  for (const node of sectionNodes) {
+    if (node.tagName === 'UL' || node.tagName === 'OL') {
+      candidates.push(node)
+    }
+    const nested = node.querySelectorAll('ul, ol')
+    for (const list of nested) {
+      candidates.push(list)
+    }
+  }
+
+  for (const candidate of candidates) {
+    if (candidate.querySelector('li strong')) {
+      return candidate
+    }
+  }
+
+  return null
+}
+
+function findListItemByPackageKey(list, packageNameKey) {
+  if (!packageNameKey) return null
+
+  const names = list.querySelectorAll(':scope > li strong')
+  for (const nameNode of names) {
+    const key = normalizePackageNameKey(nameNode.textContent)
+    if (key !== packageNameKey) continue
+    return nameNode.closest('li')
+  }
+
+  return null
+}
+
+function makeRemovedFailingListItem(name) {
+  const item = document.createElement('li')
+  item.className = 'status-removed-failing-item'
+
+  const label = document.createElement('strong')
+  label.className = 'status-removed-failing-name'
+  label.textContent = name
+  item.appendChild(label)
+
+  return item
 }
 
 function highlightHeadingText(heading) {
