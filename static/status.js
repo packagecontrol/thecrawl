@@ -241,7 +241,7 @@ function render(targetIndex) {
   emptyStateMessage = ''
 
   updateHeading(entry)
-  renderNotes(entry)
+  renderNotes(entry, index)
   updateButtons()
   chart?.highlight(entry)
   updateUrl(entry)
@@ -285,8 +285,9 @@ function updateHeading(entry) {
 
 /**
  * @param {LogEntry} entry
+ * @param {number} entryIndex
  */
-function renderNotes(entry) {
+function renderNotes(entry, entryIndex) {
   if (!entry.notes) {
     notesEl.innerHTML = `
       <p>No notes for this run. (${linkToRun(entry.run_id)})</p>
@@ -300,7 +301,52 @@ function renderNotes(entry) {
   notesEl.innerHTML = DOMPurify.isSupported
     ? DOMPurify.sanitize(html)
     : html
+  applyFailureChangeMarkers(entry, entryIndex)
   renderArtifacts(entry)
+}
+
+/**
+ * @param {LogEntry} entry
+ * @param {number} entryIndex
+ */
+function applyFailureChangeMarkers(entry, entryIndex) {
+  if (!entry.failuresChanged) return
+  if (!Number.isInteger(entryIndex) || entryIndex < 0) return
+
+  const previousEntry = findComparablePreviousEntryForMarkers(entryIndex)
+  if (!previousEntry) return
+
+  const changedNames = changedFailingPackageNames(entry.notes || '', previousEntry.notes || '')
+  const heading = findCurrentlyFailingHeading(notesEl)
+  if (!heading) return
+
+  const sectionNodes = collectSectionNodesAfterHeading(heading)
+  const highlighted = highlightPackageNamesInNodes(sectionNodes, changedNames)
+  if (highlighted === 0) {
+    highlightHeadingText(heading)
+  }
+}
+
+function findComparablePreviousEntryForMarkers(entryIndex) {
+  let skippedHardFailures = 0
+
+  for (let i = entryIndex + 1; i < logs.length; i += 1) {
+    const candidate = logs[i]
+    const section = extractCurrentlyFailing(candidate.notes || '')
+    if (section === false && isHardFailureWithoutNotes(candidate)) {
+      skippedHardFailures += 1
+      if (skippedHardFailures > MAX_SKIPPED_HARD_FAILURES) {
+        return null
+      }
+      continue
+    }
+    if (section === false) {
+      return null
+    }
+    return candidate
+  }
+
+  return null
 }
 
 /**
@@ -530,8 +576,9 @@ function radiusForEntry(entry, fallbackRadius) {
  */
 function showHoverPreview(entry) {
   if (!entry) return
+  const previewIndex = findEntryIndex(entry)
   updateHeading(entry)
-  renderNotes(entry)
+  renderNotes(entry, previewIndex)
 }
 
 function restoreActiveEntry() {
@@ -547,13 +594,17 @@ function restoreActiveEntry() {
  */
 function renderEntry(entry) {
   if (!entry || !logs.length) return
-  const idx = logs.findIndex((it) => {
-    if (it.run_id && entry.run_id && it.run_id === entry.run_id) return true
-    return it.date === entry.date
-  })
+  const idx = findEntryIndex(entry)
   if (idx >= 0) {
     render(idx)
   }
+}
+
+function findEntryIndex(entry) {
+  return logs.findIndex((it) => {
+    if (it.run_id && entry.run_id && it.run_id === entry.run_id) return true
+    return it.date === entry.date
+  })
 }
 
 class StatusChart {
@@ -1337,6 +1388,127 @@ function extractCurrentlyFailing(notes) {
     .map(line => line.replace(/\s*\[[^\]]+\]\s*$/, ''))
     .filter(Boolean)
     .join('\n')
+}
+
+function changedFailingPackageNames(currentNotes, previousNotes) {
+  const currentBlocks = extractCurrentlyFailingBlocks(currentNotes)
+  const previousBlocks = extractCurrentlyFailingBlocks(previousNotes)
+  const previousByName = new Map()
+
+  for (const block of previousBlocks) {
+    previousByName.set(block.name, block.signature)
+  }
+
+  const changedNames = new Set()
+  for (const block of currentBlocks) {
+    const previousSignature = previousByName.get(block.name)
+    if (typeof previousSignature === 'undefined' || previousSignature !== block.signature) {
+      changedNames.add(block.name)
+    }
+  }
+
+  return changedNames
+}
+
+function extractCurrentlyFailingBlocks(notes) {
+  const section = extractCurrentlyFailing(notes)
+  if (!section || section === false) return []
+
+  const lines = section.split('\n')
+  const blocks = []
+  let current = null
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (!line) continue
+
+    const packageMatch = /^-\s+\*\*(.+?)\*\*(?:\s+.*)?$/.exec(line)
+    if (packageMatch) {
+      if (current) {
+        blocks.push({
+          name: current.name,
+          signature: current.details.join('\n'),
+        })
+      }
+      current = {
+        name: normalizePackageNameKey(packageMatch[1]),
+        details: [line],
+      }
+      continue
+    }
+
+    if (current) {
+      current.details.push(line)
+    }
+  }
+
+  if (current) {
+    blocks.push({
+      name: current.name,
+      signature: current.details.join('\n'),
+    })
+  }
+
+  return blocks
+}
+
+function normalizePackageNameKey(name) {
+  return String(name || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+}
+
+function findCurrentlyFailingHeading(root) {
+  const headings = root.querySelectorAll('h1, h2, h3, h4, h5, h6')
+  for (const heading of headings) {
+    if ((heading.textContent || '').trim().toLowerCase() === 'currently failing') {
+      return heading
+    }
+  }
+  return null
+}
+
+function collectSectionNodesAfterHeading(heading) {
+  const nodes = []
+  let node = heading.nextElementSibling
+
+  while (node) {
+    if (/^H[1-6]$/.test(node.tagName)) {
+      break
+    }
+    nodes.push(node)
+    node = node.nextElementSibling
+  }
+
+  return nodes
+}
+
+function highlightPackageNamesInNodes(nodes, changedNames) {
+  if (!changedNames.size) return 0
+
+  let highlighted = 0
+  for (const node of nodes) {
+    const names = node.querySelectorAll('strong')
+    for (const nameNode of names) {
+      const key = normalizePackageNameKey(nameNode.textContent)
+      if (!changedNames.has(key)) continue
+      nameNode.classList.add('status-change-marker')
+      highlighted += 1
+    }
+  }
+
+  return highlighted
+}
+
+function highlightHeadingText(heading) {
+  const existing = heading.querySelector('.status-change-marker')
+  if (existing) return
+
+  const marker = document.createElement('span')
+  marker.className = 'status-change-marker'
+  marker.textContent = heading.textContent || ''
+  heading.replaceChildren(marker)
 }
 
 function extractPackagesCrawled(notes) {
