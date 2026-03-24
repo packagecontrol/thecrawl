@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 import json
 import sys
 import os
+import re
 from typing import Generator, Literal, NotRequired, TypedDict
 
 from ._utils import flatten, pick, pl, write_json, parse_version
@@ -218,9 +219,22 @@ def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool
         failing_info = "\n".join(
             f"- **{pkg['name']}** [{failing_since(pkg, berlin)}]\n"
             f"    {pkg['fail_reason'].strip().replace('\n', '\n    ')}"
-            for pkg in sorted(failing, key=lambda p: p['name'].lower())
+            for pkg in sorted(failing, key=failing_sort_key)
         )
         print(f"\n#### Currently failing\n{failing_info}")
+
+
+def failing_sort_key(pkg) -> tuple[int, int, str]:
+    reason = pkg["fail_reason"].strip()
+    name = pkg["name"].lower()
+
+    if status_match := re.match(r"^(\d{3})\s", reason):
+        return (0, int(status_match.group(1)), name)
+
+    if reason.startswith("fatal: 404"):
+        return (2, 0, name)
+
+    return (1, 0, name)
 
 
 def normalize_package(pkg) -> Package | None:
