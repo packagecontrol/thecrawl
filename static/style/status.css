@@ -36,6 +36,7 @@ html.status main {
   --status-change-dot: hsl(32deg 90.32% 61.77%);
   --status-glitch-dot: var(--status-change-dot);
   --status-error-dot: hsl(7deg 90.45% 50.1%);
+  --status-error-dot-soft: hsl(7deg 90% 50% / 60%);
 
   :root[data-theme='dark'] & {
     --status-dot: hsl(245deg 34.8% 64.47%);
@@ -48,6 +49,7 @@ html.status main {
     --status-change-dot: var(--orange-2);
     --status-glitch-dot: var(--status-change-dot);
     --status-error-dot: var(--red-2);
+    --status-error-dot-soft: hsl(7deg 90% 50% / 76%);
   }
 
   :root[data-theme='dark'] &:hover {
@@ -151,6 +153,9 @@ html.status main {
     &.error {
       fill: var(--status-error-dot);
     }
+    &.error:not(.no-notes):not(.active) {
+      fill: var(--status-error-dot-soft);
+    }
     &.muted {
       fill: var(--foreground-3);
     }
@@ -163,8 +168,8 @@ html.status main {
     &.no-notes {
       opacity: 0.35;
     }
-    &.error.no-notes:not(.active) {
-      opacity: 0.65;
+    &.error.no-notes {
+      opacity: 1;
     }
     &.active {
       stroke: var(--status-dot-active-stroke);
@@ -270,7 +275,7 @@ html.status main {
 
 .status-badge-error {
   background: transparent;
-  color: var(--red-2);
+  color: hsl(7deg 92% 54% / 78%);
 }
 
 .status-badge-muted {
