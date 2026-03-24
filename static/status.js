@@ -202,6 +202,7 @@ function resolveIndexFromUrl() {
 const ASSET_URL = 'https://repackager.sublimetext.io/logs.json'
 const FALLBACK_URL = `${window.STATIC_BASE ?? '/static/'}logs.json`
 const LOG_REFRESH_MS = 10 * 60 * 1000
+const MAX_SKIPPED_HARD_FAILURES = 4
 
 async function loadLogs() {
   const sources = [
@@ -1231,17 +1232,19 @@ function annotateChanges(entries) {
   // entries are sorted newest-first; "lookback" walks forward in the array to go back in time.
   const sections = entries.map(entry => extractCurrentlyFailing(entry.notes || ''))
   const LOOKBACK = 10
+
   return entries.map((entry, idx) => {
     // For the following: "false" means: no notes at all were present
     /** @type {false | string} */
     const rawSection = sections[idx]
-    // '' (falsy) meaqns: no currently failing section was present
+    // '' (falsy) means: no currently failing section was present
     /** @type {string} */
     const section = rawSection || ''
-    const nextSection = sections[idx + 1]
-    const hasNext = typeof nextSection !== 'undefined' && nextSection !== false
-    // Keep nextSection un-normalized so false (no notes) differs from '' (notes, no failing section).
-    const failuresChanged = hasNext && section !== nextSection
+    const previous = findComparablePreviousSection(entries, sections, idx + 1, MAX_SKIPPED_HARD_FAILURES)
+    const previousSection = previous.section
+    const hasPrevious = typeof previousSection !== 'undefined' && previousSection !== false
+    // Keep previousSection un-normalized so false (no notes) differs from '' (notes, no failing section).
+    const failuresChanged = hasPrevious && section !== previousSection
     let glitchStartIndex = null
 
     // Find "glitches"; a glitch is a temporary, self-healing change in the failing section.
@@ -1259,8 +1262,14 @@ function annotateChanges(entries) {
       }
       // 2. If we have one, the entry after that introduced the "glitch".
       if (matchIndex !== null) {
-        const startIndex = matchIndex - 1
-        if (startIndex >= idx && sections[startIndex] !== false) {
+        const startIndex = findGlitchStartIndex(
+          entries,
+          sections,
+          matchIndex - 1,
+          idx,
+          MAX_SKIPPED_HARD_FAILURES,
+        )
+        if (startIndex !== null) {
           glitchStartIndex = startIndex
         }
       }
@@ -1268,6 +1277,49 @@ function annotateChanges(entries) {
 
     return { ...entry, failuresChanged, glitchStartIndex }
   })
+}
+
+function findComparablePreviousSection(entries, sections, startIndex, maxSkippedHardFailures) {
+  let skippedHardFailures = 0
+
+  for (let i = startIndex; i < sections.length; i += 1) {
+    const section = sections[i]
+    if (section === false && isHardFailureWithoutNotes(entries[i])) {
+      skippedHardFailures += 1
+      if (skippedHardFailures > maxSkippedHardFailures) {
+        return { index: -1, section: undefined }
+      }
+      continue
+    }
+    return { index: i, section }
+  }
+
+  return { index: -1, section: undefined }
+}
+
+function findGlitchStartIndex(entries, sections, startIndex, minIndex, maxSkippedHardFailures) {
+  let skippedHardFailures = 0
+
+  for (let i = startIndex; i >= minIndex; i -= 1) {
+    const section = sections[i]
+    if (section === false && isHardFailureWithoutNotes(entries[i])) {
+      skippedHardFailures += 1
+      if (skippedHardFailures > maxSkippedHardFailures) {
+        return null
+      }
+      continue
+    }
+    if (section === false) {
+      return null
+    }
+    return i
+  }
+
+  return null
+}
+
+function isHardFailureWithoutNotes(entry) {
+  return !entry?.notes && classForConclusion(entry?.conclusion) === 'error'
 }
 
 function extractCurrentlyFailing(notes) {
