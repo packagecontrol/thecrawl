@@ -174,7 +174,23 @@ The command above reuses the same layout as [CI](https://github.com/packagecontr
 
 ---
 
-### `refresh_logs.py` (plus lower-level helpers)
+### Logs handling
+
+#### `collect_logs.py`
+
+`scripts/collect_logs.py` appends the current run's `notes.txt` to `logs.json` (rolling history),
+keyed by run id and trimmed to a retention window (`--history-days`, default 32).
+
+If you pass a `--workspace` it include a `found_updates` list for packages detected in that run.
+
+```bash
+uv run -m scripts.collect_logs --output ./logs.json --workspace ./workspace.json ./notes.txt
+```
+
+This is a very mechanical step done in the crawl.yml; after the job is done we enrich the logs
+in publish.yml:
+
+#### `refresh_logs.py` (plus lower-level helpers)
 
 Use this when you want to reproduce/update `logs.json` locally with GitHub Actions metadata.
 `gh` is required for the ad-hoc queries I make herein.
