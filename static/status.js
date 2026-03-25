@@ -321,8 +321,9 @@ function applyFailureChangeMarkers(entry, entryIndex) {
   if (!heading) return
 
   const sectionNodes = collectSectionNodesAfterHeading(heading)
-  const highlighted = highlightPackageNamesInNodes(sectionNodes, diff.changedNames)
-  const insertedRemoved = insertRemovedFailingItemsInList(sectionNodes, diff.removedBlocks)
+  const packageList = findCurrentlyFailingPackageList(sectionNodes)
+  const highlighted = highlightPackageNamesInList(packageList, diff.changedNames)
+  const insertedRemoved = insertRemovedFailingItemsInList(packageList, diff.removedBlocks)
 
   if (highlighted === 0 && insertedRemoved === 0) {
     highlightHeadingText(heading)
@@ -1514,28 +1515,25 @@ function collectSectionNodesAfterHeading(heading) {
   return nodes
 }
 
-function highlightPackageNamesInNodes(nodes, changedNames) {
-  if (!changedNames.size) return 0
+function highlightPackageNamesInList(list, changedNames) {
+  if (!list || !changedNames.size) return 0
 
   let highlighted = 0
-  for (const node of nodes) {
-    const names = node.querySelectorAll('strong')
-    for (const nameNode of names) {
-      const key = normalizePackageNameKey(nameNode.textContent)
-      if (!changedNames.has(key)) continue
-      nameNode.classList.add('status-change-marker')
-      highlighted += 1
-    }
+  const names = list.querySelectorAll(':scope > li strong')
+  for (const nameNode of names) {
+    const key = normalizePackageNameKey(nameNode.textContent)
+    if (!changedNames.has(key)) continue
+    const row = nameNode.closest('li')
+    if (!row) continue
+    row.classList.add('status-change-marker')
+    highlighted += 1
   }
 
   return highlighted
 }
 
-function insertRemovedFailingItemsInList(sectionNodes, removedBlocks) {
-  if (!removedBlocks.length) return 0
-
-  const list = findCurrentlyFailingPackageList(sectionNodes)
-  if (!list) return 0
+function insertRemovedFailingItemsInList(list, removedBlocks) {
+  if (!list || !removedBlocks.length) return 0
 
   let inserted = 0
   for (const block of removedBlocks) {
