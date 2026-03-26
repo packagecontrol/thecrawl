@@ -119,6 +119,68 @@ def test_generate_channel_filters_removed_and_dropped_libraries(tmp_path):
     ]
 
 
+def test_generate_channel_sorts_failing_report_in_groups(tmp_path, capsys):
+    registry = {"repositories": []}
+
+    def failing_pkg(name: str, fail_reason: str):
+        return {
+            "name": name,
+            "author": ["Ada"],
+            "last_modified": "2026-03-24T10:00:00Z",
+            "source": "https://repo.one",
+            "failing_since": "2026-03-24T10:00:00Z",
+            "fail_reason": fail_reason,
+            "releases": [
+                {
+                    "sublime_text": "4100",
+                    "platforms": ["*"],
+                    "version": "1.0.0",
+                    "url": "https://repo.one/pkg.zip",
+                    "date": "2026-03-24T10:00:00Z",
+                }
+            ],
+        }
+
+    workspace = {
+        "packages": {
+            "status_502_z": failing_pkg("Zeta Status", "502 Bad Gateway"),
+            "status_403_a": failing_pkg("Alpha Status", "403 Forbidden"),
+            "status_502_b": failing_pkg("Beta Status", "502 Bad Gateway"),
+            "other_b": failing_pkg("Beta Other", "denied: blocked by rule"),
+            "other_a": failing_pkg("Alpha Other", "fatal: 500 Server Error"),
+            "fatal_404_b": failing_pkg("Beta 404", "fatal: 404 Not Found"),
+            "fatal_404_a": failing_pkg("Alpha 404", "fatal: 404 Not Found"),
+        },
+        "libraries": {},
+    }
+
+    registry_path = tmp_path / "registry.json"
+    workspace_path = tmp_path / "workspace.json"
+    output_path = tmp_path / "channel.json"
+
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    workspace_path.write_text(json.dumps(workspace), encoding="utf-8")
+
+    main(str(registry_path), str(workspace_path), str(output_path), False, False)
+
+    stdout = capsys.readouterr().out
+    names = [
+        line.split("**")[1]
+        for line in stdout.splitlines()
+        if line.startswith("- **")
+    ]
+
+    assert names == [
+        "Alpha Status",
+        "Beta Status",
+        "Zeta Status",
+        "Alpha Other",
+        "Beta Other",
+        "Alpha 404",
+        "Beta 404",
+    ]
+
+
 def test_normalize_package_formats_fields_and_defaults():
     pkg = {
         "name": "Example",
