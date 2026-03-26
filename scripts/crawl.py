@@ -29,7 +29,7 @@ from ._resolve_lib import (
     normalize_version_spec,
 )
 from ._utils import (
-    format_name_list, next_run, parse_version, resolve_url, update_url, write_json, pl, pick,
+    format_name_list, parse_version, resolve_url, update_url, write_json, pl, pick,
     VersionInfo,
 )
 from ._explain_package import print_package_explain
@@ -459,9 +459,9 @@ async def crawl(
         elif age <= timedelta(days=90):
             next_crawl = now + timedelta(hours=2)
         elif age <= timedelta(days=365 * 4):
-            next_crawl = next_run(out["name"], window=timedelta(hours=3), now=now)
+            next_crawl = now + timedelta(hours=3)
         else:
-            next_crawl = next_run(out["name"], window=timedelta(days=1), now=now)
+            next_crawl = now + timedelta(days=1)
 
         out["next_crawl"] = next_crawl.strftime(UTC_FORMAT)
 
