@@ -38,8 +38,6 @@ import traceback
 
 DEFAULT_REGISTRY = "./registry.json"
 DEFAULT_WORKSPACE = "./workspace.json"
-DEFAULT_MISSING_BACKFILL = "./missing.json"
-ENABLE_MISSING_BACKFILL_ENV = "CRAWL_ENABLE_MISSING_BACKFILL"
 EXPLAIN_EFFECTIVE_ENV = "EFFECTIVE"
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 STYLIZED_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -73,7 +71,6 @@ class WorkspaceEntry(TypedDict, total=False):
     name: Required[str]
     details: NotRequired[Url]
     releases: list[Release]
-    labels: NotRequired[list[str]]
 
     source: Url
     schema_version: str
@@ -373,50 +370,6 @@ def maintenance(registry: Registry, workspace: Workspace) -> None:
     packages = workspace["packages"]
     for name in packages.keys() - current_package_names:
         packages[name].setdefault("removed", now_string)
-
-    backfilled_count = backfill_missing_packages(workspace, current_package_names)
-    if backfilled_count is not None:
-        print(
-            f"Maintenance backfill from {DEFAULT_MISSING_BACKFILL}: "
-            f"added {pl(backfilled_count, 'packages')}."
-        )
-
-
-def backfill_missing_packages(
-    workspace: Workspace,
-    current_package_names: set[str],
-) -> int | None:
-    if not env_flag(ENABLE_MISSING_BACKFILL_ENV, True):
-        return None
-
-    if not os.path.exists(DEFAULT_MISSING_BACKFILL):
-        return None
-
-    try:
-        with open(DEFAULT_MISSING_BACKFILL, "r", encoding="utf-8") as missing_file:
-            missing_entries = json.load(missing_file)
-    except Exception as exc:
-        err(f"Failed to read {DEFAULT_MISSING_BACKFILL}: {exc}")
-        return 0
-
-    packages = workspace["packages"]
-    added_count = 0
-    for missing_entry in missing_entries:
-        name = missing_entry["name"].strip()
-        if not name or name in packages or name in current_package_names:
-            continue
-
-        labels = [label.strip() for label in missing_entry["labels"] if label.strip()]
-        labels = list(dict.fromkeys(labels))
-        packages[name] = {
-            "name": name,
-            "labels": labels,
-            "first_seen": missing_entry["first_seen"],
-            "removed": missing_entry["last_seen"],
-        }
-        added_count += 1
-
-    return added_count
 
 
 async def crawl(

@@ -3,11 +3,6 @@ import json
 import pytest
 
 
-@pytest.fixture(autouse=True)
-def disable_missing_backfill(monkeypatch):
-    monkeypatch.setenv("CRAWL_ENABLE_MISSING_BACKFILL", "0")
-
-
 @pytest.fixture
 def set_now(monkeypatch):
     def _set_now(date_str):
