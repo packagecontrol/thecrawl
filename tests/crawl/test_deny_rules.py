@@ -313,6 +313,59 @@ async def test_move_between_untrusted_sources_is_denied(set_now, set_github_info
 
 
 @pytest.mark.asyncio
+async def test_removed_without_source_defaults_to_trusted_for_security(set_now, set_github_info):
+    entry = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "releases": [
+            {
+                "sublime_text": "*",
+                "branch": True
+            }
+        ],
+        "source": "https://example.com/untrusted/new.json",
+        "schema_version": "3.0.0"
+    }
+
+    existing = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "removed": "2024-01-01T00:00:00Z",
+        "id": "SAME_ID"
+    }
+
+    github_info = {
+        "metadata": {
+            "id": "SAME_ID",
+            "name": "SourceMoved",
+            "description": "Fixture package with missing source on tombstone",
+            "homepage": "https://github.com/example/source-moved",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/source-moved/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [],
+        "branches": [
+            {
+                "name": "main",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/source-moved/zip/main"
+            }
+        ]
+    }
+
+    set_now("2024-05-11T00:00:00Z")
+    set_github_info(github_info)
+
+    result = await crawl(object(), entry, existing)
+    fail_reason = result.get("fail_reason", "")
+    assert fail_reason.startswith("denied:")
+    assert "from <not-set> to untrusted" in fail_reason
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "trusted_source",
     [

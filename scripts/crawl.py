@@ -41,8 +41,11 @@ DEFAULT_WORKSPACE = "./workspace.json"
 EXPLAIN_EFFECTIVE_ENV = "EFFECTIVE"
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 STYLIZED_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+MAIN_REPOSITORY_SOURCE = (
+    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+)
 TRUSTED_SOURCES = {
-    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+    MAIN_REPOSITORY_SOURCE,
     "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
     "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
 }
@@ -833,16 +836,32 @@ def ensure_secure_source(
     entry: RegistryEntry,
     existing: WorkspaceEntry
 ) -> None:
+    existing_source = source_for_security_check(existing)
+    entry_source = entry.get("source")
     if (
-        existing.get("source")
-        and entry.get("source")
-        and existing.get("source") != entry.get("source")
-        and entry.get("source") not in TRUSTED_SOURCES
+        existing_source
+        and entry_source
+        and existing_source != entry_source
+        and entry_source not in TRUSTED_SOURCES
     ):
+        source_display = existing.get("source") or "<not-set>"
         raise DeniedUpdating(
             f"Repository source changed for *{entry.get('name')}* from "
-            f"{existing.get('source')} to untrusted {entry.get('source')}"
+            f"{source_display} to untrusted {entry_source}"
         )
+
+
+def source_for_security_check(existing: WorkspaceEntry) -> str | None:
+    source = existing.get("source")
+    if source:
+        return source
+
+    if existing.get("removed"):
+        # Old imported tombstones can miss source.
+        # For security checks we treat them as coming from the main trusted source.
+        return MAIN_REPOSITORY_SOURCE
+
+    return None
 
 
 def keys_missing_from_release(release: Mapping) -> set[str]:
