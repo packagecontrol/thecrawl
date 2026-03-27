@@ -251,6 +251,9 @@ async def main_(
         if not package:
             err(f"Package '{name}' not found in registry.")
             return
+        if "removed" in package:
+            err(f"Package '{name}' is tombstoned in the registry.")
+            return
         tocrawl = [package]
     else:
         maintenance(registry, workspace)
