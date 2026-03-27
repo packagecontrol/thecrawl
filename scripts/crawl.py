@@ -133,8 +133,15 @@ def explain_main(registry: str, name: str) -> int:
         err(f"Package '{name}' not found in registry.")
         return 1
 
+    effective_mode = env_flag(EXPLAIN_EFFECTIVE_ENV)
+    if "removed" in package:
+        err(f"Package '{name}' is tombstoned in the registry.")
+        if not effective_mode:
+            print(json.dumps(package, indent=2, ensure_ascii=False, sort_keys=True))
+        return 0
+
     normalized = normalize_registry_entry(deepcopy(package))
-    if env_flag(EXPLAIN_EFFECTIVE_ENV):
+    if effective_mode:
         print_package_explain_effective(name, normalized)  # type: ignore[arg-type]
         return 0
 

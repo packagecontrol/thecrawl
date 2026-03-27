@@ -114,3 +114,53 @@ def test_explain_main_effective_mode_omits_status_line_when_not_tags_mode(
     assert out.startswith("{")
     explained = json.loads(out)
     assert explained["name"] == "NoTagsPkg"
+
+
+def test_explain_main_tombstoned_pretty_prints_raw_entry(capsys, tmp_path) -> None:
+    registry = {
+        "packages": [
+            {
+                "name": "GonePkg",
+                "first_seen": "2020-01-01T00:00:00Z",
+                "removed": "2021-01-01T00:00:00Z",
+                "labels": ["theme"],
+            }
+        ]
+    }
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+
+    assert explain_main(str(registry_path), "GonePkg") == 0
+
+    captured = capsys.readouterr()
+    assert "Package 'GonePkg' is tombstoned in the registry." in captured.err
+    assert captured.out.startswith("{\n")
+    explained = json.loads(captured.out)
+    assert explained == registry["packages"][0]
+
+
+def test_explain_main_tombstoned_effective_mode_emits_only_status(
+    monkeypatch,
+    capsys,
+    tmp_path,
+) -> None:
+    registry = {
+        "packages": [
+            {
+                "name": "GonePkg",
+                "first_seen": "2020-01-01T00:00:00Z",
+                "removed": "2021-01-01T00:00:00Z",
+                "labels": ["theme"],
+            }
+        ]
+    }
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+
+    monkeypatch.setenv("EFFECTIVE", "1")
+
+    assert explain_main(str(registry_path), "GonePkg") == 0
+
+    captured = capsys.readouterr()
+    assert "Package 'GonePkg' is tombstoned in the registry." in captured.err
+    assert captured.out == ""
