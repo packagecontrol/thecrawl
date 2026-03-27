@@ -105,6 +105,31 @@ async def test_crawl_keeps_fail_reason_on_404_skip(set_now):
 
 
 @pytest.mark.asyncio
+async def test_crawl_error_adopts_registry_source_when_missing(set_now, monkeypatch):
+    entry = {
+        "name": "MissingSource",
+        "details": "https://github.com/example/missing-source",
+        "releases": [{"sublime_text": "*", "branch": True}],
+        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "schema_version": "3.0.0",
+    }
+    existing = {
+        "name": "MissingSource",
+        "details": "https://github.com/example/missing-source",
+    }
+
+    async def stub(*args, **kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr("scripts.crawl.crawl_package", stub)
+    set_now("2024-06-01T00:00:00Z")
+
+    result = await crawl(object(), entry, existing)
+
+    assert result.get("source") == entry["source"]
+
+
+@pytest.mark.asyncio
 async def test_removed_package_is_resurrected_on_trusted_source(set_now, set_github_info):
     registry = {
         "repositories": [

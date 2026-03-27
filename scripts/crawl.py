@@ -388,6 +388,12 @@ async def crawl(
         out = await crawl_package(session, package, existing)
     except Exception as e:
         out = {**existing}
+
+        # Keep existing source authoritative when present (important for denied
+        # source moves). Only backfill source from the registry package when
+        # the existing workspace entry has never had one.
+        out.setdefault("source", package["source"])
+
         out["failing_since"] = existing.get("failing_since", now_string)
 
         # We mark errors as fatal if we MUST de-list the package immediately.
