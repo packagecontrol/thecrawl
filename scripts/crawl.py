@@ -317,12 +317,18 @@ def next_packages_to_crawl(
 
 
 def maintenance(registry: Registry, workspace: Workspace) -> None:
+    packages = workspace["packages"]
+
+    for entry in registry["packages"]:
+        if "removed" in entry:
+            packages[entry["name"]] = {**entry}  # type: ignore[typeddict-item]
+
+    # Legacy;
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
     now = now_ts()
     now_string = now.strftime(UTC_FORMAT)
     current_package_names = {entry["name"] for entry in registry["packages"]}
-    packages = workspace["packages"]
     for name in packages.keys() - current_package_names:
         packages[name].setdefault("removed", now_string)
 
