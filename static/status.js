@@ -930,6 +930,7 @@ class StatusChart {
             lineDefaultPath: defaultPath,
             lineTopPath: topLinePath,
             x: topX,
+            dayIndex: position.dayIndex,
             defaultText: marker.tag,
             hoverText: hoverLabel,
             expandsOnHover: hoverLabel !== marker.tag,
@@ -945,13 +946,13 @@ class StatusChart {
     if (!entries.length) return
 
     const ordered = [...entries].sort((a, b) => a.x - b.x)
-    ordered.forEach((entry, idx) => {
+    const dayRadius = Math.max(0, Math.floor(cssNumber(this.el, '--status-tag-hover-hide-day-radius', 1)))
+
+    ordered.forEach((entry) => {
       if (!entry.expandsOnHover) return
-      const left = ordered[idx - 1] || null
-      const right = ordered[idx + 1] || null
 
       entry.node.addEventListener('mouseenter', () => {
-        this.activateTagLabelHover(entry, left, right, ordered)
+        this.activateTagLabelHover(entry, ordered, dayRadius)
       })
       entry.node.addEventListener('mouseleave', () => {
         this.resetTagLabelHover(ordered)
@@ -959,22 +960,29 @@ class StatusChart {
     })
   }
 
-  activateTagLabelHover(activeEntry, leftEntry, rightEntry, entries) {
+  activateTagLabelHover(activeEntry, entries, dayRadius) {
     this.resetTagLabelHover(entries)
     activeEntry.node.textContent = activeEntry.hoverText
 
-    if (leftEntry) {
-      leftEntry.node.classList.add('tag-label-neighbor-hidden')
-      if (leftEntry.lineNode && leftEntry.lineTopPath) {
-        leftEntry.lineNode.setAttribute('d', leftEntry.lineTopPath)
+    const neighborsToHide = this.tagLabelNeighborsWithinDayRadius(activeEntry, entries, dayRadius)
+    neighborsToHide.forEach((entry) => {
+      entry.node.classList.add('tag-label-neighbor-hidden')
+      if (entry.lineNode && entry.lineTopPath) {
+        entry.lineNode.setAttribute('d', entry.lineTopPath)
       }
-    }
-    if (rightEntry) {
-      rightEntry.node.classList.add('tag-label-neighbor-hidden')
-      if (rightEntry.lineNode && rightEntry.lineTopPath) {
-        rightEntry.lineNode.setAttribute('d', rightEntry.lineTopPath)
-      }
-    }
+    })
+  }
+
+  tagLabelNeighborsWithinDayRadius(activeEntry, entries, dayRadius) {
+    if (!activeEntry || !Number.isFinite(activeEntry.dayIndex)) return []
+    if (!Number.isFinite(dayRadius) || dayRadius <= 0) return []
+
+    return entries.filter((entry) => {
+      if (entry === activeEntry) return false
+      if (!Number.isFinite(entry.dayIndex)) return false
+      const dayDistance = Math.abs(entry.dayIndex - activeEntry.dayIndex)
+      return dayDistance > 0 && dayDistance <= dayRadius
+    })
   }
 
   resetTagLabelHover(entries) {

@@ -34,6 +34,7 @@ html.status main {
   --status-tag-lean-deg: 0.6;
   --status-tag-label-offset-x: 0;
   --status-tag-label-offset-y: 3;
+  --status-tag-hover-hide-day-radius: 1;
   --status-tag-overflow-shaft: 30;
   --status-tag-overflow-center-offset: 3;
   --status-tag-overflow-shift-x: -3;
