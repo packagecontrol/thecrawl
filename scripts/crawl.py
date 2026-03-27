@@ -305,6 +305,7 @@ def next_packages_to_crawl(
         entry
         for entry in packages
         if not entry.get("fetching_source_failed")
+        if "removed" not in entry
         if presto or (
             workspace["packages"]  # type: ignore[call-overload]
             .get(entry["name"], {})
@@ -322,6 +323,7 @@ def next_packages_to_crawl(
                 entry
                 for entry in packages
                 if not entry.get("fetching_source_failed")
+                if "removed" not in entry
             ),
             key=lambda pkg: (
                 workspace["packages"]  # type: ignore[call-overload]
