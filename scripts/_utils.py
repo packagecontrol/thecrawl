@@ -278,6 +278,41 @@ def is_semver(s: str) -> bool:
     return parse_version(s) is not None
 
 
+def parse_sublime_text_max(selector: object) -> float:
+    if not isinstance(selector, str):
+        return float("inf")
+
+    s = re.sub(r"\s+", "", selector)
+    if s in ("", "*"):
+        return float("inf")
+
+    range_index = s.find("-")
+    if range_index != -1:
+        right = s[range_index + 1:]
+        n = parse_int_prefix(right)
+        return float(n) if n is not None else float("inf")
+
+    if s.startswith("<="):
+        n = parse_int_prefix(s[2:])
+        return float(n) if n is not None else float("inf")
+
+    if s.startswith("<"):
+        n = parse_int_prefix(s[1:])
+        return float(max(0, n - 1)) if n is not None else float("inf")
+
+    if s.startswith(">=") or s.startswith(">"):
+        return float("inf")
+
+    n = parse_int_prefix(s)
+    return float(n) if n is not None else float("inf")
+
+
+def parse_int_prefix(text: str) -> int | None:
+    if match := re.match(r"^\d+", text):
+        return int(match.group(0))
+    return None
+
+
 SECONDS_PER_DAY = 24 * 60 * 60
 
 

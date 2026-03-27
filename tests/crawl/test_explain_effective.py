@@ -1,11 +1,11 @@
 import json
 
-from scripts.crawl import (
+from scripts._explain_package import (
     classify_tags_mode,
-    explain_main,
     keep_newest_release_definitions,
     sorted_release_definitions,
 )
+from scripts.crawl import explain_main
 
 
 def test_classify_tags_mode_when_all_releases_use_tags() -> None:

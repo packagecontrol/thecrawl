@@ -10,7 +10,7 @@ import json
 import os
 import re
 import sys
-from typing import Any, Literal, Mapping, NotRequired, Required, TypedDict
+from typing import Literal, Mapping, NotRequired, Required, TypedDict
 
 import packaging
 from packaging.specifiers import SpecifierSet
@@ -29,10 +29,17 @@ from ._resolve_lib import (
     normalize_version_spec,
 )
 from ._utils import (
-    format_name_list, parse_version, resolve_url, update_url, write_json, pl, pick,
+    format_name_list,
+    parse_sublime_text_max,
+    parse_version,
+    resolve_url,
+    update_url,
+    write_json,
+    pl,
+    pick,
     VersionInfo,
 )
-from ._explain_package import print_package_explain
+from ._explain_package import print_package_explain, print_package_explain_effective
 import traceback
 
 
@@ -147,73 +154,6 @@ def explain_main(registry: str, name: str) -> int:
 
     print_package_explain(name, package, normalized)  # type: ignore[arg-type]
     return 0
-
-
-def print_package_explain_effective(name: str, normalized: dict[str, Any]) -> None:
-    releases = normalized.get("releases", [])
-    sorted_releases = sorted_release_definitions(releases)
-    tags_mode = classify_tags_mode(sorted_releases)
-
-    normalized_effective = deepcopy(normalized)
-    normalized_effective["releases"] = keep_newest_release_definitions(sorted_releases)
-
-    if tags_mode:
-        effectively = "(effectively) " if tags_mode == "effective" else ""
-        print(f"{name} uses {effectively}the tags-mode.")
-    print(json.dumps(normalized_effective, ensure_ascii=False, sort_keys=True))
-
-
-def classify_tags_mode(
-    sorted_releases: list[dict[str, Any]],
-) -> bool | Literal["effective"]:
-    if not sorted_releases:
-        return False
-
-    if all(release_uses_tags_mode(release) for release in sorted_releases):
-        return True
-
-    if release_uses_tags_mode(sorted_releases[-1]):
-        return "effective"
-
-    return False
-
-
-def sorted_release_definitions(releases: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return sorted(releases, key=release_definition_sort_key)
-
-
-def keep_newest_release_definitions(
-    releases: list[dict[str, Any]],
-) -> list[dict[str, Any]]:
-    if not releases:
-        return []
-
-    newest_build = parse_sublime_text_max(releases[-1].get("sublime_text"))
-    return [
-        release
-        for release in releases
-        if parse_sublime_text_max(release.get("sublime_text")) == newest_build
-    ]
-
-
-def release_definition_sort_key(release: dict[str, Any]) -> tuple[float, str]:
-    return (
-        parse_sublime_text_max(release.get("sublime_text")),
-        tags_sort_value(release.get("tags")),
-    )
-
-
-def tags_sort_value(value: Any) -> str:
-    # Place plain `True` after common prefixes like `st2-`.
-    if value is True:
-        return "~~true"
-    if isinstance(value, str):
-        return value
-    return ""
-
-
-def release_uses_tags_mode(release: dict[str, Any]) -> bool:
-    return bool(release.get("tags", False))
 
 
 async def main(
@@ -981,41 +921,6 @@ def maybe_make_auto_open_ended_tags_release(
         "sublime_text": f">{max_build}",
         "tags": True,
     }
-
-
-def parse_sublime_text_max(selector) -> float:
-    if not isinstance(selector, str):
-        return float("inf")
-
-    s = re.sub(r"\s+", "", selector)
-    if s in ("", "*"):
-        return float("inf")
-
-    range_index = s.find("-")
-    if range_index != -1:
-        right = s[range_index + 1:]
-        n = parse_int_prefix(right)
-        return float(n) if n is not None else float("inf")
-
-    if s.startswith("<="):
-        n = parse_int_prefix(s[2:])
-        return float(n) if n is not None else float("inf")
-
-    if s.startswith("<"):
-        n = parse_int_prefix(s[1:])
-        return float(max(0, n - 1)) if n is not None else float("inf")
-
-    if s.startswith(">=") or s.startswith(">"):
-        return float("inf")
-
-    n = parse_int_prefix(s)
-    return float(n) if n is not None else float("inf")
-
-
-def parse_int_prefix(text: str) -> int | None:
-    if match := re.match(r"^\d+", text):
-        return int(match.group(0))
-    return None
 
 
 def compile_release_asset_pattern(
