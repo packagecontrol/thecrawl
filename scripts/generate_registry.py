@@ -97,8 +97,11 @@ def parse_args() -> argparse.Namespace:
         const="",
         default=None,
         help=(
-            "Optional path to seed JSON. If provided without a value, defaults to --output. "
-            "Explicit seed paths must exist and be readable."
+            "Seed input for lifecycle enrichment. Omit to use implicit seed mode: "
+            "read --output if available, otherwise continue without lifecycle fields. "
+            "Provide without a value to require --output as seed (fail if unreadable), "
+            "or provide a path to require that file. Supports registry.json, "
+            "workspace.json, or seed.json-style package maps."
         ),
     )
     parser.add_argument(
