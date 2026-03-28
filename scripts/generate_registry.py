@@ -12,7 +12,7 @@ import time
 from urllib.parse import urlparse
 from typing import Any, Callable, Iterable, Mapping, NotRequired, TypedDict
 
-from ._utils import flatten, resolve_urls, update_url, write_json, pl
+from ._utils import flatten, pick, resolve_urls, update_url, write_json, pl
 
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
@@ -354,36 +354,21 @@ def apply_seed_lifecycle(
         seed = seed_packages.get(name)
         if seed and (first_seen := seed.get("first_seen")):
             package["first_seen"] = first_seen
-        elif "removed" not in package:
+        elif "first_seen" not in package:
             package["first_seen"] = now_string
-
-        if "removed" not in package:
-            package.pop("removed", None)
 
     for name, seed in seed_packages.items():
         if name not in current:
             current[name] = build_tombstone(seed, now_string)
 
-    return sorted(current.values(), key=package_name_sort_key)
+    return sorted(current.values(), key=lambda entry: entry["name"].casefold())
 
 
 def extract_seed_packages(seed_db: Mapping[str, Any]) -> dict[str, PackageEntry]:
     out: dict[str, PackageEntry] = {}
     for entry in iter_seed_entries(seed_db, "packages"):
-        if not isinstance(name := entry.get("name"), str):
-            continue
-
-        seed: PackageEntry = {"name": name}
-        if isinstance(source := entry.get("source"), str):
-            seed["source"] = source
-        if isinstance(first_seen := entry.get("first_seen"), str):
-            seed["first_seen"] = first_seen
-        if isinstance(removed := entry.get("removed"), str):
-            seed["removed"] = removed
-        if isinstance(labels := entry.get("labels"), list):
-            seed["labels"] = [str(label) for label in labels]
-
-        out[name] = seed
+        seed = pick(("name", "source", "first_seen", "removed", "labels"), entry)
+        out[seed["name"]] = seed  # type: ignore[assignment, index]
     return out
 
 
@@ -398,29 +383,20 @@ def iter_seed_entries(seed_db: Mapping[str, Any], kind: str) -> Iterable[Package
     if isinstance(entries, dict):
         for name, entry in entries.items():
             if isinstance(entry, dict):
-                yield {"name": str(name)} | entry
+                yield {"name": name} | entry
         return
 
     if kind == "packages" and "packages" not in seed_db:
         for name, entry in seed_db.items():
             if isinstance(entry, dict):
-                yield {"name": str(name)} | entry
+                yield {"name": name} | entry
 
 
 def build_tombstone(seed: PackageEntry, now_string: IsoTimestamp) -> PackageEntry:
-    tombstone: PackageEntry = {
-        "name": seed["name"],
-        "source": str(seed.get("source", "")),
-        "first_seen": str(seed.get("first_seen", now_string)),
-        "removed": str(seed.get("removed", now_string)),
-    }
-    if labels := seed.get("labels"):
-        tombstone["labels"] = labels
-    return tombstone
-
-
-def package_name_sort_key(entry: Mapping[str, Any]) -> str:
-    return str(entry.get("name", "")).casefold()
+    return (
+        {"first_seen": now_string, "removed": now_string}  # type: ignore[operator]
+        | pick(("name", "source", "first_seen", "removed", "labels"), seed)
+    )
 
 
 def now_utc_string() -> IsoTimestamp:
