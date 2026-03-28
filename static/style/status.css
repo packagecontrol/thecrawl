@@ -8,6 +8,14 @@ html.status main {
 }
 
 .status-page {
+  --status-change-marker-color: hsl(124.46deg 56.45% 41.65%);
+  --status-removed-failing-color: hsl(7deg 84% 53% / 88%);
+
+  :root[data-theme='dark'] & {
+    --status-change-marker-color: hsl(120deg 50.9% 49.19%);
+    --status-removed-failing-color: hsl(7deg 92% 68% / 94%);
+  }
+
   margin-top: var(--grid-line);
   max-width: var(--max-line);
   margin-left: auto;
@@ -18,7 +26,6 @@ html.status main {
   --status-dot: hsl(222.25deg 15.62% 63.35%);
   --status-dot-active-fill: hsl(273.7deg 12.38% 32.69%);
   --status-dot-active-stroke: hsl(282.55deg 11.03% 41.72%);
-  --status-glitch-link: hsl(215.72deg 42.37% 38.38% / 32%);
   --status-tag-line: hsl(222.25deg 3.29% 81.37%);
   --status-tag-line-stroke: 1;
   --status-tag-label: hsl(201.48deg 9.8% 67.95%);
@@ -27,37 +34,49 @@ html.status main {
   --status-tag-lean-deg: 0.6;
   --status-tag-label-offset-x: 0;
   --status-tag-label-offset-y: 3;
+  --status-tag-hover-hide-day-radius: 1;
   --status-tag-overflow-shaft: 30;
   --status-tag-overflow-center-offset: 3;
   --status-tag-overflow-shift-x: -3;
   --status-tag-overflow-arrow-length: 4;
   --status-tag-overflow-arrow-half-width: 3;
   --status-tag-overflow-label-gap: 6;
-  --status-change-dot: hsl(32deg 90.32% 61.77%);
+
+  --status-change-dot: hsl(32deg 100% 66.22%);
   --status-error-dot: hsl(7deg 90.45% 50.1%);
+  --status-error-dot-soft: hsl(7deg 100% 64.46% / 91%);
+  --status-glitch-dot: hsl(35.76deg 93.03% 61.99%);
+  --status-glitch-link: hsl(38.27deg 91.15% 34.61% / 27%);
 
   :root[data-theme='dark'] & {
     --status-dot: hsl(245deg 34.8% 64.47%);
     --status-dot-active-fill: hsl(273.7deg 48.28% 87.52%);
     --status-dot-active-stroke: hsl(282.55deg 60.41% 75.84%);
-    --status-glitch-link: hsl(253.48deg 32.4% 48.82% / 69%);
     --status-tag-line: hsl(253.72deg 6.87% 33.27%);
     --status-tag-line-stroke: 0.8;
     --status-tag-label: hsl(202.85deg 4.72% 45.55%);
-    --status-change-dot: var(--orange-2);
+
+    --status-change-dot: hsl(35.76deg 70.24% 54.56%);
+    --status-glitch-dot: var(--status-change-dot);
+    --status-glitch-link: hsl(253.48deg 32.4% 48.82% / 69%);
     --status-error-dot: var(--red-2);
+    --status-error-dot-soft: hsl(0.51deg 85.44% 66.12% / 90%);
   }
 
   :root[data-theme='dark'] &:hover {
     --status-tag-line: hsl(130.99deg 34.37% 41.5%);
     --status-tag-line-stroke: 0.5;
     --status-tag-label: hsl(139.17deg 31.52% 46.09%);
+    --status-glitch-dot: hsl(30.72deg 77.22% 49.28%);
+    --status-glitch-link: hsl(48.34deg 85.59% 30.67% / 82%);
   }
 
   :root:not([data-theme='dark']) &:hover {
     --status-tag-line: hsl(140.43deg 38.59% 66.91%);
     --status-tag-line-stroke: 0.5;
     --status-tag-label: hsl(138.54deg 67.98% 42.65%);
+    --status-glitch-dot: hsl(30.72deg 88.92% 56.7%);
+    --status-glitch-link: hsl(53.38deg 62.03% 46.18% / 89%);
   }
 
   position: relative;
@@ -145,25 +164,28 @@ html.status main {
     &.error {
       fill: var(--status-error-dot);
     }
+    &.error:not(.no-notes):not(.active) {
+      fill: var(--status-error-dot-soft);
+    }
     &.muted {
       fill: var(--foreground-3);
     }
     &.changed {
       fill: var(--status-change-dot);
     }
+    &.glitch {
+      fill: var(--status-glitch-dot);
+    }
     &.no-notes {
       opacity: 0.35;
     }
-    &.error.no-notes:not(.active) {
-      opacity: 0.65;
+    &.error.no-notes {
+      opacity: 1;
     }
     &.active {
       stroke: var(--status-dot-active-stroke);
       fill: var(--status-dot-active-fill);
       opacity: 1;
-    }
-    &.active.changed {
-      stroke: hsl(30.8deg 88.01% 50.11%);
     }
   }
 
@@ -261,7 +283,7 @@ html.status main {
 
 .status-badge-error {
   background: transparent;
-  color: var(--red-2);
+  color: hsl(7deg 92% 54% / 78%);
 }
 
 .status-badge-muted {
@@ -279,6 +301,21 @@ html.status main {
 
   h4 {
     font-size: 16px;
+  }
+
+  .status-change-marker {
+    color: var(--status-change-marker-color);
+  }
+
+  .status-removed-failing-item {
+    color: var(--status-removed-failing-color);
+  }
+
+  .status-removed-failing-name {
+    color: var(--status-removed-failing-color);
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: var(--status-removed-failing-color);
   }
 
   &, p, ol, ul, summary {
@@ -318,5 +355,40 @@ html.status main {
 
   a {
     word-break: break-word;
+  }
+
+}
+
+.status-artifacts {
+  --grid-line: 24px;
+  margin-top: var(--grid-line);
+  background: var(--background-1);
+  border-radius: 6px;
+  padding: calc(var(--grid-line) * 0.75) calc(var(--side-padding) * 2);
+  max-width: var(--max-line);
+
+  a {
+    word-break: break-word;
+  }
+}
+
+.status-artifacts[hidden] {
+  display: none;
+}
+
+.status-artifact-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  td {
+    padding: 3px 0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  td:nth-child(2),
+  td:nth-child(3) {
+    text-align: right;
+    white-space: nowrap;
   }
 }

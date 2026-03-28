@@ -2,6 +2,7 @@ import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.mjs
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
 
 const notesEl = document.getElementById('status-notes')
+const artifactsEl = document.getElementById('status-artifacts')
 const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
 const badgeLabelEl = document.querySelector('[data-status-label]')
@@ -16,10 +17,19 @@ const nextButton = document.querySelector('[data-control="next"]')
 const lastButton = document.querySelector('[data-control="last"]')
 
 /** @typedef {{
+ *    id: number,
+ *    name: string,
+ *    size: number,
+ *    url: string,
+ *  }} LogArtifact
+ */
+
+/** @typedef {{
  *    date: string,
  *    run_id?: string,
  *    notes?: string,
  *    conclusion?: string,
+ *    artifacts?: LogArtifact[],
  *    failuresChanged?: boolean,
  *    glitchStartIndex?: number | null
  *  }} LogEntry
@@ -192,6 +202,7 @@ function resolveIndexFromUrl() {
 const ASSET_URL = 'https://repackager.sublimetext.io/logs.json'
 const FALLBACK_URL = `${window.STATIC_BASE ?? '/static/'}logs.json`
 const LOG_REFRESH_MS = 10 * 60 * 1000
+const MAX_SKIPPED_HARD_FAILURES = 4
 
 async function loadLogs() {
   const sources = [
@@ -230,7 +241,7 @@ function render(targetIndex) {
   emptyStateMessage = ''
 
   updateHeading(entry)
-  renderNotes(entry)
+  renderNotes(entry, index)
   updateButtons()
   chart?.highlight(entry)
   updateUrl(entry)
@@ -274,12 +285,14 @@ function updateHeading(entry) {
 
 /**
  * @param {LogEntry} entry
+ * @param {number} entryIndex
  */
-function renderNotes(entry) {
+function renderNotes(entry, entryIndex) {
   if (!entry.notes) {
     notesEl.innerHTML = `
       <p>No notes for this run. (${linkToRun(entry.run_id)})</p>
     `
+    renderArtifacts(entry)
     return
   }
 
@@ -288,6 +301,131 @@ function renderNotes(entry) {
   notesEl.innerHTML = DOMPurify.isSupported
     ? DOMPurify.sanitize(html)
     : html
+  applyFailureChangeMarkers(entry, entryIndex)
+  renderArtifacts(entry)
+}
+
+/**
+ * @param {LogEntry} entry
+ * @param {number} entryIndex
+ */
+function applyFailureChangeMarkers(entry, entryIndex) {
+  if (!entry.failuresChanged) return
+  if (!Number.isInteger(entryIndex) || entryIndex < 0) return
+
+  const previousEntry = findComparablePreviousEntryForMarkers(entryIndex)
+  if (!previousEntry) return
+
+  const diff = diffFailingPackages(entry.notes || '', previousEntry.notes || '')
+  const heading = findCurrentlyFailingHeading(notesEl)
+  if (!heading) return
+
+  const sectionNodes = collectSectionNodesAfterHeading(heading)
+  const packageList = findCurrentlyFailingPackageList(sectionNodes)
+  const highlighted = highlightPackageNamesInList(packageList, diff.changedNames)
+  const insertedRemoved = insertRemovedFailingItemsInList(packageList, diff.removedBlocks)
+
+  if (highlighted === 0 && insertedRemoved === 0) {
+    highlightHeadingText(heading)
+  }
+}
+
+function findComparablePreviousEntryForMarkers(entryIndex) {
+  let skippedHardFailures = 0
+
+  for (let i = entryIndex + 1; i < logs.length; i += 1) {
+    const candidate = logs[i]
+    const section = extractCurrentlyFailing(candidate.notes || '')
+    if (section === false && isHardFailureWithoutNotes(candidate)) {
+      skippedHardFailures += 1
+      if (skippedHardFailures > MAX_SKIPPED_HARD_FAILURES) {
+        return null
+      }
+      continue
+    }
+    if (section === false) {
+      return null
+    }
+    return candidate
+  }
+
+  return null
+}
+
+/**
+ * @param {LogEntry} entry
+ */
+function renderArtifacts(entry) {
+  if (!artifactsEl) return
+
+  const artifacts = artifactsForEntry(entry)
+  if (!artifacts.length) {
+    artifactsEl.replaceChildren()
+    artifactsEl.hidden = true
+    return
+  }
+
+  artifactsEl.hidden = false
+
+  const table = document.createElement('table')
+  table.className = 'status-artifact-table'
+
+  const tbody = document.createElement('tbody')
+  for (const artifact of artifacts) {
+    const row = document.createElement('tr')
+
+    const nameCell = document.createElement('td')
+    nameCell.textContent = artifact.name
+    row.appendChild(nameCell)
+
+    const sizeCell = document.createElement('td')
+    sizeCell.textContent = formatArtifactSize(artifact.size)
+    row.appendChild(sizeCell)
+
+    const linkCell = document.createElement('td')
+    const link = document.createElement('a')
+    link.href = artifact.url
+    link.textContent = 'Download'
+    link.target = '_blank'
+    link.rel = 'noopener noreferrer'
+    linkCell.appendChild(link)
+    row.appendChild(linkCell)
+
+    tbody.appendChild(row)
+  }
+
+  table.appendChild(tbody)
+  artifactsEl.replaceChildren(table)
+}
+
+/**
+ * @param {LogEntry} entry
+ */
+function artifactsForEntry(entry) {
+  return normalizeArtifacts(entry.artifacts)
+}
+
+/**
+ * @param {LogArtifact[] | undefined} artifacts
+ */
+function normalizeArtifacts(artifacts) {
+  if (!Array.isArray(artifacts)) return []
+  return artifacts
+}
+
+/**
+ * @param {number} size
+ */
+function formatArtifactSize(size) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let value = size
+  let unitIndex = 0
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024
+    unitIndex += 1
+  }
+  const digits = value < 10 && unitIndex > 0 ? 1 : 0
+  return `${value.toFixed(digits)} ${units[unitIndex]}`
 }
 
 function updateButtons() {
@@ -304,6 +442,10 @@ function renderEmptyState(message) {
   badgeLabelEl.textContent = '¯\\_(ツ)_/¯'
   badgeEl.className = 'status-badge status-badge-muted'
   notesEl.innerHTML = `<p>${message}</p>`
+  if (artifactsEl) {
+    artifactsEl.replaceChildren()
+    artifactsEl.hidden = true
+  }
   emptyStateMessage = message
 
   ;[prevButton, nextButton, lastButton].forEach((btn) => {
@@ -437,8 +579,9 @@ function radiusForEntry(entry, fallbackRadius) {
  */
 function showHoverPreview(entry) {
   if (!entry) return
+  const previewIndex = findEntryIndex(entry)
   updateHeading(entry)
-  renderNotes(entry)
+  renderNotes(entry, previewIndex)
 }
 
 function restoreActiveEntry() {
@@ -454,13 +597,17 @@ function restoreActiveEntry() {
  */
 function renderEntry(entry) {
   if (!entry || !logs.length) return
-  const idx = logs.findIndex((it) => {
-    if (it.run_id && entry.run_id && it.run_id === entry.run_id) return true
-    return it.date === entry.date
-  })
+  const idx = findEntryIndex(entry)
   if (idx >= 0) {
     render(idx)
   }
+}
+
+function findEntryIndex(entry) {
+  return logs.findIndex((it) => {
+    if (it.run_id && entry.run_id && it.run_id === entry.run_id) return true
+    return it.date === entry.date
+  })
 }
 
 class StatusChart {
@@ -499,6 +646,7 @@ class StatusChart {
     this.entries = []
     this.tagMarkers = []
     this.overflowTagMarker = null
+    this.gridAnchorDayKey = currentLocalDayKey()
 
     this.resizeObserver = new ResizeObserver(() => this.layout())
     this.resizeObserver.observe(this.el)
@@ -613,6 +761,8 @@ class StatusChart {
     arrow.setAttribute('points', points)
     arrow.setAttribute('class', 'x-arrow')
     this.labelLayer.appendChild(arrow)
+
+    this.gridAnchorDayKey = currentLocalDayKey()
   }
 
   setData(entries) {
@@ -631,6 +781,8 @@ class StatusChart {
   }
 
   redrawDots() {
+    this.redrawGridIfDayWindowShifted()
+
     this.points = []
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
     while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
@@ -647,6 +799,14 @@ class StatusChart {
     const neutralNodes = []
     const otherNodes = []
     const positions = new Array(this.entries.length).fill(null)
+    const glitchDotIndexes = new Set()
+
+    this.entries.forEach((entry, idx) => {
+      const startIndex = entry.glitchStartIndex
+      if (typeof startIndex !== 'number' || startIndex <= idx) return
+      glitchDotIndexes.add(startIndex)
+      glitchDotIndexes.add(idx)
+    })
 
     this.entries.forEach((entry, idx) => {
       const ts = Date.parse(entry.date || 0)
@@ -656,7 +816,7 @@ class StatusChart {
 
       const { x, y, dayIndex } = position
       const radius = radiusForEntry(entry, this.radius)
-      const node = this.makeDot(entry, x, y, radius)
+      const node = this.makeDot(entry, x, y, radius, glitchDotIndexes.has(idx))
       positions[idx] = { x, y, radius, dayIndex }
 
       const cls = classForEntry(entry)
@@ -676,6 +836,15 @@ class StatusChart {
       this.dotLayer.appendChild(node)
       this.points.push({ entry, node })
     })
+  }
+
+  redrawGridIfDayWindowShifted() {
+    const todayKey = currentLocalDayKey()
+    if (todayKey === this.gridAnchorDayKey) {
+      return
+    }
+
+    this.drawGrid()
   }
 
   drawTagMarkers() {
@@ -775,6 +944,7 @@ class StatusChart {
             lineDefaultPath: defaultPath,
             lineTopPath: topLinePath,
             x: topX,
+            dayIndex: position.dayIndex,
             defaultText: marker.tag,
             hoverText: hoverLabel,
             expandsOnHover: hoverLabel !== marker.tag,
@@ -790,13 +960,13 @@ class StatusChart {
     if (!entries.length) return
 
     const ordered = [...entries].sort((a, b) => a.x - b.x)
-    ordered.forEach((entry, idx) => {
+    const dayRadius = Math.max(0, Math.floor(cssNumber(this.el, '--status-tag-hover-hide-day-radius', 1)))
+
+    ordered.forEach((entry) => {
       if (!entry.expandsOnHover) return
-      const left = ordered[idx - 1] || null
-      const right = ordered[idx + 1] || null
 
       entry.node.addEventListener('mouseenter', () => {
-        this.activateTagLabelHover(entry, left, right, ordered)
+        this.activateTagLabelHover(entry, ordered, dayRadius)
       })
       entry.node.addEventListener('mouseleave', () => {
         this.resetTagLabelHover(ordered)
@@ -804,22 +974,29 @@ class StatusChart {
     })
   }
 
-  activateTagLabelHover(activeEntry, leftEntry, rightEntry, entries) {
+  activateTagLabelHover(activeEntry, entries, dayRadius) {
     this.resetTagLabelHover(entries)
     activeEntry.node.textContent = activeEntry.hoverText
 
-    if (leftEntry) {
-      leftEntry.node.classList.add('tag-label-neighbor-hidden')
-      if (leftEntry.lineNode && leftEntry.lineTopPath) {
-        leftEntry.lineNode.setAttribute('d', leftEntry.lineTopPath)
+    const neighborsToHide = this.tagLabelNeighborsWithinDayRadius(activeEntry, entries, dayRadius)
+    neighborsToHide.forEach((entry) => {
+      entry.node.classList.add('tag-label-neighbor-hidden')
+      if (entry.lineNode && entry.lineTopPath) {
+        entry.lineNode.setAttribute('d', entry.lineTopPath)
       }
-    }
-    if (rightEntry) {
-      rightEntry.node.classList.add('tag-label-neighbor-hidden')
-      if (rightEntry.lineNode && rightEntry.lineTopPath) {
-        rightEntry.lineNode.setAttribute('d', rightEntry.lineTopPath)
-      }
-    }
+    })
+  }
+
+  tagLabelNeighborsWithinDayRadius(activeEntry, entries, dayRadius) {
+    if (!activeEntry || !Number.isFinite(activeEntry.dayIndex)) return []
+    if (!Number.isFinite(dayRadius) || dayRadius <= 0) return []
+
+    return entries.filter((entry) => {
+      if (entry === activeEntry) return false
+      if (!Number.isFinite(entry.dayIndex)) return false
+      const dayDistance = Math.abs(entry.dayIndex - activeEntry.dayIndex)
+      return dayDistance > 0 && dayDistance <= dayRadius
+    })
   }
 
   resetTagLabelHover(entries) {
@@ -905,13 +1082,18 @@ class StatusChart {
     })
   }
 
-  makeDot(entry, x, y, radius) {
+  makeDot(entry, x, y, radius, isGlitch = false) {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
     circle.setAttribute('cx', x)
     circle.setAttribute('cy', y)
     circle.setAttribute('r', radius)
     circle.dataset.key = (entry.run_id || '') + '|' + (entry.date || '')
-    const classes = ['dot', classForEntry(entry), entry.notes ? '' : 'no-notes']
+    const classes = [
+      'dot',
+      classForEntry(entry),
+      isGlitch ? 'glitch' : '',
+      entry.notes ? '' : 'no-notes',
+    ]
       .filter(Boolean)
       .join(' ')
     circle.setAttribute('class', classes)
@@ -1031,6 +1213,10 @@ function formatHourLabel(hour) {
   return `${h}:00`
 }
 
+function currentLocalDayKey() {
+  return localDayKey(Date.now())
+}
+
 function localDayKey(timestamp) {
   const d = new Date(timestamp)
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
@@ -1126,17 +1312,19 @@ function annotateChanges(entries) {
   // entries are sorted newest-first; "lookback" walks forward in the array to go back in time.
   const sections = entries.map(entry => extractCurrentlyFailing(entry.notes || ''))
   const LOOKBACK = 10
+
   return entries.map((entry, idx) => {
     // For the following: "false" means: no notes at all were present
     /** @type {false | string} */
     const rawSection = sections[idx]
-    // '' (falsy) meaqns: no currently failing section was present
+    // '' (falsy) means: no currently failing section was present
     /** @type {string} */
     const section = rawSection || ''
-    const nextSection = sections[idx + 1]
-    const hasNext = typeof nextSection !== 'undefined' && nextSection !== false
-    // Keep nextSection un-normalized so false (no notes) differs from '' (notes, no failing section).
-    const failuresChanged = hasNext && section !== nextSection
+    const previous = findComparablePreviousSection(entries, sections, idx + 1, MAX_SKIPPED_HARD_FAILURES)
+    const previousSection = previous.section
+    const hasPrevious = typeof previousSection !== 'undefined' && previousSection !== false
+    // Keep previousSection un-normalized so false (no notes) differs from '' (notes, no failing section).
+    const failuresChanged = hasPrevious && section !== previousSection
     let glitchStartIndex = null
 
     // Find "glitches"; a glitch is a temporary, self-healing change in the failing section.
@@ -1154,8 +1342,14 @@ function annotateChanges(entries) {
       }
       // 2. If we have one, the entry after that introduced the "glitch".
       if (matchIndex !== null) {
-        const startIndex = matchIndex - 1
-        if (startIndex >= idx && sections[startIndex] !== false) {
+        const startIndex = findGlitchStartIndex(
+          entries,
+          sections,
+          matchIndex - 1,
+          idx,
+          MAX_SKIPPED_HARD_FAILURES,
+        )
+        if (startIndex !== null) {
           glitchStartIndex = startIndex
         }
       }
@@ -1163,6 +1357,49 @@ function annotateChanges(entries) {
 
     return { ...entry, failuresChanged, glitchStartIndex }
   })
+}
+
+function findComparablePreviousSection(entries, sections, startIndex, maxSkippedHardFailures) {
+  let skippedHardFailures = 0
+
+  for (let i = startIndex; i < sections.length; i += 1) {
+    const section = sections[i]
+    if (section === false && isHardFailureWithoutNotes(entries[i])) {
+      skippedHardFailures += 1
+      if (skippedHardFailures > maxSkippedHardFailures) {
+        return { index: -1, section: undefined }
+      }
+      continue
+    }
+    return { index: i, section }
+  }
+
+  return { index: -1, section: undefined }
+}
+
+function findGlitchStartIndex(entries, sections, startIndex, minIndex, maxSkippedHardFailures) {
+  let skippedHardFailures = 0
+
+  for (let i = startIndex; i >= minIndex; i -= 1) {
+    const section = sections[i]
+    if (section === false && isHardFailureWithoutNotes(entries[i])) {
+      skippedHardFailures += 1
+      if (skippedHardFailures > maxSkippedHardFailures) {
+        return null
+      }
+      continue
+    }
+    if (section === false) {
+      return null
+    }
+    return i
+  }
+
+  return null
+}
+
+function isHardFailureWithoutNotes(entry) {
+  return !entry?.notes && classForConclusion(entry?.conclusion) === 'error'
 }
 
 function extractCurrentlyFailing(notes) {
@@ -1180,6 +1417,221 @@ function extractCurrentlyFailing(notes) {
     .map(line => line.replace(/\s*\[[^\]]+\]\s*$/, ''))
     .filter(Boolean)
     .join('\n')
+}
+
+function diffFailingPackages(currentNotes, previousNotes) {
+  const currentBlocks = extractCurrentlyFailingBlocks(currentNotes)
+  const previousBlocks = extractCurrentlyFailingBlocks(previousNotes)
+  const currentByKey = new Map()
+  const previousByKey = new Map()
+
+  for (const block of currentBlocks) {
+    currentByKey.set(block.nameKey, block)
+  }
+  for (const block of previousBlocks) {
+    previousByKey.set(block.nameKey, block)
+  }
+
+  const changedNames = new Set()
+  for (const block of currentBlocks) {
+    const previous = previousByKey.get(block.nameKey)
+    if (!previous || previous.signature !== block.signature) {
+      changedNames.add(block.nameKey)
+    }
+  }
+
+  const removedBlocks = []
+  for (let i = 0; i < previousBlocks.length; i += 1) {
+    const block = previousBlocks[i]
+    if (currentByKey.has(block.nameKey)) continue
+
+    let anchorNameKey = null
+    for (let j = i + 1; j < previousBlocks.length; j += 1) {
+      const anchor = previousBlocks[j]
+      if (currentByKey.has(anchor.nameKey)) {
+        anchorNameKey = anchor.nameKey
+        break
+      }
+    }
+
+    removedBlocks.push({
+      name: block.name,
+      nameKey: block.nameKey,
+      anchorNameKey,
+    })
+  }
+
+  return { changedNames, removedBlocks }
+}
+
+function extractCurrentlyFailingBlocks(notes) {
+  const section = extractCurrentlyFailing(notes)
+  if (!section || section === false) return []
+
+  const lines = section.split('\n')
+  const blocks = []
+  let current = null
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (!line) continue
+
+    const packageMatch = /^-\s+\*\*(.+?)\*\*(?:\s+.*)?$/.exec(line)
+    if (packageMatch) {
+      if (current) {
+        blocks.push({
+          name: current.name,
+          nameKey: current.nameKey,
+          signature: [current.name, ...current.details].join('\n'),
+        })
+      }
+      current = {
+        name: packageMatch[1].trim(),
+        nameKey: normalizePackageNameKey(packageMatch[1]),
+        details: [],
+      }
+      continue
+    }
+
+    if (current) {
+      current.details.push(line)
+    }
+  }
+
+  if (current) {
+    blocks.push({
+      name: current.name,
+      nameKey: current.nameKey,
+      signature: [current.name, ...current.details].join('\n'),
+    })
+  }
+
+  return blocks
+}
+
+function normalizePackageNameKey(name) {
+  return String(name || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+}
+
+function findCurrentlyFailingHeading(root) {
+  const headings = root.querySelectorAll('h1, h2, h3, h4, h5, h6')
+  for (const heading of headings) {
+    if ((heading.textContent || '').trim().toLowerCase() === 'currently failing') {
+      return heading
+    }
+  }
+  return null
+}
+
+function collectSectionNodesAfterHeading(heading) {
+  const nodes = []
+  let node = heading.nextElementSibling
+
+  while (node) {
+    if (/^H[1-6]$/.test(node.tagName)) {
+      break
+    }
+    nodes.push(node)
+    node = node.nextElementSibling
+  }
+
+  return nodes
+}
+
+function highlightPackageNamesInList(list, changedNames) {
+  if (!list || !changedNames.size) return 0
+
+  let highlighted = 0
+  const names = list.querySelectorAll(':scope > li strong')
+  for (const nameNode of names) {
+    const key = normalizePackageNameKey(nameNode.textContent)
+    if (!changedNames.has(key)) continue
+    const row = nameNode.closest('li')
+    if (!row) continue
+    row.classList.add('status-change-marker')
+    highlighted += 1
+  }
+
+  return highlighted
+}
+
+function insertRemovedFailingItemsInList(list, removedBlocks) {
+  if (!list || !removedBlocks.length) return 0
+
+  let inserted = 0
+  for (const block of removedBlocks) {
+    const item = makeRemovedFailingListItem(block.name)
+    const anchorItem = findListItemByPackageKey(list, block.anchorNameKey)
+    if (anchorItem) {
+      list.insertBefore(item, anchorItem)
+    }
+    else {
+      list.appendChild(item)
+    }
+    inserted += 1
+  }
+
+  return inserted
+}
+
+function findCurrentlyFailingPackageList(sectionNodes) {
+  const candidates = []
+
+  for (const node of sectionNodes) {
+    if (node.tagName === 'UL' || node.tagName === 'OL') {
+      candidates.push(node)
+    }
+    const nested = node.querySelectorAll('ul, ol')
+    for (const list of nested) {
+      candidates.push(list)
+    }
+  }
+
+  for (const candidate of candidates) {
+    if (candidate.querySelector('li strong')) {
+      return candidate
+    }
+  }
+
+  return null
+}
+
+function findListItemByPackageKey(list, packageNameKey) {
+  if (!packageNameKey) return null
+
+  const names = list.querySelectorAll(':scope > li strong')
+  for (const nameNode of names) {
+    const key = normalizePackageNameKey(nameNode.textContent)
+    if (key !== packageNameKey) continue
+    return nameNode.closest('li')
+  }
+
+  return null
+}
+
+function makeRemovedFailingListItem(name) {
+  const item = document.createElement('li')
+  item.className = 'status-removed-failing-item'
+
+  const label = document.createElement('strong')
+  label.className = 'status-removed-failing-name'
+  label.textContent = name
+  item.appendChild(label)
+
+  return item
+}
+
+function highlightHeadingText(heading) {
+  const existing = heading.querySelector('.status-change-marker')
+  if (existing) return
+
+  const marker = document.createElement('span')
+  marker.className = 'status-change-marker'
+  marker.textContent = heading.textContent || ''
+  heading.replaceChildren(marker)
 }
 
 function extractPackagesCrawled(notes) {
