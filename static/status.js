@@ -646,6 +646,7 @@ class StatusChart {
     this.entries = []
     this.tagMarkers = []
     this.overflowTagMarker = null
+    this.gridAnchorDayKey = currentLocalDayKey()
 
     this.resizeObserver = new ResizeObserver(() => this.layout())
     this.resizeObserver.observe(this.el)
@@ -760,6 +761,8 @@ class StatusChart {
     arrow.setAttribute('points', points)
     arrow.setAttribute('class', 'x-arrow')
     this.labelLayer.appendChild(arrow)
+
+    this.gridAnchorDayKey = currentLocalDayKey()
   }
 
   setData(entries) {
@@ -778,6 +781,8 @@ class StatusChart {
   }
 
   redrawDots() {
+    this.redrawGridIfDayWindowShifted()
+
     this.points = []
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
     while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
@@ -831,6 +836,15 @@ class StatusChart {
       this.dotLayer.appendChild(node)
       this.points.push({ entry, node })
     })
+  }
+
+  redrawGridIfDayWindowShifted() {
+    const todayKey = currentLocalDayKey()
+    if (todayKey === this.gridAnchorDayKey) {
+      return
+    }
+
+    this.drawGrid()
   }
 
   drawTagMarkers() {
@@ -1197,6 +1211,10 @@ function classForConclusion(conclusion) {
 function formatHourLabel(hour) {
   const h = String(hour).padStart(2, '0')
   return `${h}:00`
+}
+
+function currentLocalDayKey() {
+  return localDayKey(Date.now())
 }
 
 function localDayKey(timestamp) {
