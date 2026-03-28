@@ -31,7 +31,12 @@ def make_channel(path: Path, repositories: list[Path]):
     path.write_text(json.dumps(channel_data))
 
 
-def make_repository(path: Path, package_names: list[str]):
+def make_repository(
+    path: Path,
+    package_names: list[str],
+    *,
+    library_names: list[str] | None = None,
+):
     repo_data = {
         "schema_version": "3.0.0",
         "packages": [
@@ -41,7 +46,12 @@ def make_repository(path: Path, package_names: list[str]):
             }
             for name in package_names
         ],
-        "libraries": []
+        "libraries": [
+            {
+                "name": name,
+            }
+            for name in (library_names or [])
+        ],
     }
     path.write_text(json.dumps(repo_data))
 
@@ -234,3 +244,291 @@ async def test_main_with_successful_repo_and_last_run_clears_fetching_source_fai
         result = json.load(f)
     # Package should no longer have fetching_source_failed
     assert "fetching_source_failed" not in result["packages"][0]
+
+
+@pytest.mark.asyncio
+async def test_implicit_seed_preserves_lifecycle_data(tmp_path):
+    repo_path = tmp_path / "repo.json"
+    make_repository(repo_path, ["Keep", "New"])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+    output_file = tmp_path / "registry.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [{
+            "name": "Keep",
+            "source": repo_path.as_uri(),
+            "schema_version": "3.0.0",
+            "details": "https://github.com/example/Keep",
+            "first_seen": "2020-01-01T00:00:00Z",
+        }],
+        "libraries": [],
+    }))
+
+    await main(str(output_file), [channel_path.as_uri()])
+
+    result = json.loads(output_file.read_text())
+    by_name = {pkg["name"]: pkg for pkg in result["packages"]}
+    assert by_name["Keep"]["first_seen"] == "2020-01-01T00:00:00Z"
+    datetime.strptime(by_name["New"]["first_seen"], "%Y-%m-%dT%H:%M:%SZ")
+
+
+@pytest.mark.asyncio
+async def test_explicit_seed_overrides_output_path(tmp_path):
+    repo_path = tmp_path / "repo.json"
+    make_repository(repo_path, ["Keep"])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "output.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [{
+            "name": "Keep",
+            "source": repo_path.as_uri(),
+            "schema_version": "3.0.0",
+            "first_seen": "2011-01-01T00:00:00Z",
+        }],
+        "libraries": [],
+    }))
+
+    seed_file = tmp_path / "seed.json"
+    seed_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [{
+            "name": "Keep",
+            "source": repo_path.as_uri(),
+            "schema_version": "3.0.0",
+            "first_seen": "2010-01-01T00:00:00Z",
+        }],
+        "libraries": [],
+    }))
+
+    await main(str(output_file), [channel_path.as_uri()], seed_path=str(seed_file))
+
+    result = json.loads(output_file.read_text())
+    assert result["packages"][0]["first_seen"] == "2010-01-01T00:00:00Z"
+
+
+@pytest.mark.asyncio
+async def test_explicit_missing_seed_fails_hard(tmp_path):
+    repo_path = tmp_path / "repo.json"
+    make_repository(repo_path, ["Keep"])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+    output_file = tmp_path / "output.json"
+
+    with pytest.raises(FileNotFoundError):
+        await main(
+            str(output_file),
+            [channel_path.as_uri()],
+            seed_path=str(tmp_path / "missing.json"),
+        )
+
+
+@pytest.mark.asyncio
+async def test_no_seed_outputs_raw_registry_without_lifecycle_fields(tmp_path):
+    repo_path = tmp_path / "repo.json"
+    make_repository(repo_path, ["Keep"])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [
+            {
+                "name": "Keep",
+                "source": repo_path.as_uri(),
+                "schema_version": "3.0.0",
+                "first_seen": "2010-01-01T00:00:00Z",
+            },
+            {
+                "name": "Gone",
+                "source": repo_path.as_uri(),
+                "first_seen": "2011-01-01T00:00:00Z",
+            },
+        ],
+        "libraries": [],
+    }))
+
+    await main(str(output_file), [channel_path.as_uri()], no_seed=True)
+
+    result = json.loads(output_file.read_text())
+    by_name = {pkg["name"]: pkg for pkg in result["packages"]}
+    assert "first_seen" not in by_name["Keep"]
+    assert "Gone" not in by_name
+
+
+@pytest.mark.asyncio
+async def test_package_disappearance_creates_minimal_tombstone(tmp_path):
+    repo_path = tmp_path / "repo.json"
+    make_repository(repo_path, [])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [
+            {
+                "name": "Gone",
+                "source": repo_path.as_uri(),
+                "schema_version": "3.0.0",
+                "first_seen": "2010-01-01T00:00:00Z",
+                "labels": ["theme"],
+            },
+        ],
+        "libraries": [],
+    }))
+
+    await main(str(output_file), [channel_path.as_uri()])
+
+    result = json.loads(output_file.read_text())
+    assert len(result["packages"]) == 1
+    tombstone = result["packages"][0]
+    assert set(tombstone.keys()) == {"name", "source", "first_seen", "removed", "labels"}
+    assert tombstone["name"] == "Gone"
+    assert tombstone["source"] == repo_path.as_uri()
+    assert tombstone["first_seen"] == "2010-01-01T00:00:00Z"
+    assert tombstone["labels"] == ["theme"]
+    datetime.strptime(tombstone["removed"], "%Y-%m-%dT%H:%M:%SZ")
+
+
+@pytest.mark.asyncio
+async def test_existing_tombstone_keeps_removed_timestamp(tmp_path):
+    repo_path = tmp_path / "repo.json"
+    make_repository(repo_path, [])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [
+            {
+                "name": "Gone",
+                "source": repo_path.as_uri(),
+                "first_seen": "2010-01-01T00:00:00Z",
+                "removed": "2020-02-02T00:00:00Z",
+            },
+        ],
+        "libraries": [],
+    }))
+
+    await main(str(output_file), [channel_path.as_uri()])
+
+    result = json.loads(output_file.read_text())
+    assert result["packages"][0]["removed"] == "2020-02-02T00:00:00Z"
+
+
+@pytest.mark.asyncio
+async def test_tombstoned_package_resurrection_preserves_first_seen(tmp_path):
+    repo_path = tmp_path / "repo.json"
+    make_repository(repo_path, ["Phoenix"])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [
+            {
+                "name": "Phoenix",
+                "source": repo_path.as_uri(),
+                "first_seen": "2010-01-01T00:00:00Z",
+                "removed": "2020-02-02T00:00:00Z",
+            },
+        ],
+        "libraries": [],
+    }))
+
+    await main(str(output_file), [channel_path.as_uri()])
+
+    result = json.loads(output_file.read_text())
+    phoenix = result["packages"][0]
+    assert phoenix["name"] == "Phoenix"
+    assert phoenix["first_seen"] == "2010-01-01T00:00:00Z"
+    assert "removed" not in phoenix
+
+
+@pytest.mark.asyncio
+async def test_disappeared_libraries_are_not_tombstoned(tmp_path):
+    repo_path = tmp_path / "repo.json"
+    make_repository(repo_path, [])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [],
+        "libraries": [
+            {
+                "name": "GoneLib",
+                "source": repo_path.as_uri(),
+                "removed": "2020-02-02T00:00:00Z",
+            }
+        ],
+    }))
+
+    await main(str(output_file), [channel_path.as_uri()])
+
+    result = json.loads(output_file.read_text())
+    assert result["libraries"] == []
+
+
+@pytest.mark.asyncio
+async def test_seeded_output_packages_are_name_sorted(tmp_path):
+    repo_path = tmp_path / "repo.json"
+    make_repository(repo_path, ["Zulu", "Bravo"])
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [
+            {
+                "name": "Alpha",
+                "source": repo_path.as_uri(),
+                "first_seen": "2010-01-01T00:00:00Z",
+            },
+            {
+                "name": "Zulu",
+                "source": repo_path.as_uri(),
+                "first_seen": "2011-01-01T00:00:00Z",
+            },
+        ],
+        "libraries": [],
+    }))
+
+    await main(str(output_file), [channel_path.as_uri()])
+
+    result = json.loads(output_file.read_text())
+    assert [pkg["name"] for pkg in result["packages"]] == ["Alpha", "Bravo", "Zulu"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("no_seed", [False, True])
+async def test_fetching_source_failed_behavior_unchanged_with_no_seed_toggle(tmp_path, no_seed):
+    repo_path = tmp_path / "missing.json"
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [{
+            "name": "Lost",
+            "source": repo_path.as_uri(),
+            "schema_version": "3.0.0",
+            "details": "https://github.com/example/Lost",
+        }],
+        "libraries": [],
+    }))
+
+    await main(str(output_file), [channel_path.as_uri()], no_seed=no_seed)
+
+    result = json.loads(output_file.read_text())
+    assert "fetching_source_failed" in result["packages"][0]

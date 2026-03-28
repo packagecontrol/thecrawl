@@ -3,13 +3,14 @@ from __future__ import annotations
 import argparse
 import asyncio
 import aiohttp
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
 import os
 import sys
 import time
 from urllib.parse import urlparse
-from typing import Callable, Iterable, Mapping, NotRequired, TypedDict
+from typing import Any, Callable, Iterable, Mapping, NotRequired, TypedDict
 
 from ._utils import flatten, resolve_urls, update_url, write_json, pl
 
@@ -31,6 +32,9 @@ class PackageEntry(TypedDict, total=False):
     schema_version: str
     name: str
     details: NotRequired[str]
+    labels: NotRequired[list[str]]
+    first_seen: NotRequired[IsoTimestamp]
+    removed: NotRequired[IsoTimestamp]
     fetching_source_failed: NotRequired[IsoTimestamp]
 
 
@@ -45,6 +49,12 @@ class RepositorySchema(TypedDict):
     schema_version: str
     packages: list[PackageEntry]
     libraries: list[PackageEntry]
+
+
+@dataclass
+class SeedLoad:
+    db: dict[str, Any]
+    available: bool
 
 
 def parse_args() -> argparse.Namespace:
@@ -67,30 +77,56 @@ def parse_args() -> argparse.Namespace:
             "If not given, uses the official channel from wbond/package_control_channel."
         ),
     )
+    parser.add_argument(
+        "--seed",
+        nargs="?",
+        const="",
+        default=None,
+        help=(
+            "Optional path to seed JSON. If provided without a value, defaults to --output. "
+            "Explicit seed paths must exist and be readable."
+        ),
+    )
+    parser.add_argument(
+        "--no-seed",
+        action="store_true",
+        help="Disable lifecycle enrichment and emit raw registry output.",
+    )
     return parser.parse_args()
 
 
-async def main(output_file: str, channels: list[str]) -> None:
-    # Try to read previous db if it exists
-    try:
-        with open(output_file, 'r') as f:
-            prev_db = json.load(f)
-    except (OSError, json.JSONDecodeError):
-        prev_db = {}
+async def main(
+    output_file: str,
+    channels: list[str],
+    *,
+    seed_path: str | None = None,
+    no_seed: bool = False,
+) -> None:
+    effective_seed_path, explicit_seed = resolve_seed_path(
+        output_file=output_file,
+        seed_path=seed_path,
+    )
+    seed = read_seed_db(effective_seed_path, explicit=explicit_seed)
 
     try:
         async with asyncio.timeout(GLOBAL_TIMEOUT):
-            db = await fetch_packages(channels, prev_db)
+            db = await fetch_packages(channels, seed.db if seed.available else {})
+            if seed.available and not no_seed:
+                db["packages"] = apply_seed_lifecycle(
+                    db["packages"],
+                    seed.db,
+                    now_utc_string(),
+                )
             write_json(output_file, db, pretty=True, ensure_ascii=True)
             print(f"Saved registry as {output_file}")
     except asyncio.TimeoutError:
         print(f"Timeout: script took more than {GLOBAL_TIMEOUT} seconds")
 
 
-async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
+async def fetch_packages(channels: list[str], db: Mapping[str, Any] | None = None) -> Registry:
     print("Fetching registered packages...")
     now = time.monotonic()
-    now_string = datetime.now(timezone.utc).strftime(UTC_FORMAT)
+    now_string = now_utc_string()
 
     async with aiohttp.ClientSession() as session:
         # Fetch repositories from all channels in parallel
@@ -153,11 +189,11 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
             # recreate the repo from db
             fail_info: PackageEntry
             fail_info = {"fetching_source_failed": now_string}
-            for pkg in db.get("packages", []):
+            for pkg in iter_seed_entries(db, "packages"):
                 if pkg.get("source") == url:
                     add_package(fail_info | pkg)
 
-            for library in db.get("libraries", []):
+            for library in iter_seed_entries(db, "libraries"):
                 if library.get("source") == url:
                     add_library(fail_info | library)
 
@@ -269,6 +305,128 @@ async def http_get(location: str, session: aiohttp.ClientSession) -> str:
         return await resp.text()
 
 
+def resolve_seed_path(output_file: str, seed_path: str | None) -> tuple[str, bool]:
+    if seed_path is None:
+        return output_file, False
+
+    if seed_path == "":
+        return output_file, True
+
+    return os.path.abspath(seed_path), True
+
+
+def read_seed_db(path: str, *, explicit: bool) -> SeedLoad:
+    try:
+        text = open(path, "r", encoding="utf-8").read()
+    except OSError as exc:
+        if explicit:
+            raise FileNotFoundError(f"Could not read explicit seed path: {path}") from exc
+        return SeedLoad(db={}, available=False)
+
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        if explicit:
+            raise ValueError(f"Explicit seed is not valid JSON: {path}") from exc
+        return SeedLoad(db={}, available=False)
+
+    if not isinstance(data, dict):
+        if explicit:
+            raise ValueError(f"Explicit seed JSON must be an object: {path}")
+        return SeedLoad(db={}, available=False)
+
+    return SeedLoad(db=data, available=True)
+
+
+def apply_seed_lifecycle(
+    packages: list[PackageEntry],
+    seed_db: Mapping[str, Any],
+    now_string: IsoTimestamp,
+) -> list[PackageEntry]:
+    seed_packages = extract_seed_packages(seed_db)
+    current = {
+        pkg["name"]: dict(pkg)
+        for pkg in packages
+        if isinstance(pkg.get("name"), str)
+    }
+
+    for name, package in current.items():
+        seed = seed_packages.get(name)
+        if seed and (first_seen := seed.get("first_seen")):
+            package["first_seen"] = first_seen
+        elif "removed" not in package:
+            package["first_seen"] = now_string
+
+        if "removed" not in package:
+            package.pop("removed", None)
+
+    for name, seed in seed_packages.items():
+        if name not in current:
+            current[name] = build_tombstone(seed, now_string)
+
+    return sorted(current.values(), key=package_name_sort_key)
+
+
+def extract_seed_packages(seed_db: Mapping[str, Any]) -> dict[str, PackageEntry]:
+    out: dict[str, PackageEntry] = {}
+    for entry in iter_seed_entries(seed_db, "packages"):
+        if not isinstance(name := entry.get("name"), str):
+            continue
+
+        seed: PackageEntry = {"name": name}
+        if isinstance(source := entry.get("source"), str):
+            seed["source"] = source
+        if isinstance(first_seen := entry.get("first_seen"), str):
+            seed["first_seen"] = first_seen
+        if isinstance(removed := entry.get("removed"), str):
+            seed["removed"] = removed
+        if isinstance(labels := entry.get("labels"), list):
+            seed["labels"] = [str(label) for label in labels]
+
+        out[name] = seed
+    return out
+
+
+def iter_seed_entries(seed_db: Mapping[str, Any], kind: str) -> Iterable[PackageEntry]:
+    entries = seed_db.get(kind)
+    if isinstance(entries, list):
+        for entry in entries:
+            if isinstance(entry, dict):
+                yield entry
+        return
+
+    if isinstance(entries, dict):
+        for name, entry in entries.items():
+            if isinstance(entry, dict):
+                yield {"name": str(name)} | entry
+        return
+
+    if kind == "packages" and "packages" not in seed_db:
+        for name, entry in seed_db.items():
+            if isinstance(entry, dict):
+                yield {"name": str(name)} | entry
+
+
+def build_tombstone(seed: PackageEntry, now_string: IsoTimestamp) -> PackageEntry:
+    tombstone: PackageEntry = {
+        "name": seed["name"],
+        "source": str(seed.get("source", "")),
+        "first_seen": str(seed.get("first_seen", now_string)),
+        "removed": str(seed.get("removed", now_string)),
+    }
+    if labels := seed.get("labels"):
+        tombstone["labels"] = labels
+    return tombstone
+
+
+def package_name_sort_key(entry: Mapping[str, Any]) -> str:
+    return str(entry.get("name", "")).casefold()
+
+
+def now_utc_string() -> IsoTimestamp:
+    return datetime.now(timezone.utc).strftime(UTC_FORMAT)
+
+
 def err(*args, **kwargs) -> None:
     print(*args, **kwargs, file=sys.stderr)
 
@@ -308,4 +466,16 @@ if __name__ == "__main__":
     args = parse_args()
     output_file = os.path.abspath(args.output)
     channels = args.channel if args.channel else [DEFAULT_CHANNEL]
-    asyncio.run(main(output_file, channels))
+    seed_path = (
+        None
+        if args.seed is None
+        else (output_file if args.seed == "" else os.path.abspath(args.seed))
+    )
+    asyncio.run(
+        main(
+            output_file,
+            channels,
+            seed_path=seed_path,
+            no_seed=args.no_seed,
+        )
+    )
