@@ -94,11 +94,12 @@ uv run -m scripts.generate_registry --output registry.json --seed ./the-registry
 uv run -m scripts.generate_registry --output registry.json --no-seed
 ```
 
-To create a compact seed from an existing workspace, use `seed_from_workspace`:
+To create a compact archival seed, use `generate_seed` with either a workspace
+or a registry as input (but not both):
 
 ```bash
-uv run -m scripts.seed_from_workspace
-uv run -m scripts.seed_from_workspace --workspace ./workspace.json --output ./seed.json
+uv run -m scripts.generate_seed --workspace ./workspace.json --output ./seed.json
+uv run -m scripts.generate_seed --registry ./registry.json --output ./seed.json
 ```
 
 ---
