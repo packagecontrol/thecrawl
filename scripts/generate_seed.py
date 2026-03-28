@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
 from typing import Any, Literal, Mapping, NotRequired, TypedDict
 
 from ._utils import pick
@@ -10,6 +11,7 @@ from ._utils import pick
 DEFAULT_WORKSPACE = "workspace.json"
 DEFAULT_REGISTRY = "registry.json"
 DEFAULT_OUTPUT = "seed.json"
+INCOMPLETE_SHAPE_WARN_THRESHOLD = 0.10
 
 
 type IsoTimestamp = str
@@ -50,6 +52,19 @@ def main() -> None:
         f"Wrote {len(seed)} entries to {args.output} "
         f"({alive_count} alive, {removed_count} removed)."
     )
+
+    incomplete_count, total_count = count_incomplete_shapes(seed)
+    if should_warn_about_incomplete_shapes(incomplete_count, total_count):
+        if total_count > 0 and incomplete_count == total_count:
+            msg = "Check the output. All packages have an incomplete shape."
+        else:
+            incomplete_percent = (incomplete_count * 100) / total_count
+            msg = (
+                "Check the output. "
+                f"{incomplete_percent:.1f}% of the packages have an incomplete shape."
+            )
+
+        print(msg, file=sys.stderr)
 
 
 class Args(argparse.Namespace):
@@ -129,6 +144,22 @@ def build_seed_entry(package: dict[str, Any]) -> Mapping[str, Any]:
 
 def sort_seed(seed: dict[str, Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]:
     return dict(sorted(seed.items(), key=lambda item: item[0].casefold()))
+
+
+def count_incomplete_shapes(seed: Mapping[str, Mapping[str, Any]]) -> tuple[int, int]:
+    incomplete_count = 0
+    total_count = len(seed)
+    for entry in seed.values():
+        expected_key_count = 5 if "removed" in entry else 2
+        if len(entry) != expected_key_count:
+            incomplete_count += 1
+    return incomplete_count, total_count
+
+
+def should_warn_about_incomplete_shapes(incomplete_count: int, total_count: int) -> bool:
+    if total_count == 0:
+        return False
+    return (incomplete_count / total_count) > INCOMPLETE_SHAPE_WARN_THRESHOLD
 
 
 def write_seed(path: str, seed: dict[str, Mapping[str, Any]]) -> None:
