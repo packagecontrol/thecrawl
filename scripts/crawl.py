@@ -16,7 +16,7 @@ import packaging
 from packaging.specifiers import SpecifierSet
 
 from .bitbucket import fetch_bitbucket_info, RepoInfo as BitbucketRepoInfo
-from .generate_registry import Registry, PackageEntry as RegistryEntry
+from .generate_registry import Registry, RegistryEntry
 from .github import (
     fetch_github_info, rate_limit_info,
     RepoInfo as GithubRepoInfo, ReleaseAssetInfo

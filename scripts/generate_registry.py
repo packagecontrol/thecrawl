@@ -27,7 +27,13 @@ type Url = str
 type IsoTimestamp = str
 
 
-class PackageEntry(TypedDict, total=False):
+class RawRepositoryEntry(TypedDict, total=False):
+    name: str
+    details: NotRequired[str]
+    labels: NotRequired[list[str]]
+
+
+class RegistryEntry(TypedDict, total=False):
     source: Url
     schema_version: str
     name: str
@@ -38,17 +44,25 @@ class PackageEntry(TypedDict, total=False):
     fetching_source_failed: NotRequired[IsoTimestamp]
 
 
+class SeedEntry(TypedDict):
+    name: str
+    first_seen: IsoTimestamp
+    source: NotRequired[Url | None]
+    removed: NotRequired[IsoTimestamp]
+    labels: NotRequired[list[str]]
+
+
 class Registry(TypedDict):
     repositories: list[str]
-    packages: list[PackageEntry]
-    libraries: list[PackageEntry]
+    packages: list[RegistryEntry]
+    libraries: list[RegistryEntry]
 
 
 class RepositorySchema(TypedDict):
     self: Url
     schema_version: str
-    packages: list[PackageEntry]
-    libraries: list[PackageEntry]
+    packages: list[RawRepositoryEntry]
+    libraries: list[RawRepositoryEntry]
 
 
 @dataclass
@@ -150,10 +164,10 @@ async def fetch_packages(channels: list[str], db: Mapping[str, Any] | None = Non
     # Flatten packages and libraries, adding source, schema_version, and
     # ensuring a unique name.
 
-    def add_unique_(container: list[PackageEntry], kind: str) -> Callable[[PackageEntry], None]:
+    def add_unique_(container: list[RegistryEntry], kind: str) -> Callable[[RegistryEntry], None]:
         seen = set()
 
-        def add(entry: PackageEntry) -> None:
+        def add(entry: RegistryEntry) -> None:
             name = extract_package_name(entry)
             if name and name not in seen:
                 seen.add(name)
@@ -168,26 +182,26 @@ async def fetch_packages(channels: list[str], db: Mapping[str, Any] | None = Non
 
         return add
 
-    packages: list[PackageEntry] = []
-    libraries: list[PackageEntry] = []
+    packages: list[RegistryEntry] = []
+    libraries: list[RegistryEntry] = []
     add_package = add_unique_(packages, "Package")
     add_library = add_unique_(libraries, "Library")
     for url in repos:
         if repo := result.get(url):
-            repo_info: PackageEntry
+            repo_info: RegistryEntry
             repo_info = {
                 "source": repo["self"],
                 "schema_version": repo["schema_version"],
             }
             for pkg in repo["packages"]:
-                add_package(pkg | repo_info)
+                add_package(pkg | repo_info)  # type: ignore[arg-type]
 
             for library in repo["libraries"]:
-                add_library(library | repo_info)
+                add_library(library | repo_info)  # type: ignore[arg-type]
 
         elif db:
             # recreate the repo from db
-            fail_info: PackageEntry
+            fail_info: RegistryEntry
             fail_info = {"fetching_source_failed": now_string}
             for pkg in iter_seed_entries(db, "packages"):
                 if pkg.get("source") == url:
@@ -339,13 +353,14 @@ def read_seed_db(path: str, *, explicit: bool) -> SeedLoad:
 
 
 def apply_seed_lifecycle(
-    packages: list[PackageEntry],
+    packages: list[RegistryEntry],
     seed_db: Mapping[str, Any],
     now_string: IsoTimestamp,
-) -> list[PackageEntry]:
+) -> list[RegistryEntry]:
     seed_packages = extract_seed_packages(seed_db)
+    current: dict[str, RegistryEntry]
     current = {
-        pkg["name"]: dict(pkg)
+        pkg["name"]: pkg
         for pkg in packages
         if isinstance(pkg.get("name"), str)
     }
@@ -364,35 +379,33 @@ def apply_seed_lifecycle(
     return sorted(current.values(), key=lambda entry: entry["name"].casefold())
 
 
-def extract_seed_packages(seed_db: Mapping[str, Any]) -> dict[str, PackageEntry]:
-    out: dict[str, PackageEntry] = {}
+def extract_seed_packages(seed_db: Mapping[str, Any]) -> dict[str, SeedEntry]:
+    out: dict[str, SeedEntry] = {}
     for entry in iter_seed_entries(seed_db, "packages"):
         seed = pick(("name", "source", "first_seen", "removed", "labels"), entry)
         out[seed["name"]] = seed  # type: ignore[assignment, index]
     return out
 
 
-def iter_seed_entries(seed_db: Mapping[str, Any], kind: str) -> Iterable[PackageEntry]:
+def iter_seed_entries(seed_db: Mapping[str, Any], kind: str) -> Iterable[RegistryEntry]:
     entries = seed_db.get(kind)
+    # Shape: registry.json
     if isinstance(entries, list):
         for entry in entries:
-            if isinstance(entry, dict):
-                yield entry
-        return
+            yield entry
 
-    if isinstance(entries, dict):
+    # Shape: workspace.json
+    elif isinstance(entries, dict):
         for name, entry in entries.items():
-            if isinstance(entry, dict):
-                yield {"name": name} | entry
-        return
+            yield entry
 
-    if kind == "packages" and "packages" not in seed_db:
+    # Shape: seed.json
+    elif kind == "packages" and "packages" not in seed_db:
         for name, entry in seed_db.items():
-            if isinstance(entry, dict):
-                yield {"name": name} | entry
+            yield entry
 
 
-def build_tombstone(seed: PackageEntry, now_string: IsoTimestamp) -> PackageEntry:
+def build_tombstone(seed: SeedEntry, now_string: IsoTimestamp) -> RegistryEntry:
     return (
         {"first_seen": now_string, "removed": now_string}  # type: ignore[operator]
         | pick(("name", "source", "first_seen", "removed", "labels"), seed)
