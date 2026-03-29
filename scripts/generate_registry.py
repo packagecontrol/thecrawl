@@ -65,11 +65,6 @@ class RepositorySchema(TypedDict):
     libraries: list[RawRepositoryEntry]
 
 
-class RecoveryDb(TypedDict):
-    packages: list[RegistryEntry]
-    libraries: list[RegistryEntry]
-
-
 @dataclass
 class SeedDb:
     db: dict[str, Any]
@@ -157,7 +152,7 @@ async def main(
 
 async def fetch_packages(
     channels: list[str],
-    recovery_db: RecoveryDb | None = None,
+    recovery_db: Registry | None = None,
     *,
     seed_hint_db: Mapping[str, Any] | None = None,
     no_seed: bool = False,
@@ -390,7 +385,7 @@ def resolve_failure_recovery_db(
     output_file: str,
     effective_seed_path: str,
     seed: SeedDb | None,
-) -> RecoveryDb | None:
+) -> Registry | None:
     if seed and seed.has_registry_shape:
         return seed.db  # type: ignore[return-value]
 
@@ -403,7 +398,7 @@ def resolve_failure_recovery_db(
     return None
 
 
-def is_registry_recovery_db(db: Mapping[str, Any]) -> TypeGuard[RecoveryDb]:
+def is_registry_recovery_db(db: Mapping[str, Any]) -> TypeGuard[Registry]:
     return (
         isinstance(db.get("packages"), list)
         and isinstance(db.get("libraries"), list)
@@ -461,7 +456,7 @@ def iter_package_entries(db: Mapping[str, Any]) -> Iterable[RegistryEntry]:
 def warn_unrecoverable_seed_entries(
     source_url: str,
     *,
-    recovery_db: RecoveryDb | None,
+    recovery_db: Registry | None,
     seed_hint_db: Mapping[str, Any] | None,
     no_seed: bool,
 ) -> None:
@@ -488,7 +483,7 @@ def warn_unrecoverable_seed_entries(
 
 
 def has_recovery_entries_for_source(
-    recovery_db: RecoveryDb | None,
+    recovery_db: Registry | None,
     source_url: str,
 ) -> bool:
     if not recovery_db:
