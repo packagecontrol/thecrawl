@@ -141,7 +141,7 @@ async def main(
             if seed and not no_seed:
                 db["packages"] = apply_seed_lifecycle(
                     db["packages"],
-                    seed.db,
+                    seed,
                     now_utc_string(),
                 )
             write_json(output_file, db, pretty=True, ensure_ascii=True)
@@ -407,12 +407,12 @@ def is_registry_recovery_db(db: Mapping[str, Any]) -> TypeGuard[Registry]:
 
 def apply_seed_lifecycle(
     packages: list[RegistryEntry],
-    seed_db: Mapping[str, Any],
+    seed: SeedDb,
     now_string: IsoTimestamp,
 ) -> list[RegistryEntry]:
     seed_packages = {
         entry["name"]: entry
-        for entry in iter_package_entries(seed_db)
+        for entry in iter_package_entries(seed.db)
     }
     current: dict[str, RegistryEntry]
     current = {
@@ -422,15 +422,15 @@ def apply_seed_lifecycle(
     }
 
     for name, package in current.items():
-        seed = seed_packages.get(name)
-        if seed and (first_seen := seed.get("first_seen")):
+        entry = seed_packages.get(name)
+        if entry and (first_seen := entry.get("first_seen")):
             package["first_seen"] = first_seen
         elif "first_seen" not in package:
             package["first_seen"] = now_string
 
-    for name, seed in seed_packages.items():
+    for name, entry in seed_packages.items():
         if name not in current:
-            current[name] = build_tombstone(seed, now_string)
+            current[name] = build_tombstone(entry, now_string)
 
     return sorted(current.values(), key=lambda entry: entry["name"].casefold())
 
