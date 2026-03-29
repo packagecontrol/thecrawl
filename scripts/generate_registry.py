@@ -152,7 +152,7 @@ async def main(
 
 async def fetch_packages(
     channels: list[str],
-    db: Mapping[str, Any] | None = None,
+    recovery_db: Mapping[str, Any] | None = None,
     *,
     seed_hint_db: Mapping[str, Any] | None = None,
     no_seed: bool = False,
@@ -180,7 +180,7 @@ async def fetch_packages(
                 err(f"Error fetching {url}: {repo_result}")
                 warn_unrecoverable_seed_entries(
                     url,
-                    recovery_db=db,
+                    recovery_db=recovery_db,
                     seed_hint_db=seed_hint_db,
                     no_seed=no_seed,
                 )
@@ -229,15 +229,15 @@ async def fetch_packages(
             for library in repo["libraries"]:
                 add_library(library | repo_info)  # type: ignore[arg-type]
 
-        elif db:
-            # recreate the repo from db
+        elif recovery_db:
+            # recreate the repo from recovery_db
             fail_info: RegistryEntry
             fail_info = {"fetching_source_failed": now_string}
-            for pkg in iter_seed_entries(db, "packages"):
+            for pkg in iter_seed_entries(recovery_db, "packages"):
                 if pkg.get("source") == url:
                     add_package(fail_info | pkg)
 
-            for library in iter_seed_entries(db, "libraries"):
+            for library in iter_seed_entries(recovery_db, "libraries"):
                 if library.get("source") == url:
                     add_library(fail_info | library)
 
