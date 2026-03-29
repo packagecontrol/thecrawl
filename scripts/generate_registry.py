@@ -135,7 +135,7 @@ async def main(
             db = await fetch_packages(
                 channels,
                 failure_recovery,
-                seed_hint_db=seed.db if seed else None,
+                seed=seed,
                 no_seed=no_seed,
             )
             if seed and not no_seed:
@@ -151,7 +151,7 @@ async def fetch_packages(
     channels: list[str],
     recovery_db: Registry | None = None,
     *,
-    seed_hint_db: Mapping[str, Any] | None = None,
+    seed: SeedDb | None = None,
     no_seed: bool = False,
 ) -> Registry:
     print("Fetching registered packages...")
@@ -178,7 +178,7 @@ async def fetch_packages(
                 warn_unrecoverable_seed_entries(
                     url,
                     recovery_db=recovery_db,
-                    seed_hint_db=seed_hint_db,
+                    seed=seed,
                     no_seed=no_seed,
                 )
                 continue
@@ -430,7 +430,7 @@ def apply_seed_lifecycle(
     registry["packages"] = sorted(current.values(), key=lambda entry: entry["name"].casefold())
 
 
-def iter_package_entries(db: Mapping[str, Any]) -> Iterable[RegistryEntry]:
+def iter_package_entries(db: Mapping[str, Any]) -> Iterable[SeedEntry]:
     entries = db.get("packages")
     # Shape: registry.json
     if isinstance(entries, list):
@@ -452,15 +452,15 @@ def warn_unrecoverable_seed_entries(
     source_url: str,
     *,
     recovery_db: Registry | None,
-    seed_hint_db: Mapping[str, Any] | None,
+    seed: SeedDb | None,
     no_seed: bool,
 ) -> None:
-    if seed_hint_db is None:
+    if seed is None:
         return
     if has_recovery_entries_for_source(recovery_db, source_url):
         return
 
-    lost_names = seed_package_names_for_source(seed_hint_db, source_url)
+    lost_names = seed_package_names_for_source(seed.db, source_url)
     if not lost_names:
         return
 
