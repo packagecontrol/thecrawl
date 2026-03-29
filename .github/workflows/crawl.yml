@@ -71,6 +71,9 @@ jobs:
           restore-keys: |
             wrk-cache-
 
+      - name: Sync Python environment
+        run: uv sync --locked
+
       - name: Generate registry
         run: |
           set -o pipefail
