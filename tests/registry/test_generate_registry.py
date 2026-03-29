@@ -532,3 +532,89 @@ async def test_fetching_source_failed_behavior_unchanged_with_no_seed_toggle(tmp
 
     result = json.loads(output_file.read_text())
     assert "fetching_source_failed" in result["packages"][0]
+
+
+@pytest.mark.asyncio
+async def test_non_registry_seed_does_not_recreate_failed_repo_entries(tmp_path, capsys):
+    repo_path = tmp_path / "missing.json"
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    seed_file = tmp_path / "workspace.json"
+    seed_file.write_text(json.dumps({
+        "packages": {
+            "SFTP": {
+                "name": "SFTP",
+                "source": repo_path.as_uri(),
+                "first_seen": "2011-12-15T14:11:26Z",
+                "description": "Commercial SFTP/FTP plugin",
+                "labels": ["ftp", "sync"],
+            }
+        }
+    }))
+
+    await main(
+        str(output_file),
+        [channel_path.as_uri()],
+        seed_path=str(seed_file),
+    )
+
+    result = json.loads(output_file.read_text())
+    pkg = result["packages"][0]
+    assert pkg["name"] == "SFTP"
+    assert "description" not in pkg
+    assert "fetching_source_failed" not in pkg
+
+    captured = capsys.readouterr()
+    assert "seed file knows 1 package" in captured.err
+
+
+@pytest.mark.asyncio
+async def test_workspace_seed_uses_prior_output_registry_for_failed_repo_recovery(tmp_path, capsys):
+    repo_path = tmp_path / "missing.json"
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    output_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [
+            {
+                "name": "SFTP",
+                "source": repo_path.as_uri(),
+                "schema_version": "3.0.0",
+                "details": "https://example.com/sftp",
+                "first_seen": "2015-01-01T00:00:00Z",
+            }
+        ],
+        "libraries": [],
+    }))
+
+    seed_file = tmp_path / "workspace.json"
+    seed_file.write_text(json.dumps({
+        "packages": {
+            "SFTP": {
+                "name": "SFTP",
+                "source": repo_path.as_uri(),
+                "first_seen": "2011-12-15T14:11:26Z",
+                "description": "Commercial SFTP/FTP plugin",
+            }
+        }
+    }))
+
+    await main(
+        str(output_file),
+        [channel_path.as_uri()],
+        seed_path=str(seed_file),
+    )
+
+    result = json.loads(output_file.read_text())
+    pkg = result["packages"][0]
+    assert pkg["name"] == "SFTP"
+    assert pkg["first_seen"] == "2011-12-15T14:11:26Z"
+    assert "fetching_source_failed" in pkg
+    assert "description" not in pkg
+
+    captured = capsys.readouterr()
+    assert "recover full entries" not in captured.err

@@ -124,10 +124,20 @@ async def main(
         seed_path=seed_path,
     )
     seed = read_seed_db(effective_seed_path, explicit=explicit_seed)
+    failure_recovery = resolve_failure_recovery_db(
+        output_file,
+        effective_seed_path,
+        seed,
+    )
 
     try:
         async with asyncio.timeout(GLOBAL_TIMEOUT):
-            db = await fetch_packages(channels, seed.db if seed.available else {})
+            db = await fetch_packages(
+                channels,
+                failure_recovery.db if failure_recovery.available else {},
+                seed_hint_db=seed.db if seed.available else None,
+                no_seed=no_seed,
+            )
             if seed.available and not no_seed:
                 db["packages"] = apply_seed_lifecycle(
                     db["packages"],
@@ -140,7 +150,13 @@ async def main(
         print(f"Timeout: script took more than {GLOBAL_TIMEOUT} seconds")
 
 
-async def fetch_packages(channels: list[str], db: Mapping[str, Any] | None = None) -> Registry:
+async def fetch_packages(
+    channels: list[str],
+    db: Mapping[str, Any] | None = None,
+    *,
+    seed_hint_db: Mapping[str, Any] | None = None,
+    no_seed: bool = False,
+) -> Registry:
     print("Fetching registered packages...")
     now = time.monotonic()
     now_string = now_utc_string()
@@ -153,16 +169,27 @@ async def fetch_packages(channels: list[str], db: Mapping[str, Any] | None = Non
         repos: list[str] = list(flatten(repos_lists))
         unseen = Unseen(repos)
         sem = asyncio.Semaphore(MAX_CONCURRENCY)
+        repo_results = await asyncio.gather(*[
+            asyncio.create_task(fetch_repository(url, unseen, sem, session))
+            for url in repos
+        ], return_exceptions=True)
+
         result: dict[Url, RepositorySchema] = {}
-        result = {
-            repo["self"]: repo
-            for repo in await asyncio.gather(*[
-                asyncio.create_task(fetch_repository(url, unseen, sem, session))
-                for url in repos
-            ])
-            if repo
-            if not repo.get("schema_version", "1.").startswith("1.")
-        }
+        for url, repo_result in zip(repos, repo_results):
+            if isinstance(repo_result, Exception):
+                err(f"Error fetching {url}: {repo_result}")
+                warn_unrecoverable_seed_entries(
+                    url,
+                    recovery_db=db,
+                    seed_hint_db=seed_hint_db,
+                    no_seed=no_seed,
+                )
+                continue
+            if isinstance(repo_result, BaseException):
+                raise repo_result
+
+            if not repo_result.get("schema_version", "1.").startswith("1."):
+                result[repo_result["self"]] = repo_result
 
     # Flatten packages and libraries, adding source, schema_version, and
     # ensuring a unique name.
@@ -268,13 +295,9 @@ async def fetch_repository(
     location: Url,
     unseen: Unseen[Url],
     sem: asyncio.Semaphore,
-    session: aiohttp.ClientSession
-) -> RepositorySchema | None:
-    try:
-        result = await __fetch_repo(location, sem, session)
-    except Exception as e:
-        err(f"Error fetching {location}: {e}")
-        return None
+    session: aiohttp.ClientSession,
+) -> RepositorySchema:
+    result = await __fetch_repo(location, sem, session)
 
     repository: RepositorySchema = {
         "self": location,
@@ -355,6 +378,30 @@ def read_seed_db(path: str, *, explicit: bool) -> SeedLoad:
     return SeedLoad(db=data, available=True)
 
 
+def resolve_failure_recovery_db(
+    output_file: str,
+    effective_seed_path: str,
+    seed: SeedLoad,
+) -> SeedLoad:
+    if seed.available and is_registry_recovery_db(seed.db):
+        return seed
+
+    output_is_seed = os.path.abspath(output_file) == os.path.abspath(effective_seed_path)
+    if not output_is_seed:
+        output_db = read_seed_db(output_file, explicit=False)
+        if output_db.available and is_registry_recovery_db(output_db.db):
+            return output_db
+
+    return SeedLoad(db={}, available=False)
+
+
+def is_registry_recovery_db(db: Mapping[str, Any]) -> bool:
+    return (
+        isinstance(db.get("packages"), list)
+        and isinstance(db.get("libraries"), list)
+    )
+
+
 def apply_seed_lifecycle(
     packages: list[RegistryEntry],
     seed_db: Mapping[str, Any],
@@ -406,6 +453,59 @@ def iter_seed_entries(seed_db: Mapping[str, Any], kind: str) -> Iterable[Registr
     elif kind == "packages" and "packages" not in seed_db:
         for name, entry in seed_db.items():
             yield entry
+
+
+def warn_unrecoverable_seed_entries(
+    source_url: str,
+    *,
+    recovery_db: Mapping[str, Any] | None,
+    seed_hint_db: Mapping[str, Any] | None,
+    no_seed: bool,
+) -> None:
+    if not seed_hint_db:
+        return
+    if has_recovery_entries_for_source(recovery_db, source_url):
+        return
+
+    lost_names = seed_package_names_for_source(seed_hint_db, source_url)
+    if not lost_names:
+        return
+
+    mode_outcome = (
+        "these are dropped."
+        if no_seed
+        else "these are tombstoned."
+    )
+    err(
+        "ATTENTION: seed file knows "
+        f"{pl(len(lost_names), 'packages')} in the failed repository "
+        "but has no data to recover full entries; "
+        f"{mode_outcome}"
+    )
+
+
+def has_recovery_entries_for_source(
+    recovery_db: Mapping[str, Any] | None,
+    source_url: str,
+) -> bool:
+    if not recovery_db:
+        return False
+
+    for kind in ("packages", "libraries"):
+        for entry in iter_seed_entries(recovery_db, kind):
+            if entry.get("source") == source_url:
+                return True
+    return False
+
+
+def seed_package_names_for_source(seed_db: Mapping[str, Any], source_url: str) -> list[str]:
+    names = {
+        entry["name"]
+        for entry in iter_seed_entries(seed_db, "packages")
+        if entry.get("source") == source_url
+        if isinstance(entry.get("name"), str)
+    }
+    return sorted(names, key=str.casefold)
 
 
 def build_tombstone(seed: SeedEntry, now_string: IsoTimestamp) -> RegistryEntry:
