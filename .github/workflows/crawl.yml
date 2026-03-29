@@ -162,7 +162,10 @@ jobs:
           {
             echo "$DATE  ([logs]($REPO_URL))"
             echo ""
-            cat registry.log
+            if [ -s registry.log ]; then
+              cat registry.log
+              echo ""
+            fi
             # Insert a blank line before lines that are exactly '---'
             awk '{ if ($0 == "---") print ""; print }' crawl.log
             if [ -s lib.log ]; then
