@@ -66,9 +66,8 @@ class RepositorySchema(TypedDict):
 
 
 @dataclass
-class SeedLoad:
+class SeedDb:
     db: dict[str, Any]
-    available: bool
     has_registry_shape: bool
 
 
@@ -120,11 +119,11 @@ async def main(
     seed_path: str | None = None,
     no_seed: bool = False,
 ) -> None:
-    effective_seed_path, explicit_seed = resolve_seed_path(
+    effective_seed_path, strict_seed = resolve_seed_path(
         output_file=output_file,
         seed_path=seed_path,
     )
-    seed = read_seed_db(effective_seed_path, explicit=explicit_seed)
+    seed = read_seed_db(effective_seed_path, strict=strict_seed)
     failure_recovery = resolve_failure_recovery_db(
         output_file,
         effective_seed_path,
@@ -135,11 +134,11 @@ async def main(
         async with asyncio.timeout(GLOBAL_TIMEOUT):
             db = await fetch_packages(
                 channels,
-                failure_recovery.db if failure_recovery.available else {},
-                seed_hint_db=seed.db if seed.available else None,
+                failure_recovery.db if failure_recovery else {},
+                seed_hint_db=seed.db if seed else None,
                 no_seed=no_seed,
             )
-            if seed.available and not no_seed:
+            if seed and not no_seed:
                 db["packages"] = apply_seed_lifecycle(
                     db["packages"],
                     seed.db,
@@ -356,29 +355,28 @@ def resolve_seed_path(output_file: str, seed_path: str | None) -> tuple[str, boo
     return os.path.abspath(seed_path), True
 
 
-def read_seed_db(path: str, *, explicit: bool) -> SeedLoad:
+def read_seed_db(path: str, *, strict: bool) -> SeedDb | None:
     try:
         text = open(path, "r", encoding="utf-8").read()
     except OSError as exc:
-        if explicit:
-            raise FileNotFoundError(f"Could not read explicit seed path: {path}") from exc
-        return SeedLoad(db={}, available=False, has_registry_shape=False)
+        if strict:
+            raise FileNotFoundError(f"Could not read seed path: {path}") from exc
+        return None
 
     try:
         data = json.loads(text)
     except json.JSONDecodeError as exc:
-        if explicit:
-            raise ValueError(f"Explicit seed is not valid JSON: {path}") from exc
-        return SeedLoad(db={}, available=False, has_registry_shape=False)
+        if strict:
+            raise ValueError(f"Seed is not valid JSON: {path}") from exc
+        return None
 
     if not isinstance(data, dict):
-        if explicit:
-            raise ValueError(f"Explicit seed JSON must be an object: {path}")
-        return SeedLoad(db={}, available=False, has_registry_shape=False)
+        if strict:
+            raise ValueError(f"Seed JSON must be an object: {path}")
+        return None
 
-    return SeedLoad(
+    return SeedDb(
         db=data,
-        available=True,
         has_registry_shape=is_registry_recovery_db(data),
     )
 
@@ -386,18 +384,18 @@ def read_seed_db(path: str, *, explicit: bool) -> SeedLoad:
 def resolve_failure_recovery_db(
     output_file: str,
     effective_seed_path: str,
-    seed: SeedLoad,
-) -> SeedLoad:
-    if seed.has_registry_shape:
+    seed: SeedDb | None,
+) -> SeedDb | None:
+    if seed and seed.has_registry_shape:
         return seed
 
     output_is_seed = os.path.abspath(output_file) == os.path.abspath(effective_seed_path)
     if not output_is_seed:
-        output_db = read_seed_db(output_file, explicit=False)
-        if output_db.has_registry_shape:
+        output_db = read_seed_db(output_file, strict=False)
+        if output_db and output_db.has_registry_shape:
             return output_db
 
-    return SeedLoad(db={}, available=False, has_registry_shape=False)
+    return None
 
 
 def is_registry_recovery_db(db: Mapping[str, Any]) -> bool:
@@ -467,7 +465,7 @@ def warn_unrecoverable_seed_entries(
     seed_hint_db: Mapping[str, Any] | None,
     no_seed: bool,
 ) -> None:
-    if not seed_hint_db:
+    if seed_hint_db is None:
         return
     if has_recovery_entries_for_source(recovery_db, source_url):
         return
