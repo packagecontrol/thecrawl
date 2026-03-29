@@ -410,7 +410,10 @@ def apply_seed_lifecycle(
     seed_db: Mapping[str, Any],
     now_string: IsoTimestamp,
 ) -> list[RegistryEntry]:
-    seed_packages = extract_seed_packages(seed_db)
+    seed_packages = {
+        entry["name"]: entry
+        for entry in iter_seed_entries(seed_db, "packages")
+    }
     current: dict[str, RegistryEntry]
     current = {
         pkg["name"]: pkg
@@ -430,14 +433,6 @@ def apply_seed_lifecycle(
             current[name] = build_tombstone(seed, now_string)
 
     return sorted(current.values(), key=lambda entry: entry["name"].casefold())
-
-
-def extract_seed_packages(seed_db: Mapping[str, Any]) -> dict[str, SeedEntry]:
-    out: dict[str, SeedEntry] = {}
-    for entry in iter_seed_entries(seed_db, "packages"):
-        seed = pick(("name", "source", "first_seen", "removed", "labels"), entry)
-        out[seed["name"]] = seed  # type: ignore[assignment, index]
-    return out
 
 
 def iter_seed_entries(seed_db: Mapping[str, Any], kind: str) -> Iterable[RegistryEntry]:
@@ -511,7 +506,7 @@ def seed_package_names_for_source(seed_db: Mapping[str, Any], source_url: str) -
     return sorted(names, key=str.casefold)
 
 
-def build_tombstone(seed: SeedEntry, now_string: IsoTimestamp) -> RegistryEntry:
+def build_tombstone(seed: Mapping[str, Any], now_string: IsoTimestamp) -> RegistryEntry:
     return (
         {"first_seen": now_string, "removed": now_string}  # type: ignore[operator]
         | pick(("name", "source", "first_seen", "removed", "labels"), seed)
