@@ -414,7 +414,6 @@ def apply_seed_lifecycle(
     current = {
         pkg["name"]: pkg
         for pkg in registry["packages"]
-        if isinstance(pkg.get("name"), str)
     }
 
     for name, package in current.items():
@@ -498,7 +497,6 @@ def seed_package_names_for_source(seed_db: Mapping[str, Any], source_url: str) -
         entry["name"]
         for entry in iter_package_entries(seed_db)
         if entry.get("source") == source_url
-        if isinstance(entry.get("name"), str)
     }
     return sorted(names, key=str.casefold)
 
