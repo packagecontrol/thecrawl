@@ -427,7 +427,8 @@ def apply_seed_lifecycle(
         if name not in current:
             current[name] = build_tombstone(entry, now_string)
 
-    registry["packages"] = sorted(current.values(), key=lambda entry: entry["name"].casefold())
+    registry["packages"] = \
+        sorted(current.values(), key=lambda entry: entry["name"].casefold())
 
 
 def iter_package_entries(db: Mapping[str, Any]) -> Iterable[SeedEntry]:
