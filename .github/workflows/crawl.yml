@@ -73,10 +73,12 @@ jobs:
 
       - name: Generate registry
         run: |
-          uv run -m scripts.generate_registry \
+          set -o pipefail
+          PYTHONUNBUFFERED=1 uv run -m scripts.generate_registry \
             --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json \
             --channel https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/channel.json \
-            -o ./wrk/registry.json
+            -o ./wrk/registry.json \
+            2>&1 | tee registry.log
 
       - name: Run crawler
         run: |
@@ -157,6 +159,7 @@ jobs:
           {
             echo "$DATE  ([logs]($REPO_URL))"
             echo ""
+            cat registry.log
             # Insert a blank line before lines that are exactly '---'
             awk '{ if ($0 == "---") print ""; print }' crawl.log
             if [ -s lib.log ]; then
