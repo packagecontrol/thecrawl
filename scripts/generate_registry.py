@@ -417,7 +417,7 @@ def apply_seed_lifecycle(
 ) -> list[RegistryEntry]:
     seed_packages = {
         entry["name"]: entry
-        for entry in iter_db_entries(seed_db, "packages")
+        for entry in iter_package_entries(seed_db)
     }
     current: dict[str, RegistryEntry]
     current = {
@@ -440,8 +440,8 @@ def apply_seed_lifecycle(
     return sorted(current.values(), key=lambda entry: entry["name"].casefold())
 
 
-def iter_db_entries(db: Mapping[str, Any], kind: str) -> Iterable[RegistryEntry]:
-    entries = db.get(kind)
+def iter_package_entries(db: Mapping[str, Any]) -> Iterable[RegistryEntry]:
+    entries = db.get("packages")
     # Shape: registry.json
     if isinstance(entries, list):
         for entry in entries:
@@ -453,7 +453,7 @@ def iter_db_entries(db: Mapping[str, Any], kind: str) -> Iterable[RegistryEntry]
             yield entry
 
     # Shape: seed.json
-    elif kind == "packages" and "packages" not in db:
+    elif "packages" not in db:
         for name, entry in db.items():
             yield entry
 
@@ -505,7 +505,7 @@ def has_recovery_entries_for_source(
 def seed_package_names_for_source(seed_db: Mapping[str, Any], source_url: str) -> list[str]:
     names = {
         entry["name"]
-        for entry in iter_db_entries(seed_db, "packages")
+        for entry in iter_package_entries(seed_db)
         if entry.get("source") == source_url
         if isinstance(entry.get("name"), str)
     }
