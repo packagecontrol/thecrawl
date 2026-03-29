@@ -457,24 +457,27 @@ def warn_unrecoverable_seed_entries(
 ) -> None:
     if seed is None:
         return
+
     if has_recovery_entries_for_source(recovery_db, source_url):
         return
 
-    lost_names = seed_package_names_for_source(seed.db, source_url)
-    if not lost_names:
+    mode_outcome = "dropped" if no_seed else "tombstoned"
+
+    if is_compact_seed(seed.db):
+        err(
+            "ATTENTION: repository recovery cannot be guaranteed with a compact seed. "
+            "Check the output. Consider using a full registry.json seed for complete "
+            f"recovery; missing packages are {mode_outcome}."
+        )
         return
 
-    mode_outcome = (
-        "these are dropped."
-        if no_seed
-        else "these are tombstoned."
-    )
-    err(
-        "ATTENTION: seed file knows "
-        f"{pl(len(lost_names), 'packages')} in the failed repository "
-        "but has no data to recover full entries; "
-        f"{mode_outcome}"
-    )
+    if lost_names := seed_package_names_for_source(seed.db, source_url):
+        err(
+            "ATTENTION: seed file knows "
+            f"{pl(len(lost_names), 'packages')} in the failed repository "
+            "but has no data to recover full entries; "
+            f"these are {mode_outcome}."
+        )
 
 
 def has_recovery_entries_for_source(
@@ -499,6 +502,10 @@ def seed_package_names_for_source(seed_db: Mapping[str, Any], source_url: str) -
         if entry.get("source") == source_url
     }
     return sorted(names, key=str.casefold)
+
+
+def is_compact_seed(seed_db: Mapping[str, Any]) -> bool:
+    return "packages" not in seed_db
 
 
 def build_tombstone(seed: Mapping[str, Any], now_string: IsoTimestamp) -> RegistryEntry:

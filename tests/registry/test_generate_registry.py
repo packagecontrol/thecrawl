@@ -618,3 +618,54 @@ async def test_workspace_seed_uses_prior_output_registry_for_failed_repo_recover
 
     captured = capsys.readouterr()
     assert "recover full entries" not in captured.err
+
+
+@pytest.mark.asyncio
+async def test_compact_seed_without_sources_warns_on_failed_repo(tmp_path, capsys):
+    repo_path = tmp_path / "missing.json"
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    seed_file = tmp_path / "seed.json"
+    seed_file.write_text(json.dumps({
+        "SFTP": {
+            "name": "SFTP",
+            "first_seen": "2011-12-15T14:11:26Z",
+        }
+    }))
+
+    await main(
+        str(output_file),
+        [channel_path.as_uri()],
+        seed_path=str(seed_file),
+    )
+
+    captured = capsys.readouterr()
+    assert "repository recovery cannot be guaranteed with a compact seed" in captured.err
+    assert "full registry.json seed for complete recovery" in captured.err
+    assert "recover full entries" not in captured.err
+
+
+@pytest.mark.asyncio
+async def test_registry_seed_without_source_entries_does_not_emit_compact_warning(tmp_path, capsys):
+    repo_path = tmp_path / "missing.json"
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [repo_path])
+
+    output_file = tmp_path / "registry.json"
+    seed_file = tmp_path / "registry_seed.json"
+    seed_file.write_text(json.dumps({
+        "repositories": [repo_path.as_uri()],
+        "packages": [],
+        "libraries": [],
+    }))
+
+    await main(
+        str(output_file),
+        [channel_path.as_uri()],
+        seed_path=str(seed_file),
+    )
+
+    captured = capsys.readouterr()
+    assert "repository recovery cannot be guaranteed with a compact seed" not in captured.err
