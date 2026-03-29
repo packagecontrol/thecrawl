@@ -81,7 +81,7 @@ jobs:
             --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json \
             --channel https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/channel.json \
             -o ./wrk/registry.json \
-            2>&1 | tee registry.log
+            2> >(tee registry.log >&2)
 
       - name: Run crawler
         run: |
