@@ -10,7 +10,7 @@ import os
 import sys
 import time
 from urllib.parse import urlparse
-from typing import Any, Callable, Iterable, Mapping, NotRequired, TypedDict
+from typing import Any, Callable, Iterable, Mapping, NotRequired, TypedDict, TypeGuard
 
 from ._utils import flatten, pick, resolve_urls, update_url, write_json, pl
 
@@ -63,6 +63,11 @@ class RepositorySchema(TypedDict):
     schema_version: str
     packages: list[RawRepositoryEntry]
     libraries: list[RawRepositoryEntry]
+
+
+class RecoveryDb(TypedDict):
+    packages: list[RegistryEntry]
+    libraries: list[RegistryEntry]
 
 
 @dataclass
@@ -134,7 +139,7 @@ async def main(
         async with asyncio.timeout(GLOBAL_TIMEOUT):
             db = await fetch_packages(
                 channels,
-                failure_recovery.db if failure_recovery else {},
+                failure_recovery,
                 seed_hint_db=seed.db if seed else None,
                 no_seed=no_seed,
             )
@@ -152,7 +157,7 @@ async def main(
 
 async def fetch_packages(
     channels: list[str],
-    recovery_db: Mapping[str, Any] | None = None,
+    recovery_db: RecoveryDb | None = None,
     *,
     seed_hint_db: Mapping[str, Any] | None = None,
     no_seed: bool = False,
@@ -230,14 +235,14 @@ async def fetch_packages(
                 add_library(library | repo_info)  # type: ignore[arg-type]
 
         elif recovery_db:
-            # recreate the repo from recovery_db
+            # recreate the repo from recovery_db (always registry-shaped)
             fail_info: RegistryEntry
             fail_info = {"fetching_source_failed": now_string}
-            for pkg in iter_seed_entries(recovery_db, "packages"):
+            for pkg in recovery_db.get("packages", []):
                 if pkg.get("source") == url:
                     add_package(fail_info | pkg)
 
-            for library in iter_seed_entries(recovery_db, "libraries"):
+            for library in recovery_db.get("libraries", []):
                 if library.get("source") == url:
                     add_library(fail_info | library)
 
@@ -385,20 +390,20 @@ def resolve_failure_recovery_db(
     output_file: str,
     effective_seed_path: str,
     seed: SeedDb | None,
-) -> SeedDb | None:
+) -> RecoveryDb | None:
     if seed and seed.has_registry_shape:
-        return seed
+        return seed.db  # type: ignore[return-value]
 
     output_is_seed = os.path.abspath(output_file) == os.path.abspath(effective_seed_path)
     if not output_is_seed:
         output_db = read_seed_db(output_file, strict=False)
         if output_db and output_db.has_registry_shape:
-            return output_db
+            return output_db.db  # type: ignore[return-value]
 
     return None
 
 
-def is_registry_recovery_db(db: Mapping[str, Any]) -> bool:
+def is_registry_recovery_db(db: Mapping[str, Any]) -> TypeGuard[RecoveryDb]:
     return (
         isinstance(db.get("packages"), list)
         and isinstance(db.get("libraries"), list)
@@ -412,7 +417,7 @@ def apply_seed_lifecycle(
 ) -> list[RegistryEntry]:
     seed_packages = {
         entry["name"]: entry
-        for entry in iter_seed_entries(seed_db, "packages")
+        for entry in iter_db_entries(seed_db, "packages")
     }
     current: dict[str, RegistryEntry]
     current = {
@@ -435,8 +440,8 @@ def apply_seed_lifecycle(
     return sorted(current.values(), key=lambda entry: entry["name"].casefold())
 
 
-def iter_seed_entries(seed_db: Mapping[str, Any], kind: str) -> Iterable[RegistryEntry]:
-    entries = seed_db.get(kind)
+def iter_db_entries(db: Mapping[str, Any], kind: str) -> Iterable[RegistryEntry]:
+    entries = db.get(kind)
     # Shape: registry.json
     if isinstance(entries, list):
         for entry in entries:
@@ -448,15 +453,15 @@ def iter_seed_entries(seed_db: Mapping[str, Any], kind: str) -> Iterable[Registr
             yield entry
 
     # Shape: seed.json
-    elif kind == "packages" and "packages" not in seed_db:
-        for name, entry in seed_db.items():
+    elif kind == "packages" and "packages" not in db:
+        for name, entry in db.items():
             yield entry
 
 
 def warn_unrecoverable_seed_entries(
     source_url: str,
     *,
-    recovery_db: Mapping[str, Any] | None,
+    recovery_db: RecoveryDb | None,
     seed_hint_db: Mapping[str, Any] | None,
     no_seed: bool,
 ) -> None:
@@ -483,23 +488,24 @@ def warn_unrecoverable_seed_entries(
 
 
 def has_recovery_entries_for_source(
-    recovery_db: Mapping[str, Any] | None,
+    recovery_db: RecoveryDb | None,
     source_url: str,
 ) -> bool:
     if not recovery_db:
         return False
 
     for kind in ("packages", "libraries"):
-        for entry in iter_seed_entries(recovery_db, kind):
+        for entry in recovery_db[kind]:
             if entry.get("source") == source_url:
                 return True
+
     return False
 
 
 def seed_package_names_for_source(seed_db: Mapping[str, Any], source_url: str) -> list[str]:
     names = {
         entry["name"]
-        for entry in iter_seed_entries(seed_db, "packages")
+        for entry in iter_db_entries(seed_db, "packages")
         if entry.get("source") == source_url
         if isinstance(entry.get("name"), str)
     }
