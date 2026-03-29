@@ -139,11 +139,8 @@ async def main(
                 no_seed=no_seed,
             )
             if seed and not no_seed:
-                db["packages"] = apply_seed_lifecycle(
-                    db["packages"],
-                    seed,
-                    now_utc_string(),
-                )
+                apply_seed_lifecycle(db, seed, now_utc_string())
+
             write_json(output_file, db, pretty=True, ensure_ascii=True)
             print(f"Saved registry as {output_file}")
     except asyncio.TimeoutError:
@@ -406,18 +403,17 @@ def is_registry_recovery_db(db: Mapping[str, Any]) -> TypeGuard[Registry]:
 
 
 def apply_seed_lifecycle(
-    packages: list[RegistryEntry],
+    registry: Registry,
     seed: SeedDb,
     now_string: IsoTimestamp,
-) -> list[RegistryEntry]:
+) -> None:
     seed_packages = {
         entry["name"]: entry
         for entry in iter_package_entries(seed.db)
     }
-    current: dict[str, RegistryEntry]
     current = {
         pkg["name"]: pkg
-        for pkg in packages
+        for pkg in registry["packages"]
         if isinstance(pkg.get("name"), str)
     }
 
@@ -432,7 +428,7 @@ def apply_seed_lifecycle(
         if name not in current:
             current[name] = build_tombstone(entry, now_string)
 
-    return sorted(current.values(), key=lambda entry: entry["name"].casefold())
+    registry["packages"] = sorted(current.values(), key=lambda entry: entry["name"].casefold())
 
 
 def iter_package_entries(db: Mapping[str, Any]) -> Iterable[RegistryEntry]:
