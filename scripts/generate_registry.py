@@ -69,6 +69,7 @@ class RepositorySchema(TypedDict):
 class SeedLoad:
     db: dict[str, Any]
     available: bool
+    has_registry_shape: bool
 
 
 def parse_args() -> argparse.Namespace:
@@ -361,21 +362,25 @@ def read_seed_db(path: str, *, explicit: bool) -> SeedLoad:
     except OSError as exc:
         if explicit:
             raise FileNotFoundError(f"Could not read explicit seed path: {path}") from exc
-        return SeedLoad(db={}, available=False)
+        return SeedLoad(db={}, available=False, has_registry_shape=False)
 
     try:
         data = json.loads(text)
     except json.JSONDecodeError as exc:
         if explicit:
             raise ValueError(f"Explicit seed is not valid JSON: {path}") from exc
-        return SeedLoad(db={}, available=False)
+        return SeedLoad(db={}, available=False, has_registry_shape=False)
 
     if not isinstance(data, dict):
         if explicit:
             raise ValueError(f"Explicit seed JSON must be an object: {path}")
-        return SeedLoad(db={}, available=False)
+        return SeedLoad(db={}, available=False, has_registry_shape=False)
 
-    return SeedLoad(db=data, available=True)
+    return SeedLoad(
+        db=data,
+        available=True,
+        has_registry_shape=is_registry_recovery_db(data),
+    )
 
 
 def resolve_failure_recovery_db(
@@ -383,16 +388,16 @@ def resolve_failure_recovery_db(
     effective_seed_path: str,
     seed: SeedLoad,
 ) -> SeedLoad:
-    if seed.available and is_registry_recovery_db(seed.db):
+    if seed.has_registry_shape:
         return seed
 
     output_is_seed = os.path.abspath(output_file) == os.path.abspath(effective_seed_path)
     if not output_is_seed:
         output_db = read_seed_db(output_file, explicit=False)
-        if output_db.available and is_registry_recovery_db(output_db.db):
+        if output_db.has_registry_shape:
             return output_db
 
-    return SeedLoad(db={}, available=False)
+    return SeedLoad(db={}, available=False, has_registry_shape=False)
 
 
 def is_registry_recovery_db(db: Mapping[str, Any]) -> bool:
