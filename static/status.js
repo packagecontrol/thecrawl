@@ -59,15 +59,11 @@ const tagMarkers = loadTagMarkers()
 const overflowTagMarker = loadOverflowTagMarker()
 
 function filterEntriesToWindow(entries, days) {
-  const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-  const msInDay = 24 * 60 * 60 * 1000
+  const nowTs = Date.now()
   return entries.filter((entry) => {
     const ts = safeDate(entry.date)
     if (!ts) return false
-    const d = new Date(ts)
-    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-    const diffDays = Math.floor((todayStart - dayStart) / msInDay)
+    const diffDays = localDayDistance(nowTs, ts)
     return diffDays >= 0 && diffDays < days
   })
 }
@@ -151,9 +147,10 @@ function navigateDay(dayOffset) {
   const currentTs = safeDate(current.date)
   if (!currentTs) return
 
-  const DAY_MS = 24 * 60 * 60 * 1000
-  const targetTs = currentTs + dayOffset * DAY_MS
-  const desiredDay = new Date(targetTs).getDate()
+  const targetDate = new Date(currentTs)
+  targetDate.setDate(targetDate.getDate() + dayOffset)
+  const targetTs = targetDate.getTime()
+  const desiredDayKey = localDayKey(targetTs)
 
   const closest = findClosestByTimestamp(targetTs)
   if (closest === -1) return
@@ -162,8 +159,8 @@ function navigateDay(dayOffset) {
   const targetEntryTs = safeDate(targetEntry.date)
   if (!targetEntryTs) return
 
-  const targetDay = new Date(targetEntryTs).getDate()
-  if (targetDay !== desiredDay) return
+  const targetDayKey = localDayKey(targetEntryTs)
+  if (targetDayKey !== desiredDayKey) return
 
   render(closest)
 }
@@ -792,9 +789,7 @@ class StatusChart {
     this.drawOverflowTagMarker()
     if (!this.entries.length) return
 
-    const now = new Date()
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    const msInDay = 24 * 60 * 60 * 1000
+    const todayDayId = localDayId(Date.now())
 
     const neutralNodes = []
     const otherNodes = []
@@ -811,7 +806,7 @@ class StatusChart {
     this.entries.forEach((entry, idx) => {
       const ts = Date.parse(entry.date || 0)
       if (!Number.isFinite(ts)) return
-      const position = this.positionForTimestamp(ts, { todayStart, msInDay })
+      const position = this.positionForTimestamp(ts, { todayDayId })
       if (!position) return
 
       const { x, y, dayIndex } = position
@@ -859,15 +854,13 @@ class StatusChart {
     const labelOffsetY = cssNumber(this.el, '--status-tag-label-offset-y', 2)
     const leanRatio = Math.tan((leanDeg * Math.PI) / 180)
 
-    const now = new Date()
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    const msInDay = 24 * 60 * 60 * 1000
+    const todayDayId = localDayId(Date.now())
 
     const visibleMarkers = this.tagMarkers
       .map((marker) => {
         const ts = Date.parse(marker.date || 0)
         if (!Number.isFinite(ts)) return null
-        const position = this.positionForTimestamp(ts, { todayStart, msInDay })
+        const position = this.positionForTimestamp(ts, { todayDayId })
         if (!position) return null
         return { marker, ts, position }
       })
@@ -1068,16 +1061,14 @@ class StatusChart {
   hasTagMarkersInOldestDays() {
     if (!this.tagMarkers.length) return false
 
-    const now = new Date()
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    const msInDay = 24 * 60 * 60 * 1000
+    const todayDayId = localDayId(Date.now())
     const OLDEST_DAYS = 12
     const oldestStart = Math.max(0, this.days - OLDEST_DAYS)
 
     return this.tagMarkers.some((marker) => {
       const ts = Date.parse(marker.date || 0)
       if (!Number.isFinite(ts)) return false
-      const pos = this.positionForTimestamp(ts, { todayStart, msInDay })
+      const pos = this.positionForTimestamp(ts, { todayDayId })
       return Boolean(pos && pos.dayIndex >= oldestStart)
     })
   }
@@ -1146,18 +1137,13 @@ class StatusChart {
     })
   }
 
-  positionForTimestamp(ts, { todayStart, msInDay } = {}) {
-    const now = new Date()
-    const startOfToday = typeof todayStart === 'number'
-      ? todayStart
-      : new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    const dayMs = typeof msInDay === 'number' ? msInDay : 24 * 60 * 60 * 1000
-
-    const d = new Date(ts)
-    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-    const diffDays = Math.floor((startOfToday - dayStart) / dayMs)
+  positionForTimestamp(ts, { todayDayId } = {}) {
+    if (!Number.isFinite(ts)) return null
+    const anchorDayId = Number.isFinite(todayDayId) ? todayDayId : localDayId(Date.now())
+    const diffDays = anchorDayId - localDayId(ts)
     if (diffDays < 0 || diffDays >= this.days) return null
 
+    const d = new Date(ts)
     const hour = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600
     const x = this.xForDayIndex(diffDays)
     const y = this.yForHour(hour)
@@ -1215,6 +1201,15 @@ function formatHourLabel(hour) {
 
 function currentLocalDayKey() {
   return localDayKey(Date.now())
+}
+
+function localDayDistance(laterTimestamp, earlierTimestamp) {
+  return localDayId(laterTimestamp) - localDayId(earlierTimestamp)
+}
+
+function localDayId(timestamp) {
+  const d = new Date(timestamp)
+  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / (24 * 60 * 60 * 1000))
 }
 
 function localDayKey(timestamp) {
