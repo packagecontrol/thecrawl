@@ -10,6 +10,7 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - main
       - package_control_channel
 
 permissions:
