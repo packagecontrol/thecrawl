@@ -1,3 +1,12 @@
+import {
+  dayIndexForTimestamp,
+  filterEntriesToDayWindow,
+  localDayId,
+  localDayKey,
+  safeDate,
+  sameLocalDay,
+  shiftTimestampByLocalDays,
+} from './module/status-day.js'
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.mjs'
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
 
@@ -58,16 +67,6 @@ const tagMarkers = loadTagMarkers()
 /** @type {OverflowTagMarker | null} */
 const overflowTagMarker = loadOverflowTagMarker()
 
-function filterEntriesToWindow(entries, days) {
-  const nowTs = Date.now()
-  return entries.filter((entry) => {
-    const ts = safeDate(entry.date)
-    if (!ts) return false
-    const diffDays = localDayDistance(nowTs, ts)
-    return diffDays >= 0 && diffDays < days
-  })
-}
-
 function init() {
   if (!notesEl || !dateEl || !badgeEl) {
     return
@@ -87,7 +86,9 @@ function init() {
   bindKeyboard()
   loadLogs().then((entries) => {
     const days = chart?.days
-    const visibleEntries = typeof days === 'number' ? filterEntriesToWindow(entries, days) : entries
+    const visibleEntries = typeof days === 'number'
+      ? filterEntriesToDayWindow(entries, days)
+      : entries
     logs = annotateChanges(visibleEntries)
     if (!logs.length) {
       renderEmptyState('No log entries found.')
@@ -147,10 +148,7 @@ function navigateDay(dayOffset) {
   const currentTs = safeDate(current.date)
   if (!currentTs) return
 
-  const targetDate = new Date(currentTs)
-  targetDate.setDate(targetDate.getDate() + dayOffset)
-  const targetTs = targetDate.getTime()
-  const desiredDayKey = localDayKey(targetTs)
+  const targetTs = shiftTimestampByLocalDays(currentTs, dayOffset)
 
   const closest = findClosestByTimestamp(targetTs)
   if (closest === -1) return
@@ -159,8 +157,7 @@ function navigateDay(dayOffset) {
   const targetEntryTs = safeDate(targetEntry.date)
   if (!targetEntryTs) return
 
-  const targetDayKey = localDayKey(targetEntryTs)
-  if (targetDayKey !== desiredDayKey) return
+  if (!sameLocalDay(targetEntryTs, targetTs)) return
 
   render(closest)
 }
@@ -248,7 +245,9 @@ function refreshLogs() {
   loadLogs().then((entries) => {
     if (!entries.length) return
     const days = chart?.days
-    const visibleEntries = typeof days === 'number' ? filterEntriesToWindow(entries, days) : entries
+    const visibleEntries = typeof days === 'number'
+      ? filterEntriesToDayWindow(entries, days)
+      : entries
     logs = annotateChanges(visibleEntries)
     chart?.setData(logs)
     const resolved = resolveIndexFromUrl()
@@ -474,14 +473,6 @@ function formatDate(value) {
   catch {
     return new Date(ts).toISOString()
   }
-}
-
-/**
- * @param {string | undefined} value
- */
-function safeDate(value) {
-  const t = value ? Date.parse(value) : NaN
-  return Number.isFinite(t) ? t : 0
 }
 
 /**
@@ -804,8 +795,8 @@ class StatusChart {
     })
 
     this.entries.forEach((entry, idx) => {
-      const ts = Date.parse(entry.date || 0)
-      if (!Number.isFinite(ts)) return
+      const ts = safeDate(entry.date)
+      if (!ts) return
       const position = this.positionForTimestamp(ts, { todayDayId })
       if (!position) return
 
@@ -858,8 +849,8 @@ class StatusChart {
 
     const visibleMarkers = this.tagMarkers
       .map((marker) => {
-        const ts = Date.parse(marker.date || 0)
-        if (!Number.isFinite(ts)) return null
+        const ts = safeDate(marker.date)
+        if (!ts) return null
         const position = this.positionForTimestamp(ts, { todayDayId })
         if (!position) return null
         return { marker, ts, position }
@@ -1066,8 +1057,8 @@ class StatusChart {
     const oldestStart = Math.max(0, this.days - OLDEST_DAYS)
 
     return this.tagMarkers.some((marker) => {
-      const ts = Date.parse(marker.date || 0)
-      if (!Number.isFinite(ts)) return false
+      const ts = safeDate(marker.date)
+      if (!ts) return false
       const pos = this.positionForTimestamp(ts, { todayDayId })
       return Boolean(pos && pos.dayIndex >= oldestStart)
     })
@@ -1138,10 +1129,9 @@ class StatusChart {
   }
 
   positionForTimestamp(ts, { todayDayId } = {}) {
-    if (!Number.isFinite(ts)) return null
     const anchorDayId = Number.isFinite(todayDayId) ? todayDayId : localDayId(Date.now())
-    const diffDays = anchorDayId - localDayId(ts)
-    if (diffDays < 0 || diffDays >= this.days) return null
+    const diffDays = dayIndexForTimestamp(ts, anchorDayId)
+    if (!Number.isFinite(diffDays) || diffDays < 0 || diffDays >= this.days) return null
 
     const d = new Date(ts)
     const hour = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600
@@ -1201,20 +1191,6 @@ function formatHourLabel(hour) {
 
 function currentLocalDayKey() {
   return localDayKey(Date.now())
-}
-
-function localDayDistance(laterTimestamp, earlierTimestamp) {
-  return localDayId(laterTimestamp) - localDayId(earlierTimestamp)
-}
-
-function localDayId(timestamp) {
-  const d = new Date(timestamp)
-  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / (24 * 60 * 60 * 1000))
-}
-
-function localDayKey(timestamp) {
-  const d = new Date(timestamp)
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 }
 
 function linkToRun(runId, label = 'logs') {
