@@ -282,3 +282,14 @@ Helpful variations:
 
 - `uv run --with pytest-xdist pytest -f` keeps a continuous loop (`-f/--looponfail`) that reruns on each change.
 - And [PyTest](https://packages.sublimetext.io/packages/PyTest/) of course, 😏.
+
+
+## Something wrong with `the-registry`?
+
+Check it out
+
+```
+git worktree add .the-registry the-registry
+; hack on it
+git -C .the-registry push -u origin the-registry
+```

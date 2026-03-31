@@ -9,6 +9,9 @@ __pycache__/
 
 # data files
 .pypi-cache/
+.the-registry/
+wrk/
+
 /channel*.json
 /libraries-metadb.json
 /libraries.json
@@ -18,4 +21,3 @@ __pycache__/
 /registry.json
 /repository.json
 /workspace.json
-wrk/
