@@ -7,6 +7,12 @@ import {
   sameLocalDay,
   shiftTimestampByLocalDays,
 } from './module/status-day.js'
+import {
+  diffFailingPackages,
+  extractCurrentlyFailing,
+  normalizePackageNameKey,
+  normalizeStatusNotes,
+} from './module/status-failing.js'
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.mjs'
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
 
@@ -292,7 +298,7 @@ function renderNotes(entry, entryIndex) {
     return
   }
 
-  const normalized = normalizeNotes(entry.notes)
+  const normalized = normalizeStatusNotes(entry.notes)
   const html = marked.parse(normalized, { breaks: true })
   notesEl.innerHTML = DOMPurify.isSupported
     ? DOMPurify.sanitize(html)
@@ -495,17 +501,6 @@ function badgeFor(conclusion) {
   }
 
   return { label, className: 'status-badge-muted' }
-}
-
-/**
- * Normalize newlines and ensure blank lines so markdown renders paragraphs.
- * @param {string} text
- */
-function normalizeNotes(text) {
-  return text
-    .replace(/\r\n?/g, '\n')
-    // Added 2026-01-11; delete after 2026-02-12
-    .replace(/\*\*currently failing\*\*:\s*\n/gi, '#### Currently failing\n')
 }
 
 function clamp(value, min, max) {
@@ -1371,120 +1366,6 @@ function findGlitchStartIndex(entries, sections, startIndex, minIndex, maxSkippe
 
 function isHardFailureWithoutNotes(entry) {
   return !entry?.notes && classForConclusion(entry?.conclusion) === 'error'
-}
-
-function extractCurrentlyFailing(notes) {
-  if (!notes) return false
-  const normalized = normalizeNotes(notes)
-  const marker = '#### currently failing\n'
-  const lower = normalized.toLowerCase()
-  const idx = lower.indexOf(marker)
-  if (idx === -1) return ''
-  const slice = normalized.slice(idx + marker.length)
-  return slice
-    .split('\n')
-    .map(line => line.trim())
-    // Ignore trailing relative-date annotations like "[since 3 months]".
-    .map(line => line.replace(/\s*\[[^\]]+\]\s*$/, ''))
-    .filter(Boolean)
-    .join('\n')
-}
-
-function diffFailingPackages(currentNotes, previousNotes) {
-  const currentBlocks = extractCurrentlyFailingBlocks(currentNotes)
-  const previousBlocks = extractCurrentlyFailingBlocks(previousNotes)
-  const currentByKey = new Map()
-  const previousByKey = new Map()
-
-  for (const block of currentBlocks) {
-    currentByKey.set(block.nameKey, block)
-  }
-  for (const block of previousBlocks) {
-    previousByKey.set(block.nameKey, block)
-  }
-
-  const changedNames = new Set()
-  for (const block of currentBlocks) {
-    const previous = previousByKey.get(block.nameKey)
-    if (!previous || previous.signature !== block.signature) {
-      changedNames.add(block.nameKey)
-    }
-  }
-
-  const removedBlocks = []
-  for (let i = 0; i < previousBlocks.length; i += 1) {
-    const block = previousBlocks[i]
-    if (currentByKey.has(block.nameKey)) continue
-
-    let anchorNameKey = null
-    for (let j = i + 1; j < previousBlocks.length; j += 1) {
-      const anchor = previousBlocks[j]
-      if (currentByKey.has(anchor.nameKey)) {
-        anchorNameKey = anchor.nameKey
-        break
-      }
-    }
-
-    removedBlocks.push({
-      name: block.name,
-      nameKey: block.nameKey,
-      anchorNameKey,
-    })
-  }
-
-  return { changedNames, removedBlocks }
-}
-
-function extractCurrentlyFailingBlocks(notes) {
-  const section = extractCurrentlyFailing(notes)
-  if (!section || section === false) return []
-
-  const lines = section.split('\n')
-  const blocks = []
-  let current = null
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim()
-    if (!line) continue
-
-    const packageMatch = /^-\s+\*\*(.+?)\*\*(?:\s+.*)?$/.exec(line)
-    if (packageMatch) {
-      if (current) {
-        blocks.push({
-          name: current.name,
-          nameKey: current.nameKey,
-          signature: [current.name, ...current.details].join('\n'),
-        })
-      }
-      current = {
-        name: packageMatch[1].trim(),
-        nameKey: normalizePackageNameKey(packageMatch[1]),
-        details: [],
-      }
-      continue
-    }
-
-    if (current) {
-      current.details.push(line)
-    }
-  }
-
-  if (current) {
-    blocks.push({
-      name: current.name,
-      nameKey: current.nameKey,
-      signature: [current.name, ...current.details].join('\n'),
-    })
-  }
-
-  return blocks
-}
-
-function normalizePackageNameKey(name) {
-  return String(name || '')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .toLowerCase()
 }
 
 function findCurrentlyFailingHeading(root) {
