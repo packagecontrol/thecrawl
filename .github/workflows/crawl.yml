@@ -29,6 +29,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Checkout registry worktree
+        run: |
+          git fetch origin the-registry
+          git worktree add --force -B the-registry ./.the-registry origin/the-registry
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -79,10 +84,14 @@ jobs:
         run: |
           set -o pipefail
           PYTHONUNBUFFERED=1 uv run -m scripts.generate_registry \
+            --seed ./.the-registry/registry.json \
             --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json \
             --channel https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/channel.json \
             -o ./wrk/registry.json \
             2> >(tee registry.log >&2)
+
+      - name: Sync registry branch
+        run: bash ./.github/workflows/sync_registry_branch.sh ./.the-registry/ ./wrk/registry.json
 
       - name: Run crawler
         run: |
