@@ -15,6 +15,131 @@
  */
 
 /**
+ * Annotate entries with failuresChanged + glitchStartIndex metadata.
+ *
+ * Entries must be sorted newest-first. The lookback walk advances forward in
+ * the array (towards older entries).
+ *
+ * @template {{ notes?: string, conclusion?: string }} T
+ * @param {T[]} entries
+ * @param {{ lookback?: number, maxSkippedHardFailures?: number }} [options]
+ * @returns {(T & { failuresChanged: boolean, glitchStartIndex: number | null })[]}
+ */
+export function annotateChanges(entries, {
+  lookback = 10,
+  maxSkippedHardFailures = 4,
+} = {}) {
+  const sections = entries.map(entry => extractCurrentlyFailing(entry.notes || ''))
+
+  return entries.map((entry, idx) => {
+    /** @type {false | string} */
+    const rawSection = sections[idx]
+    /** @type {string} */
+    const section = rawSection || ''
+
+    const previous = findComparablePreviousSection(
+      entries,
+      sections,
+      idx + 1,
+      maxSkippedHardFailures,
+    )
+    const previousSection = previous.section
+    const hasPrevious = typeof previousSection !== 'undefined' && previousSection !== false
+    // Keep previousSection un-normalized so false (no notes) differs from ''
+    // (notes, no failing section).
+    const failuresChanged = hasPrevious && section !== previousSection
+    let glitchStartIndex = null
+
+    if (failuresChanged && rawSection !== false) {
+      const maxIdx = Math.min(sections.length - 1, idx + lookback)
+      let matchIndex = null
+
+      for (let i = idx + 1; i <= maxIdx; i += 1) {
+        const candidate = sections[i]
+        if (candidate === false) continue
+        if ((candidate || '') === section) {
+          matchIndex = i
+          break
+        }
+      }
+
+      if (matchIndex !== null) {
+        const startIndex = findGlitchStartIndex(
+          entries,
+          sections,
+          matchIndex - 1,
+          idx,
+          maxSkippedHardFailures,
+        )
+        if (startIndex !== null) {
+          glitchStartIndex = startIndex
+        }
+      }
+    }
+
+    return { ...entry, failuresChanged, glitchStartIndex }
+  })
+}
+
+/**
+ * @template {{ notes?: string, conclusion?: string }} T
+ * @param {T[]} entries
+ * @param {(false | string)[]} sections
+ * @param {number} startIndex
+ * @param {number} maxSkippedHardFailures
+ * @returns {{ index: number, section: false | string | undefined }}
+ */
+export function findComparablePreviousSection(entries, sections, startIndex, maxSkippedHardFailures) {
+  let skippedHardFailures = 0
+
+  for (let i = startIndex; i < sections.length; i += 1) {
+    const section = sections[i]
+    if (section === false && isHardFailureWithoutNotes(entries[i])) {
+      skippedHardFailures += 1
+      if (skippedHardFailures > maxSkippedHardFailures) {
+        return { index: -1, section: undefined }
+      }
+      continue
+    }
+
+    return { index: i, section }
+  }
+
+  return { index: -1, section: undefined }
+}
+
+/**
+ * @template {{ notes?: string, conclusion?: string }} T
+ * @param {T[]} entries
+ * @param {(false | string)[]} sections
+ * @param {number} startIndex
+ * @param {number} minIndex
+ * @param {number} maxSkippedHardFailures
+ * @returns {number | null}
+ */
+export function findGlitchStartIndex(entries, sections, startIndex, minIndex, maxSkippedHardFailures) {
+  let skippedHardFailures = 0
+
+  for (let i = startIndex; i >= minIndex; i -= 1) {
+    const section = sections[i]
+    if (section === false && isHardFailureWithoutNotes(entries[i])) {
+      skippedHardFailures += 1
+      if (skippedHardFailures > maxSkippedHardFailures) {
+        return null
+      }
+      continue
+    }
+    if (section === false) {
+      return null
+    }
+
+    return i
+  }
+
+  return null
+}
+
+/**
  * Normalize notes to make markdown sections stable for parsing.
  *
  * @param {string} text
@@ -25,6 +150,20 @@ export function normalizeStatusNotes(text) {
     .replace(/\r\n?/g, '\n')
     // Added 2026-01-11; delete after 2026-02-12
     .replace(/\*\*currently failing\*\*:\s*\n/gi, '#### Currently failing\n')
+}
+
+/**
+ * Extract number of crawled packages from status notes.
+ *
+ * @param {string | undefined} notes
+ * @returns {number | null}
+ */
+export function extractPackagesCrawled(notes) {
+  if (!notes) return null
+  const match = /found\s+([\d,]+)\s+packages?\s+to\s+crawl/i.exec(notes)
+  if (!match) return null
+  const value = Number(match[1].replace(/,/g, ''))
+  return Number.isFinite(value) ? value : null
 }
 
 /**
@@ -150,6 +289,28 @@ export function diffFailingPackages(currentNotes, previousNotes) {
   }
 
   return { changedNames, removedBlocks }
+}
+
+/**
+ * Map a workflow conclusion to a status-dot class.
+ *
+ * @param {string | undefined} conclusion
+ * @returns {'' | 'error' | 'warn' | 'muted'}
+ */
+export function classForConclusion(conclusion) {
+  const normalized = (conclusion || '').toLowerCase()
+  if (normalized === 'success') return ''
+  if (['failure', 'failed', 'cancelled', 'timed_out'].includes(normalized)) return 'error'
+  if (['action_required', 'neutral', 'stale'].includes(normalized)) return 'warn'
+  return 'muted'
+}
+
+/**
+ * @param {{ notes?: string, conclusion?: string } | undefined} entry
+ * @returns {boolean}
+ */
+export function isHardFailureWithoutNotes(entry) {
+  return !entry?.notes && classForConclusion(entry?.conclusion) === 'error'
 }
 
 /**

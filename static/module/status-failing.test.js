@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  annotateChanges,
+  classForConclusion,
   diffFailingPackages,
   extractCurrentlyFailing,
   extractCurrentlyFailingBlocks,
+  extractPackagesCrawled,
+  findComparablePreviousSection,
+  findGlitchStartIndex,
+  isHardFailureWithoutNotes,
   normalizePackageNameKey,
   normalizeStatusNotes,
 } from './status-failing.js'
@@ -15,6 +21,14 @@ describe('status-failing helpers', () => {
 
     expect(normalized).toContain('A\n#### Currently failing\n')
     expect(normalized).not.toContain('\r')
+  })
+
+  it('extracts package crawl counts from notes', () => {
+    const notes = 'Found 1,234 packages to crawl.'
+
+    expect(extractPackagesCrawled(notes)).toBe(1234)
+    expect(extractPackagesCrawled('No package count here')).toBeNull()
+    expect(extractPackagesCrawled('')).toBeNull()
   })
 
   it('extracts currently failing section and strips relative date annotations', () => {
@@ -97,5 +111,60 @@ describe('status-failing helpers', () => {
   it('normalizes package name keys consistently', () => {
     expect(normalizePackageNameKey('  My   Package  ')).toBe('my package')
     expect(normalizePackageNameKey('My\tPackage')).toBe('my package')
+  })
+
+  it('maps workflow conclusions to status classes', () => {
+    expect(classForConclusion('success')).toBe('')
+    expect(classForConclusion('failure')).toBe('error')
+    expect(classForConclusion('timed_out')).toBe('error')
+    expect(classForConclusion('neutral')).toBe('warn')
+    expect(classForConclusion('unknown_value')).toBe('muted')
+  })
+
+  it('detects hard failures without notes', () => {
+    expect(isHardFailureWithoutNotes({ notes: '', conclusion: 'failure' })).toBe(true)
+    expect(isHardFailureWithoutNotes({ notes: 'has notes', conclusion: 'failure' })).toBe(false)
+    expect(isHardFailureWithoutNotes({ notes: '', conclusion: 'success' })).toBe(false)
+  })
+
+  it('finds comparable previous sections while skipping hard failures', () => {
+    const entries = [
+      { notes: '#### Currently failing\n- **Now**\n  fail', conclusion: 'success' },
+      { notes: '', conclusion: 'failure' },
+      { notes: '#### Currently failing\n- **Then**\n  fail', conclusion: 'success' },
+    ]
+    const sections = entries.map(entry => extractCurrentlyFailing(entry.notes || ''))
+
+    expect(findComparablePreviousSection(entries, sections, 1, 1)).toEqual({
+      index: 2,
+      section: '- **Then**\nfail',
+    })
+  })
+
+  it('finds glitch start index across skip-eligible hard failures', () => {
+    const entries = [
+      { notes: '#### Currently failing\n- **A**\n  fail', conclusion: 'success' },
+      { notes: '#### Currently failing\n- **B**\n  fail', conclusion: 'success' },
+      { notes: '', conclusion: 'failure' },
+      { notes: '#### Currently failing\n- **A**\n  fail', conclusion: 'success' },
+    ]
+    const sections = entries.map(entry => extractCurrentlyFailing(entry.notes || ''))
+
+    expect(findGlitchStartIndex(entries, sections, 2, 0, 2)).toBe(1)
+  })
+
+  it('annotates change and glitch metadata for transient failures', () => {
+    const entries = [
+      { id: 'now', notes: '#### Currently failing\n- **A**\n  fail', conclusion: 'success' },
+      { id: 'middle', notes: '#### Currently failing\n- **B**\n  fail', conclusion: 'success' },
+      { id: 'old', notes: '#### Currently failing\n- **A**\n  fail', conclusion: 'success' },
+    ]
+
+    const annotated = annotateChanges(entries, { lookback: 10, maxSkippedHardFailures: 2 })
+
+    expect(annotated[0].failuresChanged).toBe(true)
+    expect(annotated[0].glitchStartIndex).toBe(1)
+    expect(annotated[1].failuresChanged).toBe(true)
+    expect(annotated[1].glitchStartIndex).toBeNull()
   })
 })
