@@ -3,15 +3,16 @@ from __future__ import annotations
 import argparse
 import asyncio
 import aiohttp
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
 import os
 import sys
 import time
 from urllib.parse import urlparse
-from typing import Callable, Iterable, Mapping, NotRequired, TypedDict
+from typing import Any, Callable, Iterable, Mapping, NotRequired, TypedDict, TypeGuard
 
-from ._utils import flatten, resolve_urls, update_url, write_json, pl
+from ._utils import flatten, pick, resolve_urls, update_url, write_json, pl
 
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
@@ -26,25 +27,48 @@ type Url = str
 type IsoTimestamp = str
 
 
-class PackageEntry(TypedDict, total=False):
+class RawRepositoryEntry(TypedDict, total=False):
+    name: str
+    details: NotRequired[str]
+    labels: NotRequired[list[str]]
+
+
+class RegistryEntry(TypedDict, total=False):
     source: Url
     schema_version: str
     name: str
     details: NotRequired[str]
+    labels: NotRequired[list[str]]
+    first_seen: NotRequired[IsoTimestamp]
+    removed: NotRequired[IsoTimestamp]
     fetching_source_failed: NotRequired[IsoTimestamp]
+
+
+class SeedEntry(TypedDict):
+    name: str
+    first_seen: IsoTimestamp
+    source: NotRequired[Url | None]
+    removed: NotRequired[IsoTimestamp]
+    labels: NotRequired[list[str]]
 
 
 class Registry(TypedDict):
     repositories: list[str]
-    packages: list[PackageEntry]
-    libraries: list[PackageEntry]
+    packages: list[RegistryEntry]
+    libraries: list[RegistryEntry]
 
 
 class RepositorySchema(TypedDict):
     self: Url
     schema_version: str
-    packages: list[PackageEntry]
-    libraries: list[PackageEntry]
+    packages: list[RawRepositoryEntry]
+    libraries: list[RawRepositoryEntry]
+
+
+@dataclass
+class SeedDb:
+    db: dict[str, Any]
+    has_registry_shape: bool
 
 
 def parse_args() -> argparse.Namespace:
@@ -67,30 +91,72 @@ def parse_args() -> argparse.Namespace:
             "If not given, uses the official channel from wbond/package_control_channel."
         ),
     )
+    parser.add_argument(
+        "--seed",
+        nargs="?",
+        const="",
+        default=None,
+        help=(
+            "Seed input for lifecycle enrichment. Omit to use implicit seed mode: "
+            "read --output if available, otherwise continue without lifecycle fields. "
+            "Provide without a value to require --output as seed (fail if unreadable), "
+            "or provide a path to require that file. Supports registry.json, "
+            "workspace.json, or seed.json-style package maps."
+        ),
+    )
+    parser.add_argument(
+        "--no-seed",
+        action="store_true",
+        help="Disable lifecycle enrichment and emit raw registry output.",
+    )
     return parser.parse_args()
 
 
-async def main(output_file: str, channels: list[str]) -> None:
-    # Try to read previous db if it exists
-    try:
-        with open(output_file, 'r') as f:
-            prev_db = json.load(f)
-    except (OSError, json.JSONDecodeError):
-        prev_db = {}
+async def main(
+    output_file: str,
+    channels: list[str],
+    *,
+    seed_path: str | None = None,
+    no_seed: bool = False,
+) -> None:
+    effective_seed_path, strict_seed = resolve_seed_path(
+        output_file=output_file,
+        seed_path=seed_path,
+    )
+    seed = read_seed_db(effective_seed_path, strict=strict_seed)
+    failure_recovery = resolve_failure_recovery_db(
+        output_file,
+        effective_seed_path,
+        seed,
+    )
 
     try:
         async with asyncio.timeout(GLOBAL_TIMEOUT):
-            db = await fetch_packages(channels, prev_db)
+            db = await fetch_packages(
+                channels,
+                failure_recovery,
+                seed=seed,
+                no_seed=no_seed,
+            )
+            if seed and not no_seed:
+                apply_seed_lifecycle(db, seed, now_utc_string())
+
             write_json(output_file, db, pretty=True, ensure_ascii=True)
             print(f"Saved registry as {output_file}")
     except asyncio.TimeoutError:
         print(f"Timeout: script took more than {GLOBAL_TIMEOUT} seconds")
 
 
-async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
+async def fetch_packages(
+    channels: list[str],
+    recovery_db: Registry | None = None,
+    *,
+    seed: SeedDb | None = None,
+    no_seed: bool = False,
+) -> Registry:
     print("Fetching registered packages...")
     now = time.monotonic()
-    now_string = datetime.now(timezone.utc).strftime(UTC_FORMAT)
+    now_string = now_utc_string()
 
     async with aiohttp.ClientSession() as session:
         # Fetch repositories from all channels in parallel
@@ -100,24 +166,35 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
         repos: list[str] = list(flatten(repos_lists))
         unseen = Unseen(repos)
         sem = asyncio.Semaphore(MAX_CONCURRENCY)
+        repo_results = await asyncio.gather(*[
+            asyncio.create_task(fetch_repository(url, unseen, sem, session))
+            for url in repos
+        ], return_exceptions=True)
+
         result: dict[Url, RepositorySchema] = {}
-        result = {
-            repo["self"]: repo
-            for repo in await asyncio.gather(*[
-                asyncio.create_task(fetch_repository(url, unseen, sem, session))
-                for url in repos
-            ])
-            if repo
-            if not repo.get("schema_version", "1.").startswith("1.")
-        }
+        for url, repo_result in zip(repos, repo_results):
+            if isinstance(repo_result, Exception):
+                err(f"Error fetching {url}: {repo_result}")
+                warn_unrecoverable_seed_entries(
+                    url,
+                    recovery_db=recovery_db,
+                    seed=seed,
+                    no_seed=no_seed,
+                )
+                continue
+            if isinstance(repo_result, BaseException):
+                raise repo_result
+
+            if not repo_result.get("schema_version", "1.").startswith("1."):
+                result[repo_result["self"]] = repo_result
 
     # Flatten packages and libraries, adding source, schema_version, and
     # ensuring a unique name.
 
-    def add_unique_(container: list[PackageEntry], kind: str) -> Callable[[PackageEntry], None]:
+    def add_unique_(container: list[RegistryEntry], kind: str) -> Callable[[RegistryEntry], None]:
         seen = set()
 
-        def add(entry: PackageEntry) -> None:
+        def add(entry: RegistryEntry) -> None:
             name = extract_package_name(entry)
             if name and name not in seen:
                 seen.add(name)
@@ -132,32 +209,32 @@ async def fetch_packages(channels: list[str], db: Registry = None) -> Registry:
 
         return add
 
-    packages: list[PackageEntry] = []
-    libraries: list[PackageEntry] = []
+    packages: list[RegistryEntry] = []
+    libraries: list[RegistryEntry] = []
     add_package = add_unique_(packages, "Package")
     add_library = add_unique_(libraries, "Library")
     for url in repos:
         if repo := result.get(url):
-            repo_info: PackageEntry
+            repo_info: RegistryEntry
             repo_info = {
                 "source": repo["self"],
                 "schema_version": repo["schema_version"],
             }
             for pkg in repo["packages"]:
-                add_package(pkg | repo_info)
+                add_package(pkg | repo_info)  # type: ignore[arg-type]
 
             for library in repo["libraries"]:
-                add_library(library | repo_info)
+                add_library(library | repo_info)  # type: ignore[arg-type]
 
-        elif db:
-            # recreate the repo from db
-            fail_info: PackageEntry
+        elif recovery_db:
+            # recreate the repo from recovery_db (always registry-shaped)
+            fail_info: RegistryEntry
             fail_info = {"fetching_source_failed": now_string}
-            for pkg in db.get("packages", []):
+            for pkg in recovery_db.get("packages", []):
                 if pkg.get("source") == url:
                     add_package(fail_info | pkg)
 
-            for library in db.get("libraries", []):
+            for library in recovery_db.get("libraries", []):
                 if library.get("source") == url:
                     add_library(fail_info | library)
 
@@ -215,13 +292,9 @@ async def fetch_repository(
     location: Url,
     unseen: Unseen[Url],
     sem: asyncio.Semaphore,
-    session: aiohttp.ClientSession
-) -> RepositorySchema | None:
-    try:
-        result = await __fetch_repo(location, sem, session)
-    except Exception as e:
-        err(f"Error fetching {location}: {e}")
-        return None
+    session: aiohttp.ClientSession,
+) -> RepositorySchema:
+    result = await __fetch_repo(location, sem, session)
 
     repository: RepositorySchema = {
         "self": location,
@@ -269,6 +342,184 @@ async def http_get(location: str, session: aiohttp.ClientSession) -> str:
         return await resp.text()
 
 
+def resolve_seed_path(output_file: str, seed_path: str | None) -> tuple[str, bool]:
+    if seed_path is None:
+        return output_file, False
+
+    if seed_path == "":
+        return output_file, True
+
+    return os.path.abspath(seed_path), True
+
+
+def read_seed_db(path: str, *, strict: bool) -> SeedDb | None:
+    try:
+        text = open(path, "r", encoding="utf-8").read()
+    except OSError as exc:
+        if strict:
+            raise FileNotFoundError(f"Could not read seed path: {path}") from exc
+        return None
+
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        if strict:
+            raise ValueError(f"Seed is not valid JSON: {path}") from exc
+        return None
+
+    if not isinstance(data, dict):
+        if strict:
+            raise ValueError(f"Seed JSON must be an object: {path}")
+        return None
+
+    return SeedDb(
+        db=data,
+        has_registry_shape=is_registry_recovery_db(data),
+    )
+
+
+def resolve_failure_recovery_db(
+    output_file: str,
+    effective_seed_path: str,
+    seed: SeedDb | None,
+) -> Registry | None:
+    if seed and seed.has_registry_shape:
+        return seed.db  # type: ignore[return-value]
+
+    output_is_seed = os.path.abspath(output_file) == os.path.abspath(effective_seed_path)
+    if not output_is_seed:
+        output_db = read_seed_db(output_file, strict=False)
+        if output_db and output_db.has_registry_shape:
+            return output_db.db  # type: ignore[return-value]
+
+    return None
+
+
+def is_registry_recovery_db(db: Mapping[str, Any]) -> TypeGuard[Registry]:
+    return (
+        isinstance(db.get("packages"), list)
+        and isinstance(db.get("libraries"), list)
+    )
+
+
+def apply_seed_lifecycle(
+    registry: Registry,
+    seed: SeedDb,
+    now_string: IsoTimestamp,
+) -> None:
+    seed_packages = {
+        entry["name"]: entry
+        for entry in iter_package_entries(seed.db)
+    }
+    current = {
+        pkg["name"]: pkg
+        for pkg in registry["packages"]
+    }
+
+    for name, package in current.items():
+        entry = seed_packages.get(name)
+        if entry and (first_seen := entry.get("first_seen")):
+            package["first_seen"] = first_seen
+        elif "first_seen" not in package:
+            package["first_seen"] = now_string
+
+    for name, entry in seed_packages.items():
+        if name not in current:
+            current[name] = build_tombstone(entry, now_string)
+
+    registry["packages"] = \
+        sorted(current.values(), key=lambda entry: entry["name"].casefold())
+
+
+def iter_package_entries(db: Mapping[str, Any]) -> Iterable[SeedEntry]:
+    entries = db.get("packages")
+    # Shape: registry.json
+    if isinstance(entries, list):
+        for entry in entries:
+            yield entry
+
+    # Shape: workspace.json
+    elif isinstance(entries, dict):
+        for name, entry in entries.items():
+            yield entry
+
+    # Shape: seed.json
+    elif "packages" not in db:
+        for name, entry in db.items():
+            yield entry
+
+
+def warn_unrecoverable_seed_entries(
+    source_url: str,
+    *,
+    recovery_db: Registry | None,
+    seed: SeedDb | None,
+    no_seed: bool,
+) -> None:
+    if seed is None:
+        return
+
+    if has_recovery_entries_for_source(recovery_db, source_url):
+        return
+
+    mode_outcome = "dropped" if no_seed else "tombstoned"
+
+    if is_compact_seed(seed.db):
+        err(
+            "ATTENTION: repository recovery cannot be guaranteed with a compact seed. "
+            "Check the output. Consider using a full registry.json seed for complete "
+            f"recovery; missing packages are {mode_outcome}."
+        )
+        return
+
+    if lost_names := seed_package_names_for_source(seed.db, source_url):
+        err(
+            "ATTENTION: seed file knows "
+            f"{pl(len(lost_names), 'packages')} in the failed repository "
+            "but has no data to recover full entries; "
+            f"these are {mode_outcome}."
+        )
+
+
+def has_recovery_entries_for_source(
+    recovery_db: Registry | None,
+    source_url: str,
+) -> bool:
+    if not recovery_db:
+        return False
+
+    for kind in ("packages", "libraries"):
+        for entry in recovery_db[kind]:
+            if entry.get("source") == source_url:
+                return True
+
+    return False
+
+
+def seed_package_names_for_source(seed_db: Mapping[str, Any], source_url: str) -> list[str]:
+    names = {
+        entry["name"]
+        for entry in iter_package_entries(seed_db)
+        if entry.get("source") == source_url
+    }
+    return sorted(names, key=str.casefold)
+
+
+def is_compact_seed(seed_db: Mapping[str, Any]) -> bool:
+    return "packages" not in seed_db
+
+
+def build_tombstone(seed: Mapping[str, Any], now_string: IsoTimestamp) -> RegistryEntry:
+    return (
+        {"first_seen": now_string, "removed": now_string}  # type: ignore[operator]
+        | pick(("name", "source", "first_seen", "removed", "labels"), seed)
+    )
+
+
+def now_utc_string() -> IsoTimestamp:
+    return datetime.now(timezone.utc).strftime(UTC_FORMAT)
+
+
 def err(*args, **kwargs) -> None:
     print(*args, **kwargs, file=sys.stderr)
 
@@ -308,4 +559,16 @@ if __name__ == "__main__":
     args = parse_args()
     output_file = os.path.abspath(args.output)
     channels = args.channel if args.channel else [DEFAULT_CHANNEL]
-    asyncio.run(main(output_file, channels))
+    seed_path = (
+        None
+        if args.seed is None
+        else (output_file if args.seed == "" else os.path.abspath(args.seed))
+    )
+    asyncio.run(
+        main(
+            output_file,
+            channels,
+            seed_path=seed_path,
+            no_seed=args.no_seed,
+        )
+    )

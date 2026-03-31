@@ -67,6 +67,41 @@ uv run -m scripts.generate_registry
 uv run -m scripts.generate_registry --output myreg.json --channel <url1> --channel <url2>
 ```
 
+`generate_registry` supports implicit lifecycle enrichment. I.e. newly discovered
+packages get a `first_seen` timestamp, packages that are removed from the input
+channels/repositories are re-added in a tombstoned way.  Also input channels/repositories
+that throw on access will lead to marked entries *if* a previous registry/seed is
+present; this way we prevent packages from jumping between different sources, esp.
+malicious ones.
+
+This behavior is on by default, however you might not notice it as we don't blindly
+add "first_seen: now" stamps when there is in fact no prior registry found.
+
+Concretely,
+
+- default seed path is `--output`; this way running generate_registry multiple times
+  from the same directory, will use the file we wrote on the last run as seed-input.
+
+- `--seed [PATH]` enforces seed input (supports `registry.json`, `workspace.json`,
+  and `seed.json`-style package maps).  Will raise if the seed is not present/readable.
+
+- `--no-seed` disables lifecycle enrichment (`first_seen`/`removed` tombstones);
+  however, source-failure marking still applies when prior seed data is available.
+
+```bash
+uv run -m scripts.generate_registry --output registry.json
+uv run -m scripts.generate_registry --output registry.json --seed ./the-registry/registry.json
+uv run -m scripts.generate_registry --output registry.json --no-seed
+```
+
+To create a compact archival seed, use `generate_seed` with either a workspace
+or a registry as input (but not both):
+
+```bash
+uv run -m scripts.generate_seed --workspace ./workspace.json --output ./seed.json
+uv run -m scripts.generate_seed --registry ./registry.json --output ./seed.json
+```
+
 ---
 
 ### 2. `crawl.py`

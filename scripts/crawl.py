@@ -10,13 +10,13 @@ import json
 import os
 import re
 import sys
-from typing import Any, Literal, Mapping, NotRequired, Required, TypedDict
+from typing import Literal, Mapping, NotRequired, Required, TypedDict
 
 import packaging
 from packaging.specifiers import SpecifierSet
 
 from .bitbucket import fetch_bitbucket_info, RepoInfo as BitbucketRepoInfo
-from .generate_registry import Registry, PackageEntry as RegistryEntry
+from .generate_registry import Registry, RegistryEntry
 from .github import (
     fetch_github_info, rate_limit_info,
     RepoInfo as GithubRepoInfo, ReleaseAssetInfo
@@ -29,10 +29,17 @@ from ._resolve_lib import (
     normalize_version_spec,
 )
 from ._utils import (
-    format_name_list, parse_version, resolve_url, update_url, write_json, pl, pick,
+    format_name_list,
+    parse_sublime_text_max,
+    parse_version,
+    resolve_url,
+    update_url,
+    write_json,
+    pl,
+    pick,
     VersionInfo,
 )
-from ._explain_package import print_package_explain
+from ._explain_package import print_package_explain, print_package_explain_effective
 import traceback
 
 
@@ -41,8 +48,11 @@ DEFAULT_WORKSPACE = "./workspace.json"
 EXPLAIN_EFFECTIVE_ENV = "EFFECTIVE"
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 STYLIZED_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+MAIN_REPOSITORY_SOURCE = (
+    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+)
 TRUSTED_SOURCES = {
-    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+    MAIN_REPOSITORY_SOURCE,
     "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
     "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
 }
@@ -130,80 +140,20 @@ def explain_main(registry: str, name: str) -> int:
         err(f"Package '{name}' not found in registry.")
         return 1
 
+    effective_mode = env_flag(EXPLAIN_EFFECTIVE_ENV)
+    if "removed" in package:
+        err(f"Package '{name}' is tombstoned in the registry.")
+        if not effective_mode:
+            print(json.dumps(package, indent=2, ensure_ascii=False, sort_keys=True))
+        return 0
+
     normalized = normalize_registry_entry(deepcopy(package))
-    if env_flag(EXPLAIN_EFFECTIVE_ENV):
+    if effective_mode:
         print_package_explain_effective(name, normalized)  # type: ignore[arg-type]
         return 0
 
     print_package_explain(name, package, normalized)  # type: ignore[arg-type]
     return 0
-
-
-def print_package_explain_effective(name: str, normalized: dict[str, Any]) -> None:
-    releases = normalized.get("releases", [])
-    sorted_releases = sorted_release_definitions(releases)
-    tags_mode = classify_tags_mode(sorted_releases)
-
-    normalized_effective = deepcopy(normalized)
-    normalized_effective["releases"] = keep_newest_release_definitions(sorted_releases)
-
-    if tags_mode:
-        effectively = "(effectively) " if tags_mode == "effective" else ""
-        print(f"{name} uses {effectively}the tags-mode.")
-    print(json.dumps(normalized_effective, ensure_ascii=False, sort_keys=True))
-
-
-def classify_tags_mode(
-    sorted_releases: list[dict[str, Any]],
-) -> bool | Literal["effective"]:
-    if not sorted_releases:
-        return False
-
-    if all(release_uses_tags_mode(release) for release in sorted_releases):
-        return True
-
-    if release_uses_tags_mode(sorted_releases[-1]):
-        return "effective"
-
-    return False
-
-
-def sorted_release_definitions(releases: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return sorted(releases, key=release_definition_sort_key)
-
-
-def keep_newest_release_definitions(
-    releases: list[dict[str, Any]],
-) -> list[dict[str, Any]]:
-    if not releases:
-        return []
-
-    newest_build = parse_sublime_text_max(releases[-1].get("sublime_text"))
-    return [
-        release
-        for release in releases
-        if parse_sublime_text_max(release.get("sublime_text")) == newest_build
-    ]
-
-
-def release_definition_sort_key(release: dict[str, Any]) -> tuple[float, str]:
-    return (
-        parse_sublime_text_max(release.get("sublime_text")),
-        tags_sort_value(release.get("tags")),
-    )
-
-
-def tags_sort_value(value: Any) -> str:
-    # Place plain `True` after common prefixes like `st2-`.
-    if value is True:
-        return "~~true"
-    if isinstance(value, str):
-        return value
-    return ""
-
-
-def release_uses_tags_mode(release: dict[str, Any]) -> bool:
-    return bool(release.get("tags", False))
 
 
 async def main(
@@ -247,6 +197,9 @@ async def main_(
         package = find_registry_package(registry, name)
         if not package:
             err(f"Package '{name}' not found in registry.")
+            return
+        if "removed" in package:
+            err(f"Package '{name}' is tombstoned in the registry.")
             return
         tocrawl = [package]
     else:
@@ -302,6 +255,7 @@ def next_packages_to_crawl(
         entry
         for entry in packages
         if not entry.get("fetching_source_failed")
+        if "removed" not in entry
         if presto or (
             workspace["packages"]  # type: ignore[call-overload]
             .get(entry["name"], {})
@@ -319,6 +273,7 @@ def next_packages_to_crawl(
                 entry
                 for entry in packages
                 if not entry.get("fetching_source_failed")
+                if "removed" not in entry
             ),
             key=lambda pkg: (
                 workspace["packages"]  # type: ignore[call-overload]
@@ -362,12 +317,18 @@ def next_packages_to_crawl(
 
 
 def maintenance(registry: Registry, workspace: Workspace) -> None:
+    packages = workspace["packages"]
+
+    for entry in registry["packages"]:
+        if "removed" in entry:
+            packages[entry["name"]] = {**entry}  # type: ignore[typeddict-item]
+
+    # Legacy;
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
     now = now_ts()
     now_string = now.strftime(UTC_FORMAT)
     current_package_names = {entry["name"] for entry in registry["packages"]}
-    packages = workspace["packages"]
     for name in packages.keys() - current_package_names:
         packages[name].setdefault("removed", now_string)
 
@@ -385,6 +346,12 @@ async def crawl(
         out = await crawl_package(session, package, existing)
     except Exception as e:
         out = {**existing}
+
+        # Keep existing source authoritative when present (important for denied
+        # source moves). Only backfill source from the registry package when
+        # the existing workspace entry has never had one.
+        out.setdefault("source", package["source"])
+
         out["failing_since"] = existing.get("failing_since", now_string)
 
         # We mark errors as fatal if we MUST de-list the package immediately.
@@ -833,16 +800,32 @@ def ensure_secure_source(
     entry: RegistryEntry,
     existing: WorkspaceEntry
 ) -> None:
+    existing_source = source_for_security_check(existing)
+    entry_source = entry.get("source")
     if (
-        existing.get("source")
-        and entry.get("source")
-        and existing.get("source") != entry.get("source")
-        and entry.get("source") not in TRUSTED_SOURCES
+        existing_source
+        and entry_source
+        and existing_source != entry_source
+        and entry_source not in TRUSTED_SOURCES
     ):
+        source_display = existing.get("source") or "<not-set>"
         raise DeniedUpdating(
             f"Repository source changed for *{entry.get('name')}* from "
-            f"{existing.get('source')} to untrusted {entry.get('source')}"
+            f"{source_display} to untrusted {entry_source}"
         )
+
+
+def source_for_security_check(existing: WorkspaceEntry) -> str | None:
+    source = existing.get("source")
+    if source:
+        return source
+
+    if existing.get("removed"):
+        # Old imported tombstones can miss source.
+        # For security checks we treat them as coming from the main trusted source.
+        return MAIN_REPOSITORY_SOURCE
+
+    return None
 
 
 def keys_missing_from_release(release: Mapping) -> set[str]:
@@ -944,41 +927,6 @@ def maybe_make_auto_open_ended_tags_release(
         "sublime_text": f">{max_build}",
         "tags": True,
     }
-
-
-def parse_sublime_text_max(selector) -> float:
-    if not isinstance(selector, str):
-        return float("inf")
-
-    s = re.sub(r"\s+", "", selector)
-    if s in ("", "*"):
-        return float("inf")
-
-    range_index = s.find("-")
-    if range_index != -1:
-        right = s[range_index + 1:]
-        n = parse_int_prefix(right)
-        return float(n) if n is not None else float("inf")
-
-    if s.startswith("<="):
-        n = parse_int_prefix(s[2:])
-        return float(n) if n is not None else float("inf")
-
-    if s.startswith("<"):
-        n = parse_int_prefix(s[1:])
-        return float(max(0, n - 1)) if n is not None else float("inf")
-
-    if s.startswith(">=") or s.startswith(">"):
-        return float("inf")
-
-    n = parse_int_prefix(s)
-    return float(n) if n is not None else float("inf")
-
-
-def parse_int_prefix(text: str) -> int | None:
-    if match := re.match(r"^\d+", text):
-        return int(match.group(0))
-    return None
 
 
 def compile_release_asset_pattern(

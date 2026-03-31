@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from difflib import SequenceMatcher
 import json
-from typing import Any
+from typing import Any, Literal
+
+from ._utils import parse_sublime_text_max
 
 from rich import box
 from rich.console import Console
@@ -30,6 +33,64 @@ def print_package_explain(
         right_obj=normalized,
         console=console,
     )
+
+
+def print_package_explain_effective(name: str, normalized: dict[str, Any]) -> None:
+    releases = normalized.get("releases", [])
+    sorted_releases = sorted_release_definitions(releases)
+    tags_mode = classify_tags_mode(sorted_releases)
+
+    normalized_effective = deepcopy(normalized)
+    normalized_effective["releases"] = keep_newest_release_definitions(sorted_releases)
+
+    if tags_mode:
+        effectively = "(effectively) " if tags_mode == "effective" else ""
+        print(f"{name} uses {effectively}the tags-mode.")
+    print(json.dumps(normalized_effective, ensure_ascii=False, sort_keys=True))
+
+
+def classify_tags_mode(
+    sorted_releases: list[dict[str, Any]],
+) -> bool | Literal["effective"]:
+    if not sorted_releases:
+        return False
+
+    if all(release_uses_tags_mode(release) for release in sorted_releases):
+        return True
+
+    if release_uses_tags_mode(sorted_releases[-1]):
+        return "effective"
+
+    return False
+
+
+def sorted_release_definitions(releases: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(releases, key=release_definition_sort_key)
+
+
+def keep_newest_release_definitions(
+    releases: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if not releases:
+        return []
+
+    newest_build = parse_sublime_text_max(releases[-1].get("sublime_text"))
+    return [
+        release
+        for release in releases
+        if parse_sublime_text_max(release.get("sublime_text")) == newest_build
+    ]
+
+
+def release_definition_sort_key(release: dict[str, Any]) -> tuple[float, str]:
+    return (
+        parse_sublime_text_max(release.get("sublime_text")),
+        _tags_sort_value(release.get("tags")),
+    )
+
+
+def release_uses_tags_mode(release: dict[str, Any]) -> bool:
+    return bool(release.get("tags", False))
 
 
 def print_library_explain(
@@ -83,6 +144,15 @@ def print_library_explain(
                 )
 
     console.print(table)
+
+
+def _tags_sort_value(value: Any) -> str:
+    # Place plain `True` after common prefixes like `st2-`.
+    if value is True:
+        return "~~true"
+    if isinstance(value, str):
+        return value
+    return ""
 
 
 def _render_json_diff_table(
