@@ -54,16 +54,21 @@ const lastButton = document.querySelector('[data-control="last"]')
  *  }} LogEntry
  */
 
-/** @typedef {{
+/**
+ * Release marker rendered at the chart top for tags that fall inside the
+ * currently visible day window.
+ *
+ * @typedef {{
  *    tag: string,
  *    date: string,
  *  }} TagMarker
  */
 
-/** @typedef {{
- *    tag: string,
- *    date: string,
- *  }} OverflowTagMarker
+/**
+ * A "just before the window" tag rendered as a left-pointing overflow
+ * indicator outside the visible chart range.
+ *
+ * @typedef {TagMarker} OverflowTagMarker
  */
 
 /** @type {LogEntry[]} */
@@ -73,9 +78,14 @@ let index = 0
 let chart = null
 let emptyStateMessage = ''
 /** @type {TagMarker[]} */
-const tagMarkers = loadTagMarkers()
-/** @type {OverflowTagMarker | null} */
-const overflowTagMarker = loadOverflowTagMarker()
+const tagMarkers = loadTagMarkers(tagDataEl)
+/**
+ * Optional tag marker that points to the most recent tag just before the
+ * visible window. Rendered as an external left-side indicator.
+ *
+ * @type {OverflowTagMarker | null}
+ */
+const overflowTagMarker = loadOverflowTagMarker(overflowTagDataEl)
 
 function init() {
   if (!notesEl || !dateEl || !badgeEl) {
@@ -992,6 +1002,14 @@ class StatusChart {
     })
   }
 
+  /**
+   * Draw a left-edge overflow pointer for the last tag before the visible
+   * window. This makes it clear the visible tag history continues to older
+   * versions off-screen.
+   *
+   * We hide this marker when the oldest visible days already have top tag
+   * labels/lines, because the left edge would become visually crowded.
+   */
   drawOverflowTagMarker() {
     if (!this.overflowTagMarker) return
     if (this.hasTagMarkersInOldestDays()) {
@@ -1048,6 +1066,10 @@ class StatusChart {
     this.tagLayer.appendChild(group)
   }
 
+  /**
+   * True when regular tag markers already occupy the oldest visible day slots.
+   * Used as a coarse "no room left" signal for the overflow pointer.
+   */
   hasTagMarkersInOldestDays() {
     if (!this.tagMarkers.length) return false
 
@@ -1195,11 +1217,17 @@ function missingRunMessage(runId) {
   return `No data for this run_id. Maybe it is still on ${link}.`
 }
 
-function loadTagMarkers() {
-  if (!tagDataEl || !tagDataEl.textContent) return []
+/**
+ * Parse in-window release tag markers from inline JSON data.
+ *
+ * @param {Element | null} el
+ * @returns {TagMarker[]}
+ */
+function loadTagMarkers(el) {
+  if (!el || !el.textContent) return []
 
   try {
-    const raw = JSON.parse(tagDataEl.textContent)
+    const raw = JSON.parse(el.textContent)
     if (!Array.isArray(raw)) return []
 
     return raw
@@ -1220,11 +1248,17 @@ function loadTagMarkers() {
   }
 }
 
-function loadOverflowTagMarker() {
-  if (!overflowTagDataEl || !overflowTagDataEl.textContent) return null
+/**
+ * Parse the optional overflow marker from inline JSON data.
+ *
+ * @param {Element | null} el
+ * @returns {OverflowTagMarker | null}
+ */
+function loadOverflowTagMarker(el) {
+  if (!el || !el.textContent) return null
 
   try {
-    const raw = JSON.parse(overflowTagDataEl.textContent)
+    const raw = JSON.parse(el.textContent)
     if (!raw || typeof raw !== 'object') return null
 
     const tag = String(raw.tag || '').trim()
