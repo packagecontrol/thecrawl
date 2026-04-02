@@ -88136,7 +88136,7 @@
         },
         {
           "base": "https://pypi.org/project/MarkupSafe",
-          "asset": "MarkupSafe-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -88148,7 +88148,7 @@
         },
         {
           "base": "https://pypi.org/project/MarkupSafe",
-          "asset": "MarkupSafe-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -88160,7 +88160,7 @@
         },
         {
           "base": "https://pypi.org/project/MarkupSafe",
-          "asset": "MarkupSafe-*-cp${py_version}-cp${py_version}-macosx_*_universal2.whl",
+          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-macosx_*_universal2.whl",
           "platforms": [
             "osx-arm64"
           ],
@@ -88172,7 +88172,7 @@
         },
         {
           "base": "https://pypi.org/project/MarkupSafe",
-          "asset": "MarkupSafe-*-cp${py_version}-cp${py_version}-macosx_*_x86_64.whl",
+          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-macosx_*_x86_64.whl",
           "platforms": [
             "osx-x64"
           ],
@@ -88184,7 +88184,7 @@
         },
         {
           "base": "https://pypi.org/project/MarkupSafe",
-          "asset": "MarkupSafe-*-cp${py_version}-cp${py_version}-win_amd64.whl",
+          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-win_amd64.whl",
           "platforms": [
             "windows-x64"
           ],
