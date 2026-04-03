@@ -36515,9 +36515,8 @@
     },
     {
       "name": "KodiDevKit",
-      "details": "https://github.com/phil65/kodidevkit",
-      "author": "phil65",
-      "donate": "https://blockchain.info/de/address/1KzWm7XtW42gyZQqg5CqW6k9fb3zWinM15",
+      "details": "https://github.com/MikeSiLVO/KodiDevKit",
+      "donate": "https://ko-fi.com/mikesilvo",
       "labels": [
         "auto-complete",
         "completions",
@@ -36526,7 +36525,7 @@
       ],
       "releases": [
         {
-          "sublime_text": ">=3092",
+          "sublime_text": ">=4000",
           "tags": true
         }
       ],
