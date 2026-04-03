@@ -89088,6 +89088,66 @@
       "schema_version": "4.0.0"
     },
     {
+      "name": "pygit2",
+      "description": "Python bindings for libgit2.",
+      "author": "J. David Ib\u00e1\u00f1ez et al.",
+      "issues": "https://github.com/libgit2/pygit2/issues",
+      "releases": [
+        {
+          "base": "https://pypi.org/project/pygit2",
+          "asset": "pygit2-*-cp${py_version}-cp${py_version}-macosx_*_arm64.whl",
+          "platforms": [
+            "osx-arm64"
+          ],
+          "python_versions": [
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/pygit2",
+          "asset": "pygit2-*-cp${py_version}-cp${py_version}-macosx_*_x86_64.whl",
+          "platforms": [
+            "osx-x64"
+          ],
+          "python_versions": [
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/pygit2",
+          "asset": "pygit2-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "platforms": [
+            "linux-arm64"
+          ],
+          "python_versions": [
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/pygit2",
+          "asset": "pygit2-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "platforms": [
+            "linux-x64"
+          ],
+          "python_versions": [
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/pygit2",
+          "asset": "pygit2-*-cp${py_version}-cp${py_version}-win_amd64.whl",
+          "platforms": [
+            "windows-x64"
+          ],
+          "python_versions": [
+            "3.14"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+      "schema_version": "4.0.0"
+    },
+    {
       "name": "pygments",
       "description": "Python pygments module",
       "author": "AndreasBackx",
