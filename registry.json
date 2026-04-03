@@ -4434,6 +4434,10 @@
       ],
       "releases": [
         {
+          "sublime_text": ">=4203",
+          "tags": "4203-"
+        },
+        {
           "sublime_text": ">=4201",
           "tags": "4201-"
         },
