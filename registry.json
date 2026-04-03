@@ -13433,6 +13433,23 @@
       "first_seen": "2013-02-21T01:24:14Z"
     },
     {
+      "name": "ConvCalculate",
+      "details": "https://github.com/convictss/ConvSublimeCalculate",
+      "author": "Convict Yellow (Kailian.Huang)",
+      "labels": [
+        "calculator"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-04-03T19:05:11Z"
+    },
+    {
       "name": "ConvertChineseCharacters",
       "details": "https://github.com/leibnizli/ConvertChineseCharacters",
       "releases": [
