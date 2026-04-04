@@ -7512,6 +7512,22 @@
       "first_seen": "2020-05-24T14:28:07Z"
     },
     {
+      "name": "Bulk Renamer",
+      "details": "https://github.com/guille/sublime-bulk-renamer",
+      "labels": [
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-04-04T16:01:52Z"
+    },
+    {
       "name": "Bullet",
       "details": "https://github.com/misotomlam/SublimeBullet",
       "releases": [
@@ -35673,6 +35689,19 @@
       "first_seen": "2014-02-20T06:35:43Z"
     },
     {
+      "name": "Jujutsu",
+      "details": "https://github.com/urschrei/jujutsu-sublime-plugin",
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-04-04T16:01:52Z"
+    },
+    {
       "name": "Julia",
       "details": "https://github.com/JuliaEditorSupport/Julia-sublime",
       "labels": [
@@ -61952,6 +61981,22 @@
       "labels": [
         "color scheme"
       ]
+    },
+    {
+      "name": "Search All Windows",
+      "details": "https://github.com/nathanshipley/SublimeSearchAllWindows",
+      "labels": [
+        "search"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-04-04T16:01:52Z"
     },
     {
       "name": "Search Anywhere",
