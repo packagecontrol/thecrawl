@@ -88238,7 +88238,16 @@
             "osx-arm64"
           ],
           "python_versions": [
-            "3.8",
+            "3.8"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/MarkupSafe",
+          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-macosx_*_arm64.whl",
+          "platforms": [
+            "osx-arm64"
+          ],
+          "python_versions": [
             "3.13",
             "3.14"
           ]
