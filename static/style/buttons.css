@@ -87,7 +87,20 @@
   &.label-more:hover {
     color: var(--orange-2);
   }
+
+  &.label {
+    &[href*='language%20syntax'],
+    &[href*='snippets'],
+    &[href*='linting'],
+    &[href*='auto-complete'],
+    &[href*='color%20scheme'],
+    &[href*='theme'] {
+      color: var(--foreground-1);
+      font-weight: bold;
+    }
+  }
 }
+
 
 span.button {
   cursor: revert;
