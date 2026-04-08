@@ -1213,6 +1213,22 @@
       "first_seen": "2013-01-20T02:24:33Z"
     },
     {
+      "name": "AL",
+      "details": "https://github.com/SShadowS/sublime-al",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-04-08T14:52:22Z"
+    },
+    {
       "name": "Alabaster Color Scheme",
       "details": "https://github.com/tonsky/sublime-scheme-alabaster",
       "donate": "https://www.patreon.com/tonsky",
@@ -42323,6 +42339,23 @@
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2017-11-11T23:18:01Z"
+    },
+    {
+      "name": "Mar",
+      "details": "https://github.com/marlanghq/mar-sublime",
+      "labels": [
+        "language syntax",
+        "completions"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-04-08T14:52:22Z"
     },
     {
       "name": "Marc Mentat Proc Highlighting",
