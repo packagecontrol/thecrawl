@@ -82532,6 +82532,26 @@
       "first_seen": "2014-02-05T15:05:45Z"
     },
     {
+      "name": "Vercel Snippets",
+      "details": "https://github.com/renzojohnson/Vercel-Snippets",
+      "labels": [
+        "snippets",
+        "vercel",
+        "nextjs",
+        "serverless",
+        "edge"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-04-08T13:24:27Z"
+    },
+    {
       "name": "VeribleFormatterVerilog",
       "details": "https://github.com/sxr1223/VeribleFormatterVerilog",
       "releases": [
