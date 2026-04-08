@@ -260,13 +260,18 @@ function basePackage(pkg, stat) {
     return minB - minA // Higher min build first
   })
 
-  const labels = pkg.labels?.slice() ?? []
-  if (!supportsModernSublime) labels.push('ST2')
-  if (supportsModernSublime && doesNotSupportNewestSublime) labels.push('ST3')
+  let labels = pkg.labels?.slice() ?? []
+  labels = labels.sort((a) => {
+    if (['language syntax', 'snippets', 'linting', 'auto-complete', 'color scheme', 'theme'].includes(a)) {
+      return -1
+    }
+  })
+  if (!supportsModernSublime) labels.unshift('ST2')
+  if (supportsModernSublime && doesNotSupportNewestSublime) labels.unshift('ST3')
   if (pkg.removed) {
-    labels.push('RIP')
+    labels.unshift('RIP')
   } else if (pkg.archived_at) {
-    labels.push('MIA')
+    labels.unshift('MIA')
   }
 
   const platforms = util.computePlatformLabelsForSearch(rawReleases).sort()
