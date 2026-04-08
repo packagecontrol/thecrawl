@@ -75330,6 +75330,24 @@
       "first_seen": "2014-02-27T02:10:56Z"
     },
     {
+      "name": "Talon",
+      "details": "https://github.com/roycetech/sublime-text-4-talon-syntax",
+      "labels": [
+        "talon voice",
+        "language syntax"
+      ],
+      "author": "Royce Remulla",
+      "releases": [
+        {
+          "sublime_text": ">=4200",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-04-08T19:58:45Z"
+    },
+    {
       "name": "TamarinProver",
       "details": "https://github.com/tamarin-prover/editor-sublime",
       "labels": [
