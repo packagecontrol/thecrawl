@@ -6938,6 +6938,28 @@
       "first_seen": "2015-11-16T21:27:06Z"
     },
     {
+      "details": "https://github.com/vwheeler63/BoxDrawing",
+      "labels": [
+        "box",
+        "draw",
+        "drawing",
+        "line",
+        "box drawing",
+        "line drawing"
+      ],
+      "donate": "https://buymeacoffee.com/vwheeler63",
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "BoxDrawing",
+      "first_seen": "2026-04-09T19:07:22Z"
+    },
+    {
       "name": "Bracketeer",
       "details": "https://github.com/colinta/SublimeBracketeer",
       "description": "Some bracket manipulation, selection, and insertion commands.",
