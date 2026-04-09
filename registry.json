@@ -9112,20 +9112,13 @@
       "first_seen": "2018-05-30T01:01:10Z"
     },
     {
-      "details": "https://github.com/cameroncooper/sublime-chialisp",
+      "first_seen": "2022-10-08T08:36:30Z",
+      "removed": "2026-04-09T20:07:32Z",
       "name": "Chialisp",
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
       "labels": [
         "lsp"
-      ],
-      "releases": [
-        {
-          "sublime_text": ">=4000",
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2022-10-08T08:36:30Z"
+      ]
     },
     {
       "name": "Chick",
