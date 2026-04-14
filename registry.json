@@ -166,9 +166,9 @@
       "first_seen": "2014-12-14T21:55:03Z"
     },
     {
-      "name": "1Self",
       "first_seen": "2014-09-03T13:45:53Z",
       "removed": "2020-08-22T15:30:13Z",
+      "name": "1Self",
       "labels": [
         "time tracking",
         "activity"
@@ -347,9 +347,9 @@
       "first_seen": "2016-09-12T13:38:48Z"
     },
     {
-      "name": "Abacus",
       "first_seen": "2012-01-10T09:09:48Z",
       "removed": "2017-10-29T07:45:07Z",
+      "name": "Abacus",
       "labels": []
     },
     {
@@ -671,9 +671,9 @@
       "first_seen": "2012-02-03T15:08:05Z"
     },
     {
-      "name": "Active4D",
       "first_seen": "2012-11-17T01:20:56Z",
       "removed": "2020-04-20T12:39:17Z",
+      "name": "Active4D",
       "labels": [
         "language syntax"
       ]
@@ -881,9 +881,9 @@
       "first_seen": "2023-06-12T13:18:03Z"
     },
     {
-      "name": "Adianti Snippets for PHP",
       "first_seen": "2017-07-04T15:06:04Z",
       "removed": "2018-08-03T12:42:04Z",
+      "name": "Adianti Snippets for PHP",
       "labels": []
     },
     {
@@ -1624,9 +1624,9 @@
       "first_seen": "2015-12-10T09:18:04Z"
     },
     {
-      "name": "Amalgamate",
       "first_seen": "2014-10-18T17:10:03Z",
       "removed": "2018-09-10T18:36:30Z",
+      "name": "Amalgamate",
       "labels": []
     },
     {
@@ -2736,9 +2736,9 @@
       ]
     },
     {
-      "name": "APICloudPackage",
       "first_seen": "2015-09-26T07:03:03Z",
       "removed": "2018-11-29T13:15:54Z",
+      "name": "APICloudPackage",
       "labels": [
         "android",
         "apicloud"
@@ -2851,9 +2851,9 @@
       "first_seen": "2022-12-05T10:03:05Z"
     },
     {
-      "name": "APPCloud",
       "first_seen": "2017-11-02T18:06:11Z",
       "removed": "2019-07-22T04:27:04Z",
+      "name": "APPCloud",
       "labels": []
     },
     {
@@ -3084,9 +3084,9 @@
       "first_seen": "2014-12-22T15:40:05Z"
     },
     {
-      "name": "Arduino",
       "first_seen": "2012-05-02T08:38:41Z",
       "removed": "2026-04-14T05:49:06Z",
+      "name": "Arduino",
       "labels": []
     },
     {
@@ -3239,9 +3239,9 @@
       "first_seen": "2018-04-14T12:15:11Z"
     },
     {
-      "name": "Arnold Clark Snippets for Ruby",
       "first_seen": "2013-01-22T20:56:18Z",
       "removed": "2015-03-05T10:55:35Z",
+      "name": "Arnold Clark Snippets for Ruby",
       "labels": [
         "snippets"
       ]
@@ -4083,9 +4083,9 @@
       "first_seen": "2020-01-08T16:06:10Z"
     },
     {
-      "name": "AutoComments",
       "first_seen": "2013-03-29T03:59:29Z",
       "removed": "2026-04-14T04:56:30Z",
+      "name": "AutoComments",
       "labels": []
     },
     {
@@ -4102,9 +4102,9 @@
       "first_seen": "2012-09-15T11:54:26Z"
     },
     {
-      "name": "AutoCompleteJS",
       "first_seen": "2014-12-05T19:00:06Z",
       "removed": "2016-04-02T02:24:49Z",
+      "name": "AutoCompleteJS",
       "labels": []
     },
     {
@@ -4126,9 +4126,9 @@
       "first_seen": "2014-11-12T23:55:06Z"
     },
     {
-      "name": "AutoCopyright",
       "first_seen": "2012-08-22T17:51:16Z",
       "removed": "2026-04-14T04:56:22Z",
+      "name": "AutoCopyright",
       "labels": []
     },
     {
@@ -4720,9 +4720,9 @@
       "first_seen": "2016-03-02T15:15:59Z"
     },
     {
-      "name": "AVA Standard",
       "first_seen": "2016-05-29T02:01:18Z",
       "removed": "2017-07-12T12:00:32Z",
+      "name": "AVA Standard",
       "labels": [
         "snippets",
         "javascript",
@@ -4762,9 +4762,9 @@
       "first_seen": "2014-02-08T22:15:03Z"
     },
     {
-      "name": "AVR-ASM-Sublime",
       "first_seen": "2012-02-27T01:47:13Z",
       "removed": "2016-10-30T15:00:34Z",
+      "name": "AVR-ASM-Sublime",
       "labels": [
         "language syntax"
       ]
@@ -5938,9 +5938,9 @@
       "first_seen": "2014-05-18T18:10:04Z"
     },
     {
-      "name": "Better TypeScript",
       "first_seen": "2013-08-28T03:35:00Z",
       "removed": "2015-09-16T18:38:26Z",
+      "name": "Better TypeScript",
       "labels": [
         "language syntax",
         "snippets",
@@ -6717,9 +6717,9 @@
       "first_seen": "2014-07-01T17:20:12Z"
     },
     {
-      "name": "Bolt",
       "first_seen": "2013-09-03T03:50:17Z",
       "removed": "2014-10-09T23:45:47Z",
+      "name": "Bolt",
       "labels": []
     },
     {
@@ -6903,9 +6903,9 @@
       "first_seen": "2019-03-23T15:51:24Z"
     },
     {
-      "name": "Bootstrap Jade",
       "first_seen": "2013-05-20T23:42:34Z",
       "removed": "2026-04-14T07:55:28Z",
+      "name": "Bootstrap Jade",
       "labels": []
     },
     {
@@ -6947,9 +6947,9 @@
       "first_seen": "2021-06-13T13:42:28Z"
     },
     {
-      "name": "Borat Ipsum",
       "first_seen": "2014-10-30T22:50:09Z",
       "removed": "2019-09-19T07:12:06Z",
+      "name": "Borat Ipsum",
       "labels": []
     },
     {
@@ -6966,9 +6966,9 @@
       "first_seen": "2017-05-31T21:15:22Z"
     },
     {
-      "name": "Boron Color Scheme",
       "first_seen": "2013-01-17T05:53:30Z",
       "removed": "2018-08-28T00:33:23Z",
+      "name": "Boron Color Scheme",
       "labels": [
         "color scheme"
       ]
@@ -7101,18 +7101,18 @@
       "first_seen": "2026-04-09T19:07:22Z"
     },
     {
-      "name": "Boxy Theme",
       "first_seen": "2016-03-02T15:24:09Z",
       "removed": "2018-12-08T15:39:21Z",
+      "name": "Boxy Theme",
       "labels": [
         "theme",
         "color scheme"
       ]
     },
     {
-      "name": "Boxy Theme Addon - Font Face",
       "first_seen": "2016-06-13T10:00:12Z",
       "removed": "2018-12-08T15:39:23Z",
+      "name": "Boxy Theme Addon - Font Face",
       "labels": [
         "theme",
         "addon",
@@ -7120,18 +7120,18 @@
       ]
     },
     {
-      "name": "Boxy Theme Addon - Linter Theme",
       "first_seen": "2016-06-13T10:00:14Z",
       "removed": "2016-09-12T10:26:16Z",
+      "name": "Boxy Theme Addon - Linter Theme",
       "labels": [
         "theme",
         "addon"
       ]
     },
     {
-      "name": "Boxy Theme Addon - Mono File Icons",
       "first_seen": "2016-07-18T02:12:07Z",
       "removed": "2018-12-08T15:39:24Z",
+      "name": "Boxy Theme Addon - Mono File Icons",
       "labels": [
         "theme",
         "addon",
@@ -7139,9 +7139,9 @@
       ]
     },
     {
-      "name": "Boxy Theme Addon - Mono File Icons - Light UI",
       "first_seen": "2016-07-18T02:12:08Z",
       "removed": "2016-10-18T14:58:18Z",
+      "name": "Boxy Theme Addon - Mono File Icons - Light UI",
       "labels": [
         "theme",
         "addon",
@@ -7149,9 +7149,9 @@
       ]
     },
     {
-      "name": "Boxy Theme Addon - Widget Font MD",
       "first_seen": "2016-06-13T10:00:17Z",
       "removed": "2016-09-12T10:26:21Z",
+      "name": "Boxy Theme Addon - Widget Font MD",
       "labels": [
         "theme",
         "addon",
@@ -7159,9 +7159,9 @@
       ]
     },
     {
-      "name": "Boxy Theme Addon - Widget Font Size",
       "first_seen": "2016-06-13T10:00:16Z",
       "removed": "2018-12-08T15:39:25Z",
+      "name": "Boxy Theme Addon - Widget Font Size",
       "labels": [
         "theme",
         "addon",
@@ -7169,9 +7169,9 @@
       ]
     },
     {
-      "name": "Boxy Theme Addon - Widget Font XL",
       "first_seen": "2016-06-13T10:00:18Z",
       "removed": "2016-09-12T10:26:22Z",
+      "name": "Boxy Theme Addon - Widget Font XL",
       "labels": [
         "theme",
         "addon",
@@ -7179,9 +7179,9 @@
       ]
     },
     {
-      "name": "Boxy Theme Addon - Widget Font XS",
       "first_seen": "2016-06-13T10:00:19Z",
       "removed": "2016-09-12T10:26:22Z",
+      "name": "Boxy Theme Addon - Widget Font XS",
       "labels": [
         "theme",
         "addon",
@@ -7437,9 +7437,9 @@
       "first_seen": "2018-09-18T18:21:21Z"
     },
     {
-      "name": "Broadcast Color Scheme",
       "first_seen": "2014-02-28T18:00:07Z",
       "removed": "2016-10-26T19:30:56Z",
+      "name": "Broadcast Color Scheme",
       "labels": [
         "color scheme"
       ]
@@ -7635,15 +7635,15 @@
       "first_seen": "2012-08-29T00:31:26Z"
     },
     {
-      "name": "BuffersBackup",
       "first_seen": "2012-09-15T13:18:40Z",
       "removed": "2020-08-18T21:27:59Z",
+      "name": "BuffersBackup",
       "labels": []
     },
     {
-      "name": "BufferScroll",
       "first_seen": "2011-12-15T14:15:02Z",
       "removed": "2016-04-02T02:02:53Z",
+      "name": "BufferScroll",
       "labels": []
     },
     {
@@ -7893,9 +7893,9 @@
       "first_seen": "2015-01-27T01:40:09Z"
     },
     {
-      "name": "Business Catalyst Liquid Snippets",
       "first_seen": "2015-06-26T15:19:48Z",
       "removed": "2020-04-06T01:15:06Z",
+      "name": "Business Catalyst Liquid Snippets",
       "labels": [
         "snippets"
       ]
@@ -8370,9 +8370,9 @@
       "first_seen": "2013-05-31T01:56:38Z"
     },
     {
-      "name": "Camaleon",
       "first_seen": "2011-12-15T15:13:27Z",
       "removed": "2016-04-02T02:03:25Z",
+      "name": "Camaleon",
       "labels": []
     },
     {
@@ -8408,9 +8408,9 @@
       "first_seen": "2024-05-16T07:33:03Z"
     },
     {
-      "name": "CanISwitchToSublimeText3",
       "first_seen": "2013-07-24T07:23:38Z",
       "removed": "2016-07-18T01:49:04Z",
+      "name": "CanISwitchToSublimeText3",
       "labels": []
     },
     {
@@ -8514,9 +8514,9 @@
       "first_seen": "2014-02-21T13:25:11Z"
     },
     {
-      "name": "Cappuccino",
       "first_seen": "2011-12-15T23:08:35Z",
       "removed": "2017-12-26T17:57:58Z",
+      "name": "Cappuccino",
       "labels": [
         "Cappuccino",
         "Objective-J",
@@ -8736,9 +8736,9 @@
       "first_seen": "2015-09-12T20:45:17Z"
     },
     {
-      "name": "CCL Tools",
       "first_seen": "2016-09-12T16:51:17Z",
       "removed": "2020-02-24T02:03:45Z",
+      "name": "CCL Tools",
       "labels": [
         "Cerner",
         "CCL",
@@ -8910,9 +8910,9 @@
       "first_seen": "2015-08-24T19:57:12Z"
     },
     {
-      "name": "CFeather",
       "first_seen": "2012-11-09T07:38:12Z",
       "removed": "2014-09-29T14:25:13Z",
+      "name": "CFeather",
       "labels": [
         "language syntax"
       ]
@@ -8968,9 +8968,9 @@
       "first_seen": "2015-02-12T01:05:03Z"
     },
     {
-      "name": "CFile",
       "first_seen": "2017-04-03T15:27:21Z",
       "removed": "2020-03-09T16:06:43Z",
+      "name": "CFile",
       "labels": [
         "C",
         "C++"
@@ -9228,9 +9228,9 @@
       "first_seen": "2014-03-24T23:25:14Z"
     },
     {
-      "name": "Character Table",
       "first_seen": "2013-12-06T10:46:06Z",
       "removed": "2020-08-18T19:11:05Z",
+      "name": "Character Table",
       "labels": []
     },
     {
@@ -9276,9 +9276,9 @@
       ]
     },
     {
-      "name": "Cheat Sheets",
       "first_seen": "2013-08-18T20:00:03Z",
       "removed": "2018-10-18T23:27:25Z",
+      "name": "Cheat Sheets",
       "labels": []
     },
     {
@@ -9329,21 +9329,21 @@
       "first_seen": "2016-03-07T01:00:52Z"
     },
     {
-      "name": "Cheatsheets Rails",
       "first_seen": "2013-11-10T02:00:13Z",
       "removed": "2017-08-30T06:19:17Z",
+      "name": "Cheatsheets Rails",
       "labels": []
     },
     {
-      "name": "CheckBounce",
       "first_seen": "2013-04-07T19:21:56Z",
       "removed": "2016-07-05T14:44:23Z",
+      "name": "CheckBounce",
       "labels": []
     },
     {
-      "name": "ChecksumUPC",
       "first_seen": "2015-09-21T19:45:07Z",
       "removed": "2019-03-30T20:43:07Z",
+      "name": "ChecksumUPC",
       "labels": []
     },
     {
@@ -9365,9 +9365,9 @@
       "first_seen": "2013-05-20T01:43:04Z"
     },
     {
-      "name": "CheckTypos3",
       "first_seen": "2025-04-30T14:43:01Z",
       "removed": "2025-04-30T14:43:01Z",
+      "name": "CheckTypos3",
       "labels": []
     },
     {
@@ -9564,9 +9564,9 @@
       "first_seen": "2015-05-11T23:05:03Z"
     },
     {
-      "name": "ChineseTranslator",
       "first_seen": "2016-04-06T16:21:09Z",
       "removed": "2017-09-26T08:04:09Z",
+      "name": "ChineseTranslator",
       "labels": [
         "\u4e2d\u6587",
         "\u7ffb\u8bd1",
@@ -9656,9 +9656,9 @@
       "first_seen": "2018-02-19T13:51:12Z"
     },
     {
-      "name": "Chopstick Autocompletion",
       "first_seen": "2013-12-05T01:20:10Z",
       "removed": "2016-04-21T11:51:43Z",
+      "name": "Chopstick Autocompletion",
       "labels": [
         "scss",
         "chopstick",
@@ -9731,9 +9731,9 @@
       "first_seen": "2017-01-30T12:07:04Z"
     },
     {
-      "name": "Chrome Refresh",
       "first_seen": "2013-07-06T15:23:29Z",
       "removed": "2026-04-14T05:37:17Z",
+      "name": "Chrome Refresh",
       "labels": []
     },
     {
@@ -9893,9 +9893,9 @@
       "first_seen": "2012-10-22T02:06:53Z"
     },
     {
-      "name": "Ciapre Mod",
       "first_seen": "2017-08-18T12:36:32Z",
       "removed": "2018-08-19T13:39:32Z",
+      "name": "Ciapre Mod",
       "labels": [
         "colorscheme",
         "ciapre",
@@ -9916,9 +9916,9 @@
       "first_seen": "2020-01-15T20:18:32Z"
     },
     {
-      "name": "CircleCi Status",
       "first_seen": "2016-11-07T13:55:23Z",
       "removed": "2019-08-22T01:28:30Z",
+      "name": "CircleCi Status",
       "labels": []
     },
     {
@@ -10501,9 +10501,9 @@
       "first_seen": "2012-07-05T22:55:11Z"
     },
     {
-      "name": "ClipboardCommands",
       "first_seen": "2012-03-28T00:53:08Z",
       "removed": "2016-04-02T02:12:52Z",
+      "name": "ClipboardCommands",
       "labels": []
     },
     {
@@ -10831,9 +10831,9 @@
       "first_seen": "2018-03-15T13:09:28Z"
     },
     {
-      "name": "CMakeSnippets",
       "first_seen": "2013-12-15T06:35:05Z",
       "removed": "2020-08-18T19:48:32Z",
+      "name": "CMakeSnippets",
       "labels": [
         "snippets",
         "completion",
@@ -10969,9 +10969,9 @@
       "first_seen": "2016-05-21T17:51:59Z"
     },
     {
-      "name": "CNPunctuationAutopair",
       "first_seen": "2013-01-18T05:56:02Z",
       "removed": "2026-04-14T04:56:22Z",
+      "name": "CNPunctuationAutopair",
       "labels": []
     },
     {
@@ -10991,9 +10991,9 @@
       "first_seen": "2016-02-01T10:33:57Z"
     },
     {
-      "name": "Cobalt2 Flat Theme",
       "first_seen": "2016-07-18T01:36:57Z",
       "removed": "2018-09-26T00:06:42Z",
+      "name": "Cobalt2 Flat Theme",
       "labels": []
     },
     {
@@ -11329,9 +11329,9 @@
       "labels": []
     },
     {
-      "name": "Codebug",
       "first_seen": "2014-02-27T22:45:10Z",
       "removed": "2017-08-10T06:36:39Z",
+      "name": "Codebug",
       "labels": []
     },
     {
@@ -11810,9 +11810,9 @@
       "first_seen": "2024-10-08T20:07:42Z"
     },
     {
-      "name": "Codepad.org Paste Plugin",
       "first_seen": "2013-12-11T07:30:06Z",
       "removed": "2016-04-21T17:02:29Z",
+      "name": "Codepad.org Paste Plugin",
       "labels": []
     },
     {
@@ -12319,9 +12319,9 @@
       "first_seen": "2012-03-31T08:53:35Z"
     },
     {
-      "name": "Color Scheme - AmyCable",
       "first_seen": "2013-08-15T15:30:04Z",
       "removed": "2020-11-10T09:00:30Z",
+      "name": "Color Scheme - AmyCable",
       "labels": [
         "color scheme"
       ]
@@ -12520,9 +12520,9 @@
       "first_seen": "2014-02-12T14:25:09Z"
     },
     {
-      "name": "Color Scheme - JustBeforeDawn",
       "first_seen": "2013-09-26T16:15:04Z",
       "removed": "2020-11-10T09:12:13Z",
+      "name": "Color Scheme - JustBeforeDawn",
       "labels": [
         "color scheme"
       ]
@@ -12545,9 +12545,9 @@
       "first_seen": "2017-05-26T02:07:02Z"
     },
     {
-      "name": "Color Scheme - Nice Blue Soda",
       "first_seen": "2013-08-14T21:15:12Z",
       "removed": "2020-08-18T20:15:25Z",
+      "name": "Color Scheme - Nice Blue Soda",
       "labels": [
         "color scheme"
       ]
@@ -12604,9 +12604,9 @@
       "first_seen": "2013-04-20T20:53:25Z"
     },
     {
-      "name": "Color Scheme - saulhudson",
       "first_seen": "2013-07-02T02:53:26Z",
       "removed": "2018-12-31T19:31:11Z",
+      "name": "Color Scheme - saulhudson",
       "labels": [
         "color scheme"
       ]
@@ -13110,9 +13110,9 @@
       "first_seen": "2017-09-19T00:19:19Z"
     },
     {
-      "name": "Command Help",
       "first_seen": "2013-10-22T22:15:38Z",
       "removed": "2020-08-18T19:11:04Z",
+      "name": "Command Help",
       "labels": []
     },
     {
@@ -13514,9 +13514,9 @@
       "first_seen": "2017-06-06T04:32:19Z"
     },
     {
-      "name": "CompleteSharp",
       "first_seen": "2012-05-13T13:47:16Z",
       "removed": "2026-04-14T06:06:25Z",
+      "name": "CompleteSharp",
       "labels": []
     },
     {
@@ -14032,9 +14032,9 @@
       "first_seen": "2012-06-15T21:37:44Z"
     },
     {
-      "name": "Convoy",
       "first_seen": "2013-12-24T00:10:07Z",
       "removed": "2015-02-13T03:47:06Z",
+      "name": "Convoy",
       "labels": []
     },
     {
@@ -14087,9 +14087,9 @@
       "first_seen": "2022-12-30T18:45:31Z"
     },
     {
-      "name": "Cool Code Scheme",
       "first_seen": "2012-10-19T07:56:17Z",
       "removed": "2026-04-14T07:28:14Z",
+      "name": "Cool Code Scheme",
       "labels": []
     },
     {
@@ -15079,9 +15079,9 @@
       "first_seen": "2023-06-03T16:31:00Z"
     },
     {
-      "name": "CSharpreter",
       "first_seen": "2012-08-29T23:19:37Z",
       "removed": "2026-04-14T07:37:19Z",
+      "name": "CSharpreter",
       "labels": []
     },
     {
@@ -15463,9 +15463,9 @@
       "first_seen": "2014-07-30T16:35:13Z"
     },
     {
-      "name": "CSS3_Syntax",
       "first_seen": "2014-03-01T12:20:18Z",
       "removed": "2017-08-09T19:36:59Z",
+      "name": "CSS3_Syntax",
       "labels": []
     },
     {
@@ -16118,9 +16118,9 @@
       "first_seen": "2014-06-30T15:45:05Z"
     },
     {
-      "name": "CV3 Developer Tools",
       "first_seen": "2014-03-16T13:00:08Z",
       "removed": "2015-05-29T14:26:08Z",
+      "name": "CV3 Developer Tools",
       "labels": []
     },
     {
@@ -16301,9 +16301,9 @@
       "first_seen": "2017-01-04T00:12:55Z"
     },
     {
-      "name": "DA CS",
       "first_seen": "2017-10-16T20:57:22Z",
       "removed": "2018-12-08T14:51:41Z",
+      "name": "DA CS",
       "labels": [
         "popular",
         "customizable",
@@ -16327,9 +16327,9 @@
       "first_seen": "2020-05-24T13:54:08Z"
     },
     {
-      "name": "DA UI",
       "first_seen": "2017-09-26T00:22:24Z",
       "removed": "2018-12-08T14:50:01Z",
+      "name": "DA UI",
       "labels": [
         "adaptive",
         "customizable",
@@ -16805,9 +16805,9 @@
       "first_seen": "2012-11-22T16:51:12Z"
     },
     {
-      "name": "DB1",
       "first_seen": "2015-10-18T00:57:20Z",
       "removed": "2016-10-05T23:28:25Z",
+      "name": "DB1",
       "labels": [
         "postgresql",
         "mysql",
@@ -16883,9 +16883,9 @@
       "first_seen": "2013-04-19T22:58:57Z"
     },
     {
-      "name": "DCPU-16",
       "first_seen": "2012-04-13T03:23:57Z",
       "removed": "2026-04-14T05:49:06Z",
+      "name": "DCPU-16",
       "labels": []
     },
     {
@@ -17505,9 +17505,9 @@
       "first_seen": "2016-02-19T03:33:59Z"
     },
     {
-      "name": "Devrabbit Paste",
       "first_seen": "2013-08-12T14:45:47Z",
       "removed": "2020-01-01T16:36:32Z",
+      "name": "Devrabbit Paste",
       "labels": []
     },
     {
@@ -17654,9 +17654,9 @@
       "first_seen": "2015-01-06T19:55:09Z"
     },
     {
-      "name": "Dictionaries",
       "first_seen": "2012-05-30T07:24:48Z",
       "removed": "2016-04-02T01:36:26Z",
+      "name": "Dictionaries",
       "labels": []
     },
     {
@@ -17790,9 +17790,9 @@
       "first_seen": "2012-10-03T14:09:46Z"
     },
     {
-      "name": "Dimmed UI",
       "first_seen": "2014-12-05T18:45:30Z",
       "removed": "2015-02-14T05:47:55Z",
+      "name": "Dimmed UI",
       "labels": [
         "theme",
         "dimmed ui"
@@ -18347,9 +18347,9 @@
       "first_seen": "2018-05-26T16:57:34Z"
     },
     {
-      "name": "DMT",
       "first_seen": "2019-02-18T21:55:11Z",
       "removed": "2020-11-15T11:22:44Z",
+      "name": "DMT",
       "labels": [
         "language syntax"
       ]
@@ -18641,9 +18641,9 @@
       "first_seen": "2014-06-15T20:20:13Z"
     },
     {
-      "name": "DokuWiki",
       "first_seen": "2012-08-29T23:18:46Z",
       "removed": "2026-04-14T04:56:26Z",
+      "name": "DokuWiki",
       "labels": []
     },
     {
@@ -19031,9 +19031,9 @@
       "first_seen": "2011-12-15T16:56:07Z"
     },
     {
-      "name": "dpaster",
       "first_seen": "2020-04-18T19:42:48Z",
       "removed": "2021-02-09T18:16:05Z",
+      "name": "dpaster",
       "labels": []
     },
     {
@@ -19136,9 +19136,9 @@
       "first_seen": "2014-05-13T09:45:22Z"
     },
     {
-      "name": "DrSync",
       "first_seen": "2014-05-21T20:30:11Z",
       "removed": "2014-10-24T15:26:29Z",
+      "name": "DrSync",
       "labels": [
         "Dropbox",
         "GoogleDrive",
@@ -19370,9 +19370,9 @@
       "first_seen": "2017-06-09T13:34:54Z"
     },
     {
-      "name": "Duotone Dark Red",
       "first_seen": "2016-11-06T19:58:24Z",
       "removed": "2019-05-16T07:20:37Z",
+      "name": "Duotone Dark Red",
       "labels": []
     },
     {
@@ -19550,15 +19550,15 @@
       "first_seen": "2012-10-23T00:22:48Z"
     },
     {
-      "name": "Dynamic Commands",
       "first_seen": "2013-08-14T23:00:03Z",
       "removed": "2020-08-18T19:11:05Z",
+      "name": "Dynamic Commands",
       "labels": []
     },
     {
-      "name": "E-Mail",
       "first_seen": "2014-02-10T05:01:28Z",
       "removed": "2020-08-18T19:11:06Z",
+      "name": "E-Mail",
       "labels": []
     },
     {
@@ -19836,9 +19836,9 @@
       "first_seen": "2019-04-19T14:48:56Z"
     },
     {
-      "name": "Easygit",
       "first_seen": "2014-01-28T10:45:12Z",
       "removed": "2020-07-05T06:07:34Z",
+      "name": "Easygit",
       "labels": []
     },
     {
@@ -21145,9 +21145,9 @@
       "first_seen": "2020-12-14T14:58:45Z"
     },
     {
-      "name": "EncodingHelper",
       "first_seen": "2011-12-16T03:28:05Z",
       "removed": "2016-04-02T01:38:17Z",
+      "name": "EncodingHelper",
       "labels": []
     },
     {
@@ -21339,9 +21339,9 @@
       "first_seen": "2015-02-14T21:10:14Z"
     },
     {
-      "name": "Entropy",
       "first_seen": "2015-07-01T20:42:05Z",
       "removed": "2018-10-12T16:01:25Z",
+      "name": "Entropy",
       "labels": [
         "demandware"
       ]
@@ -21363,9 +21363,9 @@
       "first_seen": "2013-08-25T00:50:04Z"
     },
     {
-      "name": "Enumerate",
       "first_seen": "2013-08-20T21:30:49Z",
       "removed": "2013-09-03T07:25:26Z",
+      "name": "Enumerate",
       "labels": []
     },
     {
@@ -21440,15 +21440,15 @@
       "first_seen": "2015-12-08T13:49:55Z"
     },
     {
-      "name": "EPM",
       "first_seen": "2014-06-05T12:05:17Z",
       "removed": "2017-01-13T14:49:53Z",
+      "name": "EPM",
       "labels": []
     },
     {
-      "name": "ePub",
       "first_seen": "2014-08-29T21:15:18Z",
       "removed": "2016-04-02T02:13:43Z",
+      "name": "ePub",
       "labels": []
     },
     {
@@ -21882,9 +21882,9 @@
       "first_seen": "2015-08-12T22:35:57Z"
     },
     {
-      "name": "Eval",
       "first_seen": "2016-09-12T16:09:55Z",
       "removed": "2020-11-29T10:09:45Z",
+      "name": "Eval",
       "labels": []
     },
     {
@@ -21946,9 +21946,9 @@
       "first_seen": "2012-12-16T04:23:12Z"
     },
     {
-      "name": "EvercodeLab Sublime Snippets",
       "first_seen": "2013-08-09T02:53:19Z",
       "removed": "2018-07-29T08:15:54Z",
+      "name": "EvercodeLab Sublime Snippets",
       "labels": [
         "snippets"
       ]
@@ -22888,9 +22888,9 @@
       "first_seen": "2016-07-25T13:27:36Z"
     },
     {
-      "name": "Fabric Engine - KL Language Support",
       "first_seen": "2013-02-23T01:53:57Z",
       "removed": "2017-10-31T18:48:52Z",
+      "name": "Fabric Engine - KL Language Support",
       "labels": []
     },
     {
@@ -23054,9 +23054,9 @@
       "first_seen": "2013-04-20T22:24:31Z"
     },
     {
-      "name": "FakeDataGenerator",
       "first_seen": "2014-06-03T07:05:20Z",
       "removed": "2016-04-02T02:26:42Z",
+      "name": "FakeDataGenerator",
       "labels": [
         "data"
       ]
@@ -23458,9 +23458,9 @@
       "first_seen": "2014-03-23T14:20:08Z"
     },
     {
-      "name": "Fecoding",
       "first_seen": "2015-03-10T18:02:46Z",
       "removed": "2016-06-29T10:03:03Z",
+      "name": "Fecoding",
       "labels": [
         "fecoding",
         "css format",
@@ -23488,9 +23488,9 @@
       "first_seen": "2016-04-13T11:31:05Z"
     },
     {
-      "name": "FeelingLucky",
       "first_seen": "2013-05-20T22:49:44Z",
       "removed": "2016-06-30T05:35:44Z",
+      "name": "FeelingLucky",
       "labels": []
     },
     {
@@ -23763,9 +23763,9 @@
       "first_seen": "2014-09-14T18:40:29Z"
     },
     {
-      "name": "File Switcher",
       "first_seen": "2013-05-20T23:40:30Z",
       "removed": "2020-08-18T21:29:37Z",
+      "name": "File Switcher",
       "labels": []
     },
     {
@@ -24020,9 +24020,9 @@
       "first_seen": "2017-01-16T01:32:32Z"
     },
     {
-      "name": "FileMerge",
       "first_seen": "2016-04-04T22:22:23Z",
       "removed": "2017-08-29T21:28:42Z",
+      "name": "FileMerge",
       "labels": [
         "file merge",
         "utilities",
@@ -24412,9 +24412,9 @@
       "first_seen": "2024-12-11T16:32:59Z"
     },
     {
-      "name": "FindInProject",
       "first_seen": "2017-05-31T22:41:54Z",
       "removed": "2019-03-17T12:22:52Z",
+      "name": "FindInProject",
       "labels": [
         "find",
         "search",
@@ -24435,9 +24435,9 @@
       "first_seen": "2012-11-08T20:07:43Z"
     },
     {
-      "name": "FindResultsApplyChanges",
       "first_seen": "2014-02-10T19:50:12Z",
       "removed": "2016-04-02T01:26:27Z",
+      "name": "FindResultsApplyChanges",
       "labels": []
     },
     {
@@ -24520,9 +24520,9 @@
       "first_seen": "2014-07-10T18:30:08Z"
     },
     {
-      "name": "Firelime",
       "first_seen": "2014-08-14T18:50:06Z",
       "removed": "2016-10-28T20:19:33Z",
+      "name": "Firelime",
       "labels": [
         "firebase",
         "utils"
@@ -24591,9 +24591,9 @@
       "first_seen": "2016-01-13T10:15:42Z"
     },
     {
-      "name": "five_easy_color_schemes",
       "first_seen": "2016-06-27T20:00:04Z",
       "removed": "2017-06-05T17:05:17Z",
+      "name": "five_easy_color_schemes",
       "labels": [
         "color scheme",
         "monokai",
@@ -24651,9 +24651,9 @@
       "first_seen": "2019-11-28T14:01:48Z"
     },
     {
-      "name": "Fizzy Theme",
       "first_seen": "2013-12-28T19:15:23Z",
       "removed": "2017-08-02T09:54:53Z",
+      "name": "Fizzy Theme",
       "labels": [
         "theme",
         "color scheme"
@@ -24736,9 +24736,9 @@
       "first_seen": "2015-02-11T14:00:19Z"
     },
     {
-      "name": "Flat Chameleon",
       "first_seen": "2015-04-24T12:50:46Z",
       "removed": "2018-06-21T17:30:31Z",
+      "name": "Flat Chameleon",
       "labels": [
         "theme"
       ]
@@ -24811,9 +24811,9 @@
       "first_seen": "2018-05-19T00:55:01Z"
     },
     {
-      "name": "Flex",
       "first_seen": "2012-07-06T00:25:04Z",
       "removed": "2015-11-15T04:29:02Z",
+      "name": "Flex",
       "labels": []
     },
     {
@@ -25689,9 +25689,9 @@
       "first_seen": "2014-11-30T23:50:23Z"
     },
     {
-      "name": "Four Spaces JavaScript (snippets)",
       "first_seen": "2013-11-19T07:20:24Z",
       "removed": "2017-11-07T14:05:00Z",
+      "name": "Four Spaces JavaScript (snippets)",
       "labels": []
     },
     {
@@ -25942,9 +25942,9 @@
       "first_seen": "2015-01-23T02:18:58Z"
     },
     {
-      "name": "Full House Color Scheme",
       "first_seen": "2014-05-26T11:55:27Z",
       "removed": "2021-01-09T13:12:28Z",
+      "name": "Full House Color Scheme",
       "labels": [
         "color scheme"
       ]
@@ -26173,9 +26173,9 @@
       "first_seen": "2012-05-19T19:53:00Z"
     },
     {
-      "name": "Galen",
       "first_seen": "2014-12-04T03:05:26Z",
       "removed": "2017-01-31T15:58:50Z",
+      "name": "Galen",
       "labels": [
         "language syntax"
       ]
@@ -27326,9 +27326,9 @@
       "first_seen": "2020-05-31T14:50:03Z"
     },
     {
-      "name": "GitHub.app Menu",
       "first_seen": "2012-01-14T10:08:33Z",
       "removed": "2024-04-02T19:05:42Z",
+      "name": "GitHub.app Menu",
       "labels": []
     },
     {
@@ -27753,9 +27753,9 @@
       "first_seen": "2021-01-17T08:33:46Z"
     },
     {
-      "name": "Glorified Copy 'n' Paste",
       "first_seen": "2015-07-20T23:00:07Z",
       "removed": "2020-08-18T20:49:18Z",
+      "name": "Glorified Copy 'n' Paste",
       "labels": [
         "file creation",
         "jinja2",
@@ -27896,9 +27896,9 @@
       "first_seen": "2015-05-20T23:59:33Z"
     },
     {
-      "name": "gmESSI-gmsh Tools",
       "first_seen": "2015-09-16T20:20:38Z",
       "removed": "2016-09-12T11:50:08Z",
+      "name": "gmESSI-gmsh Tools",
       "labels": []
     },
     {
@@ -28083,9 +28083,9 @@
       "first_seen": "2016-12-06T11:10:21Z"
     },
     {
-      "name": "Go To Definition",
       "first_seen": "2014-04-28T10:11:31Z",
       "removed": "2020-08-18T19:11:06Z",
+      "name": "Go To Definition",
       "labels": []
     },
     {
@@ -28187,9 +28187,9 @@
       "first_seen": "2016-07-18T01:26:08Z"
     },
     {
-      "name": "GoFeather",
       "first_seen": "2013-03-22T22:24:25Z",
       "removed": "2014-09-29T14:40:50Z",
+      "name": "GoFeather",
       "labels": []
     },
     {
@@ -28623,9 +28623,9 @@
       "first_seen": "2025-04-07T14:55:40Z"
     },
     {
-      "name": "GoogleTesting",
       "first_seen": "2012-03-18T12:12:04Z",
       "removed": "2015-07-21T11:27:24Z",
+      "name": "GoogleTesting",
       "labels": []
     },
     {
@@ -28701,9 +28701,9 @@
       "first_seen": "2016-05-09T12:46:35Z"
     },
     {
-      "name": "GoSnippets",
       "first_seen": "2015-07-20T22:54:57Z",
       "removed": "2016-06-13T19:41:22Z",
+      "name": "GoSnippets",
       "labels": [
         "go",
         "snippets"
@@ -29020,9 +29020,9 @@
       "first_seen": "2014-11-12T23:55:19Z"
     },
     {
-      "name": "GotoLastModified",
       "first_seen": "2017-07-15T12:56:06Z",
       "removed": "2018-12-28T01:52:07Z",
+      "name": "GotoLastModified",
       "labels": [
         "goto",
         "file navigation"
@@ -29046,9 +29046,9 @@
       "first_seen": "2014-11-12T23:55:21Z"
     },
     {
-      "name": "GoToMark",
       "first_seen": "2014-05-12T19:45:14Z",
       "removed": "2015-03-04T10:07:04Z",
+      "name": "GoToMark",
       "labels": []
     },
     {
@@ -29464,9 +29464,9 @@
       "first_seen": "2015-03-26T13:15:12Z"
     },
     {
-      "name": "GreekTeX",
       "first_seen": "2014-01-10T06:00:23Z",
       "removed": "2019-02-05T23:49:08Z",
+      "name": "GreekTeX",
       "labels": []
     },
     {
@@ -29550,9 +29550,9 @@
       "first_seen": "2014-04-15T18:20:15Z"
     },
     {
-      "name": "Grid6",
       "first_seen": "2012-08-09T23:28:04Z",
       "removed": "2016-03-29T19:32:13Z",
+      "name": "Grid6",
       "labels": []
     },
     {
@@ -29598,9 +29598,9 @@
       "first_seen": "2015-08-12T12:42:06Z"
     },
     {
-      "name": "Groovy Imports",
       "first_seen": "2014-10-27T18:20:17Z",
       "removed": "2019-06-04T02:11:26Z",
+      "name": "Groovy Imports",
       "labels": [
         "groovy",
         "grails"
@@ -30490,9 +30490,9 @@
       "first_seen": "2011-12-19T05:41:11Z"
     },
     {
-      "name": "haxelang",
       "first_seen": "2015-02-14T21:35:10Z",
       "removed": "2015-12-15T15:34:36Z",
+      "name": "haxelang",
       "labels": []
     },
     {
@@ -30685,9 +30685,9 @@
       "first_seen": "2019-03-23T16:02:14Z"
     },
     {
-      "name": "Hexcode",
       "first_seen": "2013-01-22T21:26:19Z",
       "removed": "2019-06-26T18:02:51Z",
+      "name": "Hexcode",
       "labels": []
     },
     {
@@ -30730,9 +30730,9 @@
       "first_seen": "2011-12-15T15:02:10Z"
     },
     {
-      "name": "hg4subl",
       "first_seen": "2012-03-09T00:23:06Z",
       "removed": "2020-08-18T21:10:03Z",
+      "name": "hg4subl",
       "labels": []
     },
     {
@@ -31116,9 +31116,9 @@
       "first_seen": "2015-06-26T00:42:17Z"
     },
     {
-      "name": "hlsl",
       "first_seen": "2012-03-31T08:53:24Z",
       "removed": "2017-02-07T06:56:14Z",
+      "name": "hlsl",
       "labels": []
     },
     {
@@ -31627,21 +31627,21 @@
       "first_seen": "2013-09-19T14:35:11Z"
     },
     {
-      "name": "HTML Compress and Replace",
       "first_seen": "2013-05-01T16:44:58Z",
       "removed": "2026-04-14T04:31:41Z",
+      "name": "HTML Compress and Replace",
       "labels": []
     },
     {
-      "name": "HTML Compressor",
       "first_seen": "2012-06-11T00:39:48Z",
       "removed": "2019-07-18T05:19:05Z",
+      "name": "HTML Compressor",
       "labels": []
     },
     {
-      "name": "HTML Crush Switch",
       "first_seen": "2013-05-20T23:35:42Z",
       "removed": "2026-04-14T04:31:41Z",
+      "name": "HTML Crush Switch",
       "labels": []
     },
     {
@@ -32202,9 +32202,9 @@
       "first_seen": "2020-02-17T01:29:10Z"
     },
     {
-      "name": "Hybris Impex Syntax",
       "first_seen": "2015-09-15T15:02:15Z",
       "removed": "2017-04-10T18:53:20Z",
+      "name": "Hybris Impex Syntax",
       "labels": [
         "syntax",
         "hybris",
@@ -32430,9 +32430,9 @@
       "first_seen": "2025-11-24T14:45:39Z"
     },
     {
-      "name": "i18n and l10n Helper",
       "first_seen": "2013-08-29T15:10:21Z",
       "removed": "2017-09-27T01:19:22Z",
+      "name": "i18n and l10n Helper",
       "labels": []
     },
     {
@@ -32780,9 +32780,9 @@
       "first_seen": "2013-11-10T00:25:04Z"
     },
     {
-      "name": "iLorem",
       "first_seen": "2015-09-24T11:41:20Z",
       "removed": "2018-05-17T06:29:14Z",
+      "name": "iLorem",
       "labels": [
         "lorem",
         "ilorem",
@@ -33741,9 +33741,9 @@
       "first_seen": "2014-04-03T21:10:29Z"
     },
     {
-      "name": "Insert Filepath",
       "first_seen": "2014-10-30T22:50:37Z",
       "removed": "2019-09-19T08:58:28Z",
+      "name": "Insert Filepath",
       "labels": []
     },
     {
@@ -33819,9 +33819,9 @@
       "first_seen": "2015-04-13T08:45:27Z"
     },
     {
-      "name": "Inspr",
       "first_seen": "2017-01-19T08:47:31Z",
       "removed": "2019-06-01T06:24:56Z",
+      "name": "Inspr",
       "labels": [
         "translate",
         "chinese",
@@ -33846,9 +33846,9 @@
       "first_seen": "2013-10-21T15:05:24Z"
     },
     {
-      "name": "InstaGoogling",
       "first_seen": "2016-12-14T14:35:19Z",
       "removed": "2020-07-05T05:19:27Z",
+      "name": "InstaGoogling",
       "labels": []
     },
     {
@@ -33932,9 +33932,9 @@
       "first_seen": "2015-05-06T16:05:07Z"
     },
     {
-      "name": "IntelXDK",
       "first_seen": "2015-06-17T14:58:09Z",
       "removed": "2016-07-27T20:25:16Z",
+      "name": "IntelXDK",
       "labels": []
     },
     {
@@ -34132,9 +34132,9 @@
       "first_seen": "2013-01-17T07:29:54Z"
     },
     {
-      "name": "io Node Framework",
       "first_seen": "2015-06-25T18:45:56Z",
       "removed": "2018-09-10T08:53:05Z",
+      "name": "io Node Framework",
       "labels": []
     },
     {
@@ -34391,9 +34391,9 @@
       "first_seen": "2021-07-20T20:49:19Z"
     },
     {
-      "name": "iReset",
       "first_seen": "2015-12-08T13:50:39Z",
       "removed": "2018-05-06T07:26:07Z",
+      "name": "iReset",
       "labels": [
         "css reset",
         "css",
@@ -34542,9 +34542,9 @@
       "first_seen": "2022-06-24T19:49:54Z"
     },
     {
-      "name": "Issues",
       "first_seen": "2013-04-23T16:53:28Z",
       "removed": "2014-10-18T18:01:38Z",
+      "name": "Issues",
       "labels": []
     },
     {
@@ -34606,9 +34606,9 @@
       "first_seen": "2015-01-05T23:15:06Z"
     },
     {
-      "name": "J Language",
       "first_seen": "2014-08-14T18:10:39Z",
       "removed": "2020-02-02T18:17:11Z",
+      "name": "J Language",
       "labels": [
         "language syntax"
       ]
@@ -35252,9 +35252,9 @@
       "first_seen": "2018-01-29T14:21:34Z"
     },
     {
-      "name": "JavaScript Multiline",
       "first_seen": "2013-09-23T15:40:36Z",
       "removed": "2020-06-06T20:05:08Z",
+      "name": "JavaScript Multiline",
       "labels": []
     },
     {
@@ -36051,9 +36051,9 @@
       "first_seen": "2013-01-05T02:37:53Z"
     },
     {
-      "name": "JS Coverage",
       "first_seen": "2013-10-03T01:45:26Z",
       "removed": "2020-04-30T19:44:20Z",
+      "name": "JS Coverage",
       "labels": []
     },
     {
@@ -36127,9 +36127,9 @@
       "first_seen": "2013-10-01T20:40:48Z"
     },
     {
-      "name": "JS-firebug",
       "first_seen": "2013-11-22T03:15:18Z",
       "removed": "2016-05-26T19:33:36Z",
+      "name": "JS-firebug",
       "labels": []
     },
     {
@@ -36536,9 +36536,9 @@
       "first_seen": "2017-04-01T21:41:42Z"
     },
     {
-      "name": "JSON2Go",
       "first_seen": "2017-06-05T19:06:16Z",
       "removed": "2019-01-21T10:47:39Z",
+      "name": "JSON2Go",
       "labels": [
         "json",
         "urllib.parse"
@@ -36651,9 +36651,9 @@
       "first_seen": "2017-01-18T22:41:20Z"
     },
     {
-      "name": "jsrevival",
       "first_seen": "2012-11-26T01:43:18Z",
       "removed": "2026-04-14T04:35:24Z",
+      "name": "jsrevival",
       "labels": []
     },
     {
@@ -36802,9 +36802,9 @@
       "first_seen": "2013-01-05T03:38:01Z"
     },
     {
-      "name": "JuliaCompletions",
       "first_seen": "2014-12-17T21:11:37Z",
       "removed": "2016-09-12T14:29:58Z",
+      "name": "JuliaCompletions",
       "labels": []
     },
     {
@@ -36921,9 +36921,9 @@
       "first_seen": "2014-08-06T13:56:14Z"
     },
     {
-      "name": "Junos Snippets",
       "first_seen": "2015-07-15T20:55:25Z",
       "removed": "2017-12-19T21:14:15Z",
+      "name": "Junos Snippets",
       "labels": [
         "snippets"
       ]
@@ -37088,9 +37088,9 @@
       "first_seen": "2016-07-19T10:17:44Z"
     },
     {
-      "name": "Kaneva API (KPI) Completions",
       "first_seen": "2014-03-31T19:45:27Z",
       "removed": "2017-04-23T21:38:09Z",
+      "name": "Kaneva API (KPI) Completions",
       "labels": [
         "completions",
         "Kaneva",
@@ -37576,9 +37576,9 @@
       "first_seen": "2022-04-01T10:40:38Z"
     },
     {
-      "name": "KnifeSolo",
       "first_seen": "2013-03-15T01:55:20Z",
       "removed": "2026-04-14T08:02:28Z",
+      "name": "KnifeSolo",
       "labels": []
     },
     {
@@ -37657,9 +37657,9 @@
       "first_seen": "2016-09-12T16:59:30Z"
     },
     {
-      "name": "Koan",
       "first_seen": "2013-04-18T06:35:26Z",
       "removed": "2016-07-05T14:44:23Z",
+      "name": "Koan",
       "labels": []
     },
     {
@@ -37795,9 +37795,9 @@
       "first_seen": "2021-05-21T12:17:52Z"
     },
     {
-      "name": "Kraken Snippets",
       "first_seen": "2013-05-20T02:59:28Z",
       "removed": "2026-04-14T09:00:30Z",
+      "name": "Kraken Snippets",
       "labels": []
     },
     {
@@ -38612,9 +38612,9 @@
       "first_seen": "2019-04-06T17:14:04Z"
     },
     {
-      "name": "Laravel Snippets",
       "first_seen": "2012-05-14T08:54:10Z",
       "removed": "2014-01-01T17:05:18Z",
+      "name": "Laravel Snippets",
       "labels": [
         "snippets"
       ]
@@ -38820,9 +38820,9 @@
       "first_seen": "2013-11-28T00:45:28Z"
     },
     {
-      "name": "LaTeX Track Changes",
       "first_seen": "2012-03-06T15:26:32Z",
       "removed": "2016-05-16T14:01:12Z",
+      "name": "LaTeX Track Changes",
       "labels": []
     },
     {
@@ -39193,9 +39193,9 @@
       "first_seen": "2025-05-27T22:52:14Z"
     },
     {
-      "name": "LD library Path",
       "first_seen": "2014-12-17T12:55:09Z",
       "removed": "2017-11-12T14:16:44Z",
+      "name": "LD library Path",
       "labels": []
     },
     {
@@ -39497,9 +39497,9 @@
       "first_seen": "2015-09-03T14:58:31Z"
     },
     {
-      "name": "lestle",
       "first_seen": "2015-06-12T18:00:09Z",
       "removed": "2015-12-22T18:14:11Z",
+      "name": "lestle",
       "labels": [
         "color scheme"
       ]
@@ -39824,9 +39824,9 @@
       "first_seen": "2020-01-07T13:38:08Z"
     },
     {
-      "name": "LineEndings",
       "first_seen": "2012-03-18T12:12:00Z",
       "removed": "2016-04-02T01:53:30Z",
+      "name": "LineEndings",
       "labels": []
     },
     {
@@ -39846,9 +39846,9 @@
       "first_seen": "2014-03-04T04:50:24Z"
     },
     {
-      "name": "LineMessages",
       "first_seen": "2013-10-14T21:50:27Z",
       "removed": "2014-12-29T04:01:52Z",
+      "name": "LineMessages",
       "labels": [
         "linting",
         "tool execution"
@@ -40418,9 +40418,9 @@
       "first_seen": "2025-02-01T16:43:40Z"
     },
     {
-      "name": "LiveStamps",
       "first_seen": "2015-04-12T14:35:09Z",
       "removed": "2020-01-23T09:32:55Z",
+      "name": "LiveStamps",
       "labels": []
     },
     {
@@ -40599,9 +40599,9 @@
       "first_seen": "2014-11-12T23:55:32Z"
     },
     {
-      "name": "Locate",
       "first_seen": "2014-11-30T14:25:27Z",
       "removed": "2018-07-09T11:47:18Z",
+      "name": "Locate",
       "labels": [
         "locate",
         "updatedb",
@@ -43247,9 +43247,9 @@
       "first_seen": "2014-09-07T17:35:27Z"
     },
     {
-      "name": "MakeCommands",
       "first_seen": "2013-08-05T02:23:51Z",
       "removed": "2020-08-18T21:19:21Z",
+      "name": "MakeCommands",
       "labels": [
         "make",
         "command palette"
@@ -43269,9 +43269,9 @@
       "first_seen": "2012-06-11T00:39:36Z"
     },
     {
-      "name": "Makefile Improved",
       "first_seen": "2013-10-28T20:26:17Z",
       "removed": "2020-08-18T21:24:59Z",
+      "name": "Makefile Improved",
       "labels": [
         "make",
         "language syntax",
@@ -43597,9 +43597,9 @@
       "first_seen": "2012-01-05T13:45:19Z"
     },
     {
-      "name": "Markboard",
       "first_seen": "2012-12-16T02:23:48Z",
       "removed": "2016-07-05T15:30:48Z",
+      "name": "Markboard",
       "labels": []
     },
     {
@@ -43945,9 +43945,9 @@
       "first_seen": "2016-07-18T15:48:50Z"
     },
     {
-      "name": "MarkdownHighlighting",
       "first_seen": "2016-02-29T20:06:55Z",
       "removed": "2018-05-14T20:00:27Z",
+      "name": "MarkdownHighlighting",
       "labels": [
         "markdown",
         "language syntax",
@@ -44198,15 +44198,15 @@
       "first_seen": "2019-11-05T16:43:25Z"
     },
     {
-      "name": "Marksy Convert",
       "first_seen": "2014-10-22T00:35:15Z",
       "removed": "2017-08-18T14:24:59Z",
+      "name": "Marksy Convert",
       "labels": []
     },
     {
-      "name": "Markup Jira Confluence",
       "first_seen": "2013-04-22T01:45:06Z",
       "removed": "2016-03-12T01:44:39Z",
+      "name": "Markup Jira Confluence",
       "labels": []
     },
     {
@@ -44676,9 +44676,9 @@
       "first_seen": "2012-06-11T00:39:32Z"
     },
     {
-      "name": "MavensMate",
       "first_seen": "2014-09-01T02:10:37Z",
       "removed": "2019-07-11T19:59:37Z",
+      "name": "MavensMate",
       "labels": [
         "salesforce",
         "salesforce1",
@@ -44754,9 +44754,9 @@
       "first_seen": "2015-06-12T18:36:07Z"
     },
     {
-      "name": "MB Warband API",
       "first_seen": "2015-02-16T16:45:07Z",
       "removed": "2020-08-18T19:44:10Z",
+      "name": "MB Warband API",
       "labels": [
         "warband",
         "language syntax",
@@ -44934,9 +44934,9 @@
       "first_seen": "2018-10-23T15:03:48Z"
     },
     {
-      "name": "Meav",
       "first_seen": "2016-06-27T10:43:49Z",
       "removed": "2018-12-18T00:29:43Z",
+      "name": "Meav",
       "labels": [
         "css",
         "html",
@@ -44981,9 +44981,9 @@
       "first_seen": "2012-11-26T00:53:52Z"
     },
     {
-      "name": "Meetio",
       "first_seen": "2019-02-18T21:26:29Z",
       "removed": "2019-10-24T12:29:01Z",
+      "name": "Meetio",
       "labels": [
         "theme",
         "color scheme"
@@ -45026,9 +45026,9 @@
       "first_seen": "2014-04-15T17:50:56Z"
     },
     {
-      "name": "Meld diff",
       "first_seen": "2012-08-07T10:18:50Z",
       "removed": "2016-08-03T08:46:00Z",
+      "name": "Meld diff",
       "labels": []
     },
     {
@@ -45048,9 +45048,9 @@
       "first_seen": "2018-07-10T21:42:57Z"
     },
     {
-      "name": "MelonJS Completions",
       "first_seen": "2013-07-15T17:23:32Z",
       "removed": "2015-08-03T23:20:49Z",
+      "name": "MelonJS Completions",
       "labels": []
     },
     {
@@ -45136,9 +45136,9 @@
       "first_seen": "2026-02-24T19:02:14Z"
     },
     {
-      "name": "Mercurial for Sublime",
       "first_seen": "2013-05-20T23:31:52Z",
       "removed": "2020-08-18T19:50:17Z",
+      "name": "Mercurial for Sublime",
       "labels": [
         "vcs",
         "hg"
@@ -45296,9 +45296,9 @@
       "first_seen": "2014-03-25T20:45:29Z"
     },
     {
-      "name": "Meta",
       "first_seen": "2012-01-12T07:10:34Z",
       "removed": "2014-04-23T18:51:03Z",
+      "name": "Meta",
       "labels": []
     },
     {
@@ -45408,9 +45408,9 @@
       "first_seen": "2014-06-22T23:05:06Z"
     },
     {
-      "name": "MFScript",
       "first_seen": "2014-09-24T11:35:31Z",
       "removed": "2019-06-08T08:58:33Z",
+      "name": "MFScript",
       "labels": []
     },
     {
@@ -45550,9 +45550,9 @@
       "first_seen": "2016-01-18T22:08:23Z"
     },
     {
-      "name": "Mimosa",
       "first_seen": "2013-05-15T22:14:39Z",
       "removed": "2026-04-14T08:02:29Z",
+      "name": "Mimosa",
       "labels": []
     },
     {
@@ -46498,9 +46498,9 @@
       "first_seen": "2012-11-26T01:41:59Z"
     },
     {
-      "name": "Mongoose CoffeeScript",
       "first_seen": "2015-03-17T18:30:14Z",
       "removed": "2020-05-24T15:40:41Z",
+      "name": "Mongoose CoffeeScript",
       "labels": [
         "sublime",
         "coffeescript",
@@ -47010,9 +47010,9 @@
       "first_seen": "2017-02-01T22:14:55Z"
     },
     {
-      "name": "Mou Markdown App (OSX)",
       "first_seen": "2013-10-13T17:20:36Z",
       "removed": "2016-10-29T01:37:06Z",
+      "name": "Mou Markdown App (OSX)",
       "labels": []
     },
     {
@@ -47673,9 +47673,9 @@
       "first_seen": "2019-07-18T00:48:26Z"
     },
     {
-      "name": "Myrkur Color Scheme",
       "first_seen": "2015-07-04T16:06:07Z",
       "removed": "2015-07-31T10:55:24Z",
+      "name": "Myrkur Color Scheme",
       "labels": [
         "color scheme"
       ]
@@ -47749,9 +47749,9 @@
       "first_seen": "2025-08-19T19:20:34Z"
     },
     {
-      "name": "Naetech - Pomodoro Timer Plug-in",
       "first_seen": "2014-01-16T00:40:27Z",
       "removed": "2015-08-11T15:51:17Z",
+      "name": "Naetech - Pomodoro Timer Plug-in",
       "labels": []
     },
     {
@@ -48465,9 +48465,9 @@
       "first_seen": "2016-07-18T15:36:14Z"
     },
     {
-      "name": "NetSuite Bundle",
       "first_seen": "2015-07-10T00:36:08Z",
       "removed": "2018-07-28T19:32:29Z",
+      "name": "NetSuite Bundle",
       "labels": []
     },
     {
@@ -49502,9 +49502,9 @@
       "first_seen": "2024-11-20T18:18:36Z"
     },
     {
-      "name": "NoTutorial",
       "first_seen": "2015-10-07T14:16:31Z",
       "removed": "2018-07-02T13:40:35Z",
+      "name": "NoTutorial",
       "labels": []
     },
     {
@@ -49541,18 +49541,18 @@
       "first_seen": "2017-02-20T03:17:57Z"
     },
     {
-      "name": "Nova Theme",
       "first_seen": "2016-12-06T12:04:37Z",
       "removed": "2018-11-21T20:12:20Z",
+      "name": "Nova Theme",
       "labels": [
         "nova",
         "theme"
       ]
     },
     {
-      "name": "NP-Complete",
       "first_seen": "2015-08-10T18:37:24Z",
       "removed": "2016-05-11T17:18:10Z",
+      "name": "NP-Complete",
       "labels": [
         "completions"
       ]
@@ -50025,9 +50025,9 @@
       "first_seen": "2018-04-14T18:59:40Z"
     },
     {
-      "name": "objc .strings syntax language",
       "first_seen": "2012-04-17T21:53:52Z",
       "removed": "2015-02-01T20:05:15Z",
+      "name": "objc .strings syntax language",
       "labels": [
         "language syntax"
       ]
@@ -50580,9 +50580,9 @@
       "first_seen": "2015-09-01T00:40:11Z"
     },
     {
-      "name": "One Dark Color Scheme",
       "first_seen": "2015-06-24T16:26:02Z",
       "removed": "2020-08-01T22:08:02Z",
+      "name": "One Dark Color Scheme",
       "labels": [
         "color scheme"
       ]
@@ -51071,9 +51071,9 @@
       "first_seen": "2016-02-23T21:49:09Z"
     },
     {
-      "name": "Open-Include",
       "first_seen": "2011-12-15T15:52:42Z",
       "removed": "2016-04-02T02:06:29Z",
+      "name": "Open-Include",
       "labels": []
     },
     {
@@ -51215,9 +51215,9 @@
       "first_seen": "2018-01-30T17:29:52Z"
     },
     {
-      "name": "OpenEdge ABL",
       "first_seen": "2012-03-31T08:53:14Z",
       "removed": "2020-04-02T16:48:13Z",
+      "name": "OpenEdge ABL",
       "labels": []
     },
     {
@@ -51711,9 +51711,9 @@
       "first_seen": "2014-03-17T14:15:34Z"
     },
     {
-      "name": "OSX Font Chooser",
       "first_seen": "2014-01-09T04:10:53Z",
       "removed": "2020-11-10T07:40:58Z",
+      "name": "OSX Font Chooser",
       "labels": []
     },
     {
@@ -51867,9 +51867,9 @@
       "first_seen": "2019-02-18T23:15:14Z"
     },
     {
-      "name": "Owl Color Scheme",
       "first_seen": "2015-03-23T16:45:21Z",
       "removed": "2017-06-13T14:51:08Z",
+      "name": "Owl Color Scheme",
       "labels": []
     },
     {
@@ -51957,9 +51957,9 @@
       "first_seen": "2014-08-14T17:35:26Z"
     },
     {
-      "name": "P4Sublime",
       "first_seen": "2012-09-15T11:09:35Z",
       "removed": "2020-08-18T19:11:04Z",
+      "name": "P4Sublime",
       "labels": []
     },
     {
@@ -52452,9 +52452,9 @@
       "first_seen": "2014-09-14T18:21:03Z"
     },
     {
-      "name": "Papyrus",
       "first_seen": "2012-12-01T09:34:46Z",
       "removed": "2020-08-18T20:17:19Z",
+      "name": "Papyrus",
       "labels": []
     },
     {
@@ -52688,9 +52688,9 @@
       "first_seen": "2012-01-01T10:19:00Z"
     },
     {
-      "name": "Paste as Link",
       "first_seen": "2013-01-17T06:55:15Z",
       "removed": "2014-05-08T13:30:41Z",
+      "name": "Paste as Link",
       "labels": []
     },
     {
@@ -52707,9 +52707,9 @@
       "first_seen": "2014-02-26T15:05:56Z"
     },
     {
-      "name": "Paste Laravel",
       "first_seen": "2013-08-12T17:02:10Z",
       "removed": "2020-01-01T18:01:26Z",
+      "name": "Paste Laravel",
       "labels": []
     },
     {
@@ -52867,9 +52867,9 @@
       "first_seen": "2015-12-09T10:14:18Z"
     },
     {
-      "name": "PasteSelOnClick",
       "first_seen": "2012-01-30T07:10:32Z",
       "removed": "2020-08-18T20:23:25Z",
+      "name": "PasteSelOnClick",
       "labels": []
     },
     {
@@ -53044,9 +53044,9 @@
       "first_seen": "2014-02-04T17:15:22Z"
     },
     {
-      "name": "Peeko",
       "first_seen": "2019-04-06T17:14:32Z",
       "removed": "2020-12-05T10:19:25Z",
+      "name": "Peeko",
       "labels": []
     },
     {
@@ -53350,9 +53350,9 @@
       "first_seen": "2019-11-05T23:38:06Z"
     },
     {
-      "name": "PersistentPython",
       "first_seen": "2016-11-06T23:19:06Z",
       "removed": "2017-06-05T16:28:21Z",
+      "name": "PersistentPython",
       "labels": []
     },
     {
@@ -54004,9 +54004,9 @@
       "first_seen": "2012-02-13T11:20:50Z"
     },
     {
-      "name": "PhpDebugHelper",
       "first_seen": "2014-02-11T12:50:34Z",
       "removed": "2015-04-19T04:12:22Z",
+      "name": "PhpDebugHelper",
       "labels": [
         "php debug"
       ]
@@ -54464,9 +54464,9 @@
       "first_seen": "2024-02-28T19:16:41Z"
     },
     {
-      "name": "PKs Color Scheme",
       "first_seen": "2012-11-26T00:22:33Z",
       "removed": "2019-05-03T23:50:14Z",
+      "name": "PKs Color Scheme",
       "labels": [
         "color scheme"
       ]
@@ -54693,18 +54693,18 @@
       "first_seen": "2017-03-03T17:28:20Z"
     },
     {
-      "name": "Plugin Debugger",
       "first_seen": "2013-10-08T23:10:21Z",
       "removed": "2020-08-18T21:25:00Z",
+      "name": "Plugin Debugger",
       "labels": [
         "Debugger",
         "plugin development"
       ]
     },
     {
-      "name": "Plugin UnitTest Harness",
       "first_seen": "2013-11-24T13:43:03Z",
       "removed": "2020-08-18T21:25:00Z",
+      "name": "Plugin UnitTest Harness",
       "labels": [
         "testing",
         "plugin development",
@@ -54890,9 +54890,9 @@
       "first_seen": "2023-11-22T17:09:36Z"
     },
     {
-      "name": "polyfill",
       "first_seen": "2015-10-31T12:25:31Z",
       "removed": "2023-05-22T15:41:16Z",
+      "name": "polyfill",
       "labels": [
         "commands",
         "ctrlp",
@@ -55218,9 +55218,9 @@
       "first_seen": "2021-03-20T19:49:10Z"
     },
     {
-      "name": "Powder Sublime",
       "first_seen": "2014-02-06T09:15:39Z",
       "removed": "2015-09-27T18:05:08Z",
+      "name": "Powder Sublime",
       "labels": [
         "pow",
         "powder",
@@ -55360,9 +55360,9 @@
       "first_seen": "2016-06-13T09:28:56Z"
     },
     {
-      "name": "pqmarkup",
       "first_seen": "2017-10-16T20:38:17Z",
       "removed": "2020-08-18T20:45:30Z",
+      "name": "pqmarkup",
       "labels": []
     },
     {
@@ -55382,9 +55382,9 @@
       "first_seen": "2012-11-09T07:37:40Z"
     },
     {
-      "name": "Preap",
       "first_seen": "2015-03-09T13:45:11Z",
       "removed": "2016-09-03T20:58:49Z",
+      "name": "Preap",
       "labels": [
         "theme",
         "color scheme"
@@ -55455,9 +55455,9 @@
       "first_seen": "2013-07-03T02:38:30Z"
     },
     {
-      "name": "Preferences Editor",
       "first_seen": "2013-12-22T23:35:53Z",
       "removed": "2020-08-18T21:25:01Z",
+      "name": "Preferences Editor",
       "labels": [
         "utilities",
         "settings",
@@ -55482,9 +55482,9 @@
       "first_seen": "2016-04-05T13:09:40Z"
     },
     {
-      "name": "Prefixr",
       "first_seen": "2011-12-15T14:43:01Z",
       "removed": "2014-05-15T01:01:13Z",
+      "name": "Prefixr",
       "labels": []
     },
     {
@@ -55746,9 +55746,9 @@
       "first_seen": "2017-06-06T11:58:24Z"
     },
     {
-      "name": "PreventFakeClones",
       "first_seen": "2014-05-22T12:00:34Z",
       "removed": "2016-04-02T02:30:18Z",
+      "name": "PreventFakeClones",
       "labels": []
     },
     {
@@ -55778,9 +55778,9 @@
       "first_seen": "2012-01-22T16:50:41Z"
     },
     {
-      "name": "Primitive Filler",
       "first_seen": "2014-09-20T00:26:02Z",
       "removed": "2019-03-07T07:34:47Z",
+      "name": "Primitive Filler",
       "labels": []
     },
     {
@@ -56226,9 +56226,9 @@
       "first_seen": "2022-08-02T19:05:38Z"
     },
     {
-      "name": "ProjectSpecific",
       "first_seen": "2012-11-26T13:53:27Z",
       "removed": "2020-08-18T21:25:02Z",
+      "name": "ProjectSpecific",
       "labels": []
     },
     {
@@ -56363,15 +56363,15 @@
       "first_seen": "2013-08-09T16:33:14Z"
     },
     {
-      "name": "ProtoFeather",
       "first_seen": "2013-08-16T02:41:27Z",
       "removed": "2014-09-29T14:06:09Z",
+      "name": "ProtoFeather",
       "labels": []
     },
     {
-      "name": "Prototypo Syntax Highlighting",
       "first_seen": "2014-01-08T02:32:43Z",
       "removed": "2016-03-02T12:58:09Z",
+      "name": "Prototypo Syntax Highlighting",
       "labels": [
         "language syntax"
       ]
@@ -56737,9 +56737,9 @@
       ]
     },
     {
-      "name": "PyFusion",
       "first_seen": "2015-09-21T20:11:50Z",
       "removed": "2015-11-16T20:36:03Z",
+      "name": "PyFusion",
       "labels": []
     },
     {
@@ -57287,9 +57287,9 @@
       "first_seen": "2013-01-25T00:24:06Z"
     },
     {
-      "name": "Python PEP8 Autoformat",
       "first_seen": "2012-07-31T22:25:41Z",
       "removed": "2020-08-18T21:16:41Z",
+      "name": "Python PEP8 Autoformat",
       "labels": []
     },
     {
@@ -57775,9 +57775,9 @@
       "first_seen": "2015-11-01T23:36:42Z"
     },
     {
-      "name": "QuarkPHP",
       "first_seen": "2012-07-17T01:40:54Z",
       "removed": "2016-06-13T07:09:21Z",
+      "name": "QuarkPHP",
       "labels": []
     },
     {
@@ -57902,15 +57902,15 @@
       "first_seen": "2013-09-01T01:40:23Z"
     },
     {
-      "name": "Quick Google Anno",
       "first_seen": "2017-09-18T18:04:11Z",
       "removed": "2018-05-30T11:06:40Z",
+      "name": "Quick Google Anno",
       "labels": []
     },
     {
-      "name": "Quick Look",
       "first_seen": "2013-01-24T23:56:45Z",
       "removed": "2026-04-14T07:28:14Z",
+      "name": "Quick Look",
       "labels": []
     },
     {
@@ -58004,9 +58004,9 @@
       "first_seen": "2014-01-21T17:25:41Z"
     },
     {
-      "name": "QuickJava",
       "first_seen": "2013-11-22T17:20:25Z",
       "removed": "2014-03-21T20:50:45Z",
+      "name": "QuickJava",
       "labels": []
     },
     {
@@ -58081,9 +58081,9 @@
       "first_seen": "2013-01-10T13:08:21Z"
     },
     {
-      "name": "QuickPuTTY",
       "first_seen": "2020-03-10T21:18:14Z",
       "removed": "2025-02-05T17:10:23Z",
+      "name": "QuickPuTTY",
       "labels": [
         "ssh",
         "putty"
@@ -58493,9 +58493,9 @@
       "first_seen": "2020-09-30T15:07:09Z"
     },
     {
-      "name": "RabbitVCS",
       "first_seen": "2013-09-08T17:30:21Z",
       "removed": "2015-02-24T12:57:44Z",
+      "name": "RabbitVCS",
       "labels": []
     },
     {
@@ -58535,9 +58535,9 @@
       "first_seen": "2018-07-04T03:09:30Z"
     },
     {
-      "name": "Rails Developer Snippets",
       "first_seen": "2013-07-03T03:38:30Z",
       "removed": "2019-08-05T01:21:32Z",
+      "name": "Rails Developer Snippets",
       "labels": [
         "snippets"
       ]
@@ -58741,9 +58741,9 @@
       "first_seen": "2014-03-18T01:01:06Z"
     },
     {
-      "name": "RailsEval",
       "first_seen": "2012-11-26T01:40:38Z",
       "removed": "2026-04-14T09:01:51Z",
+      "name": "RailsEval",
       "labels": []
     },
     {
@@ -59049,9 +59049,9 @@
       "first_seen": "2013-05-20T02:26:34Z"
     },
     {
-      "name": "Rant",
       "first_seen": "2017-05-18T08:29:13Z",
       "removed": "2020-07-11T16:56:09Z",
+      "name": "Rant",
       "labels": [
         "language syntax"
       ]
@@ -59716,9 +59716,9 @@
       "first_seen": "2016-09-12T16:40:19Z"
     },
     {
-      "name": "Recessify",
       "first_seen": "2013-01-05T02:52:49Z",
       "removed": "2026-04-14T05:37:17Z",
+      "name": "Recessify",
       "labels": []
     },
     {
@@ -60793,9 +60793,9 @@
       "first_seen": "2013-08-15T20:55:22Z"
     },
     {
-      "name": "Retrosheet Syntax",
       "first_seen": "2017-08-28T15:43:35Z",
       "removed": "2019-09-11T01:19:57Z",
+      "name": "Retrosheet Syntax",
       "labels": []
     },
     {
@@ -61626,9 +61626,9 @@
       "first_seen": "2011-12-15T14:45:19Z"
     },
     {
-      "name": "RSpec (snippets and syntax)",
       "first_seen": "2012-01-05T02:42:43Z",
       "removed": "2013-11-11T22:35:55Z",
+      "name": "RSpec (snippets and syntax)",
       "labels": [
         "language syntax",
         "snippets"
@@ -62345,9 +62345,9 @@
       "first_seen": "2019-02-19T03:36:57Z"
     },
     {
-      "name": "RustCodeFormatter",
       "first_seen": "2015-06-12T13:18:53Z",
       "removed": "2016-01-22T13:21:45Z",
+      "name": "RustCodeFormatter",
       "labels": []
     },
     {
@@ -62462,9 +62462,9 @@
       "first_seen": "2015-05-20T16:31:54Z"
     },
     {
-      "name": "Saccades",
       "first_seen": "2013-05-20T01:58:49Z",
       "removed": "2017-10-29T06:34:47Z",
+      "name": "Saccades",
       "labels": []
     },
     {
@@ -62822,9 +62822,9 @@
       "first_seen": "2012-09-22T04:05:33Z"
     },
     {
-      "name": "SassBuilder",
       "first_seen": "2013-01-08T17:16:37Z",
       "removed": "2018-12-15T17:44:44Z",
+      "name": "SassBuilder",
       "labels": []
     },
     {
@@ -62928,9 +62928,9 @@
       "first_seen": "2012-12-18T06:38:42Z"
     },
     {
-      "name": "Scaffolder",
       "first_seen": "2013-05-20T22:43:29Z",
       "removed": "2019-09-18T18:16:54Z",
+      "name": "Scaffolder",
       "labels": []
     },
     {
@@ -63095,9 +63095,9 @@
       "first_seen": "2012-04-29T21:53:20Z"
     },
     {
-      "name": "ScalaWorksheet",
       "first_seen": "2013-05-03T16:55:47Z",
       "removed": "2020-06-13T11:35:55Z",
+      "name": "ScalaWorksheet",
       "labels": []
     },
     {
@@ -63498,9 +63498,9 @@
       "first_seen": "2013-03-23T01:23:14Z"
     },
     {
-      "name": "Scriptogram",
       "first_seen": "2012-05-29T22:09:40Z",
       "removed": "2018-10-02T16:15:12Z",
+      "name": "Scriptogram",
       "labels": []
     },
     {
@@ -63517,9 +63517,9 @@
       "first_seen": "2013-07-01T11:38:28Z"
     },
     {
-      "name": "ScriptSrc",
       "first_seen": "2012-06-22T10:22:15Z",
       "removed": "2026-04-14T05:49:06Z",
+      "name": "ScriptSrc",
       "labels": []
     },
     {
@@ -63747,9 +63747,9 @@
       "first_seen": "2012-03-06T15:25:00Z"
     },
     {
-      "name": "Search CakePHP Book",
       "first_seen": "2012-04-29T21:53:17Z",
       "removed": "2026-04-14T09:00:30Z",
+      "name": "Search CakePHP Book",
       "labels": []
     },
     {
@@ -63966,9 +63966,9 @@
       ]
     },
     {
-      "name": "SelectionsToFiles",
       "first_seen": "2014-05-09T22:40:41Z",
       "removed": "2016-04-02T01:54:01Z",
+      "name": "SelectionsToFiles",
       "labels": []
     },
     {
@@ -64377,9 +64377,9 @@
       "first_seen": "2017-06-27T16:00:26Z"
     },
     {
-      "name": "ServiceNow API Autocompletion",
       "first_seen": "2015-08-05T01:43:02Z",
       "removed": "2019-03-02T23:36:17Z",
+      "name": "ServiceNow API Autocompletion",
       "labels": []
     },
     {
@@ -64418,9 +64418,9 @@
       "first_seen": "2015-03-13T17:40:12Z"
     },
     {
-      "name": "SetDjangoSyntax",
       "first_seen": "2012-01-16T17:30:44Z",
       "removed": "2017-10-19T12:43:08Z",
+      "name": "SetDjangoSyntax",
       "labels": []
     },
     {
@@ -64596,9 +64596,9 @@
       "first_seen": "2018-05-14T20:14:11Z"
     },
     {
-      "name": "SfCommand",
       "first_seen": "2013-09-02T18:00:45Z",
       "removed": "2016-04-24T12:35:35Z",
+      "name": "SfCommand",
       "labels": []
     },
     {
@@ -64726,9 +64726,9 @@
       "first_seen": "2012-08-29T23:10:34Z"
     },
     {
-      "name": "ShaderLanguages",
       "first_seen": "2012-03-31T09:05:52Z",
       "removed": "2020-08-18T21:11:48Z",
+      "name": "ShaderLanguages",
       "labels": [
         "language syntax"
       ]
@@ -65232,15 +65232,15 @@
       "first_seen": "2011-12-15T15:25:10Z"
     },
     {
-      "name": "SideBarFolders",
       "first_seen": "2014-02-05T03:56:36Z",
       "removed": "2016-04-02T01:54:43Z",
+      "name": "SideBarFolders",
       "labels": []
     },
     {
-      "name": "SideBarGit",
       "first_seen": "2011-12-15T14:13:02Z",
       "removed": "2016-04-02T01:54:43Z",
+      "name": "SideBarGit",
       "labels": []
     },
     {
@@ -65694,9 +65694,9 @@
       "first_seen": "2012-06-11T00:39:10Z"
     },
     {
-      "name": "SimpleConfig",
       "first_seen": "2018-05-15T03:33:47Z",
       "removed": "2018-12-18T21:16:04Z",
+      "name": "SimpleConfig",
       "labels": [
         "langage syntax"
       ]
@@ -65719,9 +65719,9 @@
       "first_seen": "2015-07-04T13:26:53Z"
     },
     {
-      "name": "SimpleCSSFormat",
       "first_seen": "2014-02-05T03:56:36Z",
       "removed": "2014-02-05T22:21:18Z",
+      "name": "SimpleCSSFormat",
       "labels": []
     },
     {
@@ -66070,9 +66070,9 @@
       "first_seen": "2012-10-11T03:31:45Z"
     },
     {
-      "name": "Sk-ST3",
       "first_seen": "2019-02-23T16:54:05Z",
       "removed": "2023-03-31T23:54:20Z",
+      "name": "Sk-ST3",
       "labels": [
         "language syntax",
         "color scheme"
@@ -66156,9 +66156,9 @@
       "first_seen": "2018-04-15T19:23:54Z"
     },
     {
-      "name": "Skript",
       "first_seen": "2014-08-21T02:51:22Z",
       "removed": "2015-08-07T17:34:11Z",
+      "name": "Skript",
       "labels": [
         "language syntax"
       ]
@@ -66511,9 +66511,9 @@
       "first_seen": "2015-06-12T02:34:13Z"
     },
     {
-      "name": "Smart Repeat",
       "first_seen": "2016-06-13T13:54:08Z",
       "removed": "2019-11-30T11:44:16Z",
+      "name": "Smart Repeat",
       "labels": [
         "formatting"
       ]
@@ -67167,9 +67167,9 @@
       "first_seen": "2017-01-03T16:52:26Z"
     },
     {
-      "name": "Solo Snippets",
       "first_seen": "2017-07-19T21:11:37Z",
       "removed": "2020-07-20T01:17:07Z",
+      "name": "Solo Snippets",
       "labels": []
     },
     {
@@ -67563,9 +67563,9 @@
       "first_seen": "2014-12-25T13:26:03Z"
     },
     {
-      "name": "Spandoc",
       "first_seen": "2017-08-19T18:02:54Z",
       "removed": "2020-05-11T07:54:11Z",
+      "name": "Spandoc",
       "labels": []
     },
     {
@@ -67585,9 +67585,9 @@
       "first_seen": "2013-05-20T02:23:35Z"
     },
     {
-      "name": "Spark",
       "first_seen": "2012-10-23T00:22:32Z",
       "removed": "2019-09-02T23:34:13Z",
+      "name": "Spark",
       "labels": []
     },
     {
@@ -67663,9 +67663,9 @@
       "first_seen": "2013-11-05T15:41:47Z"
     },
     {
-      "name": "Specificity Calculator",
       "first_seen": "2012-10-02T09:39:39Z",
       "removed": "2026-04-14T04:46:35Z",
+      "name": "Specificity Calculator",
       "labels": []
     },
     {
@@ -67703,9 +67703,9 @@
       "first_seen": "2021-08-08T11:24:30Z"
     },
     {
-      "name": "Speech",
       "first_seen": "2013-01-24T23:53:26Z",
       "removed": "2016-09-19T14:09:06Z",
+      "name": "Speech",
       "labels": []
     },
     {
@@ -67722,9 +67722,9 @@
       "first_seen": "2015-04-14T10:51:37Z"
     },
     {
-      "name": "Sphinx Office",
       "first_seen": "2013-11-21T00:26:06Z",
       "removed": "2020-08-18T21:25:03Z",
+      "name": "Sphinx Office",
       "labels": []
     },
     {
@@ -67827,9 +67827,9 @@
       "first_seen": "2014-03-30T22:01:10Z"
     },
     {
-      "name": "Split",
       "first_seen": "2012-11-24T02:10:23Z",
       "removed": "2026-04-14T05:18:27Z",
+      "name": "Split",
       "labels": []
     },
     {
@@ -68439,9 +68439,9 @@
       "first_seen": "2015-11-16T21:40:26Z"
     },
     {
-      "name": "StackExchangeQuery",
       "first_seen": "2016-05-30T11:02:01Z",
       "removed": "2018-12-17T08:06:33Z",
+      "name": "StackExchangeQuery",
       "labels": []
     },
     {
@@ -68608,9 +68608,9 @@
       "first_seen": "2018-03-13T18:07:34Z"
     },
     {
-      "name": "Stata",
       "first_seen": "2012-08-29T00:24:26Z",
       "removed": "2026-04-14T04:35:23Z",
+      "name": "Stata",
       "labels": []
     },
     {
@@ -69397,9 +69397,9 @@
       "first_seen": "2014-07-19T20:26:18Z"
     },
     {
-      "name": "subl-comment-snippets",
       "first_seen": "2021-10-15T21:04:47Z",
       "removed": "2026-04-14T09:05:27Z",
+      "name": "subl-comment-snippets",
       "labels": [
         "snippets"
       ]
@@ -69813,9 +69813,9 @@
       "first_seen": "2011-12-18T16:51:22Z"
     },
     {
-      "name": "sublime-symfony",
       "first_seen": "2012-04-10T08:38:18Z",
       "removed": "2019-04-10T11:55:39Z",
+      "name": "sublime-symfony",
       "labels": []
     },
     {
@@ -69946,9 +69946,9 @@
       "first_seen": "2011-12-16T04:14:05Z"
     },
     {
-      "name": "SublimeClang",
       "first_seen": "2011-12-15T19:41:14Z",
       "removed": "2026-04-14T06:06:25Z",
+      "name": "SublimeClang",
       "labels": []
     },
     {
@@ -69999,9 +69999,9 @@
       "first_seen": "2011-12-15T14:11:03Z"
     },
     {
-      "name": "SublimeDancer",
       "first_seen": "2012-02-22T02:35:56Z",
       "removed": "2018-01-12T14:17:36Z",
+      "name": "SublimeDancer",
       "labels": []
     },
     {
@@ -74861,9 +74861,9 @@
       "first_seen": "2012-07-12T06:53:42Z"
     },
     {
-      "name": "sublimetext.github.com",
       "first_seen": "2012-02-18T23:35:21Z",
       "removed": "2014-10-18T17:21:01Z",
+      "name": "sublimetext.github.com",
       "labels": []
     },
     {
@@ -75135,9 +75135,9 @@
       "first_seen": "2014-07-15T18:41:19Z"
     },
     {
-      "name": "Subtoise",
       "first_seen": "2013-05-31T01:54:24Z",
       "removed": "2026-04-14T04:35:23Z",
+      "name": "Subtoise",
       "labels": []
     },
     {
@@ -75215,9 +75215,9 @@
       "first_seen": "2013-12-11T07:26:05Z"
     },
     {
-      "name": "SuiteCommerce-Advanced",
       "first_seen": "2015-10-09T14:52:19Z",
       "removed": "2016-03-14T15:44:04Z",
+      "name": "SuiteCommerce-Advanced",
       "labels": []
     },
     {
@@ -75309,9 +75309,9 @@
       "first_seen": "2014-01-18T21:55:48Z"
     },
     {
-      "name": "Sundried Color Scheme",
       "first_seen": "2012-08-29T23:10:13Z",
       "removed": "2014-09-29T14:06:25Z",
+      "name": "Sundried Color Scheme",
       "labels": [
         "color scheme"
       ]
@@ -75764,9 +75764,9 @@
       "first_seen": "2021-01-19T17:25:44Z"
     },
     {
-      "name": "SVG-SMIL-Snippets",
       "first_seen": "2014-09-04T16:01:02Z",
       "removed": "2019-06-04T15:24:01Z",
+      "name": "SVG-SMIL-Snippets",
       "labels": [
         "snippets"
       ]
@@ -76094,15 +76094,15 @@
       "first_seen": "2015-04-29T21:02:22Z"
     },
     {
-      "name": "SwinGameCompletions",
       "first_seen": "2014-03-30T21:20:54Z",
       "removed": "2015-09-17T02:23:58Z",
+      "name": "SwinGameCompletions",
       "labels": []
     },
     {
-      "name": "Switch",
       "first_seen": "2012-09-13T02:28:35Z",
       "removed": "2018-04-08T17:26:28Z",
+      "name": "Switch",
       "labels": []
     },
     {
@@ -76398,9 +76398,9 @@
       "first_seen": "2012-05-14T08:53:25Z"
     },
     {
-      "name": "SyncR",
       "first_seen": "2015-04-29T14:12:36Z",
       "removed": "2015-12-08T11:03:54Z",
+      "name": "SyncR",
       "labels": [
         "scp",
         "diff"
@@ -76644,9 +76644,9 @@
       "first_seen": "2015-01-24T15:51:30Z"
     },
     {
-      "name": "SyntaxHighlightTools",
       "first_seen": "2013-05-20T23:25:00Z",
       "removed": "2020-08-18T21:25:04Z",
+      "name": "SyntaxHighlightTools",
       "labels": [
         "language syntax",
         "plugin development",
@@ -77123,9 +77123,9 @@
       "first_seen": "2014-07-23T11:51:21Z"
     },
     {
-      "name": "Tag",
       "first_seen": "2011-12-15T14:18:26Z",
       "removed": "2016-04-02T02:07:33Z",
+      "name": "Tag",
       "labels": []
     },
     {
@@ -77175,9 +77175,9 @@
       "first_seen": "2018-11-07T18:09:42Z"
     },
     {
-      "name": "TagWrapper",
       "first_seen": "2012-10-02T00:24:30Z",
       "removed": "2017-08-07T17:23:30Z",
+      "name": "TagWrapper",
       "labels": []
     },
     {
@@ -78013,9 +78013,9 @@
       "first_seen": "2012-10-02T09:38:28Z"
     },
     {
-      "name": "Test Jumper",
       "first_seen": "2016-12-06T10:39:39Z",
       "removed": "2018-11-26T22:05:08Z",
+      "name": "Test Jumper",
       "labels": []
     },
     {
@@ -78487,9 +78487,9 @@
       "first_seen": "2014-02-14T13:45:27Z"
     },
     {
-      "name": "Theme - Aprosopo",
       "first_seen": "2014-05-31T02:15:54Z",
       "removed": "2017-06-05T17:50:44Z",
+      "name": "Theme - Aprosopo",
       "labels": [
         "theme"
       ]
@@ -79210,9 +79210,9 @@
       "first_seen": "2015-03-27T01:22:51Z"
     },
     {
-      "name": "Theme - Honeykoa",
       "first_seen": "2017-06-05T18:08:40Z",
       "removed": "2018-03-04T16:54:26Z",
+      "name": "Theme - Honeykoa",
       "labels": [
         "theme"
       ]
@@ -79424,9 +79424,9 @@
       "first_seen": "2015-03-13T21:29:33Z"
     },
     {
-      "name": "Theme - Minimal",
       "first_seen": "2013-09-01T18:36:07Z",
       "removed": "2016-09-03T20:28:00Z",
+      "name": "Theme - Minimal",
       "labels": [
         "theme"
       ]
@@ -79466,9 +79466,9 @@
       "first_seen": "2014-02-05T15:15:31Z"
     },
     {
-      "name": "Theme - Monokai",
       "first_seen": "2015-05-20T14:42:00Z",
       "removed": "2017-10-09T16:36:11Z",
+      "name": "Theme - Monokai",
       "labels": [
         "theme"
       ]
@@ -79986,9 +79986,9 @@
       "first_seen": "2012-08-09T23:23:24Z"
     },
     {
-      "name": "Theme - Piatto",
       "first_seen": "2013-10-31T14:33:11Z",
       "removed": "2019-08-26T15:01:40Z",
+      "name": "Theme - Piatto",
       "labels": [
         "theme"
       ]
@@ -80160,9 +80160,9 @@
       "first_seen": "2024-03-15T19:39:33Z"
     },
     {
-      "name": "Theme - Sea Lion",
       "first_seen": "2016-11-06T20:28:40Z",
       "removed": "2017-07-13T21:50:27Z",
+      "name": "Theme - Sea Lion",
       "labels": [
         "theme"
       ]
@@ -80813,9 +80813,9 @@
       "first_seen": "2014-08-19T17:36:57Z"
     },
     {
-      "name": "TideSDK Autocomplete",
       "first_seen": "2013-02-15T18:53:47Z",
       "removed": "2019-09-28T03:40:37Z",
+      "name": "TideSDK Autocomplete",
       "labels": []
     },
     {
@@ -80921,9 +80921,9 @@
       "first_seen": "2025-07-15T20:03:54Z"
     },
     {
-      "name": "TimeTracker",
       "first_seen": "2016-06-27T13:15:42Z",
       "removed": "2017-12-30T17:47:29Z",
+      "name": "TimeTracker",
       "labels": []
     },
     {
@@ -80998,9 +80998,9 @@
       "first_seen": "2015-04-17T10:58:45Z"
     },
     {
-      "name": "TinTin++ Syntax Highlighter",
       "first_seen": "2013-09-21T22:50:37Z",
       "removed": "2018-12-12T22:38:49Z",
+      "name": "TinTin++ Syntax Highlighter",
       "labels": []
     },
     {
@@ -81380,9 +81380,9 @@
       "first_seen": "2012-05-29T22:09:10Z"
     },
     {
-      "name": "Toggl Timer",
       "first_seen": "2013-07-21T14:23:36Z",
       "removed": "2016-04-01T14:41:35Z",
+      "name": "Toggl Timer",
       "labels": []
     },
     {
@@ -81839,9 +81839,9 @@
       "first_seen": "2019-02-18T20:09:18Z"
     },
     {
-      "name": "Toolbar",
       "first_seen": "2014-06-22T00:20:08Z",
       "removed": "2016-04-02T02:20:51Z",
+      "name": "Toolbar",
       "labels": []
     },
     {
@@ -82193,9 +82193,9 @@
       "first_seen": "2014-06-12T14:55:58Z"
     },
     {
-      "name": "Transience",
       "first_seen": "2013-08-03T00:53:36Z",
       "removed": "2020-06-14T22:37:02Z",
+      "name": "Transience",
       "labels": []
     },
     {
@@ -82269,9 +82269,9 @@
       "first_seen": "2012-08-29T23:08:38Z"
     },
     {
-      "name": "Transmit Docksend",
       "first_seen": "2011-12-15T15:55:08Z",
       "removed": "2026-04-14T09:00:30Z",
+      "name": "Transmit Docksend",
       "labels": []
     },
     {
@@ -82647,9 +82647,9 @@
       "first_seen": "2013-08-12T20:46:24Z"
     },
     {
-      "name": "Tumblr Themes Syntax and Completions",
       "first_seen": "2014-12-27T17:05:23Z",
       "removed": "2016-03-06T15:03:11Z",
+      "name": "Tumblr Themes Syntax and Completions",
       "labels": [
         "language syntax",
         "snippets",
@@ -83081,9 +83081,9 @@
       "first_seen": "2015-07-15T21:02:24Z"
     },
     {
-      "name": "TypeSnippets",
       "first_seen": "2015-05-30T23:21:16Z",
       "removed": "2020-04-18T12:39:23Z",
+      "name": "TypeSnippets",
       "labels": [
         "snippets"
       ]
@@ -83672,9 +83672,9 @@
       "first_seen": "2018-01-12T03:07:25Z"
     },
     {
-      "name": "UnicodeTeX",
       "first_seen": "2016-01-23T16:48:15Z",
       "removed": "2019-02-05T22:21:52Z",
+      "name": "UnicodeTeX",
       "labels": []
     },
     {
@@ -83799,9 +83799,9 @@
       "first_seen": "2014-03-04T01:16:12Z"
     },
     {
-      "name": "Unity C# Snippets",
       "first_seen": "2013-02-23T02:24:04Z",
       "removed": "2015-10-25T01:13:13Z",
+      "name": "Unity C# Snippets",
       "labels": [
         "snippets"
       ]
@@ -84137,9 +84137,9 @@
       "first_seen": "2016-01-22T13:31:30Z"
     },
     {
-      "name": "Updater",
       "first_seen": "2012-10-02T09:37:59Z",
       "removed": "2026-04-14T04:46:34Z",
+      "name": "Updater",
       "labels": []
     },
     {
@@ -84207,9 +84207,9 @@
       "first_seen": "2017-02-19T17:53:44Z"
     },
     {
-      "name": "Urtext",
       "first_seen": "2020-09-25T14:57:20Z",
       "removed": "2025-02-14T10:05:16Z",
+      "name": "Urtext",
       "labels": [
         "plaintext",
         "notes",
@@ -84363,9 +84363,9 @@
       "first_seen": "2013-01-05T04:52:50Z"
     },
     {
-      "name": "Vala",
       "first_seen": "2012-01-11T01:06:02Z",
       "removed": "2015-10-27T12:38:22Z",
+      "name": "Vala",
       "labels": [
         "language syntax",
         "Vala"
@@ -84672,9 +84672,9 @@
       "first_seen": "2025-07-15T20:15:05Z"
     },
     {
-      "name": "Ver",
       "first_seen": "2014-07-05T18:45:47Z",
       "removed": "2014-12-01T08:01:25Z",
+      "name": "Ver",
       "labels": []
     },
     {
@@ -85002,9 +85002,9 @@
       "first_seen": "2013-07-01T10:38:29Z"
     },
     {
-      "name": "Vintage Numbers",
       "first_seen": "2012-03-31T09:22:48Z",
       "removed": "2017-08-07T18:23:00Z",
+      "name": "Vintage Numbers",
       "labels": []
     },
     {
@@ -85148,9 +85148,9 @@
       "first_seen": "2013-01-30T19:33:04Z"
     },
     {
-      "name": "Vintageous - Region To Selection",
       "first_seen": "2014-01-03T14:41:34Z",
       "removed": "2020-08-18T21:33:10Z",
+      "name": "Vintageous - Region To Selection",
       "labels": []
     },
     {
@@ -85231,9 +85231,9 @@
       "first_seen": "2014-08-28T14:25:50Z"
     },
     {
-      "name": "VisSub",
       "first_seen": "2012-10-23T00:07:23Z",
       "removed": "2018-11-02T20:25:46Z",
+      "name": "VisSub",
       "labels": []
     },
     {
@@ -85433,9 +85433,9 @@
       "first_seen": "2013-11-27T16:45:59Z"
     },
     {
-      "name": "Vorhees",
       "first_seen": "2015-01-20T19:28:11Z",
       "removed": "2019-06-04T21:14:42Z",
+      "name": "Vorhees",
       "labels": [
         "color scheme",
         "formatting",
@@ -85649,9 +85649,9 @@
       "first_seen": "2018-06-21T14:39:23Z"
     },
     {
-      "name": "Vuetify",
       "first_seen": "2018-04-14T15:28:10Z",
       "removed": "2019-10-18T15:39:36Z",
+      "name": "Vuetify",
       "labels": []
     },
     {
@@ -85824,9 +85824,9 @@
       "first_seen": "2013-08-17T02:01:05Z"
     },
     {
-      "name": "WarpScript",
       "first_seen": "2016-05-09T12:24:42Z",
       "removed": "2018-11-03T08:46:20Z",
+      "name": "WarpScript",
       "labels": [
         "syntax",
         "highlight",
@@ -85886,9 +85886,9 @@
       "first_seen": "2017-10-20T15:05:52Z"
     },
     {
-      "name": "WD AngularJS Snippets",
       "first_seen": "2016-06-13T08:09:29Z",
       "removed": "2017-02-22T00:34:37Z",
+      "name": "WD AngularJS Snippets",
       "labels": [
         "autocomplete",
         "snippets"
@@ -86268,9 +86268,9 @@
       "first_seen": "2017-11-27T23:35:52Z"
     },
     {
-      "name": "WeSnipp Add",
       "first_seen": "2014-09-15T14:11:33Z",
       "removed": "2018-06-08T22:46:29Z",
+      "name": "WeSnipp Add",
       "labels": [
         "wesnipp",
         "snippet"
@@ -86577,9 +86577,9 @@
       "first_seen": "2013-08-30T21:56:01Z"
     },
     {
-      "name": "Wind",
       "first_seen": "2013-01-20T01:52:56Z",
       "removed": "2016-07-05T15:11:58Z",
+      "name": "Wind",
       "labels": []
     },
     {
@@ -87275,9 +87275,9 @@
       "first_seen": "2014-04-26T14:05:58Z"
     },
     {
-      "name": "WPath",
       "first_seen": "2013-07-20T11:06:02Z",
       "removed": "2016-04-24T12:47:48Z",
+      "name": "WPath",
       "labels": []
     },
     {
@@ -87381,9 +87381,9 @@
       "first_seen": "2018-11-19T15:52:39Z"
     },
     {
-      "name": "WrapCommand",
       "first_seen": "2012-11-26T13:52:32Z",
       "removed": "2020-08-18T21:25:04Z",
+      "name": "WrapCommand",
       "labels": []
     },
     {
@@ -87861,9 +87861,9 @@
       "first_seen": "2014-08-14T18:25:50Z"
     },
     {
-      "name": "xmllint",
       "first_seen": "2013-06-01T04:23:17Z",
       "removed": "2017-12-12T10:51:36Z",
+      "name": "xmllint",
       "labels": [
         "linting"
       ]
@@ -87945,9 +87945,9 @@
       "first_seen": "2015-02-17T02:12:10Z"
     },
     {
-      "name": "XpressEngine",
       "first_seen": "2012-09-15T10:52:10Z",
       "removed": "2020-04-19T20:14:43Z",
+      "name": "XpressEngine",
       "labels": []
     },
     {
@@ -88375,9 +88375,9 @@
       ]
     },
     {
-      "name": "Yesod",
       "first_seen": "2013-11-12T18:31:19Z",
       "removed": "2020-08-18T19:03:51Z",
+      "name": "Yesod",
       "labels": []
     },
     {
@@ -88415,18 +88415,18 @@
       "first_seen": "2014-11-17T09:15:13Z"
     },
     {
-      "name": "Yeti_UI",
       "first_seen": "2016-01-03T22:15:16Z",
       "removed": "2016-06-27T11:52:24Z",
+      "name": "Yeti_UI",
       "labels": [
         "theme",
         "color scheme"
       ]
     },
     {
-      "name": "Yeti_UX",
       "first_seen": "2016-01-04T14:54:25Z",
       "removed": "2016-06-27T11:52:25Z",
+      "name": "Yeti_UX",
       "labels": [
         "color scheme"
       ]
@@ -88448,9 +88448,9 @@
       "first_seen": "2012-02-07T16:27:05Z"
     },
     {
-      "name": "Yii Framework Docs Search",
       "first_seen": "2013-02-15T18:23:08Z",
       "removed": "2019-08-03T04:39:58Z",
+      "name": "Yii Framework Docs Search",
       "labels": []
     },
     {
@@ -88502,9 +88502,9 @@
       "first_seen": "2019-04-19T15:08:22Z"
     },
     {
-      "name": "Yollama",
       "first_seen": "2024-02-19T21:02:58Z",
       "removed": "2025-11-16T12:38:48Z",
+      "name": "Yollama",
       "labels": [
         "auto-complete",
         "ai",
@@ -88561,9 +88561,9 @@
       "first_seen": "2024-05-22T13:13:33Z"
     },
     {
-      "name": "YUI Compressor",
       "first_seen": "2012-01-31T09:39:58Z",
       "removed": "2019-01-27T08:52:00Z",
+      "name": "YUI Compressor",
       "labels": []
     },
     {
@@ -88621,9 +88621,9 @@
       "first_seen": "2018-05-14T22:06:05Z"
     },
     {
-      "name": "Zap Gremlins",
       "first_seen": "2012-06-11T00:53:43Z",
       "removed": "2026-04-14T04:24:28Z",
+      "name": "Zap Gremlins",
       "labels": []
     },
     {
@@ -88819,9 +88819,9 @@
       "first_seen": "2013-11-27T16:46:01Z"
     },
     {
-      "name": "zero-dark",
       "first_seen": "2017-01-18T16:15:21Z",
       "removed": "2019-02-18T19:26:37Z",
+      "name": "zero-dark",
       "labels": [
         "color scheme"
       ]
@@ -88893,9 +88893,9 @@
       "first_seen": "2015-04-12T14:35:15Z"
     },
     {
-      "name": "Zip Browser",
       "first_seen": "2013-10-16T14:00:26Z",
       "removed": "2020-08-18T21:25:05Z",
+      "name": "Zip Browser",
       "labels": []
     },
     {
@@ -89066,9 +89066,9 @@
       "first_seen": "2017-03-10T15:02:14Z"
     },
     {
-      "name": "Zucchini",
       "first_seen": "2013-08-14T15:35:03Z",
       "removed": "2018-06-12T00:14:43Z",
+      "name": "Zucchini",
       "labels": [
         "language syntax",
         "snippets"
