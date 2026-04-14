@@ -1,3 +1,22 @@
+import {
+  dayIndexForTimestamp,
+  filterEntriesToDayWindow,
+  localDayId,
+  localDayKey,
+  safeDate,
+  sameLocalDay,
+  shiftTimestampByLocalDays,
+} from './module/status-day.js'
+import {
+  annotateChanges,
+  classForConclusion,
+  diffFailingPackages,
+  extractCurrentlyFailing,
+  extractPackagesCrawled,
+  isHardFailureWithoutNotes,
+  normalizePackageNameKey,
+  normalizeStatusNotes,
+} from './module/status-failing.js'
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.mjs'
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
 
@@ -35,16 +54,21 @@ const lastButton = document.querySelector('[data-control="last"]')
  *  }} LogEntry
  */
 
-/** @typedef {{
+/**
+ * Release marker rendered at the chart top for tags that fall inside the
+ * currently visible day window.
+ *
+ * @typedef {{
  *    tag: string,
  *    date: string,
  *  }} TagMarker
  */
 
-/** @typedef {{
- *    tag: string,
- *    date: string,
- *  }} OverflowTagMarker
+/**
+ * A "just before the window" tag rendered as a left-pointing overflow
+ * indicator outside the visible chart range.
+ *
+ * @typedef {TagMarker} OverflowTagMarker
  */
 
 /** @type {LogEntry[]} */
@@ -54,23 +78,14 @@ let index = 0
 let chart = null
 let emptyStateMessage = ''
 /** @type {TagMarker[]} */
-const tagMarkers = loadTagMarkers()
-/** @type {OverflowTagMarker | null} */
-const overflowTagMarker = loadOverflowTagMarker()
-
-function filterEntriesToWindow(entries, days) {
-  const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-  const msInDay = 24 * 60 * 60 * 1000
-  return entries.filter((entry) => {
-    const ts = safeDate(entry.date)
-    if (!ts) return false
-    const d = new Date(ts)
-    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-    const diffDays = Math.floor((todayStart - dayStart) / msInDay)
-    return diffDays >= 0 && diffDays < days
-  })
-}
+const tagMarkers = loadTagMarkers(tagDataEl)
+/**
+ * Optional tag marker that points to the most recent tag just before the
+ * visible window. Rendered as an external left-side indicator.
+ *
+ * @type {OverflowTagMarker | null}
+ */
+const overflowTagMarker = loadOverflowTagMarker(overflowTagDataEl)
 
 function init() {
   if (!notesEl || !dateEl || !badgeEl) {
@@ -91,7 +106,9 @@ function init() {
   bindKeyboard()
   loadLogs().then((entries) => {
     const days = chart?.days
-    const visibleEntries = typeof days === 'number' ? filterEntriesToWindow(entries, days) : entries
+    const visibleEntries = typeof days === 'number'
+      ? filterEntriesToDayWindow(entries, days)
+      : entries
     logs = annotateChanges(visibleEntries)
     if (!logs.length) {
       renderEmptyState('No log entries found.')
@@ -151,9 +168,7 @@ function navigateDay(dayOffset) {
   const currentTs = safeDate(current.date)
   if (!currentTs) return
 
-  const DAY_MS = 24 * 60 * 60 * 1000
-  const targetTs = currentTs + dayOffset * DAY_MS
-  const desiredDay = new Date(targetTs).getDate()
+  const targetTs = shiftTimestampByLocalDays(currentTs, dayOffset)
 
   const closest = findClosestByTimestamp(targetTs)
   if (closest === -1) return
@@ -162,8 +177,7 @@ function navigateDay(dayOffset) {
   const targetEntryTs = safeDate(targetEntry.date)
   if (!targetEntryTs) return
 
-  const targetDay = new Date(targetEntryTs).getDate()
-  if (targetDay !== desiredDay) return
+  if (!sameLocalDay(targetEntryTs, targetTs)) return
 
   render(closest)
 }
@@ -251,7 +265,9 @@ function refreshLogs() {
   loadLogs().then((entries) => {
     if (!entries.length) return
     const days = chart?.days
-    const visibleEntries = typeof days === 'number' ? filterEntriesToWindow(entries, days) : entries
+    const visibleEntries = typeof days === 'number'
+      ? filterEntriesToDayWindow(entries, days)
+      : entries
     logs = annotateChanges(visibleEntries)
     chart?.setData(logs)
     const resolved = resolveIndexFromUrl()
@@ -296,7 +312,7 @@ function renderNotes(entry, entryIndex) {
     return
   }
 
-  const normalized = normalizeNotes(entry.notes)
+  const normalized = normalizeStatusNotes(entry.notes)
   const html = marked.parse(normalized, { breaks: true })
   notesEl.innerHTML = DOMPurify.isSupported
     ? DOMPurify.sanitize(html)
@@ -480,14 +496,6 @@ function formatDate(value) {
 }
 
 /**
- * @param {string | undefined} value
- */
-function safeDate(value) {
-  const t = value ? Date.parse(value) : NaN
-  return Number.isFinite(t) ? t : 0
-}
-
-/**
  * @param {string} conclusion
  */
 function badgeFor(conclusion) {
@@ -507,17 +515,6 @@ function badgeFor(conclusion) {
   }
 
   return { label, className: 'status-badge-muted' }
-}
-
-/**
- * Normalize newlines and ensure blank lines so markdown renders paragraphs.
- * @param {string} text
- */
-function normalizeNotes(text) {
-  return text
-    .replace(/\r\n?/g, '\n')
-    // Added 2026-01-11; delete after 2026-02-12
-    .replace(/\*\*currently failing\*\*:\s*\n/gi, '#### Currently failing\n')
 }
 
 function clamp(value, min, max) {
@@ -792,9 +789,7 @@ class StatusChart {
     this.drawOverflowTagMarker()
     if (!this.entries.length) return
 
-    const now = new Date()
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    const msInDay = 24 * 60 * 60 * 1000
+    const todayDayId = localDayId(Date.now())
 
     const neutralNodes = []
     const otherNodes = []
@@ -809,9 +804,9 @@ class StatusChart {
     })
 
     this.entries.forEach((entry, idx) => {
-      const ts = Date.parse(entry.date || 0)
-      if (!Number.isFinite(ts)) return
-      const position = this.positionForTimestamp(ts, { todayStart, msInDay })
+      const ts = safeDate(entry.date)
+      if (!ts) return
+      const position = this.positionForTimestamp(ts, { todayDayId })
       if (!position) return
 
       const { x, y, dayIndex } = position
@@ -859,15 +854,13 @@ class StatusChart {
     const labelOffsetY = cssNumber(this.el, '--status-tag-label-offset-y', 2)
     const leanRatio = Math.tan((leanDeg * Math.PI) / 180)
 
-    const now = new Date()
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    const msInDay = 24 * 60 * 60 * 1000
+    const todayDayId = localDayId(Date.now())
 
     const visibleMarkers = this.tagMarkers
       .map((marker) => {
-        const ts = Date.parse(marker.date || 0)
-        if (!Number.isFinite(ts)) return null
-        const position = this.positionForTimestamp(ts, { todayStart, msInDay })
+        const ts = safeDate(marker.date)
+        if (!ts) return null
+        const position = this.positionForTimestamp(ts, { todayDayId })
         if (!position) return null
         return { marker, ts, position }
       })
@@ -1009,6 +1002,14 @@ class StatusChart {
     })
   }
 
+  /**
+   * Draw a left-edge overflow pointer for the last tag before the visible
+   * window. This makes it clear the visible tag history continues to older
+   * versions off-screen.
+   *
+   * We hide this marker when the oldest visible days already have top tag
+   * labels/lines, because the left edge would become visually crowded.
+   */
   drawOverflowTagMarker() {
     if (!this.overflowTagMarker) return
     if (this.hasTagMarkersInOldestDays()) {
@@ -1065,19 +1066,21 @@ class StatusChart {
     this.tagLayer.appendChild(group)
   }
 
+  /**
+   * True when regular tag markers already occupy the oldest visible day slots.
+   * Used as a coarse "no room left" signal for the overflow pointer.
+   */
   hasTagMarkersInOldestDays() {
     if (!this.tagMarkers.length) return false
 
-    const now = new Date()
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    const msInDay = 24 * 60 * 60 * 1000
+    const todayDayId = localDayId(Date.now())
     const OLDEST_DAYS = 12
     const oldestStart = Math.max(0, this.days - OLDEST_DAYS)
 
     return this.tagMarkers.some((marker) => {
-      const ts = Date.parse(marker.date || 0)
-      if (!Number.isFinite(ts)) return false
-      const pos = this.positionForTimestamp(ts, { todayStart, msInDay })
+      const ts = safeDate(marker.date)
+      if (!ts) return false
+      const pos = this.positionForTimestamp(ts, { todayDayId })
       return Boolean(pos && pos.dayIndex >= oldestStart)
     })
   }
@@ -1146,18 +1149,12 @@ class StatusChart {
     })
   }
 
-  positionForTimestamp(ts, { todayStart, msInDay } = {}) {
-    const now = new Date()
-    const startOfToday = typeof todayStart === 'number'
-      ? todayStart
-      : new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-    const dayMs = typeof msInDay === 'number' ? msInDay : 24 * 60 * 60 * 1000
+  positionForTimestamp(ts, { todayDayId } = {}) {
+    const anchorDayId = Number.isFinite(todayDayId) ? todayDayId : localDayId(Date.now())
+    const diffDays = dayIndexForTimestamp(ts, anchorDayId)
+    if (!Number.isFinite(diffDays) || diffDays < 0 || diffDays >= this.days) return null
 
     const d = new Date(ts)
-    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-    const diffDays = Math.floor((startOfToday - dayStart) / dayMs)
-    if (diffDays < 0 || diffDays >= this.days) return null
-
     const hour = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600
     const x = this.xForDayIndex(diffDays)
     const y = this.yForHour(hour)
@@ -1200,14 +1197,6 @@ function classForEntry(entry) {
   return base
 }
 
-function classForConclusion(conclusion) {
-  const normalized = (conclusion || '').toLowerCase()
-  if (normalized === 'success') return ''
-  if (['failure', 'failed', 'cancelled', 'timed_out'].includes(normalized)) return 'error'
-  if (['action_required', 'neutral', 'stale'].includes(normalized)) return 'warn'
-  return 'muted'
-}
-
 function formatHourLabel(hour) {
   const h = String(hour).padStart(2, '0')
   return `${h}:00`
@@ -1215,11 +1204,6 @@ function formatHourLabel(hour) {
 
 function currentLocalDayKey() {
   return localDayKey(Date.now())
-}
-
-function localDayKey(timestamp) {
-  const d = new Date(timestamp)
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 }
 
 function linkToRun(runId, label = 'logs') {
@@ -1233,11 +1217,17 @@ function missingRunMessage(runId) {
   return `No data for this run_id. Maybe it is still on ${link}.`
 }
 
-function loadTagMarkers() {
-  if (!tagDataEl || !tagDataEl.textContent) return []
+/**
+ * Parse in-window release tag markers from inline JSON data.
+ *
+ * @param {Element | null} el
+ * @returns {TagMarker[]}
+ */
+function loadTagMarkers(el) {
+  if (!el || !el.textContent) return []
 
   try {
-    const raw = JSON.parse(tagDataEl.textContent)
+    const raw = JSON.parse(el.textContent)
     if (!Array.isArray(raw)) return []
 
     return raw
@@ -1258,11 +1248,17 @@ function loadTagMarkers() {
   }
 }
 
-function loadOverflowTagMarker() {
-  if (!overflowTagDataEl || !overflowTagDataEl.textContent) return null
+/**
+ * Parse the optional overflow marker from inline JSON data.
+ *
+ * @param {Element | null} el
+ * @returns {OverflowTagMarker | null}
+ */
+function loadOverflowTagMarker(el) {
+  if (!el || !el.textContent) return null
 
   try {
-    const raw = JSON.parse(overflowTagDataEl.textContent)
+    const raw = JSON.parse(el.textContent)
     if (!raw || typeof raw !== 'object') return null
 
     const tag = String(raw.tag || '').trim()
@@ -1306,214 +1302,6 @@ function updateUrl(entry) {
     url.searchParams.delete('run_id')
   }
   window.history.replaceState({}, '', url.toString())
-}
-
-function annotateChanges(entries) {
-  // entries are sorted newest-first; "lookback" walks forward in the array to go back in time.
-  const sections = entries.map(entry => extractCurrentlyFailing(entry.notes || ''))
-  const LOOKBACK = 10
-
-  return entries.map((entry, idx) => {
-    // For the following: "false" means: no notes at all were present
-    /** @type {false | string} */
-    const rawSection = sections[idx]
-    // '' (falsy) means: no currently failing section was present
-    /** @type {string} */
-    const section = rawSection || ''
-    const previous = findComparablePreviousSection(entries, sections, idx + 1, MAX_SKIPPED_HARD_FAILURES)
-    const previousSection = previous.section
-    const hasPrevious = typeof previousSection !== 'undefined' && previousSection !== false
-    // Keep previousSection un-normalized so false (no notes) differs from '' (notes, no failing section).
-    const failuresChanged = hasPrevious && section !== previousSection
-    let glitchStartIndex = null
-
-    // Find "glitches"; a glitch is a temporary, self-healing change in the failing section.
-    if (failuresChanged && rawSection !== false) {
-      const maxIdx = Math.min(sections.length - 1, idx + LOOKBACK)
-      // 1. Try to find an entry with the same failing section
-      let matchIndex = null
-      for (let i = idx + 1; i <= maxIdx; i += 1) {
-        const candidate = sections[i]
-        if (candidate === false) continue
-        if ((candidate || '') === section) {
-          matchIndex = i
-          break
-        }
-      }
-      // 2. If we have one, the entry after that introduced the "glitch".
-      if (matchIndex !== null) {
-        const startIndex = findGlitchStartIndex(
-          entries,
-          sections,
-          matchIndex - 1,
-          idx,
-          MAX_SKIPPED_HARD_FAILURES,
-        )
-        if (startIndex !== null) {
-          glitchStartIndex = startIndex
-        }
-      }
-    }
-
-    return { ...entry, failuresChanged, glitchStartIndex }
-  })
-}
-
-function findComparablePreviousSection(entries, sections, startIndex, maxSkippedHardFailures) {
-  let skippedHardFailures = 0
-
-  for (let i = startIndex; i < sections.length; i += 1) {
-    const section = sections[i]
-    if (section === false && isHardFailureWithoutNotes(entries[i])) {
-      skippedHardFailures += 1
-      if (skippedHardFailures > maxSkippedHardFailures) {
-        return { index: -1, section: undefined }
-      }
-      continue
-    }
-    return { index: i, section }
-  }
-
-  return { index: -1, section: undefined }
-}
-
-function findGlitchStartIndex(entries, sections, startIndex, minIndex, maxSkippedHardFailures) {
-  let skippedHardFailures = 0
-
-  for (let i = startIndex; i >= minIndex; i -= 1) {
-    const section = sections[i]
-    if (section === false && isHardFailureWithoutNotes(entries[i])) {
-      skippedHardFailures += 1
-      if (skippedHardFailures > maxSkippedHardFailures) {
-        return null
-      }
-      continue
-    }
-    if (section === false) {
-      return null
-    }
-    return i
-  }
-
-  return null
-}
-
-function isHardFailureWithoutNotes(entry) {
-  return !entry?.notes && classForConclusion(entry?.conclusion) === 'error'
-}
-
-function extractCurrentlyFailing(notes) {
-  if (!notes) return false
-  const normalized = normalizeNotes(notes)
-  const marker = '#### currently failing\n'
-  const lower = normalized.toLowerCase()
-  const idx = lower.indexOf(marker)
-  if (idx === -1) return ''
-  const slice = normalized.slice(idx + marker.length)
-  return slice
-    .split('\n')
-    .map(line => line.trim())
-    // Ignore trailing relative-date annotations like "[since 3 months]".
-    .map(line => line.replace(/\s*\[[^\]]+\]\s*$/, ''))
-    .filter(Boolean)
-    .join('\n')
-}
-
-function diffFailingPackages(currentNotes, previousNotes) {
-  const currentBlocks = extractCurrentlyFailingBlocks(currentNotes)
-  const previousBlocks = extractCurrentlyFailingBlocks(previousNotes)
-  const currentByKey = new Map()
-  const previousByKey = new Map()
-
-  for (const block of currentBlocks) {
-    currentByKey.set(block.nameKey, block)
-  }
-  for (const block of previousBlocks) {
-    previousByKey.set(block.nameKey, block)
-  }
-
-  const changedNames = new Set()
-  for (const block of currentBlocks) {
-    const previous = previousByKey.get(block.nameKey)
-    if (!previous || previous.signature !== block.signature) {
-      changedNames.add(block.nameKey)
-    }
-  }
-
-  const removedBlocks = []
-  for (let i = 0; i < previousBlocks.length; i += 1) {
-    const block = previousBlocks[i]
-    if (currentByKey.has(block.nameKey)) continue
-
-    let anchorNameKey = null
-    for (let j = i + 1; j < previousBlocks.length; j += 1) {
-      const anchor = previousBlocks[j]
-      if (currentByKey.has(anchor.nameKey)) {
-        anchorNameKey = anchor.nameKey
-        break
-      }
-    }
-
-    removedBlocks.push({
-      name: block.name,
-      nameKey: block.nameKey,
-      anchorNameKey,
-    })
-  }
-
-  return { changedNames, removedBlocks }
-}
-
-function extractCurrentlyFailingBlocks(notes) {
-  const section = extractCurrentlyFailing(notes)
-  if (!section || section === false) return []
-
-  const lines = section.split('\n')
-  const blocks = []
-  let current = null
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim()
-    if (!line) continue
-
-    const packageMatch = /^-\s+\*\*(.+?)\*\*(?:\s+.*)?$/.exec(line)
-    if (packageMatch) {
-      if (current) {
-        blocks.push({
-          name: current.name,
-          nameKey: current.nameKey,
-          signature: [current.name, ...current.details].join('\n'),
-        })
-      }
-      current = {
-        name: packageMatch[1].trim(),
-        nameKey: normalizePackageNameKey(packageMatch[1]),
-        details: [],
-      }
-      continue
-    }
-
-    if (current) {
-      current.details.push(line)
-    }
-  }
-
-  if (current) {
-    blocks.push({
-      name: current.name,
-      nameKey: current.nameKey,
-      signature: [current.name, ...current.details].join('\n'),
-    })
-  }
-
-  return blocks
-}
-
-function normalizePackageNameKey(name) {
-  return String(name || '')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .toLowerCase()
 }
 
 function findCurrentlyFailingHeading(root) {
@@ -1632,14 +1420,6 @@ function highlightHeadingText(heading) {
   marker.className = 'status-change-marker'
   marker.textContent = heading.textContent || ''
   heading.replaceChildren(marker)
-}
-
-function extractPackagesCrawled(notes) {
-  if (!notes) return null
-  const match = /found\s+([\d,]+)\s+packages?\s+to\s+crawl/i.exec(notes)
-  if (!match) return null
-  const value = Number(match[1].replace(/,/g, ''))
-  return Number.isFinite(value) ? value : null
 }
 
 function cssNumber(el, variableName, fallback) {
