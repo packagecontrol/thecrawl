@@ -55,7 +55,7 @@ SUPPORTED_PLATFORMS = [
     "linux-x64",
     "linux-arm64",
 ]
-SUPPORTED_PYTHON_VERSIONS = ["3.3", "3.8", "3.13"]
+SUPPORTED_PYTHON_VERSIONS = ["3.3", "3.8", "3.14"]
 PLATFORM_TAG_PATTERNS = {
     "windows-x64": ["win_amd64"],
     "windows-x32": ["win32"],
