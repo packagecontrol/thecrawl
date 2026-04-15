@@ -108,7 +108,7 @@ section[name="labels"] .grid {
     top: 18px;
     right: 1rem;
     gap: 0;
-    font-size: 13px;
+    font-size: 11px;
     background: inherit;
     color: var(--foreground-3);
     svg {
