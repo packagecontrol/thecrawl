@@ -25515,27 +25515,7 @@
       "labels": [
         "formatting",
         "minify",
-        "prettify",
-        "css",
-        "scss",
-        "sass",
-        "less",
-        "html",
-        "xml",
-        "javascript",
-        "json",
-        "markdown",
-        "perl",
-        "php",
-        "python",
-        "ruby",
-        "bash",
-        "c",
-        "c++",
-        "c#",
-        "d",
-        "objc",
-        "java"
+        "prettify"
       ],
       "releases": [
         {
