@@ -106,7 +106,7 @@ isPackagePage: true
     </div>
   {% endif %}
 
-  {% if pkg.installed > 0 or pkg.stars > 0 %}
+  {% if not pkg.removed and (pkg.installed > 0 or pkg.stars > 0) %}
     <ul class="stats">
       {{ pack.installs(pkg.installed) }}
       {{ pack.stars(pkg.stars) }}
