@@ -152,6 +152,13 @@ ul.stats {
         background: rgb(from var(--red-1) r g b / 0.12);
       }
     }
+    &.state-failing {
+      border-color: var(--state-failing-border-color);
+      color: var(--state-failing-text-color);
+      &:hover {
+        background: rgb(from var(--state-failing-text-color) r g b / 0.12);
+      }
+    }
     &.platform-macos,
     &.platform-macos-x64 {
       background: var(--blue-1);

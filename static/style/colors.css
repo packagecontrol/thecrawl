@@ -32,6 +32,9 @@
   --green-2: hsl(80 67% 47%);
   --green-3: hsl(80 65% 42%);
 
+  --state-failing-border-color: hsl(237.15deg 92% 54%);
+  --state-failing-text-color: hsl(208.16deg 90.39% 52.64%);
+
   --purple-1: hsl(275 76% 58%);
   --pink-1: hsl(345 76% 58%);
   --graphite-1: hsl(245 21% 42%);
@@ -63,6 +66,9 @@
   --green-1: hsl(80 67% 47%);
   --green-2: hsl(80 70% 49%);
   --green-3: hsl(80 72% 58%);
+
+  --state-failing-border-color: hsl(237.15deg 92% 54%);
+  --state-failing-text-color: hsl(208.16deg 90.39% 52.64%);
 
   --purple-1: hsl(275 80% 64%);
   --pink-1: hsl(345 82% 62%);

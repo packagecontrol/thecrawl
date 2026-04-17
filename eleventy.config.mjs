@@ -266,6 +266,9 @@ function basePackage(pkg, stat) {
       return -1
     }
   })
+  if (pkg.failing_since || pkg.fail_reason) {
+    labels.unshift('FAILING')
+  }
   if (!supportsModernSublime) labels.unshift('ST2')
   if (supportsModernSublime && doesNotSupportNewestSublime) labels.unshift('ST3')
   if (pkg.removed) {

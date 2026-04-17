@@ -230,6 +230,10 @@ export class Card {
           parent.appendChild(this.button(item,
             'Repository was archived on ' + this.pretty(new Date(Number(this.pkg.archived_at) * 1000))))
           break
+        case 'FAILING':
+          parent.appendChild(this.button(item,
+            'Package metadata updates are currently failing'))
+          break
         case 'RIP':
           parent.appendChild(this.button(item,
             'Package was removed on ' + this.pretty(new Date(Number(this.pkg.removed) * 1000))))
@@ -266,6 +270,9 @@ export class Card {
     }
     if (['ST3', 'MIA'].includes(name)) {
       a.classList.add('state', 'state-warning')
+    }
+    if (['FAILING'].includes(name)) {
+      a.classList.add('state', 'state-failing')
     }
 
     if (tooltip) {

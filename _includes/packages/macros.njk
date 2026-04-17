@@ -80,6 +80,10 @@
           <a class="button label state state-warning" href="/?q={{ q }}" title="Repository was archived on {{ pkg.archived_at | date_format }}">
             {{ label }}
           </a>
+        {% elif label == 'FAILING' %}
+          <a class="button label state state-failing" href="/?q={{ q }}" title="Package metadata updates are currently failing">
+            {{ label }}
+          </a>
         {% elif label == 'RIP' %}
           <a class="button label state state-bad" href="/?q={{ q }}" title="Package was removed on {{ pkg.removed | date_format }}">
             {{ label }}
