@@ -86,7 +86,7 @@ section:has(.chart-container)::after {
 
   /* spacer between the bars */
   .week-slice-bg {
-    fill: var(--background-2);
+    fill: transparent;
     transition: fill .1s;
   }
   /* bars behind the weeks */
