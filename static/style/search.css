@@ -68,6 +68,11 @@ form[name='search'] {
     .button-group.labels {
       flex: 1 1 auto;
       min-width: 0;
+
+      .button.label {
+        font-weight: normal;
+        color: var(--foreground-2);
+      }
     }
 
     .search-shortcuts-links {
