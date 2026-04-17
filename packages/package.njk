@@ -61,8 +61,9 @@ isPackagePage: true
     {% endif %}
 
     {% if pkg.removed %}
-      {% if pkg.created_at -%}
-        Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>,
+      {% set removed_first_seen = pkg.first_seen or pkg.created_at %}
+      {% if removed_first_seen -%}
+        First seen <human-date clickable datetime="{{ removed_first_seen }}">{{ removed_first_seen | date_format }}</human-date>,
         removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
       {% else %}
         Removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
