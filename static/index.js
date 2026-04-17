@@ -176,6 +176,10 @@ document.addEventListener('click', (event) => {
   }
 
   const targetUrl = new URL(target.href, window.location.origin)
+  if (targetUrl.origin !== window.location.origin) {
+    return
+  }
+
   // read possible query and sort from the clicked link
   let newQuery = targetUrl.searchParams.get('q')
   let newSort = targetUrl.searchParams.get('sort')
