@@ -101,7 +101,7 @@ isPackagePage: true
   {% endif %}
 
   {% if has_install_stats or has_release_in_window %}
-    <div class="chart-container">
+    <div class="chart-container{{ ' chart-container-rip' if pkg.removed }}">
       {{ charts.chart(pkg.installed, pkg.weekly_installs, pkg.weekly_removals, pkg.weekly_upgrades, pkg.weekly_dates, pkg.allReleases) }}
     </div>
   {% endif %}
