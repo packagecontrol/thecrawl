@@ -141,12 +141,14 @@
       </a>
     </h3>
 
-    <p class="authors">by
-    {% for author in pkg.author -%}
-      {% set q = searchQueryFor('author', author) %}
-      <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
-    {%- endfor %}
-    </p>
+    {% if pkg.author and (pkg.author | length) > 0 %}
+      <p class="authors">by
+      {% for author in pkg.author -%}
+        {% set q = searchQueryFor('author', author) %}
+        <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
+      {%- endfor %}
+      </p>
+    {% endif %}
 
     {% if pkg.description %}
       <p class="description">
