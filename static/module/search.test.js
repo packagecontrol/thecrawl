@@ -77,6 +77,37 @@ describe('processQueryString', () => {
     ])
   })
 
+  it('maps synthetic label aliases to label filters', () => {
+    expect(processQueryString(':rip :fail :failing :mia').queries).toEqual([
+      {
+        queries: ['RIP'],
+        fields: ['labels'],
+      },
+      {
+        queries: ['FAILING'],
+        fields: ['labels'],
+      },
+      {
+        queries: ['FAILING'],
+        fields: ['labels'],
+      },
+      {
+        queries: ['MIA'],
+        fields: ['labels'],
+      },
+    ])
+    expect(processQueryString(':mia').hasFreeText).toBe(false)
+  })
+
+  it('keeps unknown aliases as free text', () => {
+    expect(processQueryString(':mystery').queries).toEqual([
+      {
+        queries: [':mystery'],
+        fields: ['name', 'description', 'author', 'labels'],
+      },
+    ])
+  })
+
   it('treats disabled filters as free text', () => {
     const result = processQueryString(
       'author:someone label:ux platform:web',
