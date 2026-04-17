@@ -88,6 +88,7 @@
     "https://raw.githubusercontent.com/seanliang/ConvertToUTF8/master/packages.json",
     "https://raw.githubusercontent.com/sentience/DokuWiki/master/packages.json",
     "https://raw.githubusercontent.com/sentience/HyperlinkHelper/master/packages.json",
+    "https://raw.githubusercontent.com/siftystudio/viv/main/plugins/sublime/repository.json",
     "https://raw.githubusercontent.com/sokolovstas/SublimeWebInspector/master/packages.json",
     "https://raw.githubusercontent.com/soncy/AutoComments-for-Sublime-Text-2/master/packages.json",
     "https://raw.githubusercontent.com/spectacles/CodeComplice/master/packages.json",
@@ -85356,6 +85357,35 @@
       "source": "https://raw.githubusercontent.com/jfcherng-sublime/ST-my-package-control/master/repository-released.json",
       "schema_version": "3.0.0",
       "first_seen": "2019-11-05T23:50:22Z"
+    },
+    {
+      "name": "Viv",
+      "description": "Lightweight language support for the Viv DSL for emergent narrative in games and simulations.",
+      "author": "Sifty",
+      "homepage": "https://viv.sifty.studio",
+      "readme": "https://raw.githubusercontent.com/siftystudio/viv/main/plugins/sublime/README.md",
+      "issues": "https://github.com/siftystudio/viv/issues",
+      "donate": "https://ko-fi.com/siftystudio",
+      "labels": [
+        "language",
+        "syntax",
+        "dsl",
+        "narrative",
+        "simulation",
+        "gamedev"
+      ],
+      "compilerVersion": "0.11",
+      "releases": [
+        {
+          "version": "0.10.0",
+          "date": "2026-04-16",
+          "url": "https://github.com/siftystudio/viv/releases/download/sublime-v0.10.0/Viv.sublime-package",
+          "sublime_text": ">=3149"
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/siftystudio/viv/main/plugins/sublime/repository.json",
+      "schema_version": "4.0.0",
+      "first_seen": "2026-04-17T19:31:48Z"
     },
     {
       "name": "Vlt",
