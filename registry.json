@@ -37052,6 +37052,22 @@
       "first_seen": "2016-11-24T10:47:12Z"
     },
     {
+      "name": "Kamailio Config",
+      "details": "https://github.com/igorolhovskiy/kamailio-sublime",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-04-18T14:57:51Z"
+    },
+    {
       "name": "KanaKana",
       "details": "https://github.com/mitsu-ksgr/KanaKana",
       "labels": [
