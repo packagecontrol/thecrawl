@@ -40206,6 +40206,7 @@
       "first_seen": "2012-07-05T22:53:53Z"
     },
     {
+      "fetching_source_failed": "2026-04-19T11:50:18Z",
       "name": "Live Coding in Python",
       "details": "https://github.com/donkirkby/live-py-plugin",
       "releases": [
