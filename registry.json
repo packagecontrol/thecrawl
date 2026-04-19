@@ -40206,7 +40206,6 @@
       "first_seen": "2012-07-05T22:53:53Z"
     },
     {
-      "fetching_source_failed": "2026-04-19T11:50:18Z",
       "name": "Live Coding in Python",
       "details": "https://github.com/donkirkby/live-py-plugin",
       "releases": [
@@ -89228,6 +89227,25 @@
       "schema_version": "4.0.0"
     },
     {
+      "name": "anyio",
+      "description": "AnyIO is an asynchronous networking and concurrency library that works on top of either asyncio or Trio.",
+      "author": "agronholm",
+      "issues": "https://github.com/agronholm/anyio",
+      "releases": [
+        {
+          "base": "https://pypi.org/project/anyio",
+          "asset": "anyio-*-py3-none-any.whl",
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+      "schema_version": "4.0.0"
+    },
+    {
       "name": "anytree",
       "description": "Python Anytree module",
       "author": "c0fec0de",
@@ -89489,7 +89507,7 @@
         },
         {
           "base": "https://pypi.org/project/cffi",
-          "asset": "cffi-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "cffi-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -89501,7 +89519,7 @@
         },
         {
           "base": "https://pypi.org/project/cffi",
-          "asset": "cffi-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "cffi-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -89581,7 +89599,7 @@
       "releases": [
         {
           "base": "https://pypi.org/project/charset-normalizer",
-          "asset": "charset_normalizer-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "charset_normalizer-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -89593,7 +89611,7 @@
         },
         {
           "base": "https://pypi.org/project/charset-normalizer",
-          "asset": "charset_normalizer-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "charset_normalizer-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -89719,7 +89737,7 @@
           "platforms": [
             "linux-x64"
           ],
-          "asset": "ckdl-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl"
+          "asset": "ckdl-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl"
         },
         {
           "base": "https://pypi.org/project/ckdl",
@@ -89731,7 +89749,7 @@
           "platforms": [
             "linux-x32"
           ],
-          "asset": "ckdl-*-cp${py_version}-cp${py_version}-manylinux_*_i686.whl"
+          "asset": "ckdl-*-cp${py_version}-cp${py_version}-manylinux*_i686.whl"
         }
       ],
       "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
@@ -89762,7 +89780,7 @@
         },
         {
           "base": "https://pypi.org/project/codemp",
-          "asset": "codemp-*-cp${py_version}-abi3-manylinux_*_x86_64.whl",
+          "asset": "codemp-*-cp${py_version}-abi3-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -89866,7 +89884,7 @@
         },
         {
           "base": "https://pypi.org/project/coverage",
-          "asset": "coverage-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "coverage-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -89878,7 +89896,7 @@
         },
         {
           "base": "https://pypi.org/project/coverage",
-          "asset": "coverage-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "coverage-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -89890,7 +89908,7 @@
         },
         {
           "base": "https://pypi.org/project/coverage",
-          "asset": "coverage-*-cp${py_version}-cp${py_version}-manylinux_*_i686.whl",
+          "asset": "coverage-*-cp${py_version}-cp${py_version}-manylinux*_i686.whl",
           "platforms": [
             "linux-x32"
           ],
@@ -90488,7 +90506,7 @@
         },
         {
           "base": "https://pypi.org/project/lxml",
-          "asset": "lxml-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "lxml-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -90500,7 +90518,7 @@
         },
         {
           "base": "https://pypi.org/project/lxml",
-          "asset": "lxml-*-cp${py_version}-cp${py_version}-manylinux_*_i686.whl",
+          "asset": "lxml-*-cp${py_version}-cp${py_version}-manylinux*_i686.whl",
           "platforms": [
             "linux-x32"
           ],
@@ -90512,7 +90530,7 @@
         },
         {
           "base": "https://pypi.org/project/lxml",
-          "asset": "lxml-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "lxml-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -90597,7 +90615,7 @@
         },
         {
           "base": "https://pypi.org/project/MarkupSafe",
-          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -90609,7 +90627,7 @@
         },
         {
           "base": "https://pypi.org/project/MarkupSafe",
-          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "?arkup?afe-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -90885,7 +90903,7 @@
       "releases": [
         {
           "base": "https://pypi.org/project/orjson",
-          "asset": "orjson-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "orjson-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -90897,7 +90915,7 @@
         },
         {
           "base": "https://pypi.org/project/orjson",
-          "asset": "orjson-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "orjson-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -91092,7 +91110,7 @@
       "releases": [
         {
           "base": "https://pypi.org/project/pillow",
-          "asset": "pillow-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "pillow-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -91104,7 +91122,7 @@
         },
         {
           "base": "https://pypi.org/project/pillow",
-          "asset": "pillow-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "pillow-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -91226,7 +91244,7 @@
         },
         {
           "base": "https://pypi.org/project/psutil",
-          "asset": "psutil-*-cp${py_version}-*-manylinux_*_x86_64.whl",
+          "asset": "psutil-*-cp${py_version}-*-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -91357,7 +91375,7 @@
       "releases": [
         {
           "base": "https://pypi.org/project/pycryptodome",
-          "asset": "pycryptodome-*-cp37-abi3-manylinux_*_aarch64.whl",
+          "asset": "pycryptodome-*-cp37-abi3-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -91369,7 +91387,7 @@
         },
         {
           "base": "https://pypi.org/project/pycryptodome",
-          "asset": "pycryptodome-*-cp37-abi3-manylinux_*_x86_64.whl",
+          "asset": "pycryptodome-*-cp37-abi3-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -91470,7 +91488,7 @@
         },
         {
           "base": "https://pypi.org/project/pydantic-core",
-          "asset": "pydantic_core-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "pydantic_core-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -91482,7 +91500,7 @@
         },
         {
           "base": "https://pypi.org/project/pydantic-core",
-          "asset": "pydantic_core-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "pydantic_core-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -91565,7 +91583,7 @@
         },
         {
           "base": "https://pypi.org/project/pygit2",
-          "asset": "pygit2-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "pygit2-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -91575,7 +91593,7 @@
         },
         {
           "base": "https://pypi.org/project/pygit2",
-          "asset": "pygit2-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "pygit2-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -91701,7 +91719,7 @@
         },
         {
           "base": "https://pypi.org/project/pysimdjson",
-          "asset": "pysimdjson-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "pysimdjson-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -91713,7 +91731,7 @@
         },
         {
           "base": "https://pypi.org/project/pysimdjson",
-          "asset": "pysimdjson-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "pysimdjson-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -91973,7 +91991,7 @@
         },
         {
           "base": "https://pypi.org/project/pyzmq",
-          "asset": "pyzmq-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "pyzmq-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -91985,7 +92003,7 @@
         },
         {
           "base": "https://pypi.org/project/pyzmq",
-          "asset": "pyzmq-*-cp${py_version}-cp${py_version}-manylinux_*_i686.whl",
+          "asset": "pyzmq-*-cp${py_version}-cp${py_version}-manylinux*_i686.whl",
           "platforms": [
             "linux-x32"
           ],
@@ -91997,7 +92015,7 @@
         },
         {
           "base": "https://pypi.org/project/pyzmq",
-          "asset": "pyzmq-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "pyzmq-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -92074,7 +92092,7 @@
         },
         {
           "base": "https://pypi.org/project/regex",
-          "asset": "regex-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "regex-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -92086,7 +92104,7 @@
         },
         {
           "base": "https://pypi.org/project/regex",
-          "asset": "regex-*-cp${py_version}-cp${py_version}-manylinux_*_i686.whl",
+          "asset": "regex-*-cp${py_version}-cp${py_version}-manylinux*_i686.whl",
           "platforms": [
             "linux-x32"
           ],
@@ -92098,7 +92116,7 @@
         },
         {
           "base": "https://pypi.org/project/regex",
-          "asset": "regex-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "regex-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -92266,7 +92284,7 @@
         },
         {
           "base": "https://pypi.org/project/ruamel.yaml.clib",
-          "asset": "ruamel.yaml.clib-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "ruamel.yaml.clib-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -92278,7 +92296,7 @@
         },
         {
           "base": "https://pypi.org/project/ruamel.yaml.clib",
-          "asset": "ruamel.yaml.clib-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "ruamel.yaml.clib-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -92632,7 +92650,7 @@
         },
         {
           "base": "https://pypi.org/project/tiktoken",
-          "asset": "tiktoken-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "tiktoken-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -92644,7 +92662,7 @@
         },
         {
           "base": "https://pypi.org/project/tiktoken",
-          "asset": "tiktoken-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "tiktoken-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -92758,7 +92776,7 @@
         },
         {
           "base": "https://pypi.org/project/tornado",
-          "asset": "tornado-*-cp${py_version}-*-manylinux_*_aarch64.whl",
+          "asset": "tornado-*-cp${py_version}-*-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -92770,7 +92788,7 @@
         },
         {
           "base": "https://pypi.org/project/tornado",
-          "asset": "tornado-*-cp${py_version}-*-manylinux_*_i686.whl",
+          "asset": "tornado-*-cp${py_version}-*-manylinux*_i686.whl",
           "platforms": [
             "linux-x32"
           ],
@@ -92782,7 +92800,7 @@
         },
         {
           "base": "https://pypi.org/project/tornado",
-          "asset": "tornado-*-cp${py_version}-*-manylinux_*_x86_64.whl",
+          "asset": "tornado-*-cp${py_version}-*-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -92828,7 +92846,7 @@
       "releases": [
         {
           "base": "https://pypi.org/project/tree_sitter",
-          "asset": "tree_sitter-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "tree_sitter-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -92840,7 +92858,7 @@
         },
         {
           "base": "https://pypi.org/project/tree_sitter",
-          "asset": "tree_sitter-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "tree_sitter-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -92910,7 +92928,7 @@
       "releases": [
         {
           "base": "https://pypi.org/project/tree_sitter_languages",
-          "asset": "tree_sitter_languages-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "tree_sitter_languages-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -92922,7 +92940,7 @@
         },
         {
           "base": "https://pypi.org/project/tree_sitter_languages",
-          "asset": "tree_sitter_languages-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "tree_sitter_languages-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -93257,7 +93275,7 @@
         },
         {
           "base": "https://pypi.org/project/websockets",
-          "asset": "websockets-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "websockets-*-cp${py_version}-cp${py_version}-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
@@ -93269,7 +93287,7 @@
         },
         {
           "base": "https://pypi.org/project/websockets",
-          "asset": "websockets-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "websockets-*-cp${py_version}-cp${py_version}-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
