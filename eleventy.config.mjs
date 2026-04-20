@@ -12,6 +12,15 @@ const supportedRepackagerHosts = [
   'https://codelab.org/',
   'https://gitlab.com/',
 ]
+const FEATURED_LABELS = [
+  'language syntax',
+  'snippets',
+  'linting',
+  'auto-complete',
+  'color scheme',
+  'theme',
+]
+const LABELS_RANK = new Map(FEATURED_LABELS.map((label, index) => [label, index]))
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000
 const MAGIC_FRESHNESS_WINDOW_DAYS = 365 * 2 // bonus for packages that had updates
@@ -260,12 +269,7 @@ function basePackage(pkg, stat) {
     return minB - minA // Higher min build first
   })
 
-  let labels = pkg.labels?.slice() ?? []
-  labels = labels.sort((a) => {
-    if (['language syntax', 'snippets', 'linting', 'auto-complete', 'color scheme', 'theme'].includes(a)) {
-      return -1
-    }
-  })
+  let labels = util.sortFeaturedLabelsFirst(pkg.labels, LABELS_RANK)
   if (pkg.failing_since || pkg.fail_reason) {
     labels.unshift('FAILING')
   }
