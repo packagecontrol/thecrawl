@@ -206,9 +206,11 @@ document.addEventListener('click', (event) => {
     const oldQuery = input.value
     const clicked = parseSingleFilterQuery(newQuery)
 
-    if (clicked?.type === 'author') {
+    if (clicked && target.classList.contains('is-active') && hasFilterValue(oldQuery, clicked.type, clicked.value)) {
+      newQuery = removeFilterValue(oldQuery, clicked.type, clicked.value)
+    } else if (clicked && ['author', 'label'].includes(clicked.type)) {
       newQuery = clicked.token
-    } else if (clicked && ['label', 'platform'].includes(clicked.type)) {
+    } else if (clicked?.type === 'platform') {
       if (hasFilterValue(oldQuery, clicked.type, clicked.value)) {
         newQuery = removeFilterValue(oldQuery, clicked.type, clicked.value)
       } else {
