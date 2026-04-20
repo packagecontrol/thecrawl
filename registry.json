@@ -85383,8 +85383,11 @@
       "issues": "https://github.com/siftystudio/viv/issues?q=is%3Aissue+is%3Aopen+label%3Asublime",
       "donate": "https://ko-fi.com/siftystudio",
       "labels": [
-        "language",
-        "syntax",
+        "language syntax",
+        "build system",
+        "completions",
+        "snippets",
+        "color scheme",
         "dsl",
         "narrative",
         "simulation",
