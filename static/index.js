@@ -1,6 +1,25 @@
 import { List } from './module/list.js'
 import MiniSearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
 import { createMinisearch } from './module/minisearch.js'
+import {
+  appendFilterToken,
+  buildFeaturedLabels,
+  buildLabelRecords,
+  hasFilterValue,
+  parseSingleFilterQuery,
+  removeFilterValue,
+} from './module/search-query.js'
+
+const CURATED_FEATURED_LABELS = [
+  'language syntax',
+  'snippets',
+  'linting',
+  'auto-complete',
+  'color scheme',
+  'theme',
+]
+const DYNAMIC_LABEL_EXCLUSIONS = ['ST2', 'ST3', 'MIA', 'RIP', 'FAILING']
+const MAX_FEATURED_LABELS = 6
 
 // Fetches and returns the search data from the index
 async function fetchSearchData() {
@@ -12,6 +31,7 @@ async function fetchSearchData() {
 
 const rawIndex = await fetchSearchData()
 const packages = Array.isArray(rawIndex) ? rawIndex : (rawIndex.packages || [])
+const labelRecords = buildLabelRecords(packages)
 window.__LABEL_ICON_ALIASES__ = rawIndex.label_icon_aliases ?? {}
 window.__LABEL_ICON_TINTS__ = rawIndex.label_icon_tints ?? {}
 
@@ -27,75 +47,65 @@ window.dispatchEvent(new CustomEvent('search:index-loaded', { detail: { data: pa
 
 const list = new List()
 list.setMinisearch(minisrch)
-list.setFilterStateUpdater(updateFilterButtonStates)
+list.setFilterStateUpdater(updateSearchFilterUi)
 
 const form = document.forms.search
 const input = form.elements['q']
 const sortSelect = form.elements['sort']
+const featuredLabelsWrap = form.querySelector('.search-shortcuts .button-group.labels')
 
-/**
- * @typedef {Object} FilterButtonDescriptor
- * @property {HTMLAnchorElement} element The original filter button element.
- * @property {string} type The token prefix (e.g. label, platform, author).
- * @property {string} token Full token string extracted from the button href.
- */
-
-/**
- * All filter buttons that can toggle search tokens, converted to metadata objects.
- * @type {FilterButtonDescriptor[]}
- */
-const filterButtons = Array
-  .from(form.querySelectorAll('.button-group.labels a.button[href*="?q="]'))
-  .map(parseFilterButton)
-  .filter(Boolean)
-
-/**
- * Extract token metadata from a filter button anchor.
- * @param {HTMLAnchorElement} element
- * @returns {FilterButtonDescriptor | null}
- */
-function parseFilterButton(element) {
-  const url = new URL(element.href, window.location.origin)
-  const token = url.searchParams.get('q')
-  if (!token) {
-    return null
-  }
-  const delimiterIndex = token.indexOf(':')
-  if (delimiterIndex === -1) {
-    return null
-  }
-  const type = token.slice(0, delimiterIndex)
-  if (!type) {
-    return null
-  }
-
-  return { element, type, token }
+function updateSearchFilterUi(query) {
+  renderFeaturedLabels(query)
+  updateFilterButtonStates(query)
 }
 
-function updateFilterButtonStates(query) {
-  if (!filterButtons.length) {
+function renderFeaturedLabels(query) {
+  if (!featuredLabelsWrap) {
     return
   }
 
-  const normalizedQuery = query.trim()
-  const tokenCache = new Map()
+  const { labels } = buildFeaturedLabels(query, labelRecords, {
+    defaults: CURATED_FEATURED_LABELS,
+    maxTotal: MAX_FEATURED_LABELS,
+    excludedLabels: DYNAMIC_LABEL_EXCLUSIONS,
+  })
 
-  const getActiveTokens = (type) => {
-    if (!tokenCache.has(type)) {
-      const regex = new RegExp(`${type}:("[^"]+"|\\S+)`, 'g')
-      const matches = normalizedQuery.match(regex) ?? []
-      tokenCache.set(type, new Set(matches))
+  featuredLabelsWrap.innerHTML = ''
+  for (const label of labels) {
+    const token = `label:"${label}"`
+    const isActive = hasFilterValue(query, 'label', label)
+
+    const li = document.createElement('li')
+    const a = document.createElement('a')
+    a.classList.add('button', 'label')
+    a.dataset.filterBehavior = 'toggle'
+    if (isActive) {
+      a.classList.add('is-active')
     }
-    return tokenCache.get(type)
+    a.href = '/?q=' + encodeURIComponent(token)
+    a.appendChild(document.createTextNode(label))
+    li.appendChild(a)
+    featuredLabelsWrap.appendChild(li)
   }
 
-  for (const { element, type, token } of filterButtons) {
-    const activeTokens = getActiveTokens(type)
-    if (activeTokens.has(token)) {
-      element.classList.add('is-active')
-    } else {
-      element.classList.remove('is-active')
-    }
+  const li = document.createElement('li')
+  const moreLink = document.createElement('a')
+  moreLink.classList.add('button', 'label-more')
+  moreLink.href = '/labels'
+  moreLink.title = 'More labels'
+  moreLink.appendChild(document.createTextNode('…'))
+  li.appendChild(moreLink)
+  featuredLabelsWrap.appendChild(li)
+}
+
+function updateFilterButtonStates(query) {
+  const buttons = featuredLabelsWrap?.querySelectorAll('a.button[href*="?q="]') ?? []
+
+  for (const button of buttons) {
+    const token = new URL(button.href, window.location.origin).searchParams.get('q')
+    const parsed = parseSingleFilterQuery(token)
+    const isActive = parsed && hasFilterValue(query, parsed.type, parsed.value)
+    button.classList.toggle('is-active', Boolean(isActive))
   }
 }
 
@@ -123,6 +133,7 @@ function setSearchPending(pending) {
 
 // Handle initial page load
 setSearchPending(false)
+updateSearchFilterUi(input.value)
 syncFromUrl({ initialPageLoad: true })
 
 const handleInput = () => {
@@ -192,37 +203,25 @@ document.addEventListener('click', (event) => {
   event.preventDefault()
   event.stopPropagation()
 
-  if (newQuery !== null && target.closest('form')) {
-    // the shortcuts in the form act as filters, toggling off when clicked twice
+  if (newQuery !== null) {
     const oldQuery = input.value
-    const clickedQuery = newQuery
-    const applyToggle = (type) => {
-      if (!clickedQuery.includes(`${type}:`)) {
-        return false
-      }
+    const clicked = parseSingleFilterQuery(newQuery)
 
-      const tokenRegex = new RegExp(`${type}:("[^"]+"|\\S+)`)
-      const newTokenMatch = clickedQuery.match(tokenRegex)
-      if (!newTokenMatch) {
-        return false
-      }
+    if (clicked?.type === 'author') {
+      newQuery = clicked.token
+    } else if (clicked && ['label', 'platform'].includes(clicked.type)) {
+      const isActive = hasFilterValue(oldQuery, clicked.type, clicked.value)
+      const shouldToggle = target.dataset.filterBehavior === 'toggle'
 
-      const newToken = newTokenMatch[0]
-      const oldTokenMatch = oldQuery.match(tokenRegex)
-
-      if (oldTokenMatch && oldTokenMatch[0] === newToken) {
-        newQuery = oldQuery.replace(tokenRegex, '').replace(/\s{2,}/g, ' ').trim()
-      } else if (oldTokenMatch) {
-        newQuery = oldQuery.replace(tokenRegex, newToken)
+      if (shouldToggle && isActive) {
+        newQuery = removeFilterValue(oldQuery, clicked.type, clicked.value)
+      } else if (!isActive) {
+        newQuery = appendFilterToken(oldQuery, clicked.token)
       } else {
-        newQuery = `${oldQuery} ${newToken}`.trim()
+        newQuery = oldQuery
       }
-
-      return true
-    }
-
-    if (!applyToggle('label') && !applyToggle('platform') && !applyToggle('author')) {
-      newQuery = `${oldQuery} ${clickedQuery}`.trim()
+    } else if (target.closest('form')) {
+      newQuery = appendFilterToken(oldQuery, newQuery)
     }
   }
 
