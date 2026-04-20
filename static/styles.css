@@ -18,7 +18,7 @@ html {
   --max-content: 78rem;
   --max-line: 52rem; /* limit paragraph line length for readability at 2/3 of 78 */
   --side-padding: 1rem;
-  @media (min-width: var(--max-content)) {
+  @media (width >= 80rem) {
     --side-padding: 1.75rem;
   }
 
@@ -256,8 +256,14 @@ section {
     }
   }
 
-  &[name="package"] [id="main-content"]:focus-visible {
-    outline: none;
+  &[name="package"] {
+    @media (width < 80rem) {
+      max-width: var(--max-line);
+      margin: auto;
+    }
+    & [id="main-content"]:focus-visible {
+      outline: none;
+    }
   }
 }
 
