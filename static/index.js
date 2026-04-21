@@ -238,10 +238,9 @@ document.addEventListener('click', (event) => {
   newSort = newSort ?? currentSearch.get('sort') ?? 'relevance'
   sortSelect.value = newSort
 
-  const inputEvent = new Event('input', { bubbles: true })
-  const changeEvent = new Event('change', { bubbles: true })
-  input.dispatchEvent(inputEvent)
-  input.dispatchEvent(changeEvent)
+  clearTimeout(debounceTimeout)
+  setSearchPending(false)
+  window.dispatchEvent(new Event('search:expand'))
 
   list.scrollUp()
   list.goSearch(newQuery, newSort, 1)
