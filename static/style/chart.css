@@ -15,7 +15,7 @@
   max-width: calc(var(--max-content) * 2/3 - var(--spacing));
   margin: 14px 0 42px 0;
 
-  @media (min-width: 1200px) {
+  @media (width >= 80rem) {
     margin: 0 0 0 var(--spacing);
     padding: 24px 0 22px var(--spacing);
     border-left: 1px solid var(--background-4);
@@ -25,7 +25,7 @@
 
   &.chart-container-rip {
     filter: grayscale(1);
-    @media (min-width: 1200px) {
+    @media (width >= 80rem) {
       margin: 2em 0 0;
       padding: 24px 0 22px;
       border-left: 0;

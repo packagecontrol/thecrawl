@@ -44,17 +44,13 @@
 
   &.is-active {
     background: var(--background-4);
-    box-shadow: inset 2px 2px 3px rgb(0 0 0 / 0.15);
-    &:hover {
-      background: var(--background-3);
-    }
+    box-shadow: inset 2px 2px 0px rgb(0 0 0 / 0.15);
+    border: 1px solid #f8f8f8;
+    border-width: 0 2px 2px 0;
 
     :root[data-theme='dark'] & {
-      box-shadow: inset 2px 2px 3px rgb(0 0 0 / 0.25);
-      background: var(--background-3);
-      &:hover {
-        background: var(--background-4);
-      }
+      box-shadow: inset 2px 2px 0px rgb(0 0 0 / 25%);
+      border-color: #666666;
     }
   }
 
