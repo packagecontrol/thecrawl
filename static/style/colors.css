@@ -32,9 +32,15 @@
   --green-2: hsl(80 67% 47%);
   --green-3: hsl(80 65% 42%);
 
+  --state-failing-border-color: hsl(237.15deg 92% 54%);
+  --state-failing-text-color: hsl(208.16deg 90.39% 52.64%);
+
   --purple-1: hsl(275 76% 58%);
   --pink-1: hsl(345 76% 58%);
   --graphite-1: hsl(245 21% 42%);
+
+  --warning-message-background: hsl(0deg 0% 91.94%);
+  --warning-message-border: hsl(0deg 0.23% 75.25%);
 }
 
 :root[data-theme='dark'] {
@@ -64,7 +70,13 @@
   --green-2: hsl(80 70% 49%);
   --green-3: hsl(80 72% 58%);
 
+  --state-failing-border-color: hsl(237.15deg 92% 54%);
+  --state-failing-text-color: hsl(208.16deg 90.39% 52.64%);
+
   --purple-1: hsl(275 80% 64%);
   --pink-1: hsl(345 82% 62%);
   --graphite-1: hsl(245 21% 60%);
+
+  --warning-message-background: hsl(214deg 20.59% 24.6%);
+  --warning-message-border: hsl(0deg 0% 24.54%);
 }

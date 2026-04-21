@@ -152,6 +152,13 @@ ul.stats {
         background: rgb(from var(--red-1) r g b / 0.12);
       }
     }
+    &.state-failing {
+      border-color: var(--state-failing-border-color);
+      color: var(--state-failing-text-color);
+      &:hover {
+        background: rgb(from var(--state-failing-text-color) r g b / 0.12);
+      }
+    }
     &.platform-macos,
     &.platform-macos-x64 {
       background: var(--blue-1);
@@ -226,18 +233,26 @@ ul.stats {
 .warning-message {
   padding: 1.6em;
   border-radius: 6px;
-  background: var(--background-1);
+  background: var(--warning-message-background);
+  border: 1px solid var(--warning-message-border);
   margin: 18px auto 8px auto;
   text-align: center;
   max-width: 32rem;
   overflow-wrap: anywhere;
   svg {
     color: var(--red-1);
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
   }
   h2 {
-    font-size: 21px;
-    line-height: 26px;
+    font-size: 16px;
+    line-height: 16px;
+    text-align: left;
+  }
+  p {
+    text-align: left;
+    font-family: monospace;
+    white-space: pre-wrap;
+    margin: 0;
   }
 }

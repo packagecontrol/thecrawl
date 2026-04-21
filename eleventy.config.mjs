@@ -266,8 +266,14 @@ function basePackage(pkg, stat) {
       return -1
     }
   })
-  if (!supportsModernSublime) labels.unshift('ST2')
-  if (supportsModernSublime && doesNotSupportNewestSublime) labels.unshift('ST3')
+  if (pkg.failing_since || pkg.fail_reason) {
+    labels.unshift('FAILING')
+  }
+  if (!supportsModernSublime) {
+    labels.unshift('ST2')
+  } else if (doesNotSupportNewestSublime) {
+    labels.unshift('ST3')
+  }
   if (pkg.removed) {
     labels.unshift('RIP')
   } else if (pkg.archived_at) {

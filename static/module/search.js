@@ -48,6 +48,7 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
   let hasFreeText = false
 
   let value = typeof rawValue === 'string' ? rawValue : String(rawValue ?? '')
+  value = rewriteSyntheticLabelAliases(value)
 
   const extractFilter = (field, regex, buildQuery = () => {}) => {
     const matches = []
@@ -134,6 +135,23 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
   })
 
   return { queries, hasFreeText, filter }
+}
+
+const SYNTHETIC_LABEL_ALIASES = {
+  fail: 'FAILING',
+  failing: 'FAILING',
+  mia: 'MIA',
+  rip: 'RIP',
+}
+
+function rewriteSyntheticLabelAliases(value) {
+  return value.replace(/(^|\s):([a-z][\w-]*)\b/gi, (match, prefix, rawAlias) => {
+    const canonicalLabel = SYNTHETIC_LABEL_ALIASES[rawAlias.toLowerCase()]
+    if (!canonicalLabel) {
+      return match
+    }
+    return `${prefix}label:"${canonicalLabel}"`
+  })
 }
 
 function normalizeResults(entries = []) {
