@@ -22,6 +22,16 @@
     width: 100%;
     float: right;
   }
+
+  &.chart-container-rip {
+    filter: grayscale(1);
+    @media (min-width: 1200px) {
+      margin: 2em 0 0;
+      padding: 24px 0 22px;
+      border-left: 0;
+      float: none;
+    }
+  }
 }
 
 /* Dark theme overrides (values from the darker chart changes) */
@@ -86,7 +96,7 @@ section:has(.chart-container)::after {
 
   /* spacer between the bars */
   .week-slice-bg {
-    fill: var(--background-2);
+    fill: transparent;
     transition: fill .1s;
   }
   /* bars behind the weeks */

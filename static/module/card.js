@@ -25,7 +25,7 @@ export class Card {
     this.authors(this.clone.querySelector('p.authors'))
 
     const descr_el = this.clone.querySelector('p.description')
-    if (this.compact) {
+    if (this.compact || !this.pkg.description) {
       descr_el.remove()
     } else {
       descr_el.innerHTML = this.pkg.description
@@ -152,22 +152,24 @@ export class Card {
   }
 
   authors(parent) {
-    if (this.pkg.author.length < 1) {
+    if (!this.pkg.author) {
       parent.remove()
       return
     }
 
+    const list = this.pkg.author.split(',').map(name => name.trim())
+
     parent.innerHTML = 'by '
-    const list = this.pkg.author.split(',')
-    list.forEach((name, iter) => {
+    for (let i = 0; i < list.length; i += 1) {
+      const name = list[i]
       const a = document.createElement('a')
       a.setAttribute('href', searchQueryFor('author', name))
       a.innerText = name
       parent.appendChild(a)
-      if (iter + 1 < list.length) {
+      if (i + 1 < list.length) {
         parent.appendChild(document.createTextNode(', '))
       }
-    })
+    }
   }
 
   platforms() {
