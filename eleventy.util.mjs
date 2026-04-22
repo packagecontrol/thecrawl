@@ -288,12 +288,64 @@ export function getReadmeUrl(readme) {
   if (typeof readme !== 'string') {
     return null
   }
+  return toLiveFileUrl(readme)
+}
 
+/**
+ * Convert source registry URLs to an editable web URL.
+ */
+export function getSourceUrl(source, packageName) {
+  if (typeof source !== 'string') {
+    return null
+  }
+
+  const live = toLiveFileUrl(source)
+  const canonical = live.replace(
+    /^https:\/\/github\.com\/wbond\/package_control_channel\/blob\//,
+    'https://github.com/sublimehq/package_control_channel/blob/',
+  )
+  return toTrustedTrackerPackageSourceUrl(canonical, packageName)
+}
+
+function toTrustedTrackerPackageSourceUrl(sourceUrl, packageName) {
+  if (typeof packageName !== 'string') {
+    return sourceUrl
+  }
+
+  if (!isTrustedTrackerDispatcherUrl(sourceUrl)) {
+    return sourceUrl
+  }
+
+  const initial = packageName.trim().charAt(0).toLowerCase()
+  if (!initial) {
+    return sourceUrl
+  }
+
+  const bucket = /[0-9]/.test(initial)
+    ? '0-9'
+    : /[a-z]/.test(initial)
+      ? initial
+      : null
+  if (!bucket) {
+    return sourceUrl
+  }
+
+  return sourceUrl.replace(/\/repository\.json$/, `/repository/${bucket}.json`)
+}
+
+function isTrustedTrackerDispatcherUrl(url) {
+  return /^https:\/\/github\.com\/sublimehq\/package_control_channel\/blob\/[^/]+\/repository\.json$/.test(url)
+}
+
+function toLiveFileUrl(url) {
   // https://raw.githubusercontent.com/relikd/CUE-Sheet_sublime/main/README.md
   // => https://github.com/relikd/CUE-Sheet_sublime/blob/main/README.md
   //
+  // https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json
+  // => https://github.com/wbond/package_control_channel/blob/master/repository.json
+  //
   // https://gitlab.com/patopest/Sublime-Text-Cuelang-Syntax/-/raw/master/README.md
-  // => https://gitlab.com/patopest/sublime-text-cuelang-syntax/-/blob/master/README.md
+  // => https://gitlab.com/patopest/Sublime-Text-Cuelang-Syntax/-/blob/master/README.md
   //
   // https://bitbucket.org/JeisonJHA/sublime-delphi-language/raw/master/README.md
   // => https://bitbucket.org/JeisonJHA/sublime-delphi-language/src/master/README.md
@@ -301,7 +353,10 @@ export function getReadmeUrl(readme) {
   // https://codeberg.org/ISSOtm/sublime-Bison/raw/branch/master/README.md
   // => https://codeberg.org/ISSOtm/sublime-Bison/src/branch/master/README.md
 
-  return readme.replace( // GitHub raw to blob
+  return url.replace( // GitHub raw (refs/*) to blob
+    /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/refs\/(?:heads|tags)\/([^/]+)\/(.+)$/,
+    'https://github.com/$1/$2/blob/$3/$4',
+  ).replace( // GitHub raw to blob
     /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
     'https://github.com/$1/$2/blob/$3/$4',
   ).replace( // GitLab raw to blob
@@ -439,6 +494,12 @@ if (import.meta.vitest) {
       ).toBe('https://github.com/agrc/AmdButler/blob/master/README.md')
     })
 
+    it('maps GitHub refs/heads raw URLs to blob URLs', () => {
+      expect(
+        getReadmeUrl('https://raw.githubusercontent.com/agrc/AmdButler/refs/heads/main/README.md'),
+      ).toBe('https://github.com/agrc/AmdButler/blob/main/README.md')
+    })
+
     it('maps GitLab raw URLs to blob URLs', () => {
       expect(
         getReadmeUrl('https://gitlab.com/patopest/Sublime-Text-Cuelang-Syntax/-/raw/master/README.md'),
@@ -455,6 +516,42 @@ if (import.meta.vitest) {
       expect(
         getReadmeUrl('https://codeberg.org/ISSOtm/sublime-Bison/raw/branch/master/README.md'),
       ).toBe('https://codeberg.org/ISSOtm/sublime-Bison/src/branch/master/README.md')
+    })
+  })
+
+  describe('getSourceUrl', () => {
+    it('returns null when source is missing', () => {
+      expect(getSourceUrl(null)).toBeNull()
+    })
+
+    it('maps GitHub raw source URLs to editable blob URLs', () => {
+      expect(
+        getSourceUrl('https://raw.githubusercontent.com/example/channel/main/repository.json'),
+      ).toBe('https://github.com/example/channel/blob/main/repository.json')
+    })
+
+    it('maps Package Control channel source to canonical sublimehq URL', () => {
+      expect(
+        getSourceUrl('https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json'),
+      ).toBe('https://github.com/sublimehq/package_control_channel/blob/master/repository.json')
+    })
+
+    it('maps trusted tracker dispatcher source to package bucket file', () => {
+      expect(
+        getSourceUrl(
+          'https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json',
+          'A File Icon',
+        ),
+      ).toBe('https://github.com/sublimehq/package_control_channel/blob/master/repository/a.json')
+    })
+
+    it('maps digit-leading package names to 0-9 bucket file', () => {
+      expect(
+        getSourceUrl(
+          'https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json',
+          '42 Header',
+        ),
+      ).toBe('https://github.com/sublimehq/package_control_channel/blob/master/repository/0-9.json')
     })
   })
 

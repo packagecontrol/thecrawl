@@ -130,6 +130,11 @@ isPackagePage: true
         <a class="button" href="{{ pkg.details }}">{{ util.icon('repo') }} <span>Repository</span></a>
       </li>
       {% endif %}
+      {% if pkg.source %}
+      <li>
+        <a class="button" href="{{ pkg.source_url | default(pkg.source) }}">{{ util.icon('log') }} <span>Source</span></a>
+      </li>
+      {% endif %}
       {% if pkg.readme %}
       <li>
         <a class="button" href="{{ pkg.readme_url | default(pkg.readme) }}">{{ util.icon('file') }} <span>README</span></a>

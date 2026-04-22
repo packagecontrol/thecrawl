@@ -448,6 +448,7 @@ export default function (eleventyConfig) {
   eleventyConfig.addCollection('packages', () => {
     return all_packages.map((pkg) => {
       const readme_url = util.getReadmeUrl(pkg.readme)
+      const source_url = util.getSourceUrl(pkg.source, pkg.name)
       const stat = stats[pkg.name]
       const weekly_installs = stat?.installs?.weekly ?? []
       const weekly_removals = stat?.removals?.weekly ?? []
@@ -473,6 +474,7 @@ export default function (eleventyConfig) {
         description: translateEmojiCodes(pkg.description ?? ''),
         ...basePackage(pkg, stats[pkg.name]),
         ...(readme_url !== pkg.readme ? { readme_url } : {}),
+        ...(source_url !== pkg.source ? { source_url } : {}),
       }
     })
   })
