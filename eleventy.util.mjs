@@ -49,6 +49,18 @@ export function computePlatformLabelsForSearch(releases) {
 }
 
 /**
+ * Move featured labels to the front while preserving stable order.
+ * - Featured labels are ordered by rank.
+ * - Non-featured labels keep their original relative order.
+ * @param {string[] | undefined | null} labels
+ * @param {Map<string, number> | undefined | null} rank
+ * @returns {string[]}
+ */
+export function sortFeaturedLabelsFirst(labels = [], rank = new Map()) {
+  return [...labels].sort((a, b) => (rank.get(a) ?? Infinity) - (rank.get(b) ?? Infinity))
+}
+
+/**
  * Build a human-readable platform statement for cards.
  * Input is already canonicalized (lowercase tokens like macos/linux/windows/any).
  */
@@ -591,6 +603,37 @@ if (import.meta.vitest) {
         { platforms: ['linux'] },
       ]
       expect(computePlatformLabelsForSearch(releases)).toEqual(['any'])
+    })
+  })
+
+  describe('sortFeaturedLabelsFirst', () => {
+    const featured = ['language syntax', 'snippets', 'linting', 'auto-complete', 'color scheme', 'theme']
+    const rank = new Map(featured.map((label, index) => [label, index]))
+
+    it('moves featured labels to the front using featured list order', () => {
+      const labels = ['zzz', 'theme', 'aaa', 'snippets', 'linting', 'bbb', 'language syntax']
+      expect(sortFeaturedLabelsFirst(labels, rank)).toEqual([
+        'language syntax',
+        'snippets',
+        'linting',
+        'theme',
+        'zzz',
+        'aaa',
+        'bbb',
+      ])
+    })
+
+    it('keeps non-featured labels in original relative order', () => {
+      const labels = ['one', 'snippets', 'two', 'language syntax', 'three', 'theme', 'four']
+      expect(sortFeaturedLabelsFirst(labels, rank)).toEqual([
+        'language syntax',
+        'snippets',
+        'theme',
+        'one',
+        'two',
+        'three',
+        'four',
+      ])
     })
   })
 
