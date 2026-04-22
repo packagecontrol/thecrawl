@@ -31586,8 +31586,12 @@
           "tags": "version/st4157/"
         },
         {
-          "sublime_text": ">=4201",
+          "sublime_text": "4201 - 4203",
           "tags": "version/st4201/"
+        },
+        {
+          "sublime_text": ">=4204",
+          "tags": "version/st4204/"
         }
       ],
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
@@ -55310,11 +55314,15 @@
       ],
       "releases": [
         {
-          "sublime_text": "<4000",
+          "sublime_text": "<4107",
           "tags": "st2-"
         },
         {
-          "sublime_text": ">=4000",
+          "sublime_text": "4107 - 4203",
+          "tags": "st4107-"
+        },
+        {
+          "sublime_text": ">=4204",
           "tags": true
         }
       ],
@@ -83453,6 +83461,9 @@
     {
       "name": "Umbral",
       "details": "https://github.com/hersac/umbral-sublime",
+      "labels": [
+        "language syntax"
+      ],
       "releases": [
         {
           "sublime_text": ">=4000",
