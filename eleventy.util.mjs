@@ -1,3 +1,5 @@
+import fs from 'fs'
+import path from 'path'
 import { execSync } from 'child_process'
 
 const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
@@ -294,47 +296,180 @@ export function getReadmeUrl(readme) {
 /**
  * Convert source registry URLs to an editable web URL.
  */
-export function getSourceUrl(source, packageName) {
+export function getSourceUrl(source) {
   if (typeof source !== 'string') {
     return null
   }
 
   const live = toLiveFileUrl(source)
-  const canonical = live.replace(
+  return live.replace(
     /^https:\/\/github\.com\/wbond\/package_control_channel\/blob\//,
     'https://github.com/sublimehq/package_control_channel/blob/',
   )
-  return toTrustedTrackerPackageSourceUrl(canonical, packageName)
 }
 
-function toTrustedTrackerPackageSourceUrl(sourceUrl, packageName) {
-  if (typeof packageName !== 'string') {
+const TRUSTED_CHANNEL_SOURCE_URL_RE = /^(https:\/\/github\.com\/sublimehq\/package_control_channel\/blob\/[^/]+)\/.+$/
+const _JSON_NAME_LINE_RE = /^\s*"name":\s*"((?:[^"\\]|\\.)*)"\s*,?\s*$/
+const _JSON_DETAILS_LINE_RE = /^\s*"details":\s*"((?:[^"\\]|\\.)*)"\s*,?\s*$/
+
+/**
+ * @typedef {string} PackageName
+ */
+
+/**
+ * Build a trusted tracker source URL with file path and line anchor when available.
+ * @param {{ source?: string, name?: string }} pkg
+ * @param {Map<PackageName, { relativePath: string, lineNumber: number }>} trustedTrackerLineIndex
+ * @returns {string | null}
+ */
+export function buildPackageSourceUrl(pkg, trustedTrackerLineIndex) {
+  const sourceUrl = getSourceUrl(pkg.source)
+  if (!sourceUrl || !pkg.name) {
     return sourceUrl
   }
 
-  if (!isTrustedTrackerDispatcherUrl(sourceUrl)) {
+  const lineRef = trustedTrackerLineIndex.get(pkg.name)
+  if (!lineRef) {
     return sourceUrl
   }
 
-  const initial = packageName.trim().charAt(0).toLowerCase()
-  if (!initial) {
+  const match = sourceUrl.match(TRUSTED_CHANNEL_SOURCE_URL_RE)
+  if (!match) {
     return sourceUrl
   }
 
-  const bucket = /[0-9]/.test(initial)
-    ? '0-9'
-    : /[a-z]/.test(initial)
-      ? initial
-      : null
-  if (!bucket) {
-    return sourceUrl
-  }
-
-  return sourceUrl.replace(/\/repository\.json$/, `/repository/${bucket}.json`)
+  return `${match[1]}/${lineRef.relativePath}#L${lineRef.lineNumber}`
 }
 
-function isTrustedTrackerDispatcherUrl(url) {
-  return /^https:\/\/github\.com\/sublimehq\/package_control_channel\/blob\/[^/]+\/repository\.json$/.test(url)
+/**
+ * Build package name -> source file/line index from trusted tracker repository includes.
+ * @param {string} repositoryPath
+ * @returns {Map<PackageName, { relativePath: string, lineNumber: number }>}
+ */
+export function buildTrustedTrackerLineIndex(repositoryPath) {
+  const repositoryAbsolutePath = path.resolve(process.cwd(), repositoryPath)
+  if (!fs.existsSync(repositoryAbsolutePath)) {
+    console.warn(`[eleventy] Missing trusted repository at ${repositoryAbsolutePath}`)
+    return new Map()
+  }
+
+  const rootDir = path.dirname(repositoryAbsolutePath)
+  const repositoryRelativePaths = getTrustedTrackerRepositoryFiles(repositoryAbsolutePath)
+  const lineIndex = new Map()
+
+  for (const relativePath of repositoryRelativePaths) {
+    const bucketLineIndex = loadTrustedTrackerLineMap(rootDir, relativePath)
+    for (const [name, lineRef] of bucketLineIndex.entries()) {
+      lineIndex.set(name, lineRef)
+    }
+  }
+
+  return lineIndex
+}
+
+/**
+ * Resolve trusted repository include paths from repository.json.
+ * Paths are normalized as project-root-relative (without leading "./").
+ * @param {string} repositoryPath
+ * @returns {Array<string>}
+ */
+function getTrustedTrackerRepositoryFiles(repositoryPath) {
+  const includes = JSON.parse(fs.readFileSync(repositoryPath, 'utf8')).includes
+
+  return includes
+    .filter(include => path.basename(include) !== 'dependencies.json')
+    .map(include => include.replace(/^\.\//, '').replace(/\\/g, '/'))
+}
+
+/**
+ * @param {string} trackerRootDir
+ * @param {string} relativePath
+ * @returns {Map<PackageName, { relativePath: string, lineNumber: number }>}
+ */
+function loadTrustedTrackerLineMap(trackerRootDir, relativePath) {
+  const trackerFilePath = path.join(trackerRootDir, relativePath)
+
+  let trackerContents = null
+  try {
+    trackerContents = fs.readFileSync(trackerFilePath, 'utf8')
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    console.warn(`[eleventy] Failed to read trusted tracker source lines from ${trackerFilePath}: ${reason}`)
+    return new Map()
+  }
+
+  const lineMap = new Map()
+  const lines = trackerContents.split(/\r?\n/)
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index]
+    const lineNumber = index + 1
+
+    const name = parseTrustedTrackerStringFieldLine(line, _JSON_NAME_LINE_RE)
+    if (name) {
+      lineMap.set(name, { relativePath, lineNumber })
+      continue
+    }
+
+    const details = parseTrustedTrackerStringFieldLine(line, _JSON_DETAILS_LINE_RE)
+    if (details) {
+      let repo = null
+      try {
+        [, repo] = parseOwnerRepo(details)
+      } catch {
+        continue
+      }
+
+      if (!lineMap.has(repo)) {
+        lineMap.set(repo, { relativePath, lineNumber })
+      }
+      continue
+    }
+  }
+
+  return lineMap
+}
+
+function parseTrustedTrackerStringFieldLine(line, regex) {
+  const match = line.match(regex)
+  if (!match) {
+    return null
+  }
+
+  return match[1]
+}
+
+/**
+ * Extract package name from a trusted tracker package entry.
+ * Prefer explicit "name", otherwise derive from the repo segment of "details" URL.
+ */
+export function extractPackageName(pkg) {
+  if (pkg.name) {
+    return pkg.name
+  }
+
+  if (!pkg.details) {
+    return null
+  }
+
+  try {
+    const [, repo] = parseOwnerRepo(pkg.details)
+    return repo
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Extract owner and repo from a *Hub URL.
+ */
+export function parseOwnerRepo(url) {
+  const parts = new URL(url)
+  const pathParts = parts.pathname.replace(/^\/+|\/+$/g, '').split('/')
+  if (pathParts.length < 2) {
+    throw new Error('Invalid *Hub repo URL')
+  }
+  return [pathParts[0], pathParts[1]]
 }
 
 function toLiveFileUrl(url) {
@@ -535,23 +670,51 @@ if (import.meta.vitest) {
         getSourceUrl('https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json'),
       ).toBe('https://github.com/sublimehq/package_control_channel/blob/master/repository.json')
     })
+  })
 
-    it('maps trusted tracker dispatcher source to package bucket file', () => {
+  describe('extractPackageName', () => {
+    it('returns explicit name when present', () => {
       expect(
-        getSourceUrl(
-          'https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json',
-          'A File Icon',
-        ),
-      ).toBe('https://github.com/sublimehq/package_control_channel/blob/master/repository/a.json')
+        extractPackageName({
+          name: 'GitSavvy',
+          details: 'https://github.com/timbrel/GitSavvy',
+        }),
+      ).toBe('GitSavvy')
     })
 
-    it('maps digit-leading package names to 0-9 bucket file', () => {
-      expect(
-        getSourceUrl(
-          'https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json',
-          '42 Header',
-        ),
-      ).toBe('https://github.com/sublimehq/package_control_channel/blob/master/repository/0-9.json')
+    it.each([
+      ['https://github.com/timbrel/GitSavvy', 'GitSavvy'],
+      ['https://github.com/timbrel/GitSavvy/tree/dev', 'GitSavvy'],
+      ['https://github.com/timbrel/GitSavvy/releases/tag/2.50.0', 'GitSavvy'],
+      ['https://gitlab.com/jiehong/sublime_jq', 'sublime_jq'],
+      ['https://bitbucket.org/hmml/jsonlint', 'jsonlint'],
+      ['https://codeberg.org/TobyGiacometti/SublimeDirectorySettings', 'SublimeDirectorySettings'],
+    ])('derives name %s -> %s', (details, expected) => {
+      expect(extractPackageName({ details })).toBe(expected)
+    })
+
+    it('returns null for invalid details URL', () => {
+      expect(extractPackageName({ details: 'https://github.com/timbrel' })).toBeNull()
+    })
+
+    it('returns null when both name and details are missing', () => {
+      expect(extractPackageName({})).toBeNull()
+    })
+  })
+
+  describe('parseOwnerRepo', () => {
+    it.each([
+      ['https://github.com/timbrel/GitSavvy', ['timbrel', 'GitSavvy']],
+      ['https://github.com/timbrel/GitSavvy/tree/dev', ['timbrel', 'GitSavvy']],
+      ['https://gitlab.com/jiehong/sublime_jq', ['jiehong', 'sublime_jq']],
+      ['https://bitbucket.org/hmml/jsonlint', ['hmml', 'jsonlint']],
+      ['https://codeberg.org/TobyGiacometti/SublimeDirectorySettings', ['TobyGiacometti', 'SublimeDirectorySettings']],
+    ])('parses %s', (url, expected) => {
+      expect(parseOwnerRepo(url)).toEqual(expected)
+    })
+
+    it('throws for invalid *Hub URL', () => {
+      expect(() => parseOwnerRepo('https://github.com/timbrel')).toThrow('Invalid *Hub repo URL')
     })
   })
 
