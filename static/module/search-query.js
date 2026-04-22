@@ -10,21 +10,32 @@ export function buildFeaturedLabels(
   } = {},
 ) {
   const activeLabels = extractActiveLabelValues(rawQuery)
+  const hasQuery = normalizeQueryWhitespace(rawQuery).length > 0
 
-  if (activeLabels.length === 0) {
+  if (!hasQuery && activeLabels.length === 0) {
     return {
       labels: [...defaults].slice(0, maxTotal),
       activeLabels,
     }
   }
 
+  const excludedQueryTerms = hasQuery ? extractFreeTextTerms(rawQuery) : []
   const suggestionLimit = Math.max(0, maxTotal - activeLabels.length)
   const suggested = suggestionLimit > 0
-    ? suggestLabelsForActive(activeLabels, labelRecords, excludedLabels)
+    ? suggestLabels(activeLabels, labelRecords, excludedLabels, excludedQueryTerms)
     : []
 
+  const labels = [...activeLabels, ...suggested.slice(0, suggestionLimit)]
+
+  if (labels.length === 0 && activeLabels.length === 0) {
+    return {
+      labels: [...defaults].slice(0, maxTotal),
+      activeLabels,
+    }
+  }
+
   return {
-    labels: [...activeLabels, ...suggested.slice(0, suggestionLimit)],
+    labels,
     activeLabels,
   }
 }
@@ -153,37 +164,98 @@ export function parseFilterMatches(rawQuery, field) {
   return matches
 }
 
-function suggestLabelsForActive(activeLabels, labelRecords, excludedLabels) {
+function suggestLabels(activeLabels, labelRecords, excludedLabels, excludedQueryTerms) {
   const activeSet = new Set(activeLabels.map(normalizeValue))
   const excludedSet = new Set((excludedLabels ?? []).map(normalizeValue))
+  const queryTermSet = new Set((excludedQueryTerms ?? []).map(normalizeValue))
   const counts = new Map()
 
   for (const record of labelRecords ?? []) {
-    if (!record || !record.normalized || !record.entries) {
-      continue
-    }
-
-    const matchesAll = [...activeSet].every(label => record.normalized.has(label))
-    if (!matchesAll) {
+    if (!record || !record.entries) {
       continue
     }
 
     for (const { label, normalizedLabel } of record.entries) {
-      if (!normalizedLabel || activeSet.has(normalizedLabel) || excludedSet.has(normalizedLabel)) {
+      if (
+        !normalizedLabel
+        || activeSet.has(normalizedLabel)
+        || excludedSet.has(normalizedLabel)
+        || queryTermSet.has(normalizedLabel)
+      ) {
         continue
       }
-      counts.set(label, (counts.get(label) ?? 0) + 1)
+
+      const existing = counts.get(normalizedLabel)
+      if (existing) {
+        existing.count += 1
+      } else {
+        counts.set(normalizedLabel, { label, count: 1 })
+      }
     }
   }
 
-  return [...counts.entries()]
+  return [...counts.values()]
     .sort((a, b) => {
-      if (b[1] !== a[1]) {
-        return b[1] - a[1]
+      if (b.count !== a.count) {
+        return b.count - a.count
       }
-      return a[0].localeCompare(b[0], undefined, { sensitivity: 'base' })
+      return a.label.localeCompare(b.label, undefined, { sensitivity: 'base' })
     })
-    .map(([label]) => label)
+    .map(({ label }) => label)
+}
+
+function extractFreeTextTerms(rawQuery) {
+  const query = String(rawQuery ?? '')
+  if (!query.trim()) {
+    return []
+  }
+
+  const filterSpans = []
+  for (const type of SUPPORTED_FILTER_TYPES) {
+    for (const match of parseFilterMatches(query, type)) {
+      filterSpans.push({ start: match.start, end: match.end })
+    }
+  }
+
+  if (filterSpans.length === 0) {
+    return tokenizeTerms(query)
+  }
+
+  filterSpans.sort((a, b) => a.start - b.start)
+
+  const remainder = []
+  let cursor = 0
+
+  for (const span of filterSpans) {
+    if (span.start > cursor) {
+      remainder.push(query.slice(cursor, span.start))
+    }
+    cursor = Math.max(cursor, span.end)
+  }
+
+  if (cursor < query.length) {
+    remainder.push(query.slice(cursor))
+  }
+
+  return tokenizeTerms(remainder.join(' '))
+}
+
+function tokenizeTerms(value) {
+  const terms = []
+  const seen = new Set()
+  const pattern = /"([^"]+)"|(\S+)/g
+
+  let match
+  while ((match = pattern.exec(value)) !== null) {
+    const term = normalizeValue(match[1] ?? match[2] ?? '')
+    if (!term || seen.has(term)) {
+      continue
+    }
+    seen.add(term)
+    terms.push(term)
+  }
+
+  return terms
 }
 
 function parsePackageLabels(value) {

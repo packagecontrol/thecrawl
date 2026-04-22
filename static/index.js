@@ -31,7 +31,7 @@ async function fetchSearchData() {
 
 const rawIndex = await fetchSearchData()
 const packages = Array.isArray(rawIndex) ? rawIndex : (rawIndex.packages || [])
-const labelRecords = buildLabelRecords(packages)
+const allLabelRecords = buildLabelRecords(packages)
 window.__LABEL_ICON_ALIASES__ = rawIndex.label_icon_aliases ?? {}
 window.__LABEL_ICON_TINTS__ = rawIndex.label_icon_tints ?? {}
 
@@ -54,17 +54,23 @@ const input = form.elements['q']
 const sortSelect = form.elements['sort']
 const featuredLabelsWrap = form.querySelector('.search-shortcuts .button-group.labels')
 
-function updateSearchFilterUi(query) {
-  renderFeaturedLabels(query)
+function updateSearchFilterUi(query, featuredPackages) {
+  renderFeaturedLabels(query, featuredPackages)
   updateFilterButtonStates(query)
 }
 
-function renderFeaturedLabels(query) {
+function renderFeaturedLabels(query, featuredPackages) {
   if (!featuredLabelsWrap) {
     return
   }
 
-  const { labels } = buildFeaturedLabels(query, labelRecords, {
+  const normalizedQuery = String(query ?? '')
+  const hasQuery = normalizedQuery.trim().length > 0
+  const scopedRecords = hasQuery && Array.isArray(featuredPackages)
+    ? buildLabelRecords(featuredPackages)
+    : allLabelRecords
+
+  const { labels } = buildFeaturedLabels(normalizedQuery, scopedRecords, {
     defaults: CURATED_FEATURED_LABELS,
     maxTotal: MAX_FEATURED_LABELS,
     excludedLabels: DYNAMIC_LABEL_EXCLUSIONS,
