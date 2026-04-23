@@ -445,9 +445,18 @@ export default function (eleventyConfig) {
     }
   }
 
+  let trustedTrackerLineIndex = new Map()
+  try {
+    trustedTrackerLineIndex = util.buildTrustedTrackerLineIndex('.package_control_channel/repository.json')
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    console.warn(`[eleventy] Failed to build trusted tracker line index: ${reason}`)
+  }
+
   eleventyConfig.addCollection('packages', () => {
     return all_packages.map((pkg) => {
       const readme_url = util.getReadmeUrl(pkg.readme)
+      const source_url = util.buildPackageSourceUrl(pkg, trustedTrackerLineIndex)
       const stat = stats[pkg.name]
       const weekly_installs = stat?.installs?.weekly ?? []
       const weekly_removals = stat?.removals?.weekly ?? []
@@ -473,6 +482,7 @@ export default function (eleventyConfig) {
         description: translateEmojiCodes(pkg.description ?? ''),
         ...basePackage(pkg, stats[pkg.name]),
         ...(readme_url !== pkg.readme ? { readme_url } : {}),
+        ...(source_url !== pkg.source ? { source_url } : {}),
       }
     })
   })

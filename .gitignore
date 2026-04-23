@@ -52,6 +52,7 @@ _site/*
 # Database #
 ######################
 .AFileIcon/
+.package_control_channel/
 channel.json
 logs.json
 libraries.json
