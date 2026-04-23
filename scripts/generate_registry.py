@@ -511,8 +511,9 @@ def is_compact_seed(seed_db: Mapping[str, Any]) -> bool:
 
 def build_tombstone(seed: Mapping[str, Any], now_string: IsoTimestamp) -> RegistryEntry:
     return (
-        {"first_seen": now_string, "removed": now_string}  # type: ignore[operator]
-        | pick(("name", "source", "first_seen", "removed", "labels"), seed)
+        pick(("name", "labels", "source"), seed)
+        | {"first_seen": now_string, "removed": now_string}  # type: ignore[operator]
+        | pick(("first_seen", "removed"), seed)
     )
 
 
