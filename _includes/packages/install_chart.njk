@@ -262,6 +262,15 @@
                 pointer-events: none;
                 transition: opacity .3s ease-out;
               }
+              .release-week .release-label-expanded {
+                display: none;
+              }
+              .release-week:has(.release-point-hit:hover) .release-label-collapsed {
+                display: none;
+              }
+              .release-week:has(.release-point-hit:hover) .release-label-expanded {
+                display: inline;
+              }
               {# except the leading release (.is-default), which starts visible #}
               .release-week.is-default .release-callout-group {
                 opacity: 1;
@@ -503,19 +512,17 @@
   char_width=6,
   class='release-label')
 %}
-  {% set label = versions[0] | default('', true) %}
-  {% set stop = false %}
-  {% for version in versions | slice(1) %}
-    {% if not stop %}
-      {% if (label | length) + (version | length) > 16 %}
-        {% set label = label ~ ' /…' %}
-        {% set stop = true %}
-      {% else %}
-        {% set label = label ~ ' / ' ~ version %}
-      {% endif %}
-    {% endif %}
-  {% endfor %}
-  {% set max_len = label | length %}
+  {% set count = versions | length %}
+  {% set compact_label = versions[0] | default('', true) %}
+  {% if count == 2 %}
+    {% set compact_label = versions[0] ~ ' / ' ~ versions[1] %}
+  {% elseif count > 2 %}
+    {% set compact_label = versions[0] ~ ' / ' ~ versions[1] ~ ' / ...' %}
+  {% endif %}
+
+  {% set full_label = versions | join(' / ') %}
+
+  {% set max_len = compact_label | length %}
   {% set half_width = (max_len * char_width) / 2 %}
   {% set x_left = base_x - half_width %}
   {% set x_right = base_x + half_width %}
@@ -530,7 +537,28 @@
     {% set anchor = 'middle' %}
     {% set label_x = base_x %}
   {% endif %}
-  {{ text(label, label_x, label_y, class, anchor, 'alphabetic') }}
+
+  {% if count > 2 %}
+    {% set expanded_len = full_label | length %}
+    {% set expanded_half_width = (expanded_len * char_width) / 2 %}
+    {% set expanded_left = base_x - expanded_half_width %}
+    {% set expanded_right = base_x + expanded_half_width %}
+    {% if expanded_left < margin %}
+      {% set expanded_anchor = 'start' %}
+      {% set expanded_x = margin %}
+    {% elseif expanded_right > chart_right %}
+      {% set expanded_anchor = 'end' %}
+      {% set expanded_x = chart_right %}
+    {% else %}
+      {% set expanded_anchor = 'middle' %}
+      {% set expanded_x = base_x %}
+    {% endif %}
+
+    {{ text(compact_label, label_x, label_y, class ~ ' release-label-collapsed', anchor, 'alphabetic') }}
+    {{ text(full_label, expanded_x, label_y, class ~ ' release-label-expanded', expanded_anchor, 'alphabetic') }}
+  {% else %}
+    {{ text(compact_label, label_x, label_y, class, anchor, 'alphabetic') }}
+  {% endif %}
 {% endmacro %}
 
 {% macro text(t, x, y, class='', anchor='start', baseline='middle') %}
