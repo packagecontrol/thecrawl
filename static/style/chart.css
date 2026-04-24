@@ -180,6 +180,7 @@ section:has(.chart-container)::after {
     opacity: 0.6;
     stroke-width: 1;
     stroke-dasharray: 2 1;
+    pointer-events: none;
   }
   .avg-line-net {
     opacity: 1;
