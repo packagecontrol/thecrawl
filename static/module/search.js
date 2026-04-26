@@ -1,3 +1,5 @@
+import { parseQueryParts } from './search-query.js'
+
 export class Search {
   minisearch = null
   options = {
@@ -43,37 +45,12 @@ export class Search {
 }
 
 export function processQueryString(rawValue = '', filterFlags = {}) {
+  /** @type {Array<Object>} */
   const queries = []
+  /** @type {{ field: string, value: string }[]} */
   const exactMatches = []
-  let hasFreeText = false
-
-  let value = typeof rawValue === 'string' ? rawValue : String(rawValue ?? '')
-  value = rewriteSyntheticLabelAliases(value)
-
-  const extractFilter = (field, regex, buildQuery = () => {}) => {
-    const matches = []
-    let match
-    while ((match = regex.exec(value)) !== null) {
-      matches.push(match)
-    }
-    regex.lastIndex = 0
-
-    matches.forEach((currentMatch) => {
-      const [, quoted, prefixQuoted, unquoted] = currentMatch
-      const filterValue = (quoted ?? prefixQuoted ?? unquoted)?.trim()
-      if (!filterValue) {
-        return
-      }
-
-      queries.push({ fields: [field], queries: [filterValue], ...buildQuery(filterValue) })
-      if (quoted) {
-        exactMatches.push({ field, value: filterValue })
-      }
-
-      value = value.replace(currentMatch[0], ' ')
-    })
-  }
-
+  const value = rewriteSyntheticLabelAliases(String(rawValue ?? ''))
+  const parts = parseQueryParts(value)
   const filters = {
     author: true,
     label: true,
@@ -81,46 +58,29 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
     ...filterFlags,
   }
 
-  const regexFor = field =>
-    new RegExp(`${field}:"([^"]+)"|${field}:"([^"]*)$|${field}:([^\\s]+)`, 'gi')
+  for (const type of ['author', 'label', 'platform']) {
+    if (!filters[type]) {
+      continue
+    }
 
-  if (filters.author) {
-    extractFilter('author', regexFor('author'))
-  }
-
-  if (filters.label) {
-    extractFilter('labels', regexFor('label'))
-  }
-
-  if (filters.platform) {
-    extractFilter('platforms', regexFor('platform'), (platformValue) => {
-      // The lexer splits at "-" but we want "windows-x32" to *not* match
-      // "linux-x32".
-      const parts = platformValue.split(/[-\s]+/).filter(Boolean)
-      const query
-        = parts.length > 1
-          ? {
-              fields: ['platforms'],
-              combineWith: 'AND',
-              queries: parts,
-            }
-          : platformValue
-
-      return {
-        fields: ['platforms'],
-        combineWith: 'OR',
-        queries: [query, 'any'],
+    for (const part of parts) {
+      if (part.kind !== 'filter' || part.type !== type) {
+        continue
       }
-    })
+
+      queries.push(buildFilterQuery(part))
+      if (part.quoted) {
+        exactMatches.push({ field: searchFieldForFilterType(part.type), value: part.value })
+      }
+    }
   }
 
-  const trimmed = value.trim()
-  if (trimmed.length > 0) {
+  const freeText = extractSearchableText(parts, filters)
+  if (freeText.length > 0) {
     queries.push({
-      queries: trimmed.split(/\s+/),
+      queries: freeText.split(/\s+/),
       fields: ['name', 'description', 'author', 'labels'],
     })
-    hasFreeText = true
   }
 
   const filter = result => exactMatches.every(({ field, value: expected }) => {
@@ -134,7 +94,60 @@ export function processQueryString(rawValue = '', filterFlags = {}) {
     return value.toLowerCase().split(',').map(x => x.trim()).includes(expectedL)
   })
 
-  return { queries, hasFreeText, filter }
+  return { queries, hasFreeText: freeText.length > 0, filter }
+}
+
+function buildFilterQuery(part) {
+  const field = searchFieldForFilterType(part.type)
+  if (part.type !== 'platform') {
+    return { fields: [field], queries: [part.value] }
+  }
+
+  return {
+    fields: [field],
+    combineWith: 'OR',
+    queries: [buildPlatformQuery(part.value), 'any'],
+  }
+}
+
+function buildPlatformQuery(value) {
+  // The lexer splits at "-" but we want "windows-x32" to *not* match
+  // "linux-x32".
+  const parts = value.split(/[-\s]+/).filter(Boolean)
+  if (parts.length <= 1) {
+    return value
+  }
+
+  return {
+    fields: ['platforms'],
+    combineWith: 'AND',
+    queries: parts,
+  }
+}
+
+function extractSearchableText(parts, filters) {
+  return parts
+    .flatMap((part) => {
+      if (part.kind === 'text') {
+        return [part.value]
+      }
+      if (!filters[part.type]) {
+        return [part.token]
+      }
+      return []
+    })
+    .join(' ')
+    .trim()
+}
+
+function searchFieldForFilterType(type) {
+  if (type === 'label') {
+    return 'labels'
+  }
+  if (type === 'platform') {
+    return 'platforms'
+  }
+  return 'author'
 }
 
 const SYNTHETIC_LABEL_ALIASES = {

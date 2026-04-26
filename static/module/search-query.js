@@ -17,6 +17,29 @@ const SUPPORTED_FILTER_TYPES = ['label', 'platform', 'author']
  */
 
 /**
+ * @typedef {Object} QueryFilterPart
+ * @property {'filter'} kind
+ * @property {FilterType} type Filter field name.
+ * @property {string} token Complete filter token from the query.
+ * @property {string} value Filter value without the field prefix/quotes.
+ * @property {boolean} quoted Whether the filter used a closed quoted value.
+ * @property {number} start Start offset in the original query.
+ * @property {number} end End offset in the original query.
+ */
+
+/**
+ * @typedef {Object} QueryTextPart
+ * @property {'text'} kind
+ * @property {string} value Raw free-text fragment between filters.
+ * @property {number} start Start offset in the original query.
+ * @property {number} end End offset in the original query.
+ */
+
+/**
+ * @typedef {QueryFilterPart | QueryTextPart} QueryPart
+ */
+
+/**
  * @typedef {Object} SingleFilterQuery
  * @property {FilterType} type Filter field name.
  * @property {string} token Complete filter token from the query.
@@ -95,6 +118,24 @@ export function buildLabelRecords(packages) {
 }
 
 /**
+ * Parse a raw query into filter tokens and remaining free-text spans.
+ *
+ * The parser only recognizes the shared filter syntax. It preserves source
+ * spans so callers can remove tokens without rendering the full query and
+ * accidentally overwriting the user's formatting.
+ *
+ * @param {string | null | undefined} rawQuery
+ * @returns {QueryPart[]}
+ */
+export function parseQueryParts(rawQuery) {
+  const query = String(rawQuery ?? '')
+  const filters = parseFilterParts(query)
+  const text = parseTextParts(query, filters)
+
+  return [...filters, ...text].sort((a, b) => a.start - b.start)
+}
+
+/**
  * Parse queries that contain exactly one supported filter token.
  *
  * Used for shortcut links whose `q` value should map to one toggleable
@@ -104,27 +145,17 @@ export function buildLabelRecords(packages) {
  * @returns {SingleFilterQuery | null}
  */
 export function parseSingleFilterQuery(rawQuery) {
-  const query = normalizeQueryWhitespace(rawQuery)
-  if (!query) {
+  const parts = parseQueryParts(rawQuery)
+  if (parts.length !== 1 || parts[0].kind !== 'filter') {
     return null
   }
 
-  for (const type of SUPPORTED_FILTER_TYPES) {
-    const matches = parseFilterMatches(query, type)
-    if (matches.length !== 1) {
-      continue
-    }
-    const [match] = matches
-    if (match.start === 0 && match.end === query.length) {
-      return {
-        type,
-        token: match.token,
-        value: match.value,
-      }
-    }
+  const [part] = parts
+  return {
+    type: part.type,
+    token: part.token,
+    value: part.value,
   }
-
-  return null
 }
 
 /**
@@ -142,13 +173,17 @@ export function extractActiveLabelValues(rawQuery) {
   /** @type {string[]} */
   const active = []
 
-  for (const { value } of parseFilterMatches(rawQuery, 'label')) {
-    const normalized = value.toLowerCase()
+  for (const part of parseQueryParts(rawQuery)) {
+    if (part.kind !== 'filter' || part.type !== 'label') {
+      continue
+    }
+
+    const normalized = part.value.toLowerCase()
     if (seen.has(normalized)) {
       continue
     }
     seen.add(normalized)
-    active.push(value)
+    active.push(part.value)
   }
 
   return active
@@ -195,25 +230,9 @@ export function normalizeQueryWhitespace(rawQuery) {
 }
 
 export function parseFilterMatches(rawQuery, field) {
-  const query = String(rawQuery ?? '')
-  const pattern = new RegExp(`${field}:"([^"]+)"|${field}:"([^"]*)$|${field}:([^\\s]+)`, 'gi')
-  const matches = []
-
-  let match
-  while ((match = pattern.exec(query)) !== null) {
-    const value = (match[1] ?? match[2] ?? match[3] ?? '').trim()
-    if (!value) {
-      continue
-    }
-    matches.push({
-      token: match[0],
-      value,
-      start: match.index,
-      end: match.index + match[0].length,
-    })
-  }
-
-  return matches
+  return parseQueryParts(rawQuery)
+    .filter(part => part.kind === 'filter' && part.type === field)
+    .map(({ token, value, start, end }) => ({ token, value, start, end }))
 }
 
 /**
@@ -263,39 +282,12 @@ function suggestLabels(activeLabels, labelRecords, excludedLabels, excludedQuery
 }
 
 function extractFreeTextTerms(rawQuery) {
-  const query = String(rawQuery ?? '')
-  if (!query.trim()) {
-    return []
-  }
-
-  const filterSpans = []
-  for (const type of SUPPORTED_FILTER_TYPES) {
-    for (const match of parseFilterMatches(query, type)) {
-      filterSpans.push({ start: match.start, end: match.end })
-    }
-  }
-
-  if (filterSpans.length === 0) {
-    return tokenizeTerms(query)
-  }
-
-  filterSpans.sort((a, b) => a.start - b.start)
-
-  const remainder = []
-  let cursor = 0
-
-  for (const span of filterSpans) {
-    if (span.start > cursor) {
-      remainder.push(query.slice(cursor, span.start))
-    }
-    cursor = Math.max(cursor, span.end)
-  }
-
-  if (cursor < query.length) {
-    remainder.push(query.slice(cursor))
-  }
-
-  return tokenizeTerms(remainder.join(' '))
+  return tokenizeTerms(
+    parseQueryParts(rawQuery)
+      .filter(part => part.kind === 'text')
+      .map(part => part.value)
+      .join(' '),
+  )
 }
 
 /**
@@ -327,6 +319,70 @@ function tokenizeTerms(value) {
   return terms
 }
 
+function parseFilterParts(query) {
+  /** @type {QueryFilterPart[]} */
+  const parts = []
+  const filters = SUPPORTED_FILTER_TYPES.join('|')
+  const pattern = new RegExp(
+    `(${filters}):"([^"]+)"|(${filters}):"([^"]*)$|(${filters}):([^\\s]+)`,
+    'gi',
+  )
+
+  let match
+  while ((match = pattern.exec(query)) !== null) {
+    const rawType = match[1] ?? match[3] ?? match[5]
+    const value = (match[2] ?? match[4] ?? match[6] ?? '').trim()
+    if (!value) {
+      continue
+    }
+
+    parts.push({
+      kind: 'filter',
+      type: normalizeFilterType(rawType),
+      token: match[0],
+      value,
+      quoted: match[1] !== undefined,
+      start: match.index,
+      end: match.index + match[0].length,
+    })
+  }
+
+  return parts
+}
+
+function parseTextParts(query, filterParts) {
+  /** @type {QueryTextPart[]} */
+  const parts = []
+  let cursor = 0
+
+  for (const part of filterParts) {
+    if (part.start > cursor) {
+      pushTextPart(parts, query, cursor, part.start)
+    }
+    cursor = Math.max(cursor, part.end)
+  }
+
+  if (cursor < query.length) {
+    pushTextPart(parts, query, cursor, query.length)
+  }
+
+  return parts
+}
+
+function pushTextPart(parts, query, start, end) {
+  const value = query.slice(start, end)
+  if (!value.trim()) {
+    return
+  }
+
+  parts.push({
+    kind: 'text',
+    value,
+    start,
+    end,
+  })
+}
+
 /**
  * @param {string} value Comma-joined labels from search/index.json.njk.
  * @returns {string[]}
@@ -336,6 +392,14 @@ function parsePackageLabels(value) {
     .split(',')
     .map(label => label.trim())
     .filter(Boolean)
+}
+
+/**
+ * @param {string} value
+ * @returns {FilterType}
+ */
+function normalizeFilterType(value) {
+  return /** @type {FilterType} */ (value.toLowerCase())
 }
 
 function normalizeValue(value) {

@@ -6,9 +6,99 @@ import {
   buildLabelRecords,
   extractActiveLabelValues,
   hasFilterValue,
+  parseQueryParts,
   parseSingleFilterQuery,
   removeFilterValue,
 } from './search-query.js'
+
+describe('parseQueryParts', () => {
+  it('parses supported filters and free-text spans', () => {
+    const query = 'react author:dan label:"starter kit" platform:web'
+
+    expect(parseQueryParts(query)).toEqual([
+      {
+        kind: 'text',
+        value: 'react ',
+        start: 0,
+        end: query.indexOf('author:dan'),
+      },
+      {
+        kind: 'filter',
+        type: 'author',
+        token: 'author:dan',
+        value: 'dan',
+        quoted: false,
+        start: query.indexOf('author:dan'),
+        end: query.indexOf('author:dan') + 'author:dan'.length,
+      },
+      {
+        kind: 'filter',
+        type: 'label',
+        token: 'label:"starter kit"',
+        value: 'starter kit',
+        quoted: true,
+        start: query.indexOf('label:"starter kit"'),
+        end: query.indexOf('label:"starter kit"') + 'label:"starter kit"'.length,
+      },
+      {
+        kind: 'filter',
+        type: 'platform',
+        token: 'platform:web',
+        value: 'web',
+        quoted: false,
+        start: query.indexOf('platform:web'),
+        end: query.indexOf('platform:web') + 'platform:web'.length,
+      },
+    ])
+  })
+
+  it('keeps unsupported filters in free text', () => {
+    const query = 'status:active label:theme'
+
+    expect(parseQueryParts(query)).toEqual([
+      {
+        kind: 'text',
+        value: 'status:active ',
+        start: 0,
+        end: query.indexOf('label:theme'),
+      },
+      {
+        kind: 'filter',
+        type: 'label',
+        token: 'label:theme',
+        value: 'theme',
+        quoted: false,
+        start: query.indexOf('label:theme'),
+        end: query.length,
+      },
+    ])
+  })
+
+  it('distinguishes exact quoted filters from prefix quoted filters', () => {
+    const query = 'label:"full phrase" label:"prefix'
+
+    expect(parseQueryParts(query)).toEqual([
+      {
+        kind: 'filter',
+        type: 'label',
+        token: 'label:"full phrase"',
+        value: 'full phrase',
+        quoted: true,
+        start: 0,
+        end: 'label:"full phrase"'.length,
+      },
+      {
+        kind: 'filter',
+        type: 'label',
+        token: 'label:"prefix',
+        value: 'prefix',
+        quoted: false,
+        start: query.indexOf('label:"prefix'),
+        end: query.length,
+      },
+    ])
+  })
+})
 
 describe('parseSingleFilterQuery', () => {
   it('parses a single filter token', () => {
