@@ -211,7 +211,6 @@ export class List {
       throw new Error('minisearch is not initialized')
     }
 
-    this.filterStateUpdater?.(value)
     this.activeSortSelection = sortBy
 
     const query = value.trim()
@@ -261,6 +260,7 @@ export class List {
     }
 
     if (isReverting) {
+      this.filterStateUpdater?.(query)
       this.updateHeading()
       this.revertToNormal()
       return
@@ -269,6 +269,8 @@ export class List {
     const searchResults = hasQuery
       ? this.search.search(query)
       : this.search.all()
+
+    this.filterStateUpdater?.(query, searchResults)
 
     let effectiveSort = sortBy
     if (usingWildcard && effectiveSort.startsWith('author')) {

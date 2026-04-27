@@ -36,6 +36,9 @@ html {
     section[name="labels"] {
       display: none;
     }
+    form[name='search'] .search-shortcuts .button-group.labels {
+      visibility: hidden;
+    }
   }
 }
 
