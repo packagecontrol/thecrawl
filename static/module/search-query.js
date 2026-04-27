@@ -53,9 +53,11 @@ export function buildFeaturedLabels(
     defaults = [],
     maxTotal = 6,
     excludedLabels = [],
+    knownLabels = new Set(),
   } = {},
 ) {
   const activeLabels = extractActiveLabelValues(rawQuery)
+    .filter(label => knownLabels.has(normalizeValue(label)))
   const hasQuery = normalizeQueryWhitespace(rawQuery).length > 0
 
   if (!hasQuery && activeLabels.length === 0) {

@@ -32,6 +32,9 @@ async function fetchSearchData() {
 const rawIndex = await fetchSearchData()
 const packages = Array.isArray(rawIndex) ? rawIndex : (rawIndex.packages || [])
 const allLabelRecords = buildLabelRecords(packages)
+const knownLabels = new Set(
+  allLabelRecords.flatMap(record => record.map(entry => entry.normalizedLabel)),
+)
 window.__LABEL_ICON_ALIASES__ = rawIndex.label_icon_aliases ?? {}
 window.__LABEL_ICON_TINTS__ = rawIndex.label_icon_tints ?? {}
 
@@ -74,6 +77,7 @@ function renderFeaturedLabels(query, featuredPackages) {
     defaults: CURATED_FEATURED_LABELS,
     maxTotal: MAX_FEATURED_LABELS,
     excludedLabels: DYNAMIC_LABEL_EXCLUSIONS,
+    knownLabels,
   })
 
   featuredLabelsWrap.innerHTML = ''

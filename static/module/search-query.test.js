@@ -160,40 +160,62 @@ describe('buildFeaturedLabels', () => {
     { labels: 'python,linting,theme' },
     { labels: 'python,snippets,language syntax' },
   ])
+  const knownLabels = knownLabelsFor(allRecords)
 
   it('returns curated defaults when there is no query', () => {
-    expect(buildFeaturedLabels('', allRecords, { defaults, maxTotal: 6, excludedLabels: excluded })).toEqual({
+    expect(buildFeaturedLabels('', allRecords, { defaults, maxTotal: 6, excludedLabels: excluded, knownLabels })).toEqual({
       labels: defaults,
       activeLabels: [],
     })
   })
 
   it('omits free-text query terms from featured labels', () => {
-    expect(buildFeaturedLabels('python', pythonScopedRecords, { defaults, maxTotal: 6, excludedLabels: excluded })).toEqual({
+    expect(buildFeaturedLabels('python', pythonScopedRecords, { defaults, maxTotal: 6, excludedLabels: excluded, knownLabels })).toEqual({
       labels: ['snippets', 'linting', 'theme', 'color scheme', 'language syntax'],
       activeLabels: [],
     })
   })
 
   it('keeps active labels while omitting unrelated free-text terms', () => {
-    expect(buildFeaturedLabels('label:"python" snippets', pythonScopedRecords, { defaults, maxTotal: 6, excludedLabels: excluded })).toEqual({
+    expect(buildFeaturedLabels('label:"python" snippets', pythonScopedRecords, { defaults, maxTotal: 6, excludedLabels: excluded, knownLabels })).toEqual({
       labels: ['python', 'linting', 'theme', 'color scheme', 'language syntax'],
       activeLabels: ['python'],
     })
   })
 
   it('falls back to defaults when a non-empty query has no suggestions', () => {
-    expect(buildFeaturedLabels('nope', [], { defaults, maxTotal: 6, excludedLabels: excluded })).toEqual({
+    expect(buildFeaturedLabels('nope', [], { defaults, maxTotal: 6, excludedLabels: excluded, knownLabels })).toEqual({
       labels: defaults,
       activeLabels: [],
     })
   })
 
-  it('shows all active labels even when they exceed maxTotal', () => {
-    const query = 'label:"a" label:"b" label:"c" label:"d" label:"e" label:"f" label:"g"'
-    expect(buildFeaturedLabels(query, allRecords, { defaults, maxTotal: 6, excludedLabels: excluded })).toEqual({
-      labels: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-      activeLabels: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+  it('does not feature unknown active labels', () => {
+    const records = buildLabelRecords([
+      { labels: 'powershell,snippets' },
+      { labels: 'powershell,linting' },
+    ])
+
+    expect(buildFeaturedLabels('label:"powersh', records, {
+      defaults,
+      maxTotal: 6,
+      excludedLabels: excluded,
+      knownLabels: knownLabelsFor(records),
+    })).toEqual({
+      labels: ['powershell', 'linting', 'snippets'],
+      activeLabels: [],
+    })
+  })
+
+  it('shows all known active labels even when they exceed maxTotal', () => {
+    const query = 'label:"python" label:"snippets" label:"linting" label:"theme" label:"color scheme" label:"language syntax" label:"go"'
+    expect(buildFeaturedLabels(query, allRecords, { defaults, maxTotal: 6, excludedLabels: excluded, knownLabels })).toEqual({
+      labels: ['python', 'snippets', 'linting', 'theme', 'color scheme', 'language syntax', 'go'],
+      activeLabels: ['python', 'snippets', 'linting', 'theme', 'color scheme', 'language syntax', 'go'],
     })
   })
 })
+
+function knownLabelsFor(records) {
+  return new Set(records.flatMap(record => record.map(entry => entry.normalizedLabel)))
+}
