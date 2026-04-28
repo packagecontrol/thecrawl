@@ -2576,20 +2576,13 @@
       "first_seen": "2013-08-25T01:00:04Z"
     },
     {
+      "first_seen": "2012-07-05T23:40:58Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "Apache Pig",
-      "details": "https://github.com/chrislongo/Pig",
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "labels": [
         "language syntax"
-      ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "branch": "master"
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2012-07-05T23:40:58Z"
+      ]
     },
     {
       "name": "ApacheConf",
@@ -9832,17 +9825,10 @@
       "first_seen": "2018-05-17T15:06:31Z"
     },
     {
+      "first_seen": "2017-03-31T16:33:32Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "ChromiumTodoView",
-      "details": "https://github.com/dougt/ChromiumTodoView-sublime",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2017-03-31T16:33:32Z"
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
     },
     {
       "name": "ChromiumXRefs",
@@ -11333,17 +11319,10 @@
       "first_seen": "2014-04-21T16:05:10Z"
     },
     {
+      "first_seen": "2013-01-05T04:24:07Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "Code2Docs Documentation Generator (docco)",
-      "details": "https://github.com/tikot/sublime-code2docs",
-      "releases": [
-        {
-          "sublime_text": "<3000",
-          "branch": "master"
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2013-01-05T04:24:07Z"
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
     },
     {
       "first_seen": "2019-05-25T16:15:47Z",
@@ -20663,21 +20642,14 @@
       "first_seen": "2019-08-07T23:34:31Z"
     },
     {
+      "first_seen": "2022-06-24T20:07:26Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "Elm Query",
-      "details": "https://github.com/gacallea/elm-query",
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "labels": [
         "search",
         "elm"
-      ],
-      "releases": [
-        {
-          "sublime_text": ">=4083",
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2022-06-24T20:07:26Z"
+      ]
     },
     {
       "name": "Elm Snippets",
@@ -25190,21 +25162,10 @@
       "first_seen": "2013-05-20T14:05:26Z"
     },
     {
+      "first_seen": "2020-03-11T00:12:42Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "Fold ABL",
-      "details": "https://github.com/RudnikovPaul/FoldABL",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "platforms": [
-            "windows",
-            "osx"
-          ],
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2020-03-11T00:12:42Z"
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
     },
     {
       "name": "Fold Comments",
@@ -35945,20 +35906,13 @@
       ]
     },
     {
+      "first_seen": "2015-10-17T16:47:57Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "jQuery Mobile Demos",
-      "details": "https://github.com/maousan/jQueryMobileDemos",
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "labels": [
         "jquery mobile"
-      ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2015-10-17T16:47:57Z"
+      ]
     },
     {
       "name": "jQuery Mobile Snippets",
@@ -37121,21 +37075,14 @@
       ]
     },
     {
+      "first_seen": "2017-02-06T14:03:46Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "KarmaRunner",
-      "details": "https://github.com/knee-cola/KarmaRunner",
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "labels": [
         "karma",
         "jasmine"
-      ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2017-02-06T14:03:46Z"
+      ]
     },
     {
       "name": "Kattis",
@@ -39101,25 +39048,14 @@
       "first_seen": "2012-11-28T21:37:33Z"
     },
     {
+      "first_seen": "2015-05-13T13:55:27Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "LazyTimeTracker",
-      "details": "https://github.com/Bwata/LazyTimeTracker",
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "labels": [
         "time",
         "tracking"
-      ],
-      "releases": [
-        {
-          "sublime_text": ">=3000",
-          "platforms": [
-            "osx",
-            "linux"
-          ],
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2015-05-13T13:55:27Z"
+      ]
     },
     {
       "name": "LBNF",
@@ -42765,17 +42701,10 @@
       "first_seen": "2014-08-22T13:50:47Z"
     },
     {
+      "first_seen": "2014-04-22T17:30:24Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "lufylegendDev",
-      "details": "https://github.com/leitwolf/lufylegendDev",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "branch": "master"
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2014-04-22T17:30:24Z"
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
     },
     {
       "name": "Lumi",
@@ -48857,20 +48786,13 @@
       "first_seen": "2016-11-06T23:39:05Z"
     },
     {
+      "first_seen": "2019-01-08T14:35:04Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "NHP Syntax Highlight",
-      "details": "https://github.com/hdodov/nhp-syntax-highlight",
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "labels": [
         "language syntax"
-      ],
-      "releases": [
-        {
-          "sublime_text": ">=3092",
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2019-01-08T14:35:04Z"
+      ]
     },
     {
       "name": "Night Owl",
@@ -56174,22 +56096,15 @@
       "first_seen": "2015-09-17T13:54:55Z"
     },
     {
+      "first_seen": "2016-02-03T11:28:56Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "ProjectEnvironment",
-      "details": "https://bitbucket.org/daniele-niero/sublimeprojectenvironment",
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "labels": [
         "environment",
         "variables",
         "project"
-      ],
-      "releases": [
-        {
-          "sublime_text": ">=3000",
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2016-02-03T11:28:56Z"
+      ]
     },
     {
       "name": "ProjectFiles",
@@ -58274,17 +58189,10 @@
       "first_seen": "2021-12-16T19:50:56Z"
     },
     {
-      "details": "https://github.com/chrislongo/QuickThemes",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "branch": "master"
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
+      "first_seen": "2011-12-16T09:53:18Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "QuickThemes",
-      "first_seen": "2011-12-16T09:53:18Z"
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
     },
     {
       "name": "QuickView",
@@ -58305,17 +58213,10 @@
       "first_seen": "2021-05-18T21:07:26Z"
     },
     {
+      "first_seen": "2013-11-13T15:51:02Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "QuickXDev",
-      "details": "https://github.com/leitwolf/QuickXDev",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "branch": "master"
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2013-11-13T15:51:02Z"
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
     },
     {
       "name": "Quijotipsum Snippet",
@@ -62303,23 +62204,16 @@
       "first_seen": "2012-10-03T14:04:56Z"
     },
     {
+      "first_seen": "2017-07-15T12:38:57Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "Rune.js Completions",
-      "details": "https://github.com/mphstudios/rune.js-sublime-completions",
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "labels": [
         "completions",
         "snippets",
         "javascript",
         "svg"
-      ],
-      "releases": [
-        {
-          "sublime_text": ">=3000",
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2017-07-15T12:38:57Z"
+      ]
     },
     {
       "name": "RunMacroFileWithContext",
@@ -65671,17 +65565,10 @@
       "first_seen": "2017-04-01T22:00:48Z"
     },
     {
+      "first_seen": "2023-09-18T19:59:56Z",
+      "removed": "2026-04-28T20:40:46Z",
       "name": "Simple math",
-      "details": "https://github.com/Pau1R/simpleMath/",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2023-09-18T19:59:56Z"
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
     },
     {
       "name": "Simple Print Function",
@@ -78184,21 +78071,13 @@
       "first_seen": "2017-09-18T23:48:49Z"
     },
     {
-      "details": "https://github.com/lucatume/testify",
-      "author": "theAverageDev (Luca Tumedei)",
+      "first_seen": "2014-02-12T14:26:21Z",
+      "removed": "2026-04-28T20:40:46Z",
+      "name": "testify",
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "labels": [
         "test"
-      ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "branch": "master"
-        }
-      ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "name": "testify",
-      "first_seen": "2014-02-12T14:26:21Z"
+      ]
     },
     {
       "name": "TestManager",
