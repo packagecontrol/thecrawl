@@ -316,7 +316,7 @@ export function release_week_model(releases, dates, max_week_idx) {
   }
 
   const weeks = []
-  const versionsByWeek = new Map()
+  const releasesByWeek = new Map()
 
   for (const release of releases) {
     if (!release || !release.date) continue
@@ -324,20 +324,42 @@ export function release_week_model(releases, dates, max_week_idx) {
     if (idx === null || idx === undefined) continue
     if (idx >= max_week_idx) continue
 
-    if (!versionsByWeek.has(idx)) {
+    if (!releasesByWeek.has(idx)) {
       weeks.push(idx)
-      versionsByWeek.set(idx, [])
+      releasesByWeek.set(idx, [])
     }
 
-    const version = release.version ?? 'unknown'
-    versionsByWeek.get(idx).push(String(version))
+    releasesByWeek.get(idx).push(release)
   }
 
-  const versions_list = weeks.map(idx => versionsByWeek.get(idx) ?? [])
-  return weeks.map((week_idx, i) => ({
+  return weeks.map(week_idx => ({
     week_idx,
-    versions: versions_list[i],
+    versions: releaseVersionsForWeek(releasesByWeek.get(week_idx) ?? []),
   }))
+}
+
+function releaseVersionsForWeek(releases) {
+  const sortedReleases = [...releases].sort((a, b) => {
+    const maxA = util.parseSublimeTextMax(a?.sublime_text)
+    const maxB = util.parseSublimeTextMax(b?.sublime_text)
+    if (maxA !== maxB) {
+      return maxB - maxA
+    }
+
+    const dateA = new Date(a?.date ?? '1970-01-01 00:00:00')
+    const dateB = new Date(b?.date ?? '1970-01-01 00:00:00')
+    return dateB - dateA
+  })
+
+  const versions = []
+  for (const release of sortedReleases) {
+    const version = String(release.version ?? 'unknown')
+    if (!versions.includes(version)) {
+      versions.push(version)
+    }
+  }
+
+  return versions
 }
 
 // for each week index, find the nearest release week index
@@ -592,6 +614,25 @@ if (import.meta.vitest) {
       const monday = new Date(ymd + 'T00:00:00Z')
       expect(monday.getUTCDay()).toBe(1)
       expect(day_offset_of_month_change(monday)).toBe(expected)
+    })
+  })
+
+  describe('release_week_model', () => {
+    it('sorts and deduplicates versions in each release week', () => {
+      const releases = [
+        { date: '2026-04-22T18:02:46Z', sublime_text: '>=4204', version: '6.1.0' },
+        { date: '2026-04-22T18:02:27Z', sublime_text: '4107 - 4203', version: '5.1.0' },
+        { date: '2026-04-22T15:17:35Z', sublime_text: '>=4204', version: '6.0.0' },
+        { date: '2026-04-20T00:27:09Z', sublime_text: '4107 - 4203', version: '5.0.3' },
+        { date: '2026-04-20T00:27:09Z', sublime_text: '>=4204', version: '5.0.3' },
+      ]
+
+      expect(release_week_model(releases, ['2026-W17'], 1)).toStrictEqual([
+        {
+          week_idx: 0,
+          versions: ['6.1.0', '6.0.0', '5.0.3', '5.1.0'],
+        },
+      ])
     })
   })
 
