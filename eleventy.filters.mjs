@@ -329,8 +329,11 @@ export function release_week_model(releases, dates, max_week_idx) {
       versionsByWeek.set(idx, [])
     }
 
-    const version = release.version ?? 'unknown'
-    versionsByWeek.get(idx).push(String(version))
+    const version = String(release.version ?? 'unknown')
+    const week = versionsByWeek.get(idx)
+    if (!week.includes(version)) {
+      week.push(version)
+    }
   }
 
   const versions_list = weeks.map(idx => versionsByWeek.get(idx) ?? [])
@@ -592,6 +595,25 @@ if (import.meta.vitest) {
       const monday = new Date(ymd + 'T00:00:00Z')
       expect(monday.getUTCDay()).toBe(1)
       expect(day_offset_of_month_change(monday)).toBe(expected)
+    })
+  })
+
+  describe('release_week_model', () => {
+    it('deduplicates versions in each release week', () => {
+      const releases = [
+        { date: '2026-04-22T18:02:46Z', version: '6.1.0' },
+        { date: '2026-04-22T18:02:27Z', version: '5.1.0' },
+        { date: '2026-04-22T15:17:35Z', version: '6.0.0' },
+        { date: '2026-04-20T00:27:09Z', version: '5.0.3' },
+        { date: '2026-04-20T00:27:09Z', version: '5.0.3' },
+      ]
+
+      expect(release_week_model(releases, ['2026-W17'], 1)).toStrictEqual([
+        {
+          week_idx: 0,
+          versions: ['6.1.0', '5.1.0', '6.0.0', '5.0.3'],
+        },
+      ])
     })
   })
 
