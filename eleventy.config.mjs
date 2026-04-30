@@ -34,6 +34,7 @@ const MAGIC_WEIGHTS = {
   recency: 0.05,
 }
 const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
+const STATUS_TAG_WINDOW_DAYS = 30
 
 const clamp01 = value => Math.max(0, Math.min(1, value))
 // GitHub-style emoji shortcode mapping, loaded from JSON.
@@ -113,7 +114,7 @@ function readStatusSemverTags() {
     return []
   }
 
-  return git.stdout
+  const semverTags = git.stdout
     .split(/\r?\n/)
     .map((line) => {
       const [tag, taggerDate] = line.split('\t')
@@ -121,10 +122,27 @@ function readStatusSemverTags() {
     })
     .filter(({ tag, date }) => tag && date)
     .filter(({ tag }) => SEMVER_TAG_RE.test(tag))
-    // The 30-day chart only needs in-window tags plus the newest older tag for
-    // the left-edge overflow marker. Keep a generous count cap so this payload
-    // cannot grow unbounded while still covering busy release periods.
-    .slice(0, 30)
+    .filter(({ date }) => Number.isFinite(Date.parse(date)))
+
+  return statusTagsForChartWindow(semverTags)
+}
+
+function statusTagsForChartWindow(tags, {
+  days = STATUS_TAG_WINDOW_DAYS,
+  nowTimestamp = Date.now(),
+} = {}) {
+  const cutoff = nowTimestamp - Math.max(0, Math.floor(days)) * MS_IN_DAY
+  const selected = []
+
+  for (const tag of tags) {
+    // The status chart needs tags in its visible day window plus exactly the
+    // newest older tag for the left-edge overflow marker.
+    // Hence break after push.
+    selected.push(tag)
+    if (Date.parse(tag.date) < cutoff) break
+  }
+
+  return selected
 }
 
 function computeMagicMetadata(packages) {
