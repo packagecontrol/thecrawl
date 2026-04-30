@@ -213,7 +213,10 @@ class BranchesPager(_Pager):
                     continue
                 new_branches.append({
                     "name": branch["name"],
-                    "url": f"https://gitlab.com/{self.owner}/{self.repo}/-/tree/{branch['name']}",
+                    "url": (
+                        f"https://gitlab.com/{self.owner}/{self.repo}"
+                        f"/-/archive/{branch['name']}/{self.repo}-{branch['name']}.zip"
+                    ),
                     "date": normalize_tz_aware_datetime(raw_date),
                 })
             self._cache.extend(new_branches)
