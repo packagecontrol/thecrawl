@@ -33,7 +33,6 @@ const MAGIC_WEIGHTS = {
   longevity: 0.1,
   recency: 0.05,
 }
-const STATUS_TAG_WINDOW_DAYS = 30
 const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
 
 const clamp01 = value => Math.max(0, Math.min(1, value))
@@ -96,29 +95,6 @@ function toTimestamp(value) {
   return Number.isNaN(parsed) ? null : parsed
 }
 
-function collectStatusTagData({ days = STATUS_TAG_WINDOW_DAYS } = {}) {
-  const cutoff = Date.now() - days * MS_IN_DAY
-  const semverTags = readStatusSemverTags()
-
-  const windowTags = []
-  let overflowTag = null
-
-  for (const tag of semverTags) {
-    const ts = Date.parse(tag.date)
-    if (!Number.isFinite(ts)) continue
-
-    if (ts >= cutoff) {
-      windowTags.push(tag)
-      continue
-    }
-
-    overflowTag = tag
-    break
-  }
-
-  return { windowTags, overflowTag }
-}
-
 function readStatusSemverTags() {
   const git = spawnSync(
     'git',
@@ -145,6 +121,10 @@ function readStatusSemverTags() {
     })
     .filter(({ tag, date }) => tag && date)
     .filter(({ tag }) => SEMVER_TAG_RE.test(tag))
+    // The 30-day chart only needs in-window tags plus the newest older tag for
+    // the left-edge overflow marker. Keep a generous count cap so this payload
+    // cannot grow unbounded while still covering busy release periods.
+    .slice(0, 30)
 }
 
 function computeMagicMetadata(packages) {
@@ -577,12 +557,11 @@ export default function (eleventyConfig) {
     disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
   })
 
-  const statusTagData = collectStatusTagData()
+  // Send the full tag history so the browser can decide what is visible and
+  // what belongs behind the left-edge overflow pointer using the current day.
+  const statusTags = readStatusSemverTags()
   eleventyConfig.addGlobalData('status_tag_dates_json', () => {
-    return JSON.stringify(statusTagData.windowTags)
-  })
-  eleventyConfig.addGlobalData('status_tag_overflow_json', () => {
-    return statusTagData.overflowTag ? JSON.stringify(statusTagData.overflowTag) : 'null'
+    return JSON.stringify(statusTags)
   })
 
   // Default permalink: output files with their extension (e.g., /page.html)

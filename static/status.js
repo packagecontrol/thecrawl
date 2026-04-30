@@ -17,6 +17,7 @@ import {
   normalizePackageNameKey,
   normalizeStatusNotes,
 } from './module/status-failing.js'
+import { newestTagBeforeDayWindow } from './module/status-tags.js'
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.mjs'
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
 
@@ -27,7 +28,6 @@ const badgeEl = document.querySelector('[data-status-badge]')
 const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
-const overflowTagDataEl = document.querySelector('[data-status-tag-overflow]')
 /** @type {HTMLButtonElement | null} */
 const prevButton = document.querySelector('[data-control="prev"]')
 /** @type {HTMLButtonElement | null} */
@@ -55,20 +55,14 @@ const lastButton = document.querySelector('[data-control="last"]')
  */
 
 /**
- * Release marker rendered at the chart top for tags that fall inside the
- * currently visible day window.
+ * Release marker used by the chart. Markers inside the current day window are
+ * rendered at the chart top; the newest marker before the window is rendered as
+ * an overflow pointer.
  *
  * @typedef {{
  *    tag: string,
  *    date: string,
  *  }} TagMarker
- */
-
-/**
- * A "just before the window" tag rendered as a left-pointing overflow
- * indicator outside the visible chart range.
- *
- * @typedef {TagMarker} OverflowTagMarker
  */
 
 /** @type {LogEntry[]} */
@@ -79,13 +73,6 @@ let chart = null
 let emptyStateMessage = ''
 /** @type {TagMarker[]} */
 const tagMarkers = loadTagMarkers(tagDataEl)
-/**
- * Optional tag marker that points to the most recent tag just before the
- * visible window. Rendered as an external left-side indicator.
- *
- * @type {OverflowTagMarker | null}
- */
-const overflowTagMarker = loadOverflowTagMarker(overflowTagDataEl)
 
 function init() {
   if (!notesEl || !dateEl || !badgeEl) {
@@ -98,7 +85,6 @@ function init() {
       onHover: showHoverPreview,
     })
     chart.setTagMarkers(tagMarkers)
-    chart.setOverflowTagMarker(overflowTagMarker)
     chartEl.addEventListener('mouseleave', restoreActiveEntry)
   }
 
@@ -642,7 +628,6 @@ class StatusChart {
     this.points = []
     this.entries = []
     this.tagMarkers = []
-    this.overflowTagMarker = null
     this.gridAnchorDayKey = currentLocalDayKey()
 
     this.resizeObserver = new ResizeObserver(() => this.layout())
@@ -769,11 +754,6 @@ class StatusChart {
 
   setTagMarkers(markers) {
     this.tagMarkers = markers || []
-    this.redrawDots()
-  }
-
-  setOverflowTagMarker(marker) {
-    this.overflowTagMarker = marker || null
     this.redrawDots()
   }
 
@@ -1011,7 +991,8 @@ class StatusChart {
    * labels/lines, because the left edge would become visually crowded.
    */
   drawOverflowTagMarker() {
-    if (!this.overflowTagMarker) return
+    const overflowTagMarker = newestTagBeforeDayWindow(this.tagMarkers, this.days)
+    if (!overflowTagMarker) return
     if (this.hasTagMarkersInOldestDays()) {
       return
     }
@@ -1056,10 +1037,10 @@ class StatusChart {
     label.setAttribute('class', 'tag-overflow-label')
     label.setAttribute('x', String(crisp(shaftEndX + labelGap)))
     label.setAttribute('y', String(crisp(labelY)))
-    label.textContent = this.overflowTagMarker.tag
+    label.textContent = overflowTagMarker.tag
 
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
-    title.textContent = formatTagDateShort(this.overflowTagMarker.date)
+    title.textContent = formatTagDateShort(overflowTagMarker.date)
     label.appendChild(title)
 
     group.appendChild(label)
@@ -1245,33 +1226,6 @@ function loadTagMarkers(el) {
   catch (err) {
     console.warn('Failed to parse status tag markers:', err)
     return []
-  }
-}
-
-/**
- * Parse the optional overflow marker from inline JSON data.
- *
- * @param {Element | null} el
- * @returns {OverflowTagMarker | null}
- */
-function loadOverflowTagMarker(el) {
-  if (!el || !el.textContent) return null
-
-  try {
-    const raw = JSON.parse(el.textContent)
-    if (!raw || typeof raw !== 'object') return null
-
-    const tag = String(raw.tag || '').trim()
-    const date = String(raw.date || '').trim()
-    if (!tag || !date) return null
-    if (!isSemverTag(tag)) return null
-    if (!safeDate(date)) return null
-
-    return { tag, date }
-  }
-  catch (err) {
-    console.warn('Failed to parse status overflow tag marker:', err)
-    return null
   }
 }
 
