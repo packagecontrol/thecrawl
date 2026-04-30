@@ -3,7 +3,7 @@ import json
 import aiohttp
 import asyncio
 import os
-from urllib.parse import urlparse, urlencode
+from urllib.parse import urlparse, urlencode, quote
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
@@ -193,7 +193,10 @@ class TagPager:
                 date = normalize_tz_aware_datetime(raw_date)
                 new_tags.append({
                     "name": name,
-                    "url": f"https://codeberg.org/{self.owner}/{self.repo}/archive/{name}.zip",
+                    "url": (
+                        f"{CODEBERG_API_URL}/repos/{self.owner}/{self.repo}/archive/"
+                        f"{quote(name, safe='')}.zip"
+                    ),
                     "date": date,
                 })
             self._cache.extend(new_tags)
@@ -240,7 +243,10 @@ class BranchesPager:
                 date = normalize_tz_aware_datetime(raw_date)
                 new_branches.append({
                     "name": name,
-                    "url": f"https://codeberg.org/{self.owner}/{self.repo}/archive/{name}.zip",
+                    "url": (
+                        f"{CODEBERG_API_URL}/repos/{self.owner}/{self.repo}/archive/"
+                        f"{quote(name, safe='')}.zip"
+                    ),
                     "date": date,
                 })
             self._cache.extend(new_branches)
