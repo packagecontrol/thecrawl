@@ -46048,6 +46048,24 @@
       "first_seen": "2016-11-23T17:09:20Z"
     },
     {
+      "name": "MLIR TOC",
+      "details": "https://github.com/hockyy/mlir-toc",
+      "labels": [
+        "mlir",
+        "navigation",
+        "text manipulation"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-02T10:11:56Z"
+    },
+    {
       "name": "Moai Debugger",
       "details": "https://github.com/DJHoltkamp/Sublime-Moai-Debugger",
       "releases": [
