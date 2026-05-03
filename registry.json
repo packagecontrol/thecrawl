@@ -16254,6 +16254,22 @@
       "first_seen": "2018-07-25T00:39:42Z"
     },
     {
+      "name": "D2",
+      "details": "https://gitlab.com/sotilrac/d2-syntax",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3084",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-03T19:35:00Z"
+    },
+    {
       "name": "D3.js Snippets",
       "details": "https://github.com/fabriciotav/d3-snippets-for-sublime-text-2",
       "labels": [
