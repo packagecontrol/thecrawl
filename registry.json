@@ -93369,6 +93369,76 @@
       "schema_version": "4.0.0"
     },
     {
+      "name": "watchfiles",
+      "description": "Simple, modern and high performance file watching and code reload in python.",
+      "author": "samuelcolvin",
+      "issues": "https://github.com/samuelcolvin/watchfiles/issues",
+      "releases": [
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-win_amd64.whl",
+          "platforms": [
+            "windows-x64"
+          ],
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "platforms": [
+            "linux-arm64"
+          ],
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "platforms": [
+            "linux-x64"
+          ],
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-macosx_*_arm64.whl",
+          "platforms": [
+            "osx-arm64"
+          ],
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-macosx_*_x86_64.whl",
+          "platforms": [
+            "osx-x64"
+          ],
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+      "schema_version": "4.0.0"
+    },
+    {
       "name": "wcmatch",
       "description": "Python wcmatch module which provides enhanced file globbing and matching",
       "author": "facelessuser",
