@@ -62410,6 +62410,23 @@
       "first_seen": "2016-11-06T23:09:32Z"
     },
     {
+      "name": "Rux",
+      "details": "https://github.com/rux-lang/SublimeText",
+      "labels": [
+        "language syntax",
+        "rux"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-04T17:10:07Z"
+    },
+    {
       "name": "RVM",
       "details": "https://github.com/jinze/sublime-rvm",
       "releases": [
