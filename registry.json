@@ -41105,6 +41105,25 @@
       "first_seen": "2017-08-18T15:26:22Z"
     },
     {
+      "name": "LSP-addon-breadcrumb",
+      "details": "https://github.com/huyhoang8398/LSP-addon-breadcrumb",
+      "labels": [
+        "file",
+        "utilities",
+        "tooltips",
+        "breadcrumb"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">3084",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-04T09:36:03Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-angular",
       "name": "LSP-angular",
       "labels": [
@@ -85505,6 +85524,22 @@
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2015-07-05T22:41:23Z"
+    },
+    {
+      "name": "VS Code 2026 Color Scheme",
+      "details": "https://github.com/vector-foundry-dev/sublime-vscode-2026-color-scheme",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4171",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-04T09:36:03Z"
     },
     {
       "name": "VSCMT",
