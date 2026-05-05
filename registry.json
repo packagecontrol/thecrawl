@@ -79769,6 +79769,12 @@
           "date": "2026-01-07 10:00:00",
           "sublime_text": ">=4050",
           "url": "https://packages.monokai.pro/Theme - Monokai Pro/2.1.6/Theme - Monokai Pro.sublime-package"
+        },
+        {
+          "version": "2.2.0",
+          "date": "2026-05-05 09:00:00",
+          "sublime_text": ">=4205",
+          "url": "https://packages.monokai.pro/Theme - Monokai Pro/2.2.0/Theme - Monokai Pro.sublime-package"
         }
       ],
       "source": "https://packages.monokai.pro/packages.json",
