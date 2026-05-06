@@ -41492,6 +41492,50 @@
       "first_seen": "2021-10-04T08:57:56Z"
     },
     {
+      "name": "LSP-file-watcher-rust",
+      "details": "https://github.com/sublimelsp/LSP-file-watcher-rust",
+      "releases": [
+        {
+          "url": "https://github.com/sublimelsp/LSP-file-watcher-rust/releases/download/1.0.0/LSP-file-watcher-rust_linux-arm64.zip",
+          "platforms": "linux-arm64",
+          "date": "2026-05-06 10:28:38",
+          "version": "1.0.0",
+          "sublime_text": ">=4148"
+        },
+        {
+          "url": "https://github.com/sublimelsp/LSP-file-watcher-rust/releases/download/1.0.0/LSP-file-watcher-rust_linux-x64.zip",
+          "platforms": "linux-x64",
+          "date": "2026-05-06 10:28:38",
+          "version": "1.0.0",
+          "sublime_text": ">=4148"
+        },
+        {
+          "url": "https://github.com/sublimelsp/LSP-file-watcher-rust/releases/download/1.0.0/LSP-file-watcher-rust_osx-arm64.zip",
+          "platforms": "osx-arm64",
+          "date": "2026-05-06 10:28:38",
+          "version": "1.0.0",
+          "sublime_text": ">=4148"
+        },
+        {
+          "url": "https://github.com/sublimelsp/LSP-file-watcher-rust/releases/download/1.0.0/LSP-file-watcher-rust_osx-x64.zip",
+          "platforms": "osx-x64",
+          "date": "2026-05-06 10:28:38",
+          "version": "1.0.0",
+          "sublime_text": ">=4148"
+        },
+        {
+          "url": "https://github.com/sublimelsp/LSP-file-watcher-rust/releases/download/1.0.0/LSP-file-watcher-rust_windows-x64.zip",
+          "platforms": "windows-x64",
+          "date": "2026-05-06 10:28:38",
+          "version": "1.0.0",
+          "sublime_text": ">=4148"
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-06T12:05:39Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-flow",
       "name": "LSP-flow",
       "labels": [
