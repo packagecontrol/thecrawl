@@ -55452,6 +55452,22 @@
       "removed": "2020-08-18T20:45:30Z"
     },
     {
+      "name": "Praia",
+      "details": "https://github.com/praia-lang/praia-sublime",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-07T11:57:58Z"
+    },
+    {
       "name": "Pre language syntax highlighting",
       "details": "https://github.com/jonschlinkert/pre-sublime",
       "labels": [
