@@ -24850,6 +24850,22 @@
       "first_seen": "2015-12-25T20:37:46Z"
     },
     {
+      "name": "FlexIDE",
+      "details": "https://github.com/rahulsharmagg/FlexIDE",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4171",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-08T19:18:14Z"
+    },
+    {
       "name": "Flexoki Color Scheme",
       "details": "https://github.com/kepano/flexoki-sublime",
       "labels": [
