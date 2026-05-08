@@ -1209,6 +1209,25 @@
       "first_seen": "2014-06-30T15:55:03Z"
     },
     {
+      "name": "AI Bridge",
+      "author": "Jonathan Heintzeman",
+      "details": "https://github.com/MNU-497/Sublime-AI-Bridge",
+      "labels": [
+        "text manipulation",
+        "mcp",
+        "ai"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4081",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-08T20:32:47Z"
+    },
+    {
       "name": "AiComplete",
       "description": "Auto code completion using Gemini API",
       "author": "Chinmay Agarwal",
@@ -5994,6 +6013,23 @@
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2017-06-18T08:45:32Z"
+    },
+    {
+      "name": "BetterGoToFile",
+      "details": "https://github.com/Suor/GoToFile",
+      "labels": [
+        "file open",
+        "code navigation"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-08T20:32:47Z"
     },
     {
       "name": "BetterSave",
@@ -60222,6 +60258,22 @@
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2018-02-20T16:37:59Z"
+    },
+    {
+      "name": "RememberSyntax",
+      "details": "https://github.com/Suor/RememberSyntax",
+      "labels": [
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-08T20:32:47Z"
     },
     {
       "name": "Remify",
