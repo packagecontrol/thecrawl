@@ -50881,6 +50881,7 @@
       "first_seen": "2017-07-30T19:46:22Z"
     },
     {
+      "fetching_source_failed": "2026-05-08T22:37:25Z",
       "name": "Open Finder",
       "previous_names": [
         "Sublime Finder"
