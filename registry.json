@@ -69337,6 +69337,22 @@
       "first_seen": "2014-04-24T17:10:39Z"
     },
     {
+      "name": "Structurizr DSL",
+      "details": "https://github.com/agehrke/structurizr-syntax",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-11T20:49:14Z"
+    },
+    {
       "name": "Stupid Indent",
       "details": "https://github.com/tzvetkoff/sublime_stupid_indent",
       "releases": [
@@ -78037,6 +78053,25 @@
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2026-03-27T11:28:20Z"
+    },
+    {
+      "name": "TermMate",
+      "details": "https://github.com/flashmodel/termmate",
+      "labels": [
+        "agent",
+        "chat",
+        "ai",
+        "llm"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-11T20:49:14Z"
     },
     {
       "name": "termX",
