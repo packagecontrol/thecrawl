@@ -135,6 +135,7 @@ section[name="labels"] .grid {
       padding: 0;
       cursor: default;
       white-space: revert;
+      word-break: keep-all;
       &:hover {
         background: transparent;
       }
@@ -144,6 +145,14 @@ section[name="labels"] .grid {
   .list & .labels {
     justify-content: flex-start;
     margin-top: 21px;  /* usually collapses with margin-bottom from .description */
+  }
+
+  .list & .platforms {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: max(100px, 30vw);
   }
 
   .list & .stats {
