@@ -3,6 +3,7 @@ import path from 'path'
 import { execSync } from 'child_process'
 
 const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
+const NBSP = '\u00A0'
 
 const canonicalizeOs = (platform) => {
   const lower = platform.toLowerCase()
@@ -158,16 +159,20 @@ export function computePlatformStatement(platforms) {
 
   if (collapsed.length === 1 && collapsed[0].kind === 'variant') {
     const token = collapsed[0]
-    return `Only on ${prettifyOs(token.os)}-${token.variant}`
+    return `Only on ${platformTokenLabel(token)}`
   }
 
-  const labels = collapsed.map((token) => {
-    if (token.kind === 'base') return prettifyOs(token.os)
-    if (token.kind === 'variant') return `${prettifyOs(token.os)}-${token.variant}`
-    return token.raw
-  })
+  const labels = collapsed.map(platformTokenLabel)
 
-  return labels.join('/')
+  // Keep the slash with the preceding platform when wrapping.
+  return labels.join(`${NBSP}/ `)
+}
+
+function platformTokenLabel(token) {
+  if (token.kind === 'base') return prettifyOs(token.os)
+  if (token.kind === 'variant') return `${prettifyOs(token.os)}‑${token.variant}`
+  // Replace normal hyphens to non-breaking hyphens
+  return token.raw.replaceAll('-', '‑')
 }
 
 /**
@@ -823,9 +828,9 @@ if (import.meta.vitest) {
       [['linux-x32', 'linux-x64'], 'Only for Linux'],
       [['linux-x32', 'linux-x64', 'windows'], 'Not for macOS'],
 
-      [['windows-x64'], 'Only on Windows-x64'],
-      [['linux-x32', 'windows-x32'], 'Linux-x32/Windows-x32'],
-      [['linux-arm64'], 'Only on Linux-arm64'],
+      [['windows-x64'], 'Only on Windows‑x64'],
+      [['linux-x32', 'windows-x32'], 'Linux‑x32\u00A0/ Windows‑x32'],
+      [['linux-arm64'], 'Only on Linux‑arm64'],
     ])('computePlatformStatement(%j) -> %j', (input, expected) => {
       expect(computePlatformStatement(input)).toBe(expected)
     })

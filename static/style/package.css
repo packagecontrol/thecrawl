@@ -72,7 +72,7 @@ ul.stats {
   display: flex;
   gap: 1em;
   align-content: center;
-  align-items: center;
+  align-items: baseline;
   line-height: 28px;
   padding-left: 0;
   color: var(--foreground-2);

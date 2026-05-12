@@ -134,6 +134,7 @@ section[name="labels"] .grid {
       margin: 0;
       padding: 0;
       cursor: default;
+      white-space: revert;
       &:hover {
         background: transparent;
       }
