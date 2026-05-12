@@ -133,7 +133,8 @@ section[name="labels"] .grid {
       column-gap: 7px;
 
       &:has(> .platform-statement-wrap-enumeration) {
-        grid-template-columns: minmax(0, 1fr) max-content;
+        grid-template-columns: 1fr;
+        row-gap: 10px;
       }
     }
     .platform-statement {
