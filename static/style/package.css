@@ -91,6 +91,10 @@ ul.stats {
   }
 }
 
+section[name="package"] > ul.stats .platforms {
+  max-width: 60%;
+}
+
 .other-releases {
 
   summary {
