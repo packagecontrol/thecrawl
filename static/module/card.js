@@ -35,7 +35,7 @@ export class Card {
     // clear the placeholder then fill with data
     labels.innerHTML = ''
     this.platforms()
-    this.labels(labels)
+    this.labels(this.labelParent(labels))
     this.stats()
 
     return this.clone
@@ -188,6 +188,9 @@ export class Card {
       }
       const li = document.createElement('li')
       li.classList.add('platform-statement-wrap')
+      if (this.countPlatformSeparators(label) >= 2) {
+        li.classList.add('platform-statement-wrap-enumeration')
+      }
 
       const span = document.createElement('span')
       span.classList.add('button', 'label', 'platform-statement')
@@ -211,6 +214,26 @@ export class Card {
     li.textContent = label
 
     return li
+  }
+
+  countPlatformSeparators(label) {
+    return label.split('/').length - 1
+  }
+
+  labelParent(parent) {
+    if (!this.compact || this.pkg.labels.length < 1 || !this.pkg.platform_statement?.trim()) {
+      return parent
+    }
+
+    const li = document.createElement('li')
+    li.classList.add('package-labels-wrap')
+
+    const nested = document.createElement('ul')
+    nested.classList.add('package-labels')
+    li.appendChild(nested)
+    parent.appendChild(li)
+
+    return nested
   }
 
   labels(parent) {

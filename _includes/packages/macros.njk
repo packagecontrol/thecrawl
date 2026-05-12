@@ -55,12 +55,7 @@
 {% endmacro %}
 
 {% macro labels(pkg, with_icons=false, platform_statement='') %}
-  {% set buttons -%}
-    {%- if platform_statement -%}
-      <li class="platform-statement-wrap">
-        <span class="button label platform-statement">{{ platform_statement }}</span>
-      </li>
-    {%- endif -%}
+  {% set label_buttons -%}
     {%- for label in pkg.labels %}
       {% set q = searchQueryFor('label', label) %}
       <li>
@@ -102,6 +97,24 @@
         {% endif %}
       </li>
     {%- endfor -%}
+  {%- endset %}
+
+  {% set buttons -%}
+    {%- if platform_statement -%}
+      {% set separator_count = (platform_statement | replace('/', '//') | length) - (platform_statement | length) %}
+      <li class="platform-statement-wrap{{ ' platform-statement-wrap-enumeration' if separator_count >= 2 }}">
+        <span class="button label platform-statement">{{ platform_statement }}</span>
+      </li>
+      {%- if label_buttons | trim -%}
+        <li class="package-labels-wrap">
+          <ul class="package-labels">
+            {{ label_buttons | safe }}
+          </ul>
+        </li>
+      {%- endif -%}
+    {%- else -%}
+      {{ label_buttons | safe }}
+    {%- endif -%}
   {%- endset %}
 
   {% if buttons | trim %}

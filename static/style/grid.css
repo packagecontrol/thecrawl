@@ -126,8 +126,15 @@ section[name="labels"] .grid {
       line-height: 20px;
       padding: 1px 6px;
     }
-    .platform-statement-wrap {
-      flex: 1 1 auto;
+    &:has(> .platform-statement-wrap > .platform-statement):has(> .package-labels-wrap) {
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      align-items: end;
+      column-gap: 7px;
+
+      &:has(> .platform-statement-wrap-enumeration) {
+        grid-template-columns: minmax(0, 1fr) max-content;
+      }
     }
     .platform-statement {
       background: transparent;
@@ -138,6 +145,20 @@ section[name="labels"] .grid {
       &:hover {
         background: transparent;
       }
+    }
+    .package-labels-wrap {
+      justify-self: end;
+      max-width: 100%;
+    }
+    .package-labels {
+      display: flex;
+      gap: 7px;
+      justify-content: flex-end;
+      align-items: end;
+      flex-wrap: wrap;
+      list-style: none;
+      margin: 0;
+      padding: 0;
     }
   }
 
