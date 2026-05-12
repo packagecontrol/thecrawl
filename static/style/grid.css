@@ -52,31 +52,9 @@ section[name="labels"] .grid {
   transition: outline .1s ease-in-out, background .1s;
   overflow: hidden;
 
-  .grid & {
-    /* stretch cards vertically across the grid cells */
-    display: flex;
-    flex-direction: column;
-  }
-
   &:has(h3 a:hover),
   &:has(:focus-visible) {
     outline: 2px solid var(--orange-1);
-  }
-
-  .card-heading {
-    padding-right: 3.2em;
-  }
-
-  .grid & .card-heading {
-    flex: 1; /* push other content to the end of the card */
-  }
-
-  .authors {
-    padding-top: 0;
-    margin-bottom: 16px;
-  }
-  &:has(.stats .warning) .card-heading {
-    padding-right: 4.8em;
   }
 
   h3 {
@@ -95,21 +73,18 @@ section[name="labels"] .grid {
     }
   }
 
+  .authors {
+    padding-top: 0;
+  }
+
   > p:last-child {
     margin-bottom: 0;
   }
 
   .stats {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
     padding: 0;
     margin: 0;
     line-height: 18px;
-    position: absolute;
-    top: 18px;
-    right: 1rem;
-    gap: 0;
     font-size: 11px;
     background: inherit;
     color: var(--foreground-3);
@@ -121,13 +96,52 @@ section[name="labels"] .grid {
 
   .labels {
     font-size: 13px;
-    justify-content: flex-end;
     padding: 0;
     margin: 0;
     a {
       line-height: 20px;
       padding: 1px 6px;
     }
+  }
+
+  .button {
+    background: var(--background-2);
+    &:hover {
+      background: var(--background-3);
+    }
+  }
+}
+
+.card-compact {
+  .grid & {
+    /* stretch cards vertically across the grid cells */
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-heading {
+    flex: 1; /* push other content to the end of the card */
+    padding-right: 3.2em;
+  }
+  &:has(.stats .warning) .card-heading {
+    padding-right: 4.8em;
+  }
+  .authors {
+    margin-bottom: 16px;
+  }
+
+  .stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    position: absolute;
+    top: 18px;
+    right: 1rem;
+    gap: 0;
+  }
+
+  .labels {
+    justify-content: flex-end;
     &:has(> .platform-statement-wrap > .platform-statement):has(> .package-labels-wrap) {
       display: grid;
       grid-template-columns: max-content minmax(0, 1fr);
@@ -164,24 +178,22 @@ section[name="labels"] .grid {
       padding: 0;
     }
   }
+}
 
-  .list & .labels {
-    justify-content: flex-start;
-    margin-top: 21px;  /* usually collapses with margin-bottom from .description */
-  }
-
-  .list & .card-heading {
+.card-result {
+  .card-heading {
     padding-right: calc(min(38vw, 18rem) + 1rem);
     position: relative;
   }
 
-  .list & .stats {
+  .stats {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: flex-end;
     align-items: flex-start;
     column-gap: 1em;
+    row-gap: 0;
     position: absolute;
     right: 0;
     top: 2px;
@@ -204,20 +216,17 @@ section[name="labels"] .grid {
     }
   }
 
-  .list & .authors {
+  .authors {
     margin-bottom: 14px;
   }
-  .list & .description {
+  .description {
     font-size: 1rem;
     max-width: calc(var(--max-line) * 5/6);
     padding: 0;
     margin: 0;
   }
-
-  .button {
-    background: var(--background-2);
-    &:hover {
-      background: var(--background-3);
-    }
+  .labels {
+    justify-content: flex-start;
+    margin-top: 21px;  /* usually collapses with margin-bottom from .description */
   }
 }

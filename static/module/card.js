@@ -8,7 +8,8 @@ export class Card {
     this.pkg = data
     this.compact = compact === 'compact'
 
-    const template = document.querySelector('template#package-card')
+    const templateId = this.compact ? 'package-card-compact' : 'package-card-result'
+    const template = document.querySelector(`template#${templateId}`)
     this.clone = template.content.cloneNode(true)
     this.formatter = new Intl.NumberFormat('en', { notation: 'compact' })
   }
@@ -25,10 +26,12 @@ export class Card {
     this.authors(this.clone.querySelector('p.authors'))
 
     const descr_el = this.clone.querySelector('p.description')
-    if (this.compact || !this.pkg.description) {
-      descr_el.remove()
-    } else {
-      descr_el.innerHTML = this.pkg.description
+    if (descr_el) {
+      if (!this.pkg.description) {
+        descr_el.remove()
+      } else {
+        descr_el.innerHTML = this.pkg.description
+      }
     }
 
     const labels = this.clone.querySelector('ul.labels')
@@ -37,21 +40,8 @@ export class Card {
     this.platforms()
     this.labels(this.labelParent(labels))
     this.stats()
-    this.positionStats()
 
     return this.clone
-  }
-
-  positionStats() {
-    if (this.compact) {
-      return
-    }
-
-    const heading = this.clone.querySelector('.card-heading')
-    const stats = this.clone.querySelector('ul.stats')
-    if (heading && stats) {
-      heading.appendChild(stats)
-    }
   }
 
   insertDebugComment(cardRoot) {

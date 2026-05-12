@@ -23,7 +23,7 @@ date: Last Modified
   <ul class="grid">
     {% for pkg in collections.newest_packages %}
       <li>
-        {{ pack.card(pkg, loop.index0 == 0, true) }}
+        {{ pack.compact_card(pkg, loop.index0 == 0) }}
       </li>
     {% endfor %}
   </ul>
@@ -36,7 +36,7 @@ date: Last Modified
   <ul class="grid">
     {% for pkg in collections.updated_packages %}
       <li>
-        {{ pack.card(pkg, false, true) }}
+        {{ pack.compact_card(pkg) }}
       </li>
     {% endfor %}
   </ul>
