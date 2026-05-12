@@ -196,7 +196,7 @@ export class Card {
       }
 
       const span = document.createElement('span')
-      span.classList.add('button', 'label', 'platform-statement')
+      span.classList.add('platform-statement')
       span.textContent = label
       li.appendChild(span)
 

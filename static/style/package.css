@@ -137,7 +137,7 @@ section[name="package"] > ul.stats .platforms {
 
 .labels {
   a,
-  span {
+  span:not(.platform-statement) {
     box-sizing: border-box;
     padding: 2px 6px;
     border: 1px solid transparent;

@@ -184,7 +184,7 @@
     {%- if platform_statement -%}
       {% set separator_count = (platform_statement | replace('/', '//') | length) - (platform_statement | length) %}
       <li class="platform-statement-wrap{{ ' platform-statement-wrap-enumeration' if separator_count >= 2 }}">
-        <span class="button label platform-statement">{{ platform_statement }}</span>
+        <span class="platform-statement">{{ platform_statement }}</span>
       </li>
       {%- if label_buttons | trim -%}
         <li class="package-labels-wrap">

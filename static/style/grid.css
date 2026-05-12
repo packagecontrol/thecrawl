@@ -142,7 +142,7 @@ section[name="labels"] .grid {
 
   .labels {
     justify-content: flex-end;
-    &:has(> .platform-statement-wrap > .platform-statement):has(> .package-labels-wrap) {
+    &:has(> .platform-statement-wrap):has(> .package-labels-wrap) {
       display: grid;
       grid-template-columns: max-content minmax(0, 1fr);
       align-items: end;
@@ -153,15 +153,12 @@ section[name="labels"] .grid {
         row-gap: 10px;
       }
     }
+    .platform-statement-wrap {
+      line-height: 22px;
+    }
     .platform-statement {
-      background: transparent;
-      margin: 0;
-      padding: 0;
-      cursor: default;
-      white-space: revert;
-      &:hover {
-        background: transparent;
-      }
+      display: block;
+      line-height: inherit;
     }
     .package-labels-wrap {
       justify-self: end;
