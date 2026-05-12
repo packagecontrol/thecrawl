@@ -38,7 +38,7 @@ export class Card {
     // clear the placeholder then fill with data
     labels.innerHTML = ''
     this.platforms()
-    this.labels(this.labelParent(labels))
+    this.labels(labels)
     this.stats()
 
     return this.clone
@@ -182,27 +182,21 @@ export class Card {
 
     if (!label) {
       this.clone.querySelector('.card-meta .platforms')?.remove()
+      this.clone.querySelector('.card-footer .platform-statement')?.remove()
       return
     }
 
     if (this.compact) {
-      const labels = this.clone.querySelector('ul.labels')
-      if (!labels) {
+      const platformStatement = this.clone.querySelector('.card-footer .platform-statement')
+      if (!platformStatement) {
         return
       }
-      const li = document.createElement('li')
-      li.classList.add('platform-statement-wrap')
-      if (this.countPlatformSeparators(label) >= 2) {
-        li.classList.add('platform-statement-wrap-enumeration')
-      }
-
-      const span = document.createElement('span')
-      span.classList.add('platform-statement')
-      span.textContent = label
-      li.appendChild(span)
-
-      labels.insertBefore(li, labels.firstChild)
-      return li
+      platformStatement.textContent = label
+      platformStatement.closest('.card-footer')?.classList.toggle(
+        'card-footer-enumeration',
+        this.countPlatformSeparators(label) >= 2,
+      )
+      return platformStatement
     }
 
     const platforms = this.clone.querySelector('.card-meta .platforms')
@@ -216,22 +210,6 @@ export class Card {
 
   countPlatformSeparators(label) {
     return label.split('/').length - 1
-  }
-
-  labelParent(parent) {
-    if (!this.compact || this.pkg.labels.length < 1 || !this.pkg.platform_statement?.trim()) {
-      return parent
-    }
-
-    const li = document.createElement('li')
-    li.classList.add('package-labels-wrap')
-
-    const nested = document.createElement('ul')
-    nested.classList.add('package-labels')
-    li.appendChild(nested)
-    parent.appendChild(li)
-
-    return nested
   }
 
   labels(parent) {

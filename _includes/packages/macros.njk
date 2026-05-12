@@ -64,7 +64,7 @@
       {{ installs(pkg.installed, true) }}
       {{ stars(pkg.stars, true) }}
     </ul>
-    {{ labels(pkg, true, pkg.platform_statement) }}
+    {{ compact_card_footer(pkg) }}
   </div>
 {% endmacro %}
 
@@ -92,6 +92,18 @@
 
     {{ labels(pkg, true) }}
   </div>
+{% endmacro %}
+
+{% macro compact_card_footer(pkg) %}
+  {% if pkg.platform_statement or (pkg.labels and (pkg.labels | length) > 0) %}
+    {% set separator_count = (pkg.platform_statement | replace('/', '//') | length) - (pkg.platform_statement | length) %}
+    <div class="card-footer{{ ' card-footer-enumeration' if separator_count >= 2 }}">
+      {% if pkg.platform_statement %}
+        <div class="platform-statement">{{ pkg.platform_statement }}</div>
+      {% endif %}
+      {{ labels(pkg, true) }}
+    </div>
+  {% endif %}
 {% endmacro %}
 
 {% macro card_identity(pkg, mark_as_main=false) %}
@@ -137,7 +149,7 @@
   {% endif %}
 {% endmacro %}
 
-{% macro labels(pkg, with_icons=false, platform_statement='') %}
+{% macro labels(pkg, with_icons=false) %}
   {% set label_buttons -%}
     {%- for label in pkg.labels %}
       {% set q = searchQueryFor('label', label) %}
@@ -182,27 +194,9 @@
     {%- endfor -%}
   {%- endset %}
 
-  {% set buttons -%}
-    {%- if platform_statement -%}
-      {% set separator_count = (platform_statement | replace('/', '//') | length) - (platform_statement | length) %}
-      <li class="platform-statement-wrap{{ ' platform-statement-wrap-enumeration' if separator_count >= 2 }}">
-        <span class="platform-statement">{{ platform_statement }}</span>
-      </li>
-      {%- if label_buttons | trim -%}
-        <li class="package-labels-wrap">
-          <ul class="package-labels">
-            {{ label_buttons | safe }}
-          </ul>
-        </li>
-      {%- endif -%}
-    {%- else -%}
-      {{ label_buttons | safe }}
-    {%- endif -%}
-  {%- endset %}
-
-  {% if buttons | trim %}
+  {% if label_buttons | trim %}
     <ul class="button-group labels">
-      {{ buttons | safe }}
+      {{ label_buttons | safe }}
     </ul>
   {% endif %}
 {% endmacro %}

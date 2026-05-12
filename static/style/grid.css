@@ -140,40 +140,31 @@ section[name="labels"] .grid {
     gap: 0;
   }
 
+  .card-footer {
+    display: grid;
+    font-size: 13px;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: end;
+    column-gap: 7px;
+
+    &.card-footer-enumeration {
+      grid-template-columns: 1fr;
+      row-gap: 10px;
+    }
+  }
+
+  .card-footer:not(:has(.platform-statement)),
+  .card-footer:not(:has(.labels)) {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .platform-statement {
+    line-height: 22px;
+  }
+
   .labels {
     justify-content: flex-end;
-    &:has(> .platform-statement-wrap):has(> .package-labels-wrap) {
-      display: grid;
-      grid-template-columns: max-content minmax(0, 1fr);
-      align-items: end;
-      column-gap: 7px;
-
-      &:has(> .platform-statement-wrap-enumeration) {
-        grid-template-columns: 1fr;
-        row-gap: 10px;
-      }
-    }
-    .platform-statement-wrap {
-      line-height: 22px;
-    }
-    .platform-statement {
-      display: block;
-      line-height: inherit;
-    }
-    .package-labels-wrap {
-      justify-self: end;
-      max-width: 100%;
-    }
-    .package-labels {
-      display: flex;
-      gap: 7px;
-      justify-content: flex-end;
-      align-items: end;
-      flex-wrap: wrap;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
   }
 }
 
