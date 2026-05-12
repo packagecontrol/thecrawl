@@ -181,6 +181,7 @@ export class Card {
       : ''
 
     if (!label) {
+      this.clone.querySelector('.card-meta .platforms')?.remove()
       return
     }
 
@@ -204,19 +205,13 @@ export class Card {
       return li
     }
 
-    const stats = this.clone.querySelector('ul.stats')
-    if (!stats) {
+    const platforms = this.clone.querySelector('.card-meta .platforms')
+    if (!platforms) {
       return
     }
-    let li = stats.querySelector('.platforms')
-    if (!li) {
-      li = document.createElement('li')
-      li.classList.add('platforms')
-      stats.appendChild(li)
-    }
-    li.textContent = label
+    platforms.textContent = label
 
-    return li
+    return platforms
   }
 
   countPlatformSeparators(label) {

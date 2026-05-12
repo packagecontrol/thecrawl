@@ -179,38 +179,28 @@ section[name="labels"] .grid {
 
 .card-result {
   .card-heading {
-    padding-right: calc(min(38vw, 18rem) + 1rem);
-    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, min(38vw, 18rem));
+    column-gap: 0.6rem;
+  }
+
+  .card-meta {
+    justify-self: end;
+    width: 100%;
+    font-size: 11px;
   }
 
   .stats {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
     justify-content: flex-end;
-    align-items: flex-start;
     column-gap: 1em;
-    row-gap: 0;
-    position: absolute;
-    right: 0;
-    top: 2px;
-    width: min(38vw, 18rem);
+  }
 
-    .stars {
-      order: 1;
-    }
-    .installs {
-      order: 2;
-    }
-    .platforms {
-      display: block;
-      flex-basis: 100%;
-      order: 3;
-      line-height: 1.25;
-      white-space: revert;
-      text-align: right;
-      margin-top: 4px;
-    }
+  .platforms {
+    line-height: 1.25;
+    margin-top: 4px;
+    text-align: right;
   }
 
   .authors {

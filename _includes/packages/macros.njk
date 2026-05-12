@@ -75,11 +75,13 @@
         {{ card_identity(pkg, mark_as_main) }}
       </div>
 
-      <ul class="stats">
-        {{ installs(pkg.installed, true) }}
-        {{ stars(pkg.stars, true) }}
-        {{ platforms(pkg.platform_statement) }}
-      </ul>
+      <div class="card-meta">
+        <ul class="stats">
+          {{ installs(pkg.installed, true) }}
+          {{ stars(pkg.stars, true) }}
+        </ul>
+        <div class="platforms">{{ pkg.platform_statement }}</div>
+      </div>
     </div>
 
     {% if pkg.description %}
