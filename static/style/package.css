@@ -72,7 +72,7 @@ ul.stats {
   display: flex;
   gap: 1em;
   align-content: center;
-  align-items: center;
+  align-items: baseline;
   line-height: 28px;
   padding-left: 0;
   color: var(--foreground-2);
@@ -89,6 +89,10 @@ ul.stats {
   a {
     color: inherit;
   }
+}
+
+section[name="package"] > ul.stats .platforms {
+  max-width: 60%;
 }
 
 .other-releases {

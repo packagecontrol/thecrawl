@@ -63,26 +63,28 @@ section[name="labels"] .grid {
     outline: 2px solid var(--orange-1);
   }
 
-  h3 {
-    color: var(--foreground-1);
-    padding-top: 0;
+  .card-heading {
     padding-right: 3.2em;
-    margin-top: 0;
-    margin-bottom: 2px;
-    overflow-wrap: anywhere;
-
-    + * {
-      padding-top: 0;
-      margin-top: 0;
-      flex: 1; /* push other content to the end of the card */
-    }
   }
-  &:has(.stats .warning) h3 {
+
+  .grid & .card-heading {
+    flex: 1; /* push other content to the end of the card */
+  }
+
+  .authors {
+    padding-top: 0;
+    margin-bottom: 16px;
+  }
+  &:has(.stats .warning) .card-heading {
     padding-right: 4.8em;
   }
 
   h3 {
     color: var(--foreground-3);
+    padding-top: 0;
+    margin-top: 0;
+    margin-bottom: 2px;
+    overflow-wrap: anywhere;
   }
 
   h3 a,
@@ -93,7 +95,7 @@ section[name="labels"] .grid {
     }
   }
 
-  p:last-child {
+  > p:last-child {
     margin-bottom: 0;
   }
 
@@ -126,17 +128,40 @@ section[name="labels"] .grid {
       line-height: 20px;
       padding: 1px 6px;
     }
-    .platform-statement-wrap {
-      flex: 1 1 auto;
+    &:has(> .platform-statement-wrap > .platform-statement):has(> .package-labels-wrap) {
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      align-items: end;
+      column-gap: 7px;
+
+      &:has(> .platform-statement-wrap-enumeration) {
+        grid-template-columns: 1fr;
+        row-gap: 10px;
+      }
     }
     .platform-statement {
       background: transparent;
       margin: 0;
       padding: 0;
       cursor: default;
+      white-space: revert;
       &:hover {
         background: transparent;
       }
+    }
+    .package-labels-wrap {
+      justify-self: end;
+      max-width: 100%;
+    }
+    .package-labels {
+      display: flex;
+      gap: 7px;
+      justify-content: flex-end;
+      align-items: end;
+      flex-wrap: wrap;
+      list-style: none;
+      margin: 0;
+      padding: 0;
     }
   }
 
@@ -145,19 +170,37 @@ section[name="labels"] .grid {
     margin-top: 21px;  /* usually collapses with margin-bottom from .description */
   }
 
-  .list & .stats {
-    @media (min-width: 480px) {
-      flex-direction: row-reverse;
-      gap: 1em;
+  .list & .card-heading {
+    padding-right: calc(min(38vw, 18rem) + 1rem);
+    position: relative;
+  }
 
-      .platforms {
-        position: absolute;
-        right: 0;
-        top: 1.75em;
-        width: auto;
-        white-space: nowrap;
-        text-align: right;
-      }
+  .list & .stats {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: flex-start;
+    column-gap: 1em;
+    position: absolute;
+    right: 0;
+    top: 2px;
+    width: min(38vw, 18rem);
+
+    .stars {
+      order: 1;
+    }
+    .installs {
+      order: 2;
+    }
+    .platforms {
+      display: block;
+      flex-basis: 100%;
+      order: 3;
+      line-height: 1.25;
+      white-space: revert;
+      text-align: right;
+      margin-top: 4px;
     }
   }
 

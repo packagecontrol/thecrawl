@@ -20,8 +20,8 @@ export class Card {
       this.insertDebugComment(cardRoot)
     }
 
-    this.clone.querySelector('a').innerHTML = this.pkg.name
-    this.clone.querySelector('a').setAttribute('href', this.pkg.permalink)
+    this.clone.querySelector('.card-heading a').innerHTML = this.pkg.name
+    this.clone.querySelector('.card-heading a').setAttribute('href', this.pkg.permalink)
     this.authors(this.clone.querySelector('p.authors'))
 
     const descr_el = this.clone.querySelector('p.description')
@@ -35,10 +35,23 @@ export class Card {
     // clear the placeholder then fill with data
     labels.innerHTML = ''
     this.platforms()
-    this.labels(labels)
+    this.labels(this.labelParent(labels))
     this.stats()
+    this.positionStats()
 
     return this.clone
+  }
+
+  positionStats() {
+    if (this.compact) {
+      return
+    }
+
+    const heading = this.clone.querySelector('.card-heading')
+    const stats = this.clone.querySelector('ul.stats')
+    if (heading && stats) {
+      heading.appendChild(stats)
+    }
   }
 
   insertDebugComment(cardRoot) {
@@ -188,6 +201,9 @@ export class Card {
       }
       const li = document.createElement('li')
       li.classList.add('platform-statement-wrap')
+      if (this.countPlatformSeparators(label) >= 2) {
+        li.classList.add('platform-statement-wrap-enumeration')
+      }
 
       const span = document.createElement('span')
       span.classList.add('button', 'label', 'platform-statement')
@@ -211,6 +227,26 @@ export class Card {
     li.textContent = label
 
     return li
+  }
+
+  countPlatformSeparators(label) {
+    return label.split('/').length - 1
+  }
+
+  labelParent(parent) {
+    if (!this.compact || this.pkg.labels.length < 1 || !this.pkg.platform_statement?.trim()) {
+      return parent
+    }
+
+    const li = document.createElement('li')
+    li.classList.add('package-labels-wrap')
+
+    const nested = document.createElement('ul')
+    nested.classList.add('package-labels')
+    li.appendChild(nested)
+    parent.appendChild(li)
+
+    return nested
   }
 
   labels(parent) {
