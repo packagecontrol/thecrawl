@@ -17913,13 +17913,13 @@
         {
           "version": "2.1.1",
           "url": "https://codeberg.org/TobyGiacometti/SublimeDirectorySettings/archive/st4-2.1.1.zip",
-          "date": "2025-05-11 10:39:44",
+          "date": "2025-05-11 12:39:44",
           "sublime_text": "4000 - 4999"
         },
         {
           "version": "1.0.0",
           "url": "https://codeberg.org/TobyGiacometti/SublimeDirectorySettings/archive/st3-1.0.0.zip",
-          "date": "2025-05-05 18:15:40",
+          "date": "2025-05-05 20:15:40",
           "sublime_text": "3000 - 3999"
         }
       ],
@@ -21049,7 +21049,6 @@
       "first_seen": "2018-07-08T16:40:22Z"
     },
     {
-      "fetching_source_failed": "2026-05-12T11:34:04Z",
       "name": "Emmet",
       "details": "https://github.com/emmetio/sublime-text-plugin",
       "labels": [
