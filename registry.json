@@ -17913,13 +17913,13 @@
         {
           "version": "2.1.1",
           "url": "https://codeberg.org/TobyGiacometti/SublimeDirectorySettings/archive/st4-2.1.1.zip",
-          "date": "2025-05-11 12:39:44",
+          "date": "2025-05-11 10:39:44",
           "sublime_text": "4000 - 4999"
         },
         {
           "version": "1.0.0",
           "url": "https://codeberg.org/TobyGiacometti/SublimeDirectorySettings/archive/st3-1.0.0.zip",
-          "date": "2025-05-05 20:15:40",
+          "date": "2025-05-05 18:15:40",
           "sublime_text": "3000 - 3999"
         }
       ],
@@ -60393,6 +60393,25 @@
       "source": "https://raw.githubusercontent.com/randy3k/sublime_packages/master/packages.json",
       "schema_version": "3.0.0",
       "first_seen": "2017-08-29T21:34:34Z"
+    },
+    {
+      "name": "RemoteSync",
+      "details": "https://github.com/NeloGH/RemoteSync",
+      "labels": [
+        "ftp",
+        "sftp",
+        "sync",
+        "remote"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-15T14:35:37Z"
     },
     {
       "name": "RemoteTree",
