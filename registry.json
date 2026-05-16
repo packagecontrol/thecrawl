@@ -42386,6 +42386,24 @@
       "first_seen": "2025-09-23T22:18:01Z"
     },
     {
+      "details": "https://github.com/sublimelsp/LSP-tsgo",
+      "name": "LSP-tsgo",
+      "labels": [
+        "lsp",
+        "javascript",
+        "typescript"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4148",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-16T18:08:21Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-twiggy",
       "name": "LSP-twiggy",
       "labels": [
