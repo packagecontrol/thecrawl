@@ -197,14 +197,16 @@ section[name="labels"] .grid {
   .authors {
     margin-bottom: 14px;
   }
-  .description {
-    font-size: 1rem;
-    max-width: calc(var(--max-line) * 5/6);
-    padding: 0;
-    margin: 0;
-  }
   .labels {
     justify-content: flex-start;
     margin-top: 21px;  /* usually collapses with margin-bottom from .description */
   }
+}
+
+.card-result .description,
+section[name="libraries"] .card .description {
+  font-size: 1rem;
+  max-width: calc(var(--max-line) * 5/6);
+  padding: 0;
+  margin: 0;
 }
