@@ -196,7 +196,6 @@ section[name="labels"] .grid {
 
   .library-meta {
     align-self: start;
-    font-size: 11px;
     text-align: right;
   }
 
@@ -216,6 +215,15 @@ section[name="labels"] .grid {
   .authors {
     margin-bottom: 14px;
   }
+
+  .library-platforms {
+    color: var(--foreground-2);
+    font-size: 11px;
+    line-height: 1.35;
+    margin-top: 18px;
+    margin-bottom: 0;
+  }
+
   .labels {
     justify-content: flex-start;
     margin-top: 21px;  /* usually collapses with margin-bottom from .description */

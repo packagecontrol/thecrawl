@@ -319,8 +319,16 @@ function normalizedLib(pkg) {
     releases,
     latest_version: pkg.latest_version ?? latestReleaseVersion(releases),
     platforms,
-    platform_statement: util.computePlatformStatement(platforms),
+    platform_statement: libraryPlatformStatement(platforms),
   }
+}
+
+function libraryPlatformStatement(platforms) {
+  const statement = util.computePlatformStatement(platforms)
+  if (!statement || /^(Only|Not)\b/.test(statement)) {
+    return statement
+  }
+  return `Only for: ${statement}`
 }
 
 function latestReleaseVersion(releases) {

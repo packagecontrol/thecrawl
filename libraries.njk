@@ -29,14 +29,9 @@ date: Last Modified
         {% endif %}
       </div>
 
-      {% if pkg.latest_version or pkg.platform_statement %}
+      {% if pkg.latest_version %}
         <div class="card-meta library-meta">
-          {% if pkg.latest_version %}
-            <span class="library-version">v{{ pkg.latest_version }}</span>
-          {% endif %}
-          {% if pkg.platform_statement %}
-            <div class="platforms">{{ pkg.platform_statement }}</div>
-          {% endif %}
+          <span class="library-version">v{{ pkg.latest_version }}</span>
         </div>
       {% endif %}
     </div>
@@ -44,6 +39,12 @@ date: Last Modified
     {% if pkg.description %}
       <p class="description">
         {{- pkg.description -}}
+      </p>
+    {% endif %}
+
+    {% if pkg.platform_statement %}
+      <p class="library-platforms">
+        {{- pkg.platform_statement -}}
       </p>
     {% endif %}
   </div>
