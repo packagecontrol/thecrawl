@@ -42121,22 +42121,15 @@
       "first_seen": "2021-06-08T20:23:28Z"
     },
     {
-      "details": "https://github.com/sublimelsp/LSP-rome",
       "name": "LSP-rome",
       "labels": [
         "lsp",
         "javascript",
         "typescript"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=4070",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2023-06-19T09:14:32Z"
+      "first_seen": "2023-06-19T09:14:32Z",
+      "removed": "2026-05-17T19:35:59Z"
     },
     {
       "details": "https://github.com/sublimelsp/LSP-ruff",
