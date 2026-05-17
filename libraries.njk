@@ -8,43 +8,44 @@ date: Last Modified
 {% import "util/macros.njk" as shared %}
 
 {% macro lib(pkg, mark_as_main=false) %}
-  <div class="card"
+  <div class="card card-result"
     data-name="{{ pkg.name | escape }}"
     data-author="{{ pkg.author | escape }}"
-    data-description="{{ pkg.description | escape }}">
+    data-description="{{ pkg.description | escape }}"
+    data-platforms="{{ pkg.platforms | join(',') | escape }}">
 
-    <h3>
-      <a {{ "id=main-content" if mark_as_main }} href="{{ pkg.homepage }}">
-        {{ pkg.name }}
-      </a>
-    </h3>
-
-    <p>by {% for author in pkg.author -%}
-      {{ author }}{{ ", " if not loop.last }}
-    {%- endfor %}</p>
-
-    <p class="description">
-      {{- pkg.description -}}
-    </p>
-
-    <ul class="button-group labels">
-      <li class="shield">
-        <img height="24" alt="Latest Python Package Index tag" src="{{ 'https://img.shields.io/pypi/v/' ~ pkg.name | replace('python-', '') ~ '.svg' }}">
-      </li>
-      {% if pkg.path %}
-        <li class="shield">
-          <img height="24" alt="Latest GitHub tag" src="{{ 'https://img.shields.io/github/tag/' ~ pkg.path ~ '.svg' }}">
-        </li>
-      {% endif %}
-      {% for platform in pkg.platforms %}
-        {% set q = util.searchQueryFor('platform', platform) %}
-        <li>
-          <a class="button platform platform-{{ platform }}" href="/libraries/?q={{ q }}">
-            {{ platform }}
+    <div class="card-heading">
+      <div>
+        <h3>
+          <a {{ "id=main-content" if mark_as_main }} href="{{ pkg.homepage }}">
+            {{ pkg.name }}
           </a>
-        </li>
-      {% endfor %}
-    </ul>
+        </h3>
+
+        {% if pkg.author and (pkg.author | length) > 0 %}
+          <p class="authors">by {% for author in pkg.author -%}
+            {{ author }}{{ ", " if not loop.last }}
+          {%- endfor %}</p>
+        {% endif %}
+      </div>
+
+      {% if pkg.latest_version or pkg.platform_statement %}
+        <div class="card-meta library-meta">
+          {% if pkg.latest_version %}
+            <span class="library-version">v{{ pkg.latest_version }}</span>
+          {% endif %}
+          {% if pkg.platform_statement %}
+            <div class="platforms">{{ pkg.platform_statement }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if pkg.description %}
+      <p class="description">
+        {{- pkg.description -}}
+      </p>
+    {% endif %}
   </div>
 {% endmacro %}
 

@@ -13,8 +13,6 @@ build:
 update-data:
 	# workspace from https://github.com/packagecontrol/thecrawl
 	curl -o workspace.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/workspace.json"
-	# libraries repository from https://github.com/packagecontrol/channel
-	curl -o libraries.json -L "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json"
 	# installation stats
 	curl -o stats.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/stats.json"
 	# thecrawl logs

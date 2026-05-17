@@ -308,29 +308,25 @@ function basePackage(pkg, stat) {
 }
 
 function normalizedLib(pkg) {
-  const allPlatforms = pkg.releases.flatMap((release) => {
-    if (typeof release.platforms !== 'undefined') {
-      return release.platforms
-    }
-    return []
-  })
-
-  const homepage = pkg.issues.replace('/issues', '')
-  let gh_path = ''
-  if (homepage.startsWith('https://github.com/')) {
-    gh_path = homepage.replace('https://github.com/', '')
-  }
+  const releases = pkg.releases ?? []
+  const platforms = util.computePlatformLabelsForSearch(releases).sort()
 
   return {
     name: pkg.name,
-    homepage: homepage,
-    path: gh_path,
-    author: util.cleanAuthors(pkg.author),
-    description: pkg.description,
-    releases: pkg.releases,
-    labels: [],
-    platforms: Array.from(new Set(allPlatforms)),
+    homepage: pkg.homepage ?? pkg.issues?.replace('/issues', '') ?? '',
+    author: util.cleanAuthors(pkg.author) ?? [],
+    description: translateEmojiCodes(pkg.description ?? ''),
+    releases,
+    latest_version: pkg.latest_version ?? latestReleaseVersion(releases),
+    platforms,
+    platform_statement: util.computePlatformStatement(platforms),
   }
+}
+
+function latestReleaseVersion(releases) {
+  return [...releases]
+    .sort((a, b) => new Date(b.date ?? '1970-01-01 00:00:00') - new Date(a.date ?? '1970-01-01 00:00:00'))
+    .find(release => release.version)?.version ?? ''
 }
 
 export default function (eleventyConfig) {
@@ -548,15 +544,9 @@ export default function (eleventyConfig) {
   })
 
   eleventyConfig.addCollection('libraries', () => {
-    const libraries = JSON.parse(fs.readFileSync('libraries.json', 'utf8'))
-    const dataset = util.collectPlatformDataset(libraries.libraries)
-    return libraries.libraries.map((lib) => {
-      const base = normalizedLib(lib)
-      return {
-        ...base,
-        platforms: util.simplifyPlatforms(dataset, base.platforms),
-      }
-    })
+    return Object.values(workspace.libraries)
+      .filter(lib => !lib.removed)
+      .map(normalizedLib)
   })
 
   eleventyConfig.addGlobalData('built', () => {

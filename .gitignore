@@ -55,7 +55,6 @@ _site/*
 .package_control_channel/
 channel.json
 logs.json
-libraries.json
 registry.json
 stats.json
 workspace.json
