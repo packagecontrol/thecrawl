@@ -225,7 +225,7 @@ combinations are missing.
 
 ---
 
-### Static/manual releases
+### 4) Static/manual releases
 
 A release containing `url`, `version`, and `date` is considered fulfilled:
 
@@ -245,7 +245,9 @@ Accepted `date` input formats are normalized to UTC form:
 - `YYYY-MM-DD HH:MM`
 - `YYYY-MM-DD`
 
-## Constraints and defaults
+---
+
+## Constraints and their defaults
 
 Common release fields:
 - `sublime_text` (string, optional): default `"*"`.
