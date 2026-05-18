@@ -23,6 +23,7 @@ def make_args(
     limit=10,
     allowed_source=None,
     write=False,
+    verbose=False,
 ):
     if allowed_source is None:
         allowed_source = []
@@ -32,6 +33,7 @@ def make_args(
         name=name,
         explain=explain,
         write=write,
+        verbose=verbose,
         limit=limit,
         workspace=output_path,
         cache_dir=tmp_path / "cache",
@@ -548,13 +550,53 @@ async def test_handle_name_reports_release_matrix(
     await crawl_libraries.run(args)
 
     captured = capsys.readouterr()
-    assert "example release matrix" in captured.out
+    assert "example release matrix; -v to see the raw JSON output" in captured.out
     assert "Sublime (all builds)" in captured.out
     assert "py33" in captured.out
     assert "windows-x64" not in captured.out
     assert "linux-x64  A" in captured.out
     assert "A = 1.0.0" in captured.out
     assert '"asset":' not in captured.out
+    assert "Added example." not in captured.out
+
+
+@pytest.mark.asyncio
+async def test_parse_args_write_implies_verbose(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(
+        crawl_libraries,
+        "DEFAULT_REGISTRY",
+        str(repo_path),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--name", "example", "--write"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.write is True
+    assert args.verbose is True
+
+
+@pytest.mark.asyncio
+async def test_handle_name_verbose_reports_raw_json(monkeypatch, tmp_path, capsys):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": [{"name": "example"}]})
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path, repo_path, output_path, name="example", verbose=True
+    )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver([]))
+
+    await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert '"name": "example"' in captured.out
+    assert "Resolved example 1.0.0 using stub." in captured.out
+    assert "release matrix" not in captured.out
     assert "Added example." not in captured.out
 
 

@@ -65,7 +65,7 @@ def format_library_doctor(
 ) -> str:
     source_label = ", ".join(sources) if sources else "cache"
     lines = [
-        f"{name} release matrix",
+        f"{name} release matrix; -v to see the raw JSON output",
         f"Source: {source_label}",
     ]
     if latest_version:

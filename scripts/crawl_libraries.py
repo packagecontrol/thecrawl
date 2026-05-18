@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import os
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass
@@ -87,6 +88,7 @@ class Args:
     name: str | None
     explain: str | None
     write: bool
+    verbose: bool
     limit: int
     workspace: Path
     cache_dir: Path
@@ -118,6 +120,12 @@ def parse_args() -> Args:
         "--write",
         action="store_true",
         help="Write the resolved library entry to the workspace when using --name.",
+    )
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Print raw resolved JSON when using --name.",
     )
     parser.add_argument(
         "--limit",
@@ -155,6 +163,7 @@ def parse_args() -> Args:
         name=ns.name,
         explain=ns.explain,
         write=ns.write,
+        verbose=ns.verbose or ns.write,
         limit=ns.limit,
         workspace=Path(os.path.abspath(ns.workspace)),
         cache_dir=Path(os.path.abspath(ns.cache_dir)),
@@ -324,14 +333,20 @@ async def handle_name(name: str, args: Args) -> int:
             workspace_entries[name] = entry
             write_json(args.workspace, workspace, pretty=True, ensure_ascii=True)
 
-        print(
-            format_library_doctor(
-                name=args.name or name,
-                latest_version=latest_version,
-                sources=sources,
-                releases=info["releases"],
+        if args.verbose:
+            source_label = ", ".join(sources) if sources else "cache"
+            version_label = f" {latest_version}" if latest_version else ""
+            print(json.dumps(entry, indent=2, ensure_ascii=False))
+            print(f"Resolved {args.name}{version_label} using {source_label}.")
+        else:
+            print(
+                format_library_doctor(
+                    name=args.name or name,
+                    latest_version=latest_version,
+                    sources=sources,
+                    releases=info["releases"],
+                )
             )
-        )
         if args.write:
             print(format_change_message(added_names, updated_names))
         return 0
