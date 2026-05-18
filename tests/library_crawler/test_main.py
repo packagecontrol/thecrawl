@@ -489,6 +489,76 @@ async def test_removed_library_can_resurrect(monkeypatch, tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_handle_name_reports_release_matrix(
+    monkeypatch, tmp_path, capsys
+):
+    repo_path = tmp_path / "registry.json"
+    write_json(
+        repo_path,
+        {
+            "libraries": [
+                {
+                    "name": "example",
+                    "releases": [
+                        {
+                            "base": "https://pypi.org/project/example",
+                            "asset": "example-*-cp33-cp33m-win_amd64.whl",
+                            "platforms": ["windows-x64"],
+                            "python_versions": ["3.3"],
+                        },
+                        {
+                            "base": "https://pypi.org/project/example",
+                            "asset": (
+                                "example-*-cp33-cp33m-manylinux*_x86_64.whl"
+                            ),
+                            "platforms": ["linux-x64"],
+                            "python_versions": ["3.3"],
+                        },
+                    ],
+                }
+            ]
+        },
+    )
+    output_path = tmp_path / "libraries.json"
+    args = make_args(tmp_path, repo_path, output_path, name="example")
+
+    async def resolver(library, cache_dir, session):
+        return (
+            make_info("example")
+            | {
+                "releases": [
+                    {
+                        "url": (
+                            "https://example.test/"
+                            "example-1.0.0-cp33-cp33m-manylinux1_x86_64.whl"
+                        ),
+                        "version": "1.0.0",
+                        "date": "2026-01-01T00:00:00Z",
+                        "platforms": ["linux-x64"],
+                        "python_versions": ["3.3"],
+                        "sublime_text": "*",
+                    }
+                ]
+            },
+            ["stub"],
+        )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", resolver)
+
+    await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert "example release matrix" in captured.out
+    assert "Sublime (all builds)" in captured.out
+    assert "py33" in captured.out
+    assert "windows-x64" not in captured.out
+    assert "linux-x64  A" in captured.out
+    assert "A = 1.0.0" in captured.out
+    assert '"asset":' not in captured.out
+    assert "Added example." not in captured.out
+
+
+@pytest.mark.asyncio
 async def test_name_and_explain_reject_removed_library(monkeypatch, tmp_path):
     repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "stay"}]})

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import os
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass
@@ -15,6 +14,7 @@ import aiohttp
 from rich.console import Console
 from rich.progress import track
 
+from ._doctor_lib import format_library_doctor
 from ._resolve_lib import (
     ReleaseInfo,
     ReleaseEntry,
@@ -324,11 +324,16 @@ async def handle_name(name: str, args: Args) -> int:
             workspace_entries[name] = entry
             write_json(args.workspace, workspace, pretty=True, ensure_ascii=True)
 
-        source_label = ", ".join(sources) if sources else "cache"
-        version_label = f" {latest_version}" if latest_version else ""
-        print(json.dumps(entry, indent=2, ensure_ascii=False))
-        print(f"Resolved {args.name}{version_label} using {source_label}.")
-        print(format_change_message(added_names, updated_names))
+        print(
+            format_library_doctor(
+                name=args.name or name,
+                latest_version=latest_version,
+                sources=sources,
+                releases=info["releases"],
+            )
+        )
+        if args.write:
+            print(format_change_message(added_names, updated_names))
         return 0
     except Exception as exc:
         if args.write:
