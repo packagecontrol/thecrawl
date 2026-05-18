@@ -173,7 +173,8 @@ Resolves library release info from a `registry.json` and writes a workspace
 JSON (default: `workspace.json`).
 
 Use `--name` to crawl a single library or `--explain` to print the concretized
-release definitions it would use.
+release definitions it would use. Both are dry modes by default. For `--name`,
+add `--write` to actually write changes to the workspace.
 
 Generate a registry from the standard libraries repository, then crawl it.
 Use `--registry/-r` if the registry has a different name, or `--workspace/-o`
