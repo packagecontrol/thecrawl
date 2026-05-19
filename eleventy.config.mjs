@@ -555,6 +555,7 @@ export default function (eleventyConfig) {
     return Object.values(workspace.libraries)
       .filter(lib => !lib.removed)
       .map(normalizedLib)
+      .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
   })
 
   eleventyConfig.addGlobalData('built', () => {
