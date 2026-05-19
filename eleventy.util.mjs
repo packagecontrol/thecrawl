@@ -101,9 +101,12 @@ export function computePlatformStatement(platforms) {
     tokens.push({ kind: 'other', raw: token })
   })
 
-  const collapseOs = new Set()
+  const collapseOs = new Set(baseTokens)
   for (const [os, variants] of variantsByOs.entries()) {
-    if (variants.has('x32') && variants.has('x64')) {
+    if (os === 'windows' && variants.has('x64')) {
+      collapseOs.add(os)
+    }
+    if ((os === 'linux' || os === 'macos') && variants.has('x64') && variants.has('arm64')) {
       collapseOs.add(os)
     }
   }
@@ -173,68 +176,6 @@ function platformTokenLabel(token) {
   if (token.kind === 'variant') return `${prettifyOs(token.os)}‑${token.variant}`
   // Replace normal hyphens to non-breaking hyphens
   return token.raw.replaceAll('-', '‑')
-}
-
-/**
- * Build the platform variant dataset over all libraries.
- * Input: array of libraries, each with releases[].platforms
- * Output: { windows: Set<string>, linux: Set<string>, osx: Set<string> }
- */
-export function collectPlatformDataset(libraries) {
-  const variantsByOs = {}
-  for (const lib of libraries || []) {
-    for (const rel of lib.releases || []) {
-      for (const p of rel.platforms || []) {
-        const m = /^(.+?)-(.+)$/i.exec(p)
-        if (m) {
-          const os = m[1].toLowerCase()
-          const label = m[2].toLowerCase()
-          if (!variantsByOs[os]) variantsByOs[os] = new Set()
-          variantsByOs[os].add(label)
-        }
-      }
-    }
-  }
-  return variantsByOs
-}
-
-/**
- * Simplify a library's platform list using the global dataset.
- * - If the library contains all known variants for an OS, collapse to base token (windows/linux/osx).
- * - If, after collapsing, it contains all three base tokens, return [] to hide labels.
- */
-export function simplifyPlatforms(dataset, platforms) {
-  const hasAll = (libSet, datasetSet) => {
-    for (const v of datasetSet)
-      if (!libSet.has(v))
-        return false
-    return true
-  }
-
-  const platformVariants = {}
-  for (const p of platforms) {
-    const m = /^(.+?)-(.+)$/i.exec(p)
-    if (m) {
-      const os = m[1].toLowerCase()
-      const variant = m[2].toLowerCase()
-      if (!platformVariants[os]) platformVariants[os] = new Set()
-      platformVariants[os].add(variant)
-    }
-  }
-
-  let result = new Set()
-  for (const [os, variants] of Object.entries(platformVariants)) {
-    if (hasAll(variants, dataset[os]))
-      result.add(os)
-    else
-      variants.forEach(variant => result.add(`${os}-${variant}`))
-  }
-
-  if (['windows', 'linux', 'osx'].every(os => result.has(os))) {
-    return []
-  }
-
-  return Array.from(result)
 }
 
 /**
@@ -823,12 +764,20 @@ if (import.meta.vitest) {
       [['macos', 'windows'], 'Not for Linux'],
       [['linux', 'windows'], 'Not for macOS'],
 
-      [['linux-x64', 'windows-x64', 'macos-x64'], 'Only on x64'],
+      [['linux-x64', 'windows-x64', 'macos-x64'], 'Linux‑x64\u00A0/ Windows\u00A0/ macOS‑x64'],
+      [['linux-arm64', 'linux-x64', 'macos-arm64', 'macos-x64', 'windows-x64'], ''],
 
-      [['linux-x32', 'linux-x64'], 'Only for Linux'],
-      [['linux-x32', 'linux-x64', 'windows'], 'Not for macOS'],
+      [['linux-x32', 'linux-x64'], 'Linux‑x32\u00A0/ Linux‑x64'],
+      [['linux-x32', 'linux-x64', 'windows'], 'Linux‑x32\u00A0/ Linux‑x64\u00A0/ Windows'],
 
-      [['windows-x64'], 'Only on Windows‑x64'],
+      [['windows-x64'], 'Only for Windows'],
+      [['windows-arm64'], 'Only on Windows‑arm64'],
+      [['windows-arm64', 'windows-x64'], 'Only for Windows'],
+      [['windows-x32', 'windows-x64'], 'Only for Windows'],
+      [['macos-arm64', 'macos-x64'], 'Only for macOS'],
+      [['linux-arm64', 'linux-x64'], 'Only for Linux'],
+      [['macos-x64'], 'Only on macOS‑x64'],
+      [['linux-x64'], 'Only on Linux‑x64'],
       [['linux-x32', 'windows-x32'], 'Linux‑x32\u00A0/ Windows‑x32'],
       [['linux-arm64'], 'Only on Linux‑arm64'],
     ])('computePlatformStatement(%j) -> %j', (input, expected) => {
@@ -899,53 +848,6 @@ if (import.meta.vitest) {
         'three',
         'four',
       ])
-    })
-  })
-
-  describe('collectPlatformDataset + simplifyPlatforms (libraries)', () => {
-    const libraries = [
-      {
-        releases: [
-          { platforms: ['windows-x32', 'windows-x64'] },
-          { platforms: ['linux-x32'] },
-        ],
-      },
-      {
-        releases: [
-          { platforms: ['linux-x64'] },
-          { platforms: ['osx-x64'] },
-        ],
-      },
-    ]
-
-    it('collects global variant sets per OS', () => {
-      const ds = collectPlatformDataset(libraries)
-      expect(Array.from(ds.windows).sort()).toEqual(['x32', 'x64'])
-      expect(Array.from(ds.linux).sort()).toEqual(['x32', 'x64'])
-      expect(Array.from(ds.osx).sort()).toEqual(['x64'])
-    })
-
-    it('collapses to base OS only when all variants are present for that OS', () => {
-      const ds = collectPlatformDataset(libraries)
-
-      // Has both windows variants -> collapse to 'windows'
-      expect(simplifyPlatforms(ds, ['windows-x32', 'windows-x64'])).toEqual(['windows'])
-
-      // Missing one windows variant -> do not collapse
-      expect(simplifyPlatforms(ds, ['windows-x64'])).toEqual(['windows-x64'])
-
-      // Linux has x32 and x64 in dataset; this lib has both -> collapse
-      expect(simplifyPlatforms(ds, ['linux-x32', 'linux-x64'])).toEqual(['linux'])
-
-      // OSX dataset has only x64; having x64 means "all known" -> collapse
-      expect(simplifyPlatforms(ds, ['osx-x64'])).toEqual(['osx'])
-    })
-
-    it('hides labels when all three base OS tokens are present', () => {
-      const ds = collectPlatformDataset(libraries)
-      expect(simplifyPlatforms(ds, ['windows-x32', 'windows-x64', 'linux-x32', 'linux-x64', 'osx-x64']))
-        .toEqual([])
-      expect(simplifyPlatforms(ds, ['windows', 'linux', 'osx'])).toEqual([])
     })
   })
 

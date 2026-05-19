@@ -194,17 +194,43 @@ section[name="labels"] .grid {
     text-align: right;
   }
 
+  .library-meta {
+    align-self: start;
+    text-align: right;
+  }
+
+  .library-version {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    background: var(--background-2);
+    color: var(--foreground-2);
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    line-height: 20px;
+  }
+
   .authors {
     margin-bottom: 14px;
   }
+
+  .library-platforms {
+    color: var(--foreground-2);
+    font-size: 11px;
+    line-height: 1.35;
+    margin-top: 18px;
+    margin-bottom: 0;
+  }
+
   .labels {
     justify-content: flex-start;
     margin-top: 21px;  /* usually collapses with margin-bottom from .description */
   }
 }
 
-.card-result .description,
-section[name="libraries"] .card .description {
+.card-result .description {
   font-size: 1rem;
   max-width: calc(var(--max-line) * 5/6);
   padding: 0;
