@@ -101,9 +101,12 @@ export function computePlatformStatement(platforms) {
     tokens.push({ kind: 'other', raw: token })
   })
 
-  const collapseOs = new Set()
+  const collapseOs = new Set(baseTokens)
   for (const [os, variants] of variantsByOs.entries()) {
-    if (variants.has('x32') && variants.has('x64')) {
+    if (os === 'windows' && variants.has('x64')) {
+      collapseOs.add(os)
+    }
+    if ((os === 'linux' || os === 'macos') && variants.has('x64') && variants.has('arm64')) {
       collapseOs.add(os)
     }
   }
@@ -761,12 +764,20 @@ if (import.meta.vitest) {
       [['macos', 'windows'], 'Not for Linux'],
       [['linux', 'windows'], 'Not for macOS'],
 
-      [['linux-x64', 'windows-x64', 'macos-x64'], 'Only on x64'],
+      [['linux-x64', 'windows-x64', 'macos-x64'], 'Linux‑x64\u00A0/ Windows\u00A0/ macOS‑x64'],
+      [['linux-arm64', 'linux-x64', 'macos-arm64', 'macos-x64', 'windows-x64'], ''],
 
-      [['linux-x32', 'linux-x64'], 'Only for Linux'],
-      [['linux-x32', 'linux-x64', 'windows'], 'Not for macOS'],
+      [['linux-x32', 'linux-x64'], 'Linux‑x32\u00A0/ Linux‑x64'],
+      [['linux-x32', 'linux-x64', 'windows'], 'Linux‑x32\u00A0/ Linux‑x64\u00A0/ Windows'],
 
-      [['windows-x64'], 'Only on Windows‑x64'],
+      [['windows-x64'], 'Only for Windows'],
+      [['windows-arm64'], 'Only on Windows‑arm64'],
+      [['windows-arm64', 'windows-x64'], 'Only for Windows'],
+      [['windows-x32', 'windows-x64'], 'Only for Windows'],
+      [['macos-arm64', 'macos-x64'], 'Only for macOS'],
+      [['linux-arm64', 'linux-x64'], 'Only for Linux'],
+      [['macos-x64'], 'Only on macOS‑x64'],
+      [['linux-x64'], 'Only on Linux‑x64'],
       [['linux-x32', 'windows-x32'], 'Linux‑x32\u00A0/ Windows‑x32'],
       [['linux-arm64'], 'Only on Linux‑arm64'],
     ])('computePlatformStatement(%j) -> %j', (input, expected) => {
