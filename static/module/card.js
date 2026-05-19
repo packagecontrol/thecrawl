@@ -8,7 +8,8 @@ export class Card {
     this.pkg = data
     this.compact = compact === 'compact'
 
-    const template = document.querySelector('template#package-card')
+    const templateId = this.compact ? 'package-card-compact' : 'package-card-result'
+    const template = document.querySelector(`template#${templateId}`)
     this.clone = template.content.cloneNode(true)
     this.formatter = new Intl.NumberFormat('en', { notation: 'compact' })
   }
@@ -25,33 +26,22 @@ export class Card {
     this.authors(this.clone.querySelector('p.authors'))
 
     const descr_el = this.clone.querySelector('p.description')
-    if (this.compact || !this.pkg.description) {
-      descr_el.remove()
-    } else {
-      descr_el.innerHTML = this.pkg.description
+    if (descr_el) {
+      if (!this.pkg.description) {
+        descr_el.remove()
+      } else {
+        descr_el.innerHTML = this.pkg.description
+      }
     }
 
     const labels = this.clone.querySelector('ul.labels')
     // clear the placeholder then fill with data
     labels.innerHTML = ''
     this.platforms()
-    this.labels(this.labelParent(labels))
+    this.labels(labels)
     this.stats()
-    this.positionStats()
 
     return this.clone
-  }
-
-  positionStats() {
-    if (this.compact) {
-      return
-    }
-
-    const heading = this.clone.querySelector('.card-heading')
-    const stats = this.clone.querySelector('ul.stats')
-    if (heading && stats) {
-      heading.appendChild(stats)
-    }
   }
 
   insertDebugComment(cardRoot) {
@@ -191,62 +181,35 @@ export class Card {
       : ''
 
     if (!label) {
+      this.clone.querySelector('.card-meta .platforms')?.remove()
+      this.clone.querySelector('.card-footer .platform-statement')?.remove()
       return
     }
 
     if (this.compact) {
-      const labels = this.clone.querySelector('ul.labels')
-      if (!labels) {
+      const platformStatement = this.clone.querySelector('.card-footer .platform-statement')
+      if (!platformStatement) {
         return
       }
-      const li = document.createElement('li')
-      li.classList.add('platform-statement-wrap')
-      if (this.countPlatformSeparators(label) >= 2) {
-        li.classList.add('platform-statement-wrap-enumeration')
-      }
-
-      const span = document.createElement('span')
-      span.classList.add('button', 'label', 'platform-statement')
-      span.textContent = label
-      li.appendChild(span)
-
-      labels.insertBefore(li, labels.firstChild)
-      return li
+      platformStatement.textContent = label
+      platformStatement.closest('.card-footer')?.classList.toggle(
+        'card-footer-enumeration',
+        this.countPlatformSeparators(label) >= 2,
+      )
+      return platformStatement
     }
 
-    const stats = this.clone.querySelector('ul.stats')
-    if (!stats) {
+    const platforms = this.clone.querySelector('.card-meta .platforms')
+    if (!platforms) {
       return
     }
-    let li = stats.querySelector('.platforms')
-    if (!li) {
-      li = document.createElement('li')
-      li.classList.add('platforms')
-      stats.appendChild(li)
-    }
-    li.textContent = label
+    platforms.textContent = label
 
-    return li
+    return platforms
   }
 
   countPlatformSeparators(label) {
     return label.split('/').length - 1
-  }
-
-  labelParent(parent) {
-    if (!this.compact || this.pkg.labels.length < 1 || !this.pkg.platform_statement?.trim()) {
-      return parent
-    }
-
-    const li = document.createElement('li')
-    li.classList.add('package-labels-wrap')
-
-    const nested = document.createElement('ul')
-    nested.classList.add('package-labels')
-    li.appendChild(nested)
-    parent.appendChild(li)
-
-    return nested
   }
 
   labels(parent) {

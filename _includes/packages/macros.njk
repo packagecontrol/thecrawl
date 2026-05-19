@@ -54,7 +54,102 @@
   {% endif %}
 {% endmacro %}
 
-{% macro labels(pkg, with_icons=false, platform_statement='') %}
+{% macro compact_card(pkg, mark_as_main=false) %}
+  <div class="card card-compact{{ ' dimmed' if pkg.outdated }}">
+    <div class="card-heading">
+      {{ card_identity(pkg, mark_as_main) }}
+    </div>
+
+    <ul class="stats">
+      {{ installs(pkg.installed, true) }}
+      {{ stars(pkg.stars, true) }}
+    </ul>
+    {{ compact_card_footer(pkg) }}
+  </div>
+{% endmacro %}
+
+{% macro search_result_card(pkg, mark_as_main=false) %}
+  <div class="card card-result{{ ' dimmed' if pkg.outdated }}">
+    <div class="card-heading">
+      <div>
+        {{ card_identity(pkg, mark_as_main) }}
+      </div>
+
+      <div class="card-meta">
+        <ul class="stats">
+          {{ installs(pkg.installed, true) }}
+          {{ stars(pkg.stars, true) }}
+        </ul>
+        <div class="platforms">{{ pkg.platform_statement }}</div>
+      </div>
+    </div>
+
+    {% if pkg.description %}
+      <p class="description">
+        {{ pkg.description }}
+      </p>
+    {% endif %}
+
+    {{ labels(pkg, true) }}
+  </div>
+{% endmacro %}
+
+{% macro compact_card_footer(pkg) %}
+  {% if pkg.platform_statement or (pkg.labels and (pkg.labels | length) > 0) %}
+    {% set separator_count = (pkg.platform_statement | replace('/', '//') | length) - (pkg.platform_statement | length) %}
+    <div class="card-footer{{ ' card-footer-enumeration' if separator_count >= 2 }}">
+      {% if pkg.platform_statement %}
+        <div class="platform-statement">{{ pkg.platform_statement }}</div>
+      {% endif %}
+      {{ labels(pkg, true) }}
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro card_identity(pkg, mark_as_main=false) %}
+  <h3>
+    <a {{ "id=main-content" if mark_as_main }} href="/packages/{{ pkg.name | urlencode }}">
+      {{- pkg.name -}}
+    </a>
+  </h3>
+
+  {% if pkg.author and (pkg.author | length) > 0 %}
+    <p class="authors">by
+    {% for author in pkg.author -%}
+      {% set q = searchQueryFor('author', author) %}
+      <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
+    {%- endfor %}
+    </p>
+  {% endif %}
+{% endmacro %}
+
+{% macro installs(count, pretty=false) %}
+  {% if count > 0 %}
+    <li class="installs" title="Installed {{ count }} {{ 'time' if count < 2 else 'times' }}">
+      <span aria-hidden="true">{{ util.icon('download') }}</span>
+      <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
+      <span class="screenreader-only">installs</span>
+    </li>
+  {% endif %}
+{% endmacro %}
+
+{% macro stars(count, pretty=false) %}
+  {% if count > 0 %}
+    <li class="stars" title="{{ count }} {{ 'star' if count < 2 else 'stars' }} on GitHub">
+      <span aria-hidden="true">{{ util.icon('star') }}</span>
+      <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
+      <span class="screenreader-only">stars</span>
+    </li>
+  {% endif %}
+{% endmacro %}
+
+{% macro platforms(platform_statement) %}
+  {% if platform_statement %}
+    <li class="platforms">{{ platform_statement }}</li>
+  {% endif %}
+{% endmacro %}
+
+{% macro labels(pkg, with_icons=false) %}
   {% set label_buttons -%}
     {%- for label in pkg.labels %}
       {% set q = searchQueryFor('label', label) %}
@@ -99,90 +194,9 @@
     {%- endfor -%}
   {%- endset %}
 
-  {% set buttons -%}
-    {%- if platform_statement -%}
-      {% set separator_count = (platform_statement | replace('/', '//') | length) - (platform_statement | length) %}
-      <li class="platform-statement-wrap{{ ' platform-statement-wrap-enumeration' if separator_count >= 2 }}">
-        <span class="button label platform-statement">{{ platform_statement }}</span>
-      </li>
-      {%- if label_buttons | trim -%}
-        <li class="package-labels-wrap">
-          <ul class="package-labels">
-            {{ label_buttons | safe }}
-          </ul>
-        </li>
-      {%- endif -%}
-    {%- else -%}
-      {{ label_buttons | safe }}
-    {%- endif -%}
-  {%- endset %}
-
-  {% if buttons | trim %}
+  {% if label_buttons | trim %}
     <ul class="button-group labels">
-      {{ buttons | safe }}
+      {{ label_buttons | safe }}
     </ul>
   {% endif %}
-{% endmacro %}
-
-{% macro platforms(platform_statement) %}
-  {% if platform_statement %}
-    <li class="platforms">{{ platform_statement }}</li>
-  {% endif %}
-{% endmacro %}
-
-{% macro stars(count, pretty=false) %}
-  {% if count > 0 %}
-    <li class="stars" title="{{ count }} {{ 'star' if count < 2 else 'stars' }} on GitHub">
-      <span aria-hidden="true">{{ util.icon('star') }}</span>
-      <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
-      <span class="screenreader-only">stars</span>
-    </li>
-  {% endif %}
-{% endmacro %}
-
-{% macro installs(count, pretty=false) %}
-  {% if count > 0 %}
-    <li class="installs" title="Installed {{ count }} {{ 'time' if count < 2 else 'times' }}">
-      <span aria-hidden="true">{{ util.icon('download') }}</span>
-      <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
-      <span class="screenreader-only">installs</span>
-    </li>
-  {% endif %}
-{% endmacro %}
-
-{% macro card(pkg, mark_as_main=false, platform_in_labels=false) %}
-  <div class="card{{ ' dimmed' if pkg.outdated }}">
-    <div class="card-heading">
-      <h3>
-        <a {{ "id=main-content" if mark_as_main }} href="/packages/{{ pkg.name | urlencode }}">
-          {{- pkg.name -}}
-        </a>
-      </h3>
-
-      {% if pkg.author and (pkg.author | length) > 0 %}
-        <p class="authors">by
-        {% for author in pkg.author -%}
-          {% set q = searchQueryFor('author', author) %}
-          <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
-        {%- endfor %}
-        </p>
-      {% endif %}
-    </div>
-
-    {% if pkg.description %}
-      <p class="description">
-        {{ pkg.description }}
-      </p>
-    {% endif %}
-
-    <ul class="stats">
-      {{ installs(pkg.installed, true) }}
-      {{ stars(pkg.stars, true) }}
-      {% if not platform_in_labels %}
-        {{ platforms(pkg.platform_statement) }}
-      {% endif %}
-    </ul>
-    {% set platform_label = pkg.platform_statement if platform_in_labels else '' %}
-    {{ labels(pkg, true, platform_label) }}
-  </div>
 {% endmacro %}

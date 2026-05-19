@@ -1,19 +1,26 @@
 {% import "packages/macros.njk" as pack %}
 {% import "util/macros.njk" as util %}
 
-{# template used by JS to render cards #}
-<template id="package-card">
-  {{ pack.card({
-    "name": "placeholder-name",
-    "description": "placeholder-description",
-    "author": "placeholder-author",
-    "stars": 666,
-    "installed": 999,
-    "archived_at": "1970-01-01 00:00:00",
-    "platforms": [],
-    "labels": ["foo"],
-    "permalink": "placeholder-permalink"
-  }) }}
+{# templates used by JS to render cards #}
+{% set placeholder_pkg = {
+  "name": "placeholder-name",
+  "description": "placeholder-description",
+  "author": "placeholder-author",
+  "stars": 666,
+  "installed": 999,
+  "archived_at": "1970-01-01 00:00:00",
+  "platforms": [],
+  "platform_statement": "placeholder-platform",
+  "labels": ["foo"],
+  "permalink": "placeholder-permalink"
+} %}
+
+<template id="package-card-compact">
+  {{ pack.compact_card(placeholder_pkg) }}
+</template>
+
+<template id="package-card-result">
+  {{ pack.search_result_card(placeholder_pkg) }}
 </template>
 
 <template id="clipboard-button">

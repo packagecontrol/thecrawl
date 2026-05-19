@@ -52,31 +52,9 @@ section[name="labels"] .grid {
   transition: outline .1s ease-in-out, background .1s;
   overflow: hidden;
 
-  .grid & {
-    /* stretch cards vertically across the grid cells */
-    display: flex;
-    flex-direction: column;
-  }
-
   &:has(h3 a:hover),
   &:has(:focus-visible) {
     outline: 2px solid var(--orange-1);
-  }
-
-  .card-heading {
-    padding-right: 3.2em;
-  }
-
-  .grid & .card-heading {
-    flex: 1; /* push other content to the end of the card */
-  }
-
-  .authors {
-    padding-top: 0;
-    margin-bottom: 16px;
-  }
-  &:has(.stats .warning) .card-heading {
-    padding-right: 4.8em;
   }
 
   h3 {
@@ -95,21 +73,18 @@ section[name="labels"] .grid {
     }
   }
 
+  .authors {
+    padding-top: 0;
+  }
+
   > p:last-child {
     margin-bottom: 0;
   }
 
   .stats {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
     padding: 0;
     margin: 0;
     line-height: 18px;
-    position: absolute;
-    top: 18px;
-    right: 1rem;
-    gap: 0;
     font-size: 11px;
     background: inherit;
     color: var(--foreground-3);
@@ -121,97 +96,12 @@ section[name="labels"] .grid {
 
   .labels {
     font-size: 13px;
-    justify-content: flex-end;
     padding: 0;
     margin: 0;
     a {
       line-height: 20px;
       padding: 1px 6px;
     }
-    &:has(> .platform-statement-wrap > .platform-statement):has(> .package-labels-wrap) {
-      display: grid;
-      grid-template-columns: max-content minmax(0, 1fr);
-      align-items: end;
-      column-gap: 7px;
-
-      &:has(> .platform-statement-wrap-enumeration) {
-        grid-template-columns: 1fr;
-        row-gap: 10px;
-      }
-    }
-    .platform-statement {
-      background: transparent;
-      margin: 0;
-      padding: 0;
-      cursor: default;
-      white-space: revert;
-      &:hover {
-        background: transparent;
-      }
-    }
-    .package-labels-wrap {
-      justify-self: end;
-      max-width: 100%;
-    }
-    .package-labels {
-      display: flex;
-      gap: 7px;
-      justify-content: flex-end;
-      align-items: end;
-      flex-wrap: wrap;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-  }
-
-  .list & .labels {
-    justify-content: flex-start;
-    margin-top: 21px;  /* usually collapses with margin-bottom from .description */
-  }
-
-  .list & .card-heading {
-    padding-right: calc(min(38vw, 18rem) + 1rem);
-    position: relative;
-  }
-
-  .list & .stats {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: flex-start;
-    column-gap: 1em;
-    position: absolute;
-    right: 0;
-    top: 2px;
-    width: min(38vw, 18rem);
-
-    .stars {
-      order: 1;
-    }
-    .installs {
-      order: 2;
-    }
-    .platforms {
-      display: block;
-      flex-basis: 100%;
-      order: 3;
-      line-height: 1.25;
-      white-space: revert;
-      text-align: right;
-      margin-top: 4px;
-    }
-  }
-
-  .list & .authors {
-    margin-bottom: 14px;
-  }
-  .list & .description {
-    font-size: 1rem;
-    max-width: calc(var(--max-line) * 5/6);
-    padding: 0;
-    margin: 0;
   }
 
   .button {
@@ -220,4 +110,103 @@ section[name="labels"] .grid {
       background: var(--background-3);
     }
   }
+}
+
+.card-compact {
+  .grid & {
+    /* stretch cards vertically across the grid cells */
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-heading {
+    flex: 1; /* push other content to the end of the card */
+    padding-right: 3.2em;
+  }
+  &:has(.stats .warning) .card-heading {
+    padding-right: 4.8em;
+  }
+  .authors {
+    margin-bottom: 16px;
+  }
+
+  .stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    position: absolute;
+    top: 18px;
+    right: 1rem;
+    gap: 0;
+  }
+
+  .card-footer {
+    display: grid;
+    font-size: 13px;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: end;
+    column-gap: 7px;
+
+    &.card-footer-enumeration {
+      grid-template-columns: 1fr;
+      row-gap: 10px;
+    }
+  }
+
+  .card-footer:not(:has(.platform-statement)),
+  .card-footer:not(:has(.labels)) {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .platform-statement {
+    line-height: 22px;
+  }
+
+  .labels {
+    justify-content: flex-end;
+  }
+}
+
+.card-result {
+  .card-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, min(38vw, 18rem));
+    column-gap: 0.6rem;
+  }
+
+  .card-meta {
+    justify-self: end;
+    width: 100%;
+    font-size: 11px;
+  }
+
+  .stats {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    column-gap: 1em;
+  }
+
+  .platforms {
+    line-height: 1.25;
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  .authors {
+    margin-bottom: 14px;
+  }
+  .labels {
+    justify-content: flex-start;
+    margin-top: 21px;  /* usually collapses with margin-bottom from .description */
+  }
+}
+
+.card-result .description,
+section[name="libraries"] .card .description {
+  font-size: 1rem;
+  max-width: calc(var(--max-line) * 5/6);
+  padding: 0;
+  margin: 0;
 }
