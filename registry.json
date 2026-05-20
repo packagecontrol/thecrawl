@@ -57,7 +57,6 @@
     "https://raw.githubusercontent.com/jrappen/sublime-packages/master/package_control_channel.json",
     "https://raw.githubusercontent.com/kairyou/sublime_packages/master/packages.json",
     "https://raw.githubusercontent.com/Kaizhi/SublimeUpdater/master/packages.json",
-    "https://raw.githubusercontent.com/kallepersson/Sublime-Finder/master/packages.json",
     "https://raw.githubusercontent.com/Kasoki/FancyProjects/master/packages.json",
     "https://raw.githubusercontent.com/keeganstreet/sublime-specificity/master/packages.json",
     "https://raw.githubusercontent.com/kik0220/sublimetext_japanize/master/packages.json",
@@ -11910,6 +11909,29 @@
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2018-09-11T22:48:36Z"
+    },
+    {
+      "name": "CodeShot",
+      "details": "https://github.com/yasinahmed/CodeShot",
+      "author": "Yasin Jagral",
+      "labels": [
+        "code",
+        "screenshot",
+        "clipboard",
+        "windows"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "platforms": [
+            "windows"
+          ],
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-20T11:26:50Z"
     },
     {
       "name": "CodeStats",
@@ -34558,6 +34580,22 @@
       "first_seen": "2019-03-23T18:49:23Z"
     },
     {
+      "name": "ISF",
+      "details": "https://github.com/newrosesystems/isf-syntax",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4075",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-20T11:26:50Z"
+    },
+    {
       "name": "ISML",
       "details": "https://github.com/aearly/isml-tmlanguage",
       "labels": [
@@ -50903,30 +50941,14 @@
       "first_seen": "2017-07-30T19:46:22Z"
     },
     {
-      "fetching_source_failed": "2026-05-08T22:37:25Z",
       "name": "Open Finder",
-      "previous_names": [
-        "Sublime Finder"
-      ],
-      "details": "https://github.com/kallepersson/Sublime-Finder",
-      "description": "Provides a command for opening Finder in the current directory",
-      "author": "Kalle Persson",
       "labels": [
         "finder",
         "integration"
       ],
-      "releases": [
-        {
-          "platforms": [
-            "osx"
-          ],
-          "sublime_text": "*",
-          "details": "https://github.com/kallepersson/Sublime-Finder/tags"
-        }
-      ],
       "source": "https://raw.githubusercontent.com/kallepersson/Sublime-Finder/master/packages.json",
-      "schema_version": "2.0",
-      "first_seen": "2012-08-29T00:23:53Z"
+      "first_seen": "2012-08-29T00:23:53Z",
+      "removed": "2026-05-20T11:26:50Z"
     },
     {
       "name": "Open Folder",
