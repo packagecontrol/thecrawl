@@ -3767,6 +3767,22 @@
       "first_seen": "2018-01-11T16:41:23Z"
     },
     {
+      "name": "Atlas Ragnarok Color Scheme",
+      "details": "https://github.com/AyoubTadlaoui/atlas-ragnarok",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": "st-"
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-20T19:41:06Z"
+    },
+    {
       "name": "Atomic Color Scheme",
       "details": "https://github.com/gerardbm/Sublime-Atomic-Scheme",
       "labels": [
@@ -14346,6 +14362,19 @@
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2013-04-19T23:57:52Z"
+    },
+    {
+      "name": "Copy Python Import",
+      "details": "https://github.com/odiroot/copy_python_import",
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-20T19:41:06Z"
     },
     {
       "name": "Copy Python Path",
