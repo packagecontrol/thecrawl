@@ -5,13 +5,17 @@ import asyncio
 import json
 import os
 from collections import defaultdict, namedtuple
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
+from itertools import product
 from pathlib import Path
 from typing import Literal, Required, TypedDict
+from urllib.parse import unquote, urlsplit
 
 import aiohttp
+from packaging.version import InvalidVersion, Version
 from rich.console import Console
 from rich.progress import track
 
@@ -19,9 +23,12 @@ from ._doctor_lib import format_library_doctor
 from ._resolve_lib import (
     Release,
     ReleaseEntry,
+    compile_asset_patterns,
     explain_library,
     load_json,
+    normalize_release_def,
     resolve_library,
+    spell_out_constraint_variations,
 )
 from ._utils import err, format_name_list, write_json
 from ._explain_package import print_library_explain
@@ -92,6 +99,19 @@ class Args:
     limit: int
     workspace: Path
     cache_dir: Path
+
+
+@dataclass(frozen=True)
+class UnmatchedReleaseDefinition:
+    raw: ReleaseEntry
+    missing: list[ExpectedReleaseMatch]
+
+
+@dataclass(frozen=True)
+class ExpectedReleaseMatch:
+    sublime_text: str
+    platform: str | None
+    python_version: str | None
 
 
 def parse_args() -> Args:
@@ -320,6 +340,7 @@ async def handle_name(name: str, args: Args) -> int:
                 library, args.cache_dir, aio_session
             )
 
+        unmatched = unmatched_release_definitions(library, info["releases"])
         entry: WorkspaceEntry = \
             workspace_entries.get(name, {"name": name}).copy()
         entry.update(info)
@@ -338,6 +359,7 @@ async def handle_name(name: str, args: Args) -> int:
             source_label = ", ".join(sources) if sources else "cache"
             version_label = f" {latest_version}" if latest_version else ""
             print(json.dumps(entry, indent=2, ensure_ascii=False))
+            print_unmatched_release_definitions(unmatched)
             print(f"Resolved {args.name}{version_label} using {source_label}.")
         else:
             print(
@@ -346,6 +368,8 @@ async def handle_name(name: str, args: Args) -> int:
                     latest_version=latest_version,
                     sources=sources,
                     releases=info["releases"],
+                    missing_coordinates=missing_matrix_coordinates(unmatched),
+                    has_unmatched_definitions=bool(unmatched),
                 )
             )
         if args.write:
@@ -457,6 +481,223 @@ def find_library(registry: Registry, name: str) -> RegistryEntry | None:
         if library.get("name") == name:
             return library
     return None
+
+
+def unmatched_release_definitions(
+    library: RegistryEntry,
+    releases: list[Release],
+) -> list[UnmatchedReleaseDefinition]:
+    output = []
+    for raw_release in library.get("releases", []):
+        missing = unmatched_expected_matches(raw_release, releases)
+        if missing:
+            output.append(UnmatchedReleaseDefinition(raw_release, missing))
+    return output
+
+
+def unmatched_expected_matches(
+    raw_release: ReleaseEntry,
+    releases: list[Release],
+) -> list[ExpectedReleaseMatch]:
+    normalized = normalize_release_def(deepcopy(raw_release))
+    if "url" in normalized:
+        return []
+
+    concrete_defs = spell_out_constraint_variations(
+        normalized,
+        auto_assets="pypi.org/project/" in normalized["base"],
+    )
+    expected_matches = (
+        ExpectedReleaseMatch(sublime_text, platform, python_version)
+        for sublime_text, platform, python_version in product(
+            normalized["sublime_text"],
+            expected_dimension_values(raw_release, normalized, "platforms"),
+            expected_dimension_values(raw_release, normalized, "python_versions"),
+        )
+    )
+    return [
+        expected
+        for expected in expected_matches
+        if not any(
+            release_matches_expected(release, concrete, expected)
+            for concrete in matching_concrete_defs(concrete_defs, expected)
+            for release in releases
+        )
+    ]
+
+
+def expected_dimension_values(
+    raw_release: ReleaseEntry,
+    normalized: dict,
+    key: str,
+) -> list[str | None]:
+    if is_auto_dimension(raw_release, key):
+        return [None]
+    return normalized[key]
+
+
+def is_auto_dimension(raw_release: ReleaseEntry, key: str) -> bool:
+    if key not in raw_release:
+        return True
+    raw_values = raw_release[key]  # type: ignore[literal-required]
+    if not isinstance(raw_values, list):
+        raw_values = [raw_values]
+    return "*" in raw_values
+
+
+def matching_concrete_defs(concrete_defs: list, expected: ExpectedReleaseMatch):
+    return (
+        concrete for concrete in concrete_defs
+        if concrete.sublime_text == expected.sublime_text
+        if expected.platform is None or concrete.platform == expected.platform
+        if (
+            expected.python_version is None
+            or concrete.python_version == expected.python_version
+        )
+    )
+
+
+def release_matches_expected(
+    release: Release,
+    concrete,
+    expected: ExpectedReleaseMatch,
+) -> bool:
+    version = release.get("version")
+    if not isinstance(version, str):
+        return False
+    try:
+        if not concrete.version.contains(Version(version), prereleases=True):
+            return False
+    except InvalidVersion:
+        return False
+
+    if expected.platform and not list_constraint_covers(
+        release.get("platforms", []), expected.platform
+    ):
+        return False
+    if expected.python_version and not list_constraint_covers(
+        release.get("python_versions", []), expected.python_version
+    ):
+        return False
+    if not scalar_constraint_covers(
+        release.get("sublime_text", "*"), expected.sublime_text
+    ):
+        return False
+
+    if concrete.asset_patterns:
+        filename = unquote(
+            urlsplit(release.get("url", "")).path.rsplit("/", 1)[-1]
+        )
+        if not filename:
+            return False
+        return any(
+            pattern.match(filename)
+            for pattern in compile_asset_patterns(concrete, version)
+        )
+    return True
+
+
+def list_constraint_covers(values: str | list[str], target: str) -> bool:
+    if isinstance(values, str):
+        values = [values]
+    return "*" in values or target in values
+
+
+def scalar_constraint_covers(value: str | list[str], target: str) -> bool:
+    if isinstance(value, list):
+        return list_constraint_covers(value, target)
+    return value == "*" or value == target
+
+
+def missing_matrix_coordinates(
+    unmatched: list[UnmatchedReleaseDefinition],
+) -> list[tuple[str, str, str]]:
+    coordinates = []
+    seen = set()
+    for definition in unmatched:
+        for missing in definition.missing:
+            if not missing.platform or not missing.python_version:
+                continue
+            coordinate = (
+                missing.sublime_text,
+                missing.platform,
+                missing.python_version,
+            )
+            if coordinate in seen:
+                continue
+            seen.add(coordinate)
+            coordinates.append(coordinate)
+    return coordinates
+
+
+def print_unmatched_release_definitions(
+    definitions: list[UnmatchedReleaseDefinition],
+) -> None:
+    if not definitions:
+        return
+    print("Unmatched release definitions:")
+    for index, definition in enumerate(definitions):
+        if index:
+            print("")
+        for line in format_unmatched_release_definition(definition):
+            print(line)
+
+
+def format_unmatched_release_definition(
+    definition: UnmatchedReleaseDefinition,
+) -> list[str]:
+    lines = []
+    missing_values = missing_values_by_field(definition)
+    for line in json.dumps(definition.raw, indent=2, ensure_ascii=False).splitlines():
+        lines.append(line)
+        if underline := missing_value_underline(line, missing_values):
+            lines.append(underline)
+    lines.extend(format_missing_matches(definition.missing))
+    return lines
+
+
+def missing_values_by_field(
+    definition: UnmatchedReleaseDefinition,
+) -> dict[str, set[str]]:
+    values: dict[str, set[str]] = defaultdict(set)
+    raw = definition.raw
+    for missing in definition.missing:
+        if "sublime_text" in raw:
+            values["sublime_text"].add(missing.sublime_text)
+        if missing.platform:
+            values["platforms"].add(missing.platform)
+        if missing.python_version:
+            values["python_versions"].add(missing.python_version)
+    return values
+
+
+def missing_value_underline(line: str, missing_values: dict[str, set[str]]) -> str:
+    underline = [" "] * len(line)
+    for values in missing_values.values():
+        for value in values:
+            marker = json.dumps(value, ensure_ascii=False)
+            start = line.find(marker)
+            while start >= 0:
+                for index in range(start, start + len(marker)):
+                    underline[index] = "~"
+                start = line.find(marker, start + len(marker))
+    if any(char == "~" for char in underline):
+        return "".join(underline)
+    return ""
+
+
+def format_missing_matches(missing_matches: list[ExpectedReleaseMatch]) -> list[str]:
+    label = "Missing match" if len(missing_matches) == 1 else "Missing matches"
+    return [f"{label}: {format_expected_match(match)}" for match in missing_matches]
+
+
+def format_expected_match(match: ExpectedReleaseMatch) -> str:
+    parts = [f"sublime_text={match.sublime_text}"]
+    if match.platform:
+        parts.append(f"platform={match.platform}")
+    if match.python_version:
+        parts.append(f"python_version={match.python_version}")
+    return ", ".join(parts)
 
 
 def format_change_message(

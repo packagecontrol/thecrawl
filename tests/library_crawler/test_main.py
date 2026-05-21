@@ -580,11 +580,132 @@ async def test_handle_name_reports_release_matrix(
     assert "example release matrix; -v to see the raw JSON output" in captured.out
     assert "Sublime (all builds)" not in captured.out
     assert "py33" in captured.out
-    assert "windows-x64" not in captured.out
-    assert "linux-x64     A" in captured.out
+    assert "windows-x64     X" in captured.out
+    assert "linux-x64       A" in captured.out
     assert "A = 1.0.0" in captured.out
+    assert "X = no version found, run -v for details" in captured.out
     assert '"asset":' not in captured.out
     assert "Added example." not in captured.out
+
+
+@pytest.mark.asyncio
+async def test_handle_name_does_not_mark_auto_added_variants(
+    monkeypatch, tmp_path, capsys
+):
+    repo_path = tmp_path / "registry.json"
+    write_json(
+        repo_path,
+        {
+            "libraries": [
+                {
+                    "name": "example",
+                    "releases": [
+                        {
+                            "base": "https://pypi.org/project/example",
+                            "asset": "example-*-cp33-cp33m-win_amd64.whl",
+                        }
+                    ],
+                }
+            ]
+        },
+    )
+    output_path = tmp_path / "libraries.json"
+    args = make_args(tmp_path, repo_path, output_path, name="example")
+
+    async def resolver(library, cache_dir, session):
+        return (
+            make_info("example")
+            | {
+                "releases": [
+                    {
+                        "url": (
+                            "https://example.test/"
+                            "example-1.0.0-cp33-cp33m-win_amd64.whl"
+                        ),
+                        "version": "1.0.0",
+                        "date": "2026-01-01T00:00:00Z",
+                        "platforms": ["windows-x64"],
+                        "python_versions": ["3.3"],
+                        "sublime_text": "*",
+                    }
+                ]
+            },
+            ["stub"],
+        )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", resolver)
+
+    await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert "windows-x64     A" in captured.out
+    assert "windows-x32" not in captured.out
+    assert "py38" not in captured.out
+    assert "X = no version found" not in captured.out
+
+
+@pytest.mark.asyncio
+async def test_handle_name_verbose_reports_unmatched_definitions(
+    monkeypatch, tmp_path, capsys
+):
+    repo_path = tmp_path / "registry.json"
+    write_json(
+        repo_path,
+        {
+            "libraries": [
+                {
+                    "name": "example",
+                    "releases": [
+                        {
+                            "base": "https://pypi.org/project/example",
+                            "asset": "example-*-cp33-cp33m-win_amd64.whl",
+                            "platforms": ["windows-x64", "windows-x32"],
+                            "python_versions": ["3.3"],
+                        }
+                    ],
+                }
+            ]
+        },
+    )
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path, repo_path, output_path, name="example", verbose=True
+    )
+
+    async def resolver(library, cache_dir, session):
+        return (
+            make_info("example")
+            | {
+                "releases": [
+                    {
+                        "url": (
+                            "https://example.test/"
+                            "example-1.0.0-cp33-cp33m-win_amd64.whl"
+                        ),
+                        "version": "1.0.0",
+                        "date": "2026-01-01T00:00:00Z",
+                        "platforms": ["windows-x64"],
+                        "python_versions": ["3.3"],
+                        "sublime_text": "*",
+                    }
+                ]
+            },
+            ["stub"],
+        )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", resolver)
+
+    await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert "Unmatched release definitions:" in captured.out
+    assert '"platforms": [' in captured.out
+    assert '"windows-x32"' in captured.out
+    assert "~~~~~~~~~~~~~" in captured.out
+    assert (
+        "Missing match: sublime_text=*, platform=windows-x32, python_version=3.3"
+        in captured.out
+    )
 
 
 @pytest.mark.asyncio
