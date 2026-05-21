@@ -300,7 +300,8 @@ async def handle_name(name: str, args: Args) -> int:
 
     library = find_library(registry, name)
     if not library:
-        raise ValueError(f'Library "{name}" not found in {args.registry.name}.')
+        print(f'Library "{name}" not found in {args.registry.name}.')
+        return 1
 
     if not is_allowed_source(library, args.allowed_sources):
         print("Library is not on an allowed source.")
@@ -365,9 +366,8 @@ async def handle_explain(name: str, args: Args) -> int:
     registry: Registry = load_json(args.registry)  # type: ignore[assignment]
     library = find_library(registry, name)
     if not library:
-        raise ValueError(
-            f'Library "{name}" not found in {args.registry.name}.'
-        )
+        print(f'Library "{name}" not found in {args.registry.name}.')
+        return 1
 
     explain_rows = explain_library(library)
     metadata = {key: value for key, value in library.items() if key != "releases"}

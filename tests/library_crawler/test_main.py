@@ -59,6 +59,33 @@ def make_resolver(calls, version="1.0.0"):
     return resolver
 
 
+def test_main_reports_missing_name_without_traceback(monkeypatch, tmp_path, capsys):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": [{"name": "stay"}]})
+    output_path = tmp_path / "libraries.json"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "crawl_libraries",
+            "--registry",
+            str(repo_path),
+            "--workspace",
+            str(output_path),
+            "--name",
+            "msgpack",
+        ],
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        crawl_libraries.main()
+
+    captured = capsys.readouterr()
+    assert exc_info.value.code == 1
+    assert captured.out == 'Library "msgpack" not found in registry.json.\n'
+    assert "Traceback" not in captured.err
+    assert "Traceback" not in captured.out
+
+
 @pytest.mark.asyncio
 async def test_creates_output_with_only_libraries_key_if_not_present(monkeypatch, tmp_path):
     repo_path = tmp_path / "registry.json"
@@ -615,12 +642,10 @@ async def test_name_and_explain_reject_removed_library(monkeypatch, tmp_path):
     )
 
     args = make_args(tmp_path, repo_path, output_path, name="gone")
-    with pytest.raises(ValueError, match="not found"):
-        await crawl_libraries.run(args)
+    assert await crawl_libraries.run(args) == 1
 
     args = make_args(tmp_path, repo_path, output_path, explain="gone")
-    with pytest.raises(ValueError, match="not found"):
-        await crawl_libraries.run(args)
+    assert await crawl_libraries.run(args) == 1
 
 
 @pytest.mark.asyncio
