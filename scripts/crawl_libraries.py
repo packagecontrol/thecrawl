@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 import os
+import sys
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -92,6 +93,7 @@ class Args:
     allowed_sources: set[str]
     name: str | None
     explain: str | None
+    try_definition: str | None
     write: bool
     verbose: bool
     limit: int
@@ -120,6 +122,17 @@ def parse_args() -> Args:
     parser.add_argument(
         "--explain",
         help="Library name to print resolved release definitions for",
+    )
+    parser.add_argument(
+        "--try",
+        dest="try_definition",
+        nargs="?",
+        const="-",
+        metavar="DEF",
+        help=(
+            "Use an in-memory release definition with --name or --explain. "
+            "Use '-' or omit DEF to read from stdin."
+        ),
     )
     parser.add_argument(
         "--write",
@@ -153,13 +166,20 @@ def parse_args() -> Args:
 
     if ns.explain and ns.name:
         parser.error("Use either --name or --explain, not both.")
+    if ns.try_definition is not None and not (ns.name or ns.explain):
+        parser.error("--try requires --name or --explain.")
     if ns.write and not ns.name:
         parser.error("--write requires --name.")
+    if ns.write and ns.try_definition is not None:
+        parser.error("--write cannot be used with --try.")
     if ns.limit < 1:
         parser.error("--limit must be a positive integer.")
 
+    if ns.try_definition == "-":
+        ns.try_definition = sys.stdin.read()
+
     registry_path = Path(os.path.abspath(ns.registry))
-    if not registry_path.exists():
+    if not registry_path.exists() and ns.try_definition is None:
         parser.error(f"{registry_path} not found.")
 
     return Args(
@@ -167,6 +187,7 @@ def parse_args() -> Args:
         allowed_sources=set(ns.allowed_source),
         name=ns.name,
         explain=ns.explain,
+        try_definition=ns.try_definition,
         write=ns.write,
         verbose=ns.verbose or ns.write,
         limit=ns.limit,
@@ -301,17 +322,60 @@ async def run(args: Args) -> int:
 
 
 async def handle_name(name: str, args: Args) -> int:
-    registry: Registry = load_json(args.registry)  # type: ignore[assignment]
+    library = find_or_build_library(name, args)
+    if not library:
+        return 1
+
+    if args.try_definition is None and not is_allowed_source(
+        library,
+        args.allowed_sources,
+    ):
+        print("Library is not on an allowed source.")
+        return 0
+
+    return await crawl_single_library(name, library, args)
+
+
+async def handle_explain(name: str, args: Args) -> int:
+    library = find_or_build_library(name, args)
+    if not library:
+        return 1
+
+    explain_rows = explain_library(library)
+    metadata = {key: value for key, value in library.items() if key != "releases"}
+    print_library_explain(name, explain_rows, metadata=metadata)
+    return 0
+
+
+def find_or_build_library(name: str, args: Args) -> RegistryEntry | None:
+    registry: Registry = (
+        load_json(args.registry)  # type: ignore[assignment]
+        if args.registry.exists()
+        else {"libraries": []}
+    )
+    if args.try_definition is not None:
+        try:
+            return synthesize_library_entry(
+                name,
+                find_library(registry, name),
+                args.try_definition,
+            )
+        except ValueError as exc:
+            print(f"Invalid --try definition: {exc}")
+            return None
 
     library = find_library(registry, name)
     if not library:
         print(f'Library "{name}" not found in {args.registry.name}.')
-        return 1
+        return None
+    return library
 
-    if not is_allowed_source(library, args.allowed_sources):
-        print("Library is not on an allowed source.")
-        return 0
 
+async def crawl_single_library(
+    name: str,
+    library: RegistryEntry,
+    args: Args,
+) -> int:
     timestamp = now_timestamp()
     added_names: list[str] = []
     updated_names: list[str] = []
@@ -345,11 +409,11 @@ async def handle_name(name: str, args: Args) -> int:
             version_label = f" {latest_version}" if latest_version else ""
             print(json.dumps(entry, indent=2, ensure_ascii=False))
             print_unmatched_release_definitions(unmatched)
-            print(f"Resolved {args.name}{version_label} using {source_label}.")
+            print(f"Resolved {name}{version_label} using {source_label}.")
         else:
             print(
                 format_library_matrix(
-                    name=args.name or name,
+                    name=name,
                     latest_version=latest_version,
                     sources=sources,
                     releases=info["releases"],
@@ -361,8 +425,7 @@ async def handle_name(name: str, args: Args) -> int:
         return 0
     except Exception as exc:
         if args.write:
-            entry = \
-                workspace_entries.get(name, {"name": args.name}).copy()  # type: ignore[assignment]
+            entry = workspace_entries.get(name, {"name": name}).copy()
             mark_added(entry, timestamp)
             mark_failure(entry, timestamp, str(exc))
             workspace_entries[name] = entry
@@ -370,17 +433,120 @@ async def handle_name(name: str, args: Args) -> int:
         raise
 
 
-async def handle_explain(name: str, args: Args) -> int:
-    registry: Registry = load_json(args.registry)  # type: ignore[assignment]
-    library = find_library(registry, name)
-    if not library:
-        print(f'Library "{name}" not found in {args.registry.name}.')
-        return 1
+def synthesize_library_entry(
+    name: str,
+    registry_entry: RegistryEntry | None,
+    definition: str,
+) -> RegistryEntry:
+    releases = parse_try_definition(definition)
+    library: RegistryEntry = {"name": name, "releases": releases}
+    if registry_entry:
+        return registry_entry.copy() | library
+    return library
 
-    explain_rows = explain_library(library)
-    metadata = {key: value for key, value in library.items() if key != "releases"}
-    print_library_explain(name, explain_rows, metadata=metadata)
-    return 0
+
+def parse_try_definition(definition: str) -> list[ReleaseEntry]:
+    definition = definition.strip()
+    if not definition:
+        raise ValueError("empty release definition")
+
+    try:
+        parsed = json.loads(definition)
+    except json.JSONDecodeError:
+        parsed = parse_try_key_value_definition(definition)
+
+    if isinstance(parsed, dict) and "releases" in parsed:
+        parsed = parsed["releases"]
+    elif isinstance(parsed, dict):
+        parsed = [parsed]
+
+    if not isinstance(parsed, list) or not parsed:
+        raise ValueError("expected a release object or a non-empty release list")
+    if not all(isinstance(item, dict) for item in parsed):
+        raise ValueError("release entries must be objects")
+    return parsed
+
+
+def parse_try_key_value_definition(definition: str) -> dict | list[dict]:
+    """
+    Parse the lightweight ``--try`` shorthand.
+
+    This intentionally supports only the small subset that is useful at the
+    command line: ``key: value`` pairs, blank lines, comments, and top-level
+    list items introduced with ``-``. It is YAML-ish for convenience, but it is
+    not a YAML parser: there are no nested mappings, continuation lines, escape
+    handling for single-quoted strings, or indentation semantics. Values stay as
+    strings except for booleans/null, JSON double-quoted strings, and simple
+    bracketed lists.
+
+    Use JSON for anything more structured or ambiguous.
+    """
+    entries: list[dict] = []
+    current: dict | None = None
+    saw_list_marker = False
+
+    for raw_line in definition.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("- "):
+            if raw_line.startswith((" ", "\t")):
+                raise ValueError(f"nested list items are not supported: {raw_line!r}")
+            saw_list_marker = True
+            if current is not None:
+                entries.append(current)
+            current = {}
+            line = line[2:].strip()
+            if not line:
+                continue
+        elif current is None:
+            current = {}
+
+        key, separator, value = line.partition(":")
+        key = key.strip()
+        if not separator or not is_try_key(key):
+            raise ValueError(f"expected 'key: value', got {raw_line!r}")
+        current[key] = parse_try_value(value)
+
+    if current is not None:
+        entries.append(current)
+    if not entries:
+        raise ValueError("empty release definition")
+    return entries if saw_list_marker else entries[0]
+
+
+def is_try_key(key: str) -> bool:
+    return bool(key) and all(char.isalnum() or char == "_" for char in key)
+
+
+def parse_try_value(value: str) -> object:
+    value = value.strip()
+    if not value:
+        return ""
+
+    lowered = value.lower()
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    if lowered == "null":
+        return None
+
+    if value[0] == value[-1:] and value[0] in ('"', "'"):
+        if value[0] == '"':
+            return json.loads(value)
+        return value[1:-1]
+
+    if value.startswith("[") and value.endswith("]"):
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            inner = value[1:-1].strip()
+            if not inner:
+                return []
+            return [parse_try_value(part) for part in inner.split(",")]
+
+    return value
 
 
 def parse_last_crawl(value: str | None) -> datetime:

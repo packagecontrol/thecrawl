@@ -177,8 +177,10 @@ Resolves library release info from a `registry.json` and writes a workspace
 JSON (default: `workspace.json`).
 
 Use `--name` to crawl a single library or `--explain` to print the concretized
-release definitions it would use. Both are dry modes by default. For `--name`,
-add `--write` to actually write changes to the workspace.
+release definitions it would use. Add `--try` with `--name` or `--explain` to
+test an in-memory release definition, reusing registry metadata when present.
+These are dry modes by default. For `--name`, add `--write` to actually write
+changes to the workspace.
 
 Generate a registry from the standard libraries repository, then crawl it.
 Use `--registry/-r` if the registry has a different name, or `--workspace/-o`
@@ -188,6 +190,12 @@ to write the output elsewhere.
 $ uv run -m scripts.generate_registry --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json
 $ uv run -m scripts.crawl_libraries --name lxml
 $ uv run -m scripts.crawl_libraries --explain lxml
+$ uv run -m scripts.crawl_libraries --name lxml --try "base: pypi:lxml"
+$ uv run -m scripts.crawl_libraries --explain lxml --try "base: pypi:lxml"
+$ uv run -m scripts.crawl_libraries --name lxml --try <<'DEF'
+base: pypi:lxml
+platforms: windows-x32
+DEF
 $ uv run -m scripts.crawl_libraries --workspace libraries.json --name lxml
 ```
 

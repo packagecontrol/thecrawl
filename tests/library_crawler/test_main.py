@@ -1,3 +1,4 @@
+import io
 import json
 
 import pytest
@@ -20,6 +21,7 @@ def make_args(
     *,
     name=None,
     explain=None,
+    try_definition=None,
     limit=10,
     allowed_source=None,
     write=False,
@@ -32,6 +34,7 @@ def make_args(
         allowed_sources=set(allowed_source),
         name=name,
         explain=explain,
+        try_definition=try_definition,
         write=write,
         verbose=verbose,
         limit=limit,
@@ -728,6 +731,194 @@ async def test_parse_args_write_implies_verbose(monkeypatch, tmp_path):
     assert args.verbose is True
 
 
+def test_parse_args_try_heredoc_reads_stdin(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr("sys.stdin", io.StringIO("base: pypi:lxml\n"))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--name", "lxml", "--try"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.name == "lxml"
+    assert args.try_definition == "base: pypi:lxml\n"
+
+
+def test_parse_args_try_accepts_explain(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--explain", "lxml", "--try", "base: pypi:lxml"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.explain == "lxml"
+    assert args.try_definition == "base: pypi:lxml"
+
+
+@pytest.mark.parametrize(
+    ("definition", "expected"),
+    [
+        (
+            "base: pypi:lxml\nplatforms: windows-x32",
+            {"base": "pypi:lxml", "platforms": "windows-x32"},
+        ),
+        (
+            "# comment\n\nbase: pypi:lxml\n",
+            {"base": "pypi:lxml"},
+        ),
+        (
+            "tags: true\nasset: null",
+            {"tags": True, "asset": None},
+        ),
+        (
+            'asset: ["*.whl", "*.zip"]',
+            {"asset": ["*.whl", "*.zip"]},
+        ),
+        (
+            "platforms: [windows-x64, windows-x32]",
+            {"platforms": ["windows-x64", "windows-x32"]},
+        ),
+        (
+            '- base: pypi:lxml\n  platforms: windows-x64\n- base: pypi:numpy',
+            [
+                {"base": "pypi:lxml", "platforms": "windows-x64"},
+                {"base": "pypi:numpy"},
+            ],
+        ),
+    ],
+)
+def test_parse_try_key_value_definition_supported(definition, expected):
+    assert crawl_libraries.parse_try_key_value_definition(definition) == expected
+
+
+@pytest.mark.parametrize(
+    "definition",
+    [
+        "base pypi:lxml",
+        "- base: pypi:lxml\n  - platforms: windows-x64",
+        "releases:\n  - base: pypi:lxml",
+    ],
+)
+def test_parse_try_key_value_definition_rejects_unsupported(definition):
+    with pytest.raises(ValueError):
+        crawl_libraries.parse_try_key_value_definition(definition)
+
+
+@pytest.mark.asyncio
+async def test_handle_try_crawls_inline_release_definition(monkeypatch, tmp_path, capsys):
+    repo_path = tmp_path / "registry.json"
+    write_json(
+        repo_path,
+        {
+            "libraries": [
+                {
+                    "name": "example",
+                    "description": "registry description",
+                    "author": "registry author",
+                    "issues": "https://example.com/issues",
+                    "releases": [{"base": "pypi:old"}],
+                }
+            ]
+        },
+    )
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        name="example",
+        try_definition="base: pypi:example\nplatforms: windows-x32",
+    )
+    calls = []
+
+    async def resolver(library, cache_dir, session):
+        calls.append(library)
+        return (
+            {
+                "name": library["name"],
+                "description": library["description"],
+                "author": library["author"],
+                "issues": library["issues"],
+                "releases": [
+                    {
+                        "url": "https://example.com/example-1.0.0.whl",
+                        "version": "1.0.0",
+                        "date": "2026-01-01T00:00:00Z",
+                        "platforms": ["windows-x32"],
+                        "python_versions": ["3.3"],
+                        "sublime_text": "*",
+                    }
+                ],
+            },
+            ["stub"],
+        )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", resolver)
+
+    result = await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert result == 0
+    assert calls == [
+        {
+            "name": "example",
+            "description": "registry description",
+            "author": "registry author",
+            "issues": "https://example.com/issues",
+            "releases": [{"base": "pypi:example", "platforms": "windows-x32"}],
+        }
+    ]
+    assert "release matrix" in captured.out
+    assert not output_path.exists()
+
+
+@pytest.mark.asyncio
+async def test_handle_try_crawls_without_registry_file(monkeypatch, tmp_path):
+    repo_path = tmp_path / "missing-registry.json"
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        name="example",
+        try_definition='{"base": "pypi:example"}',
+    )
+    calls = []
+
+    async def resolver(library, cache_dir, session):
+        calls.append(library)
+        return (
+            make_info(library["name"])
+            | {
+                "releases": [
+                    {
+                        "url": "https://example.com/example-1.0.0.whl",
+                        "version": "1.0.0",
+                        "date": "2026-01-01T00:00:00Z",
+                        "platforms": ["windows-x32"],
+                        "python_versions": ["3.3"],
+                        "sublime_text": "*",
+                    }
+                ]
+            },
+            ["stub"],
+        )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", resolver)
+
+    result = await crawl_libraries.run(args)
+
+    assert result == 0
+    assert calls == [{"name": "example", "releases": [{"base": "pypi:example"}]}]
+
+
 @pytest.mark.asyncio
 async def test_handle_name_verbose_reports_raw_json(monkeypatch, tmp_path, capsys):
     repo_path = tmp_path / "registry.json"
@@ -823,6 +1014,69 @@ async def test_handle_explain_renders_release_variation_rows(monkeypatch, tmp_pa
     assert captured["name"] == "alpha"
     assert captured["rows"] == explain_rows
     assert captured["metadata"] == {"name": "alpha"}
+
+
+@pytest.mark.asyncio
+async def test_handle_explain_uses_try_definition(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(
+        repo_path,
+        {
+            "libraries": [
+                {
+                    "name": "alpha",
+                    "description": "registry description",
+                    "author": "registry author",
+                    "issues": "https://example.com/issues",
+                    "releases": [{"base": "pypi:old"}],
+                }
+            ]
+        },
+    )
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        explain="alpha",
+        try_definition="base: pypi:alpha\nplatforms: windows-x32",
+    )
+    captured = {}
+
+    def fake_explain_library(library):
+        captured["library"] = library
+        return []
+
+    def fake_print_library_explain(name, rows, metadata=None):
+        captured["name"] = name
+        captured["rows"] = rows
+        captured["metadata"] = metadata
+
+    monkeypatch.setattr(crawl_libraries, "explain_library", fake_explain_library)
+    monkeypatch.setattr(
+        crawl_libraries,
+        "print_library_explain",
+        fake_print_library_explain,
+    )
+
+    result = await crawl_libraries.run(args)
+
+    assert result == 0
+    assert captured["library"] == {
+        "name": "alpha",
+        "description": "registry description",
+        "author": "registry author",
+        "issues": "https://example.com/issues",
+        "releases": [{"base": "pypi:alpha", "platforms": "windows-x32"}],
+    }
+    assert captured["name"] == "alpha"
+    assert captured["rows"] == []
+    assert captured["metadata"] == {
+        "name": "alpha",
+        "description": "registry description",
+        "author": "registry author",
+        "issues": "https://example.com/issues",
+    }
 
 
 @pytest.mark.parametrize(
