@@ -7,7 +7,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import count, product
-from typing import Callable
+from typing import Callable, Iterable
 
 from packaging.version import InvalidVersion, Version
 
@@ -32,18 +32,22 @@ type TableCells = dict[TableKey, VersionString]
 @dataclass
 class MatrixTable:
     cells: TableCells
+    missing_cells: frozenset[TableKey] = frozenset()
 
     @cached_property
     def platforms(self) -> list[Platform]:
         return sorted(
-            {platform for platform, _ in self.cells},
+            {platform for platform, _ in set(self.cells) | self.missing_cells},
             key=platform_sort_key,
         )
 
     @cached_property
     def python_versions(self) -> list[PyHost]:
         return sorted(
-            {python_version for _, python_version in self.cells},
+            {
+                python_version
+                for _, python_version in set(self.cells) | self.missing_cells
+            },
             key=python_version_sort_key,
         )
 
@@ -64,6 +68,8 @@ def format_library_doctor(
     latest_version: str | None,
     sources: list[str],
     releases: list[Release],
+    missing_coordinates: Iterable[MatrixKey] = (),
+    has_unmatched_definitions: bool = False,
 ) -> str:
     source_label = ", ".join(sources) if sources else "cache"
     lines = [
@@ -74,14 +80,20 @@ def format_library_doctor(
         lines.append(f"Latest version: {latest_version}")
     lines.append("")
 
-    tables = release_matrix(releases)
+    missing_coordinates = list(missing_coordinates)
+    tables = release_matrix(releases, missing_coordinates)
     if not tables:
         lines.append("No release matrix.")
+        if has_unmatched_definitions:
+            lines.append(
+                "Some expected release definitions did not match; run -v for details."
+            )
         return "\n".join(lines)
 
     sublime_texts = ordered_sublime_texts(tables)
     matrix_versions = ordered_matrix_versions(tables, sublime_texts)
-    version_labels = make_version_labels(matrix_versions)
+    reserved_labels = {"X"} if missing_coordinates else set()
+    version_labels = make_version_labels(matrix_versions, reserved_labels)
     show_sublime_headings = sublime_texts != ["*"]
     if show_sublime_headings:
         lines.append("")
@@ -97,24 +109,57 @@ def format_library_doctor(
             )
         )
 
-    if matrix_versions:
+    if matrix_versions or missing_coordinates or has_unmatched_definitions:
         lines.append("")
-        lines.extend(format_version_legend(matrix_versions, version_labels))
+    legend_label_width = 1
+    if matrix_versions or missing_coordinates:
+        legend_label_width = max(
+            [len(version_labels[version]) for version in matrix_versions]
+            + ([1] if missing_coordinates else [])
+        )
+    if matrix_versions:
+        lines.extend(
+            format_version_legend(
+                matrix_versions,
+                version_labels,
+                label_width=legend_label_width,
+            )
+        )
+    if missing_coordinates:
+        lines.append(
+            f"{'X'.ljust(legend_label_width)} = no version found, run -v for details"
+        )
+    elif has_unmatched_definitions:
+        lines.append(
+            "Some expected release definitions did not match; run -v for details."
+        )
 
     return "\n".join(lines)
 
 
-def release_matrix(releases: list[Release]) -> MatrixTables:
+def release_matrix(
+    releases: list[Release],
+    missing_coordinates: Iterable[MatrixKey] = (),
+) -> MatrixTables:
     cells_by_sublime_text: dict[StBuild, TableCells] = defaultdict(dict)
+    missing_by_sublime_text: dict[StBuild, set[TableKey]] = defaultdict(set)
     for release in releases:
         for sublime_text, platform, python_version in release_coordinates(release):
             cells_by_sublime_text[sublime_text].setdefault(
                 (platform, python_version), release["version"]
             )
 
+    for sublime_text, platform, python_version in missing_coordinates:
+        missing_by_sublime_text[sublime_text].add((platform, python_version))
+
     return {
-        sublime_text: MatrixTable(cells)
-        for sublime_text, cells in cells_by_sublime_text.items()
+        sublime_text: MatrixTable(
+            cells_by_sublime_text[sublime_text],
+            frozenset(missing_by_sublime_text[sublime_text]),
+        )
+        for sublime_text in (
+            cells_by_sublime_text.keys() | missing_by_sublime_text.keys()
+        )
     }
 
 
@@ -163,8 +208,13 @@ def format_matrix_table(
     for platform in table.platforms:
         values = []
         for index, python_version in enumerate(table.python_versions):
-            version = table.cells.get((platform, python_version))
-            value = version_labels[version] if version else "-"
+            key = (platform, python_version)
+            version = table.cells.get(key)
+            value = (
+                "X"
+                if key in table.missing_cells
+                else version_labels[version] if version else "-"
+            )
             col_widths[index] = max(col_widths[index], len(value))
             values.append(value)
         rows.append((platform, values))
@@ -191,10 +241,14 @@ def format_matrix_table(
 
 
 def format_version_legend(
-    versions: list[str], version_labels: dict[str, str]
+    versions: list[str],
+    version_labels: dict[str, str],
+    *,
+    label_width: int | None = None,
 ) -> list[str]:
     versions = sorted(versions, key=lambda version: version_labels[version])
-    label_width = max(len(version_labels[version]) for version in versions)
+    if label_width is None:
+        label_width = max(len(version_labels[version]) for version in versions)
     return [
         f"{version_labels[version].ljust(label_width)} = {version}"
         for version in versions
@@ -244,7 +298,9 @@ def ordered_matrix_versions(
     )
 
 
-def make_version_labels(versions: list[str]) -> dict[str, str]:
+def make_version_labels(
+    versions: list[str], reserved: set[str] | None = None
+) -> dict[str, str]:
     """
     Create a lookup table from unique literal versions to matrix abbreviations.
 
@@ -252,19 +308,22 @@ def make_version_labels(versions: list[str]) -> dict[str, str]:
     major-version group reuse the same letter with suffixes:
     A, A', A'', A''', A5...
     """
-    label = make_version_labeler()
+    label = make_version_labeler(reserved or set())
     return {
         version: label(version)
         for version in versions
     }
 
 
-def make_version_labeler() -> Callable[[VersionString], str]:
+def make_version_labeler(
+    reserved: set[str] | None = None
+) -> Callable[[VersionString], str]:
+    reserved = reserved or set()
     labelers = (
         _with_suffixes(prefix)
         for size in count(1)
         for letters in product(string.ascii_uppercase, repeat=size)
-        if (prefix := "".join(letters))
+        if (prefix := "".join(letters)) not in reserved
     )
     known_groups: dict[object, Iterator[str]] = defaultdict(lambda: next(labelers))
 

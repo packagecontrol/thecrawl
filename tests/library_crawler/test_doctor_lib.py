@@ -118,6 +118,38 @@ linux-x64     A
 A = 1.0.0"""
 
 
+def test_doctor_marks_missing_expected_cells():
+    releases = [
+        {
+            "url": "https://example.test/example-1.0.0.zip",
+            "version": "1.0.0",
+            "sublime_text": "*",
+            "platforms": ["linux-x64"],
+            "python_versions": ["3.3"],
+        },
+    ]
+
+    output = format_library_doctor(
+        name="example",
+        latest_version="1.0.0",
+        sources=["stub"],
+        releases=releases,
+        missing_coordinates=[("*", "windows-x64", "3.3")],
+    )
+
+    assert strip_trailing_whitespace(output) == """example release matrix; -v to see the raw JSON output
+Source: stub
+Latest version: 1.0.0
+
+                py33
+-------------+------
+windows-x64     X
+linux-x64       A
+
+A = 1.0.0
+X = no version found, run -v for details"""
+
+
 def test_doctor_formats_tables_with_one_global_legend():
     releases = [
         {
