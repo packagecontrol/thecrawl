@@ -63,7 +63,9 @@ def test_doctor_orders_sublime_builds_newest_first_and_labels_globally():
         releases=library["releases"],
     )
 
+    assert "Latest version: 3.7.1\n\n\n# Sublime >=4070" in output
     assert output.index("Sublime >=4070") < output.index("Sublime 3154 - 4069")
+    assert output.index("# Sublime 3154 - 4069") < output.index("A = 3.7.1")
     assert "windows-x64  A" in output
     assert "windows-x64  B" in output
     assert "A = 3.7.1" in output
