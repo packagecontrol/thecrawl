@@ -111,8 +111,9 @@ def test_doctor_omits_the_all_builds_heading_for_a_single_table():
 Source: stub
 Latest version: 1.0.0
 
-           py38
-linux-x64  A
+              py38
+-----------+------
+linux-x64     A
 
 A = 1.0.0"""
 
@@ -149,24 +150,26 @@ Latest version: 3.7.2
 
 # Sublime >=4070
 
-             py38  py313  py314
-windows-x64  A     A      A
-windows-x32  A     A      A
-osx-x64      A     A      A
-osx-arm64    A     A      A
-linux-x64    A     A      A
-linux-arm64  A     A      A
+                py38  py313  py314
+-------------+--------------------
+windows-x64     A     A      A
+windows-x32     A     A      A
+osx-x64         A     A      A
+osx-arm64       A     A      A
+linux-x64       A     A      A
+linux-arm64     A     A      A
 
 
 # Sublime 3154 - 4069
 
-             py33  py38
-windows-x64  B     B
-windows-x32  B     B
-osx-x64      B     B
-osx-arm64    B     B
-linux-x64    B     B
-linux-arm64  B     B
+                py33  py38
+-------------+------------
+windows-x64     B     B
+windows-x32     B     B
+osx-x64         B     B
+osx-arm64       B     B
+linux-x64       B     B
+linux-arm64     B     B
 
 A = 3.7.2
 B = 2.2.1"""

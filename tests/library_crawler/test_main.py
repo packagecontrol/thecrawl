@@ -581,7 +581,7 @@ async def test_handle_name_reports_release_matrix(
     assert "Sublime (all builds)" not in captured.out
     assert "py33" in captured.out
     assert "windows-x64" not in captured.out
-    assert "linux-x64  A" in captured.out
+    assert "linux-x64     A" in captured.out
     assert "A = 1.0.0" in captured.out
     assert '"asset":' not in captured.out
     assert "Added example." not in captured.out

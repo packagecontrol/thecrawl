@@ -155,6 +155,7 @@ def format_matrix_table(
     version_labels: dict[str, str],
 ) -> list[str]:
     platform_width = max([len(platform) for platform in table.platforms] + [0])
+    row_header_width = platform_width + 2
     headers = [format_python_header(version) for version in table.python_versions]
     col_widths = [len(header) for header in headers]
     rows = []
@@ -168,17 +169,19 @@ def format_matrix_table(
             values.append(value)
         rows.append((platform, values))
 
+    value_width = sum(col_widths) + 2 * (len(col_widths) - 1)
     lines = [
-        " " * (platform_width + 2)
+        " " * (row_header_width + 3)
         + "  ".join(
             header.ljust(width)
             for header, width in zip(headers, col_widths)
-        )
+        ),
+        "-" * row_header_width + "+--" + "-" * value_width,
     ]
     for platform, values in rows:
         lines.append(
-            platform.ljust(platform_width)
-            + "  "
+            platform.ljust(row_header_width)
+            + "   "
             + "  ".join(
                 value.ljust(width)
                 for value, width in zip(values, col_widths)
