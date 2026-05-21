@@ -176,27 +176,48 @@ Use `--pretty` at home and `--legacy` to emit a Sublime Text 3 channel.
 Resolves library release info from a `registry.json` and writes a workspace
 JSON (default: `workspace.json`).
 
-Use `--name` to crawl a single library or `--explain` to print the concretized
-release definitions it would use. Add `--try` with `--name` or `--explain` to
-test an in-memory release definition, reusing registry metadata when present.
-These are dry modes by default. For `--name`, add `--write` to actually write
-changes to the workspace.
-
-Generate a registry from the standard libraries repository, then crawl it.
-Use `--registry/-r` if the registry has a different name, or `--workspace/-o`
-to write the output elsewhere.
+Generate a registry from the standard libraries repository, then crawl it. Use
+`--registry/-r` if the registry has a different name, or `--workspace/-o` to
+write the output elsewhere.
 
 ```bash
 $ uv run -m scripts.generate_registry --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json
+$ uv run -m scripts.crawl_libraries
+```
+
+#### Inspecting entries
+
+Library entries can be tricky on both sides: release definitions in the
+registry, and resolved release JSON in the workspace.
+
+Use `--name` to crawl a single library and print the resolved releases as a
+matrix. Use `--explain` to print each release definition side-by-side with the
+concretized variations the crawler will use, including inferred defaults.
+
+These modes are dry by default. For `--name`, add `--write` to write the
+resolved entry to the workspace.
+
+```bash
 $ uv run -m scripts.crawl_libraries --name lxml
 $ uv run -m scripts.crawl_libraries --explain lxml
+```
+
+#### Trying release definitions
+
+Add `--try` with `--name` or `--explain` to test release definitions without
+editing `registry.json`. If the library exists in the registry, its metadata is
+reused and only the `releases` section is replaced in memory.
+
+`--try` accepts JSON or a small YAML-ish `key: value` shorthand. Omit the value,
+or pass `-`, to read the definition from stdin.
+
+```bash
 $ uv run -m scripts.crawl_libraries --name lxml --try "base: pypi:lxml"
 $ uv run -m scripts.crawl_libraries --explain lxml --try "base: pypi:lxml"
 $ uv run -m scripts.crawl_libraries --name lxml --try <<'DEF'
 base: pypi:lxml
 platforms: windows-x32
 DEF
-$ uv run -m scripts.crawl_libraries --workspace libraries.json --name lxml
 ```
 
 ---
