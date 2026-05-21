@@ -578,7 +578,7 @@ async def test_handle_name_reports_release_matrix(
 
     captured = capsys.readouterr()
     assert "example release matrix; -v to see the raw JSON output" in captured.out
-    assert "Sublime (all builds)" in captured.out
+    assert "Sublime (all builds)" not in captured.out
     assert "py33" in captured.out
     assert "windows-x64" not in captured.out
     assert "linux-x64  A" in captured.out

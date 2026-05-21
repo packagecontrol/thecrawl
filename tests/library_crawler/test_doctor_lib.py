@@ -89,6 +89,34 @@ def test_make_version_labeler_generates_spreadsheet_style_group_labels():
     ]
 
 
+def test_doctor_omits_the_all_builds_heading_for_a_single_table():
+    releases = [
+        {
+            "url": "https://example.test/example-1.0.0.zip",
+            "version": "1.0.0",
+            "sublime_text": "*",
+            "platforms": ["linux-x64"],
+            "python_versions": ["3.8"],
+        },
+    ]
+
+    output = format_library_doctor(
+        name="example",
+        latest_version="1.0.0",
+        sources=["stub"],
+        releases=releases,
+    )
+
+    assert strip_trailing_whitespace(output) == """example release matrix; -v to see the raw JSON output
+Source: stub
+Latest version: 1.0.0
+
+           py38
+linux-x64  A
+
+A = 1.0.0"""
+
+
 def test_doctor_formats_tables_with_one_global_legend():
     releases = [
         {

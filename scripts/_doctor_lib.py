@@ -82,12 +82,19 @@ def format_library_doctor(
     sublime_texts = ordered_sublime_texts(tables)
     matrix_versions = ordered_matrix_versions(tables, sublime_texts)
     version_labels = make_version_labels(matrix_versions)
-    lines.append("")
+    show_sublime_headings = sublime_texts != ["*"]
+    if show_sublime_headings:
+        lines.append("")
     for index, sublime_text in enumerate(sublime_texts):
         if index:
             lines.extend(["", ""])
         lines.extend(
-            format_sublime_matrix(sublime_text, tables[sublime_text], version_labels)
+            format_sublime_matrix(
+                sublime_text,
+                tables[sublime_text],
+                version_labels,
+                show_heading=show_sublime_headings,
+            )
         )
 
     if matrix_versions:
@@ -127,8 +134,12 @@ def format_sublime_matrix(
     sublime_text: StBuild,
     table: MatrixTable,
     version_labels: dict[str, str],
+    *,
+    show_heading: bool,
 ) -> list[str]:
-    lines = [format_sublime_heading(sublime_text), ""]
+    lines = []
+    if show_heading:
+        lines.extend([format_sublime_heading(sublime_text), ""])
     lines.extend(format_matrix_table(table, version_labels))
     return lines
 
