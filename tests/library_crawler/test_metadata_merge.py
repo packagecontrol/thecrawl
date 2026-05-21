@@ -116,3 +116,21 @@ async def test_pypi_metdata_overwrites_github(monkeypatch, tmp_path):
     assert info["description"] == "pypi desc"
     assert info["author"] == "pypi author"
     assert info["issues"] == "https://pypi/issues"
+
+
+def test_pypi_issues_reads_bug_tracker_project_url():
+    info = {
+        "bugtrack_url": None,
+        "project_urls": {"Bug Tracker": "https://bugs.example.com"},
+    }
+
+    assert resolve_lib.pypi_issues(info) == "https://bugs.example.com"
+
+
+def test_pypi_issues_reads_tracker_project_url():
+    info = {
+        "bugtrack_url": None,
+        "project_urls": {"tracker": "https://github.com/example/issues"},
+    }
+
+    assert resolve_lib.pypi_issues(info) == "https://github.com/example/issues"

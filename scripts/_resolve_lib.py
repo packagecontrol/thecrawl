@@ -487,10 +487,7 @@ async def resolve_library(
     lib_info_from_pypi = drop_falsy({
         "description": pypi_metadata.get("summary"),
         "author": pypi_metadata.get("author"),
-        "issues": (
-            pypi_metadata.get("bugtrack_url")
-            or (pypi_metadata.get("project_urls") or {}).get("Issues")
-        ),
+        "issues": pypi_issues(pypi_metadata),
         "homepage": pypi_homepage(pypi_metadata),
     })
     info: ResolvedLibraryInfo = (
@@ -505,6 +502,24 @@ async def resolve_library(
             raise ValueError(f'Missing required "{key}" value.')
 
     return info, sorted(sources)
+
+
+def pypi_issues(info: dict) -> str | None:
+    if issues := info.get("bugtrack_url"):
+        return issues
+
+    project_urls = info.get("project_urls") or {}  # project_urls can be None!
+    for key, value in project_urls.items():
+        label = key.casefold()
+        if label in {"issues", "issue tracker", "bug tracker", "bugs", "tracker"}:
+            return value
+
+    for key, value in project_urls.items():
+        label = key.casefold()
+        if any(word in label for word in ("issue", "bug", "tracker")):
+            return value
+
+    return None
 
 
 def pypi_homepage(info: dict) -> str | None:
