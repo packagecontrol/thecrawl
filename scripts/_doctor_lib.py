@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import re
+import string
 from collections import defaultdict
 from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import cached_property
-from itertools import product
+from itertools import count, product
+from typing import Callable
 
 from packaging.version import InvalidVersion, Version
 
@@ -236,36 +238,36 @@ def make_version_labels(versions: list[str]) -> dict[str, str]:
     major-version group reuse the same letter with suffixes:
     A, A', A'', A''', A5...
     """
-    labels: dict[str, str] = {}
-    type VersionGroup = int | str
-    group_letters: dict[VersionGroup, str] = {}
-    group_counts: dict[VersionGroup, int] = {}
-    for version in versions:
+    label = make_version_labeler()
+    return {
+        version: label(version)
+        for version in versions
+    }
+
+
+def make_version_labeler() -> Callable[[VersionString], str]:
+    labelers = (
+        _with_suffixes(prefix)
+        for size in count(1)
+        for letters in product(string.ascii_uppercase, repeat=size)
+        if (prefix := "".join(letters))
+    )
+    known_groups: dict[object, Iterator[str]] = defaultdict(lambda: next(labelers))
+
+    def inner(version) -> str:
         group = version_group(version)
-        if group not in group_letters:
-            group_letters[group] = label_letter(len(group_letters))
-            group_counts[group] = 0
-        label = group_letters[group] + label_suffix(group_counts[group])
-        group_counts[group] += 1
-        labels[version] = label
-    return labels
+        return next(known_groups[group])
+
+    return inner
 
 
-def label_letter(index: int) -> str:
-    output = ""
-    index += 1
-    while index:
-        index, remainder = divmod(index - 1, 26)
-        output = chr(ord("A") + remainder) + output
-    return output
+def _with_suffixes(prefix: str) -> Iterator[str]:
+    for index in range(4):
+        yield prefix + index * "'"
 
-
-def label_suffix(index: int) -> str:
-    if index == 0:
-        return ""
-    if index <= 3:
-        return "'" * index
-    return str(index + 1)
+    while True:
+        index += 1
+        yield f"{prefix}{index}"
 
 
 def version_group(version: str):
