@@ -478,9 +478,12 @@ def print_unmatched_release_definitions(
     for index, definition in enumerate(definitions):
         if index:
             console.print("")
+        missing_values = missing_values_by_field(definition)
         for line in format_unmatched_release_definition(definition):
-            style = "yellow" if is_missing_value_underline(line) else None
-            console.print(line, style=style)
+            console.print(
+                line,
+                style=unmatched_definition_line_style(line, missing_values),
+            )
     console.print("")
 
 
@@ -510,6 +513,19 @@ def missing_values_by_field(
         if missing.python_version:
             values["python_versions"].add(missing.python_version)
     return values
+
+
+def unmatched_definition_line_style(
+    line: str,
+    missing_values: dict[str, set[str]],
+) -> str | None:
+    if is_missing_value_underline(line):
+        return "yellow"
+    if line.startswith("Missing match"):
+        return None
+    if missing_value_underline(line, missing_values):
+        return None
+    return "#777777"
 
 
 def is_missing_value_underline(line: str) -> bool:
