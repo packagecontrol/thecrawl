@@ -17,7 +17,7 @@ from rich.progress import track
 
 from ._doctor_lib import format_library_doctor
 from ._resolve_lib import (
-    ReleaseInfo,
+    Release,
     ReleaseEntry,
     explain_library,
     load_json,
@@ -67,7 +67,7 @@ class RegistryEntry(_Entry, total=False):
 
 class WorkspaceEntry(_Entry, total=False):
     name: Required[str]
-    # releases: Required[list[ReleaseInfo]]
+    # releases: Required[list[Release]]
 
     added: IsoTimestamp
     removed: IsoTimestamp
@@ -384,7 +384,7 @@ def parse_last_crawl(value: str | None) -> datetime:
         return datetime.min
 
 
-def latest_version_from_releases(releases: list[ReleaseInfo]) -> str | None:
+def latest_version_from_releases(releases: list[Release]) -> str | None:
     if not releases:
         return None
     newest = sorted(releases, key=lambda rel: rel.get("date") or "")[-1]
