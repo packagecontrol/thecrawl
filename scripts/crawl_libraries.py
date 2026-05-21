@@ -472,12 +472,16 @@ def print_unmatched_release_definitions(
 ) -> None:
     if not definitions:
         return
-    print("Unmatched release definitions:")
+
+    console = Console(markup=False, highlight=False, soft_wrap=True)
+    console.print("\nUnmatched release definitions:")
     for index, definition in enumerate(definitions):
         if index:
-            print("")
+            console.print("")
         for line in format_unmatched_release_definition(definition):
-            print(line)
+            style = "yellow" if is_missing_value_underline(line) else None
+            console.print(line, style=style)
+    console.print("")
 
 
 def format_unmatched_release_definition(
@@ -506,6 +510,10 @@ def missing_values_by_field(
         if missing.python_version:
             values["python_versions"].add(missing.python_version)
     return values
+
+
+def is_missing_value_underline(line: str) -> bool:
+    return line.strip(" ~") == "" and "~" in line
 
 
 def missing_value_underline(line: str, missing_values: dict[str, set[str]]) -> str:
