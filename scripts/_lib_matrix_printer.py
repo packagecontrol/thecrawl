@@ -17,6 +17,7 @@ from ._resolve_lib import (
     SUPPORTED_PLATFORMS,
     SUPPORTED_PYTHON_VERSIONS,
 )
+from ._lib_doctor import UnmatchedReleaseDefinition
 from ._utils import unique_values_preserving_order
 
 
@@ -63,13 +64,12 @@ class MatrixTable:
 type MatrixTables = dict[StBuild, MatrixTable]
 
 
-def format_library_doctor(
+def format_library_matrix(
     name: str,
     latest_version: str | None,
     sources: list[str],
     releases: list[Release],
-    missing_coordinates: Iterable[MatrixKey] = (),
-    has_unmatched_definitions: bool = False,
+    unmatched_definitions: list[UnmatchedReleaseDefinition] = [],
 ) -> str:
     source_label = ", ".join(sources) if sources else "cache"
     lines = [
@@ -80,7 +80,8 @@ def format_library_doctor(
         lines.append(f"Latest version: {latest_version}")
     lines.append("")
 
-    missing_coordinates = list(missing_coordinates)
+    has_unmatched_definitions = bool(unmatched_definitions)
+    missing_coordinates = missing_matrix_coordinates(unmatched_definitions)
     tables = release_matrix(releases, missing_coordinates)
     if not tables:
         lines.append("No release matrix.")
@@ -135,6 +136,27 @@ def format_library_doctor(
         )
 
     return "\n".join(lines)
+
+
+def missing_matrix_coordinates(
+    unmatched: Iterable[UnmatchedReleaseDefinition],
+) -> list[MatrixKey]:
+    coordinates = []
+    seen = set()
+    for definition in unmatched:
+        for missing in definition.missing:
+            if not missing.platform or not missing.python_version:
+                continue
+            coordinate = (
+                missing.sublime_text,
+                missing.platform,
+                missing.python_version,
+            )
+            if coordinate in seen:
+                continue
+            seen.add(coordinate)
+            coordinates.append(coordinate)
+    return coordinates
 
 
 def release_matrix(

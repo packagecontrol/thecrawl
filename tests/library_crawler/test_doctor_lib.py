@@ -1,7 +1,8 @@
 import pytest
 
-from scripts._doctor_lib import (
-    format_library_doctor,
+from scripts._lib_doctor import ExpectedReleaseMatch, UnmatchedReleaseDefinition
+from scripts._lib_matrix_printer import (
+    format_library_matrix,
     make_version_labeler,
     make_version_labels,
 )
@@ -100,7 +101,7 @@ def test_doctor_omits_the_all_builds_heading_for_a_single_table():
         },
     ]
 
-    output = format_library_doctor(
+    output = format_library_matrix(
         name="example",
         latest_version="1.0.0",
         sources=["stub"],
@@ -129,12 +130,17 @@ def test_doctor_marks_missing_expected_cells():
         },
     ]
 
-    output = format_library_doctor(
+    output = format_library_matrix(
         name="example",
         latest_version="1.0.0",
         sources=["stub"],
         releases=releases,
-        missing_coordinates=[("*", "windows-x64", "3.3")],
+        unmatched_definitions=[
+            UnmatchedReleaseDefinition(
+                raw={},
+                missing=[ExpectedReleaseMatch("*", "windows-x64", "3.3")],
+            )
+        ],
     )
 
     assert strip_trailing_whitespace(output) == """example release matrix; -v to see the raw JSON output
@@ -168,7 +174,7 @@ def test_doctor_formats_tables_with_one_global_legend():
         },
     ]
 
-    output = format_library_doctor(
+    output = format_library_matrix(
         name="example",
         latest_version="3.7.2",
         sources=["stub"],
