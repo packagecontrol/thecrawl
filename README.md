@@ -110,11 +110,15 @@ The meat.
 Crawls the package registry to update per-package release and metadata information, and
 stores it in a workspace file (`workspace.json`).
 Supports crawling all packages, or a single package via the `--name` option.
+
 Use `--presto` (or set `PRESTO_PRESTO_CRAWL=1`) to bypass `next_crawl` scheduling
 and fast-forward the workspace by crawling up to `--limit` packages.
-Use `--explain` to show the normalized package entry for a package.
-Set `EFFECTIVE=1` to switch `--explain` to machine-friendly plain text version of the "newest"
-release definition.
+
+Use `--explain` to show a side-by-side view of the registry entry and the
+normalized package entry. This is useful for looking under the hood and seeing
+which values the crawler fills in to turn a sparse definition into a full one.
+Set `EFFECTIVE=1` to switch `--explain` to machine-friendly plain text for the
+effective "newest" release definition.
 
 - Integrates with GitHub, GitLab, and Bitbucket APIs to fetch detailed info and releases.
 - Requires a valid `GITHUB_TOKEN` in your environment for GitHub API access because GitHub's GraphQl
