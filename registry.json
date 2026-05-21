@@ -8424,6 +8424,23 @@
       "first_seen": "2016-03-11T14:48:46Z"
     },
     {
+      "name": "Calendar Popup",
+      "labels": [
+        "calendar",
+        "utilities"
+      ],
+      "details": "https://github.com/blalor/SublimeCalendarPopup",
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-21T15:27:13Z"
+    },
+    {
       "name": "Calendar Week",
       "details": "https://github.com/csch0/SublimeText-Calendar-Week",
       "releases": [
