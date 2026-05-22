@@ -102,48 +102,66 @@ def print_library_explain(
     console = console or Console()
 
     if metadata is not None:
-        console.print(_to_pretty_json(metadata))
+        console.print(_to_pretty_json(metadata), soft_wrap=True)
         console.print()
 
-    console.rule(f"{name}: input release definitions and normalized variations")
+    console.print(_library_explain_table(rows))
 
+
+def _library_explain_table(
+    rows: list[tuple[dict[str, Any], list[dict[str, Any]]]],
+) -> Table:
     table = Table(
         box=box.SIMPLE_HEAD,
-        expand=True,
+        expand=False,
+        show_edge=False,
         show_header=True,
         show_lines=False,
+        padding=(0, 1),
+        pad_edge=False,
     )
-    table.add_column("#", style="yellow", no_wrap=True)
-    table.add_column("Input definition", ratio=1, overflow="fold")
-    table.add_column("Normalized variation", ratio=1, overflow="fold")
+    table.add_column("#", style="yellow", no_wrap=True, justify="right")
+    table.add_column("Input definition", min_width=30, overflow="fold")
+    table.add_column("Normalized variation", overflow="fold")
 
+    for entry_no, (label, left_lines, right_lines) in enumerate(
+        _library_explain_entries(rows)
+    ):
+        if entry_no:
+            table.add_row("", "", "")
+        table.add_row(label, "\n".join(left_lines), "\n".join(right_lines))
+
+    return table
+
+
+def _library_explain_entries(
+    rows: list[tuple[dict[str, Any], list[dict[str, Any]]]],
+) -> list[tuple[str, list[str], list[str]]]:
     if not rows:
-        table.add_row("-", "(empty)", "(empty)")
-    else:
-        for release_no, (left, right_variations) in enumerate(rows, start=1):
-            if release_no > 1:
-                table.add_row("", "", "")
+        return [("-", ["(empty)"], ["(empty)"])]
 
-            if not right_variations:
-                table.add_row(str(release_no), _to_pretty_json(left), "(empty)")
-                continue
+    entries: list[tuple[str, list[str], list[str]]] = []
+    for release_no, (left, right_variations) in enumerate(rows, start=1):
+        if not right_variations:
+            entries.append((str(release_no), _to_json_lines(left), ["(empty)"]))
+            continue
 
-            if len(right_variations) == 1:
-                table.add_row(
-                    str(release_no),
-                    _to_pretty_json(left),
-                    _to_pretty_json(right_variations[0]),
-                )
-                continue
+        if len(right_variations) == 1:
+            entries.append((
+                str(release_no),
+                _to_json_lines(left),
+                _to_json_lines(right_variations[0]),
+            ))
+            continue
 
-            for variation_no, right in enumerate(right_variations, start=1):
-                table.add_row(
-                    f"{release_no}-{variation_no}",
-                    _to_pretty_json(left) if variation_no == 1 else "",
-                    _to_pretty_json(right),
-                )
+        for variation_no, right in enumerate(right_variations, start=1):
+            entries.append((
+                f"{release_no}-{variation_no}",
+                _to_json_lines(left) if variation_no == 1 else [],
+                _to_json_lines(right),
+            ))
 
-    console.print(table)
+    return entries
 
 
 def _tags_sort_value(value: Any) -> str:
