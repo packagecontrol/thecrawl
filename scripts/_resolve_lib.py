@@ -76,6 +76,9 @@ def build_default_asset_patterns(platform_tags: list[str]) -> list[AssetPattern]
 
     for platform_tag, abi_tag in product(platform_tags, abi_tags):
         patterns.append(f"*-{version_var}-{py_tag}-{abi_tag}-{platform_tag}.whl")
+    for platform_tag in platform_tags:
+        patterns.append(f"*-{version_var}-py3-none-{platform_tag}.whl")
+        patterns.append(f"*-{version_var}-py2.py3-none-{platform_tag}.whl")
     patterns.append(f"*-{version_var}-py3-none-any.whl")
     patterns.append(f"*-{version_var}-py2.py3-none-any.whl")
     return patterns

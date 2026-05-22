@@ -61,8 +61,16 @@ def test_concretize_auto_assets_by_platform():
     patterns_by_platform = {item.platform: item.asset_patterns for item in concrete_defs}
 
     assert any("win_amd64" in pat for pat in patterns_by_platform["windows-x64"])
+    assert (
+        "*-${version}-py3-none-win_amd64.whl"
+        in patterns_by_platform["windows-x64"]
+    )
     assert any(
         "manylinux*_x86_64" in pat for pat in patterns_by_platform["linux-x64"]
+    )
+    assert (
+        "*-${version}-py3-none-manylinux*_x86_64.whl"
+        in patterns_by_platform["linux-x64"]
     )
 
 
