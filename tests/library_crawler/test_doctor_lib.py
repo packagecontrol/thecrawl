@@ -108,7 +108,8 @@ def test_doctor_omits_the_all_builds_heading_for_a_single_table():
         releases=releases,
     )
 
-    assert strip_trailing_whitespace(output) == """example release matrix; -v to see the raw JSON output
+    assert strip_trailing_whitespace(output) == """\
+example release matrix; -v to see the raw JSON output
 Source: stub
 Latest version: 1.0.0
 
@@ -143,7 +144,8 @@ def test_doctor_marks_missing_expected_cells():
         ],
     )
 
-    assert strip_trailing_whitespace(output) == """example release matrix; -v to see the raw JSON output
+    assert strip_trailing_whitespace(output) == """\
+example release matrix; -v to see the raw JSON output
 Source: stub
 Latest version: 1.0.0
 
@@ -181,7 +183,8 @@ def test_doctor_formats_tables_with_one_global_legend():
         releases=releases,
     )
 
-    assert strip_trailing_whitespace(output) == """example release matrix; -v to see the raw JSON output
+    assert strip_trailing_whitespace(output) == """\
+example release matrix; -v to see the raw JSON output
 Source: stub
 Latest version: 3.7.2
 
