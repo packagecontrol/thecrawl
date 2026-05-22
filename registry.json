@@ -38186,7 +38186,7 @@
       "details": "https://github.com/superbob/SublimeTextLanguageFrench",
       "labels": [
         "spell check",
-        "dictionnary",
+        "dictionary",
         "french"
       ],
       "releases": [
@@ -71196,7 +71196,7 @@
       "labels": [
         "linting",
         "SublimeLinter",
-        "elixer"
+        "elixir"
       ],
       "releases": [
         {
