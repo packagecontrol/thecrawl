@@ -23778,7 +23778,7 @@
       "name": "Fight Color Scheme",
       "details": "https://github.com/ghyatzo/fight-color-scheme",
       "labels": [
-        "color-scheme",
+        "color scheme",
         "light",
         "dark"
       ],
@@ -29798,6 +29798,7 @@
       "name": "Grun Colour Scheme",
       "details": "https://github.com/SimonImbrogno/Grun",
       "labels": [
+        "color scheme",
         "colour scheme",
         "dark",
         "dim",
@@ -33443,7 +33444,7 @@
     },
     {
       "name": "Indent XML",
-      "details": "https://github.com/alek-sys/sublimetext_indentxml",
+      "details": "https://github.com/braver/IndentXML",
       "labels": [
         "indentation",
         "xml"
@@ -33451,7 +33452,7 @@
       "releases": [
         {
           "sublime_text": "*",
-          "branch": "master"
+          "tags": true
         }
       ],
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
@@ -37908,14 +37909,19 @@
     },
     {
       "name": "Kotlin",
-      "details": "https://github.com/vkostyukov/kotlin-sublime-package",
+      "details": "https://github.com/guille/sublime-kotlin",
       "labels": [
         "language syntax"
       ],
       "releases": [
         {
-          "sublime_text": "*",
+          "sublime_text": "<4075",
+          "base": "https://github.com/vkostyukov/kotlin-sublime-package",
           "branch": "master"
+        },
+        {
+          "sublime_text": ">=4075",
+          "tags": true
         }
       ],
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
@@ -38347,7 +38353,7 @@
         "brazil",
         "brazilian",
         "dicion\u00e1rio",
-        "dictionnary",
+        "dictionary",
         "portugu\u00eas",
         "portuguese",
         "portugal"
@@ -45870,7 +45876,7 @@
       "details": "https://github.com/eltonvs/sublime-minify-on-save",
       "author": "eltonvs",
       "labels": [
-        "automatization",
+        "automation",
         "minify"
       ],
       "releases": [
@@ -63558,9 +63564,9 @@
       "name": "Scold",
       "details": "https://github.com/Xion/SublimeScold",
       "labels": [
-        "code_sharing",
+        "code sharing",
         "email",
-        "remote_collaboration"
+        "remote collaboration"
       ],
       "releases": [
         {
@@ -76164,7 +76170,7 @@
         "auto-complete",
         "swan",
         "miniapp",
-        "smartprogramer"
+        "smartprogram"
       ],
       "releases": [
         {
