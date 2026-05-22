@@ -245,7 +245,12 @@ def build_bulk_edit_message(
     resurrected: list[str],
     metadata_changed: list[str],
 ) -> str:
-    sections: list[str] = ["Bulk edit"]
+    sections: list[str] = [bulk_edit_subject(
+        added=added,
+        tombstoned=tombstoned,
+        resurrected=resurrected,
+        metadata_changed=metadata_changed,
+    )]
 
     if added:
         sections.extend([
@@ -276,6 +281,20 @@ def build_bulk_edit_message(
         ])
 
     return "\n".join(sections)
+
+
+def bulk_edit_subject(
+    *,
+    added: list[str],
+    tombstoned: list[str],
+    resurrected: list[str],
+    metadata_changed: list[str],
+) -> str:
+    if added and not (tombstoned or resurrected or metadata_changed):
+        return "Bulk additions"
+    if tombstoned and not (added or resurrected or metadata_changed):
+        return "Bulk removals"
+    return "Bulk edit"
 
 
 def sort_names(names: Any) -> list[str]:

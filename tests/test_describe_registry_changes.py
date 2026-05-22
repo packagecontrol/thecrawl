@@ -22,6 +22,35 @@ def test_describe_registry_changes_single_tombstoned() -> None:
     assert describe_script.describe_registry_changes(old, new) == "Tombstoned `Gloom`"
 
 
+def test_describe_registry_changes_bulk_additions() -> None:
+    old = {"packages": []}
+    new = {"packages": [pkg("Gloom"), pkg("Terminus")]}
+
+    assert describe_script.describe_registry_changes(old, new) == (
+        "Bulk additions\n\n"
+        "Record addition of following packages:\n"
+        "- Gloom\n"
+        "- Terminus"
+    )
+
+
+def test_describe_registry_changes_bulk_removals() -> None:
+    old = {"packages": [pkg("Gloom"), pkg("Terminus")]}
+    new = {
+        "packages": [
+            pkg("Gloom", removed="2026-01-01T00:00:00Z"),
+            pkg("Terminus", removed="2026-01-01T00:00:00Z"),
+        ]
+    }
+
+    assert describe_script.describe_registry_changes(old, new) == (
+        "Bulk removals\n\n"
+        "Record tombstoning the following packages:\n"
+        "- Gloom\n"
+        "- Terminus"
+    )
+
+
 def test_describe_registry_changes_single_resurrected() -> None:
     old = {"packages": [pkg("Gloom", removed="2026-01-01T00:00:00Z")]}
     new = {"packages": [pkg("Gloom")]}
