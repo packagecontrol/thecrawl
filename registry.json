@@ -8038,6 +8038,28 @@
       "removed": "2022-10-07T13:24:24Z"
     },
     {
+      "name": "C Family Rewrite (C23 and C++23)",
+      "details": "https://github.com/camila314/C-Family-Rewrite",
+      "labels": [
+        "language syntax",
+        "c",
+        "c++",
+        "objc",
+        "objc++",
+        "objective-c"
+      ],
+      "description": "Complete modern rewrite of C/C++/ObjC/ObjC++ syntax",
+      "releases": [
+        {
+          "sublime_text": ">=4199",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-24T18:49:09Z"
+    },
+    {
       "name": "C Improved",
       "details": "https://github.com/abusalimov/SublimeCImproved",
       "labels": [
