@@ -77485,6 +77485,25 @@
       "removed": "2017-08-07T17:23:30Z"
     },
     {
+      "name": "Tahcia Script Sync",
+      "details": "https://github.com/tahcia/sublime_text",
+      "labels": [
+        "automation",
+        "scripting",
+        "json",
+        "remote execution"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-25T20:43:41Z"
+    },
+    {
       "name": "Tailwind CSS",
       "details": "https://github.com/SublimeText/TailwindCSS",
       "labels": [
