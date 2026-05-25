@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
+import tempfile
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -20,6 +24,8 @@ class Args:
 
 
 type RunId = str
+
+BACKFILL_NOTES_DAYS = 7
 
 
 class RuntimeArtifact(TypedDict):
@@ -110,6 +116,7 @@ def update_logs(args: Args):
     enriched = 0
     created = 0
     artifacts_attached = 0
+    notes_backfilled = 0
 
     runs_index = {
         run_id: {
@@ -121,6 +128,11 @@ def update_logs(args: Args):
     }
     artifacts_index = build_artifacts_index(artifacts)
 
+    # First pass: enrich entries that are already present in logs.json.
+    #
+    # These may be normal entries written by collect_logs, or metadata-only
+    # placeholders from a previous enrich run. Attach missing workflow metadata
+    # and artifacts.
     seen = set()
     for entry in entries:
         run_id = entry["run_id"]
@@ -136,6 +148,11 @@ def update_logs(args: Args):
             entry["artifacts"] = run_artifacts
             artifacts_attached += 1
 
+    # Second pass: add completed workflow runs that are missing from logs.json.
+    #
+    # This covers runs where the workflow completed, but the normal collect_logs
+    # path did not publish an entry. Create a metadata entry from GitHub's run
+    # data and attach artifacts.
     for run_id, info in runs_index.items():
         if run_id in seen:
             continue
@@ -157,14 +174,54 @@ def update_logs(args: Args):
         entries.append(new_entry)
         created += 1
 
+    # Third pass: recover notes for recent metadata-only entries.
+    #
+    # This happens when the crawl workflow wrote notes into its crawl-backup,
+    # but the later publish/enrich job failed before that logs.json reached the
+    # release asset.
+    for entry in entries:
+        entry_artifacts = entry.get("artifacts") or []
+        if backfill_notes_from_crawl_backup(entry, entry_artifacts):
+            notes_backfilled += 1
+
     entries.sort(key=lambda entry: entry.get("date", ""), reverse=True)
     write_json(args.output, entries, pretty=args.pretty, ensure_ascii=True)
     print(
         "Enriched entries: "
         f"{enriched}, "
         f"added missing runs: {created}, "
-        f"attached artifacts on entries: {artifacts_attached}"
+        f"attached artifacts on entries: {artifacts_attached}, "
+        f"backfilled notes: {notes_backfilled}"
     )
+
+
+def backfill_notes_from_crawl_backup(
+    entry: dict[str, Any],
+    artifacts: Sequence[ArtifactMetadata],
+) -> bool:
+    if entry.get("notes"):
+        return False
+    if not is_recent_enough_for_notes_backfill(entry["date"]):
+        return False
+
+    backup = next((artifact for artifact in artifacts if artifact["name"] == "crawl-backup"), None)
+    if not backup:
+        return False
+
+    backup_entry = load_crawl_backup_log_entry(entry["run_id"], backup["name"])
+    if not backup_entry or not backup_entry.get("notes"):
+        return False
+
+    entry["notes"] = backup_entry["notes"]
+    if "found_updates" in backup_entry and "found_updates" not in entry:
+        entry["found_updates"] = backup_entry["found_updates"]
+    return True
+
+
+def is_recent_enough_for_notes_backfill(date: str) -> bool:
+    entry_date = datetime.fromisoformat(date)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=BACKFILL_NOTES_DAYS)
+    return entry_date >= cutoff
 
 
 def build_artifacts_index(artifacts: list[RuntimeArtifact]) -> dict[RunId, list[ArtifactMetadata]]:
@@ -183,6 +240,32 @@ def build_artifacts_index(artifacts: list[RuntimeArtifact]) -> dict[RunId, list[
         run_artifacts.sort(key=lambda item: (item["name"].casefold(), str(item["id"])))
 
     return dict(artifacts_by_run)
+
+
+def load_crawl_backup_log_entry(run_id: RunId, artifact_name: str) -> dict[str, Any] | None:
+    with tempfile.TemporaryDirectory(prefix=f"enrich-logs-{run_id}-") as temp_dir:
+        process = subprocess.run(
+            ["gh", "run", "download", run_id, "--name", artifact_name, "--dir", temp_dir],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if process.returncode != 0:
+            return None
+
+        logs_path = find_logs_json(Path(temp_dir))
+        if not logs_path:
+            return None
+
+        entries = load_json(logs_path) or []
+        return next((entry for entry in entries if entry["run_id"] == run_id), None)
+
+
+def find_logs_json(directory: Path) -> Path | None:
+    path = directory / "logs.json"
+    if path.is_file():
+        return path
+    return next(directory.rglob("logs.json"), None)
 
 
 def load_json(path: Path) -> Any:
