@@ -248,6 +248,8 @@ function render(targetIndex) {
 }
 
 function refreshLogs() {
+  const wasAtNewest = logs.length > 0 && index === 0 && !emptyStateMessage
+
   loadLogs().then((entries) => {
     if (!entries.length) return
     const days = chart?.days
@@ -256,6 +258,10 @@ function refreshLogs() {
       : entries
     logs = annotateChanges(visibleEntries)
     chart?.setData(logs)
+    if (wasAtNewest) {
+      render(0)
+      return
+    }
     const resolved = resolveIndexFromUrl()
     if (resolved.hasRunId && !resolved.found) {
       renderEmptyState(missingRunMessage(resolved.runId))
