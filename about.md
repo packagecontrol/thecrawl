@@ -11,9 +11,9 @@ The system consists of several components:
 
 - [This website](https://packages.sublimetext.io), listing publicly available packages for Sublime Text.
 - A [registry of libraries](https://github.com/packagecontrol/channel/blob/main/repository.json) (a.k.a. dependencies) available for package authors.
-- A [registry of packages](https://github.com/wbond/package_control_channel), where you can submit your package to be published here.
+- A [registry of packages](https://github.com/sublimehq/package_control_channel), where you can submit your package to be published here.
 - A [crawler](https://github.com/packagecontrol/thecrawl) that compiles the data that drives the system: it finds new versions of all packages and makes them available to the site and to the Package Control package.
-- The [Package Control package](https://packages.sublimetext.io/packages/Package%20Control/) that provides the user interface inside Sublime Text to find, install, and update packages.
+- The [Package Control package](https://packages.sublimetext.io/packages/Package%20Control) that provides the user interface inside Sublime Text to find, install, and update packages.
 
 You can start using the new package registry today by replacing the existing channel in your Package Control package settings with the new one:
 
