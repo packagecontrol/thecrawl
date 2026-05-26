@@ -99,6 +99,10 @@
             {# the actual bars #}
             {{ rect(x, y_net, dim.bar_w, net_h, 'bar bar-net', title_text) }}
             {{ rect(x, y_rem, dim.bar_w, rem_h, 'bar bar-remove', title_text) }}
+            {# Distinguish no-activity weeks from removal-only weeks without rescaling the chart. #}
+            {% if inst == 0 and rem > 0 %}
+              {{ rect(x, dim.chart_h, dim.bar_w, 3, 'bar bar-remove bar-remove-excess', title_text) }}
+            {% endif %}
 
             {# third bar: invisible hit area from top to top of installs just for the tooltip #}
             {{ rect(x, 0, dim.bar_w, y_top_inst, 'week-slice-hit', title_text) }}
