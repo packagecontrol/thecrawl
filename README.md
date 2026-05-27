@@ -41,7 +41,7 @@ Note however, that packages and libraries are currently on different registries.
 ```bash
 $ uv run -m scripts.generate_registry \
   --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json \
-  --channel https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/channel.json
+  --channel https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/channel.json
 ```
 
 For `crawl`, a GITHUB_TOKEN environment variable is *required*.  GitLab and Bitbucket
@@ -56,10 +56,10 @@ platforms, so that even the tiny rate limits are enough for our purpose.
 
 Fetches and generates a registry of all packages and dependencies from one or more package
 control channels.  Defaults to our main channel, collected and maintained at
-[wbond](https://github.com/wbond/package_control_channel).
+[sublimehq](https://github.com/sublimehq/package_control_channel).
 
 Supports also Package Control repositories as input, e.g. the highly trusted
-https://github.com/wbond/package_control_channel/blob/master/repository.json
+https://github.com/sublimehq/package_control_channel/blob/master/repository.json
 
 
 ```bash

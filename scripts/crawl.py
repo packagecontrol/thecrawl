@@ -49,7 +49,7 @@ EXPLAIN_EFFECTIVE_ENV = "EFFECTIVE"
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 STYLIZED_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 MAIN_REPOSITORY_SOURCE = (
-    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+    "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
 )
 TRUSTED_SOURCES = {
     MAIN_REPOSITORY_SOURCE,

@@ -97,7 +97,7 @@ def make_registry_entry(name: str, removed: str | None = None):
         "name": name,
         "details": f"https://github.com/example/{name.lower()}",
         "releases": [{"sublime_text": "*", "branch": True}],
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
     }
     if removed:

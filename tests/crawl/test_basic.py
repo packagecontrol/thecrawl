@@ -7,7 +7,7 @@ from scripts.crawl import main_
 REGISTRY = """
 {
   "repositories": [
-    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+    "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
   ],
   "packages": [
     {
@@ -23,7 +23,7 @@ REGISTRY = """
           "tags": true
         }
       ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0"
     }
   ]
@@ -107,7 +107,7 @@ EXPECTED = """
           "version": "2.51.1"
         }
       ],
-      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2025-08-13T21:44:16Z",
       "last_seen": "2025-08-13T21:44:16Z",
@@ -181,7 +181,7 @@ async def test_metadata_name_is_essentially_ignored_as_registry_name_has_precede
 ):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -193,7 +193,7 @@ async def test_metadata_name_is_essentially_ignored_as_registry_name_has_precede
                         "branch": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -252,7 +252,7 @@ async def test_accept_stylized_dates_for_static_releases(
 ):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -266,7 +266,7 @@ async def test_accept_stylized_dates_for_static_releases(
                         "date": date_input
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -303,13 +303,13 @@ async def test_accept_stylized_dates_for_static_releases(
 async def test_missing_release_definitions_default_to_tags(set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
                 "name": "ImplicitRelease",
                 "details": "https://github.com/example/implicit-release",
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -367,7 +367,7 @@ async def test_missing_release_definitions_default_to_tags(set_github_info):
 async def test_release_without_asset_or_branch_defaults_to_tags(set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -378,7 +378,7 @@ async def test_release_without_asset_or_branch_defaults_to_tags(set_github_info)
                         "sublime_text": "*"
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -433,7 +433,7 @@ async def test_release_without_asset_or_branch_defaults_to_tags(set_github_info)
 async def test_version_constrained_tags_and_auto_open_ended_release(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -445,7 +445,7 @@ async def test_version_constrained_tags_and_auto_open_ended_release(set_now, set
                         "version": "<3.0.0"
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -507,7 +507,7 @@ async def test_version_constrained_tags_and_auto_open_ended_release(set_now, set
 async def test_unconstrained_tags_keep_legacy_semver_parsing(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -519,7 +519,7 @@ async def test_unconstrained_tags_keep_legacy_semver_parsing(set_now, set_github
                         "tags": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -578,7 +578,7 @@ async def test_unconstrained_tags_keep_legacy_semver_parsing(set_now, set_github
 async def test_constrained_tags_use_packaging_version_parsing(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -591,7 +591,7 @@ async def test_constrained_tags_use_packaging_version_parsing(set_now, set_githu
                         "version": ">=1.0rc1"
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -636,7 +636,7 @@ async def test_constrained_tags_use_packaging_version_parsing(set_now, set_githu
 async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -648,7 +648,7 @@ async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_i
                         "tags": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -712,7 +712,7 @@ async def test_prerelease_tag_does_not_use_branch_fallback(set_now, set_github_i
 async def test_tag_missing_falls_back_to_branch(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -724,7 +724,7 @@ async def test_tag_missing_falls_back_to_branch(set_now, set_github_info, capsys
                         "tags": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -777,7 +777,7 @@ async def test_tag_missing_falls_back_to_branch(set_now, set_github_info, capsys
 async def test_tag_missing_and_branch_missing_logs_tag_error(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -789,7 +789,7 @@ async def test_tag_missing_and_branch_missing_logs_tag_error(set_now, set_github
                         "tags": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -836,7 +836,7 @@ async def test_tag_missing_and_branch_missing_logs_tag_error(set_now, set_github
 async def test_branch_missing_logs_branch_error(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -848,7 +848,7 @@ async def test_branch_missing_logs_branch_error(set_now, set_github_info, capsys
                         "branch": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -891,7 +891,7 @@ async def test_branch_missing_logs_branch_error(set_now, set_github_info, capsys
 async def test_branch_true_selects_default_branch(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -903,7 +903,7 @@ async def test_branch_true_selects_default_branch(set_now, set_github_info):
                         "branch": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -958,7 +958,7 @@ async def test_branch_true_selects_default_branch(set_now, set_github_info):
 async def test_branch_specific_selects_named_branch(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -970,7 +970,7 @@ async def test_branch_specific_selects_named_branch(set_now, set_github_info):
                         "branch": "troo"
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -1025,7 +1025,7 @@ async def test_branch_specific_selects_named_branch(set_now, set_github_info):
 async def test_branch_specific_missing_does_not_fallback(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -1037,7 +1037,7 @@ async def test_branch_specific_missing_does_not_fallback(set_now, set_github_inf
                         "branch": "troo"
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -1088,7 +1088,7 @@ async def test_branch_specific_missing_does_not_fallback(set_now, set_github_inf
 async def test_tag_true_includes_prerelease_and_final(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -1100,7 +1100,7 @@ async def test_tag_true_includes_prerelease_and_final(set_now, set_github_info):
                         "tags": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -1161,7 +1161,7 @@ async def test_tag_true_includes_prerelease_and_final(set_now, set_github_info):
 async def test_tag_true_filters_to_running_year(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -1173,7 +1173,7 @@ async def test_tag_true_filters_to_running_year(set_now, set_github_info):
                         "tags": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -1241,7 +1241,7 @@ async def test_tag_true_returns_latest_when_running_year_empty(
 ):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -1253,7 +1253,7 @@ async def test_tag_true_returns_latest_when_running_year_empty(
                         "tags": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -1323,7 +1323,7 @@ async def test_tag_true_returns_latest_when_running_year_empty(
 async def test_tag_prefixes_do_not_apply_when_tags_true(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -1352,7 +1352,7 @@ async def test_tag_prefixes_do_not_apply_when_tags_true(set_now, set_github_info
                         "tags": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]

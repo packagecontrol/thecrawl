@@ -7,7 +7,7 @@ def test_maintenance_imports_registry_tombstones_into_workspace():
         "first_seen": "2012-01-01T00:00:00Z",
         "removed": "2024-01-01T00:00:00Z",
         "labels": ["theme"],
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
     }
     registry = {
@@ -16,7 +16,7 @@ def test_maintenance_imports_registry_tombstones_into_workspace():
                 "name": "Alive",
                 "details": "https://github.com/example/alive",
                 "releases": [{"sublime_text": "*", "branch": True}],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             },
             tombstone,

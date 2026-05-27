@@ -7,7 +7,7 @@ from scripts.crawl import main_
 async def test_hints_sent_to_fetcher(monkeypatch, set_now):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -19,7 +19,7 @@ async def test_hints_sent_to_fetcher(monkeypatch, set_now):
                         "branch": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -54,7 +54,7 @@ async def test_hints_sent_to_fetcher(monkeypatch, set_now):
 async def test_hints_persisted_from_metadata(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -66,7 +66,7 @@ async def test_hints_persisted_from_metadata(set_now, set_github_info):
                         "branch": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]

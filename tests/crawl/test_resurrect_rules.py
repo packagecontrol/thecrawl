@@ -10,7 +10,7 @@ async def test_skip_heartattack_keeps_fail_reason(set_now):
         "name": "RepoTakeover",
         "details": "https://github.com/example/repo-takeover",
         "releases": [{"sublime_text": "*", "branch": True}],
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
     }
     existing = {
@@ -35,7 +35,7 @@ async def test_crawl_keeps_fail_reason_on_heartattack_skip(set_now):
         "name": "RepoTakeover",
         "details": "https://github.com/example/repo-takeover",
         "releases": [{"sublime_text": "*", "branch": True}],
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
     }
     existing = {
@@ -62,7 +62,7 @@ async def test_skip_404_after_month(set_now):
         "name": "MissingRepo",
         "details": "https://github.com/example/missing",
         "releases": [{"sublime_text": "*", "branch": True}],
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
     }
     existing = {
@@ -85,7 +85,7 @@ async def test_crawl_keeps_fail_reason_on_404_skip(set_now):
         "name": "MissingRepo",
         "details": "https://github.com/example/missing",
         "releases": [{"sublime_text": "*", "branch": True}],
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
     }
     existing = {
@@ -110,7 +110,7 @@ async def test_crawl_error_adopts_registry_source_when_missing(set_now, monkeypa
         "name": "MissingSource",
         "details": "https://github.com/example/missing-source",
         "releases": [{"sublime_text": "*", "branch": True}],
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
     }
     existing = {
@@ -133,14 +133,14 @@ async def test_crawl_error_adopts_registry_source_when_missing(set_now, monkeypa
 async def test_removed_package_is_resurrected_on_trusted_source(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
                 "name": "Reappeared",
                 "details": "https://github.com/example/reappeared",
                 "releases": [{"sublime_text": "*", "branch": True}],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],
@@ -188,7 +188,7 @@ async def test_maintenance_imported_tombstone_resurrects_without_special_case(
     set_now,
     set_github_info,
 ):
-    source = "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+    source = "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
 
     workspace = {"packages": {}, "libraries": {}}
     registry_tombstoned = {
@@ -253,7 +253,7 @@ async def test_retry_recent_404(set_now, monkeypatch):
         "name": "FlakyRepo",
         "details": "https://github.com/example/flaky",
         "releases": [{"sublime_text": "*", "branch": True}],
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
     }
     existing = {
@@ -288,7 +288,7 @@ async def test_resurrect_on_details_change(set_now, monkeypatch):
         "name": "RevivedRepo",
         "details": "https://github.com/example/revived-new",
         "releases": [{"sublime_text": "*", "branch": True}],
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
     }
     existing = {

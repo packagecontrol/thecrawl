@@ -27,12 +27,12 @@ jobs:
       - name: Check for upstream changes
         id: check
         run: |
-          git remote add wbond https://github.com/wbond/package_control_channel.git
-          git fetch wbond
+          git remote add sublimehq https://github.com/sublimehq/package_control_channel.git
+          git fetch sublimehq
 
           CLEANED_COMMIT=$(git rev-parse package_control_channel 2>/dev/null || echo "")
           BASE_COMMIT=$(git rev-parse "$CLEANED_COMMIT^" 2>/dev/null || echo "")
-          UPSTREAM_COMMIT=$(git rev-parse wbond/master)
+          UPSTREAM_COMMIT=$(git rev-parse sublimehq/master)
 
           echo "CLEANED_COMMIT=$CLEANED_COMMIT"
           echo "BASE_COMMIT=$BASE_COMMIT"
@@ -49,7 +49,7 @@ jobs:
       - name: Sync and push
         if: steps.check.outputs.upstream_changed == 'true'
         run: |
-          git checkout -B package_control_channel wbond/master
+          git checkout -B package_control_channel sublimehq/master
 
           rm -rf .github/workflows
           git commit -am "Remove upstream workflows" || echo "No changes to commit"
