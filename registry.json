@@ -457,6 +457,22 @@
       "first_seen": "2017-11-27T22:21:08Z"
     },
     {
+      "name": "Abrase",
+      "details": "https://github.com/KHN190/Abrase-sublime",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3092",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-27T16:04:28Z"
+    },
+    {
       "name": "Abstract Markup Language",
       "details": "https://github.com/abstractmarkup/sublimetext",
       "labels": [
