@@ -383,5 +383,6 @@ def create_aiohttp_session(**kwargs):
 
     kwargs.setdefault('raise_for_status', True)
     kwargs.setdefault('headers', {'User-Agent': 'thecrawl'})
+    kwargs.setdefault('cookie_jar', aiohttp.DummyCookieJar())
 
     return aiohttp.ClientSession(**kwargs)
