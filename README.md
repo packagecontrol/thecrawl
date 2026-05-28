@@ -35,15 +35,6 @@ $ uv run -m scripts.crawl_libraries
 $ uv run -m scripts.generate_channel
 ```
 
-Note however, that packages and libraries are currently on different registries. To tell
-`generate_registry` invoke it rather like
-
-```bash
-$ uv run -m scripts.generate_registry \
-  --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json \
-  --channel https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/channel.json
-```
-
 For `crawl`, a GITHUB_TOKEN environment variable is *required*.  GitLab and Bitbucket
 can be used in a free mode -- basically because we don't have many users on these
 platforms, so that even the tiny rate limits are enough for our purpose.

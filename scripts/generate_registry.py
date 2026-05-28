@@ -16,9 +16,10 @@ from ._utils import flatten, pick, resolve_urls, update_url, write_json, pl
 
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
-DEFAULT_CHANNEL = (
-    "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/channel.json"
-)
+DEFAULT_CHANNELS = [
+    "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+    "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/channel.json",
+]
 MAX_CONCURRENCY = 32
 GLOBAL_TIMEOUT = 60  # seconds
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -559,7 +560,7 @@ class Unseen[T]:
 if __name__ == "__main__":
     args = parse_args()
     output_file = os.path.abspath(args.output)
-    channels = args.channel if args.channel else [DEFAULT_CHANNEL]
+    channels = args.channel if args.channel else DEFAULT_CHANNELS
     seed_path = (
         None
         if args.seed is None
