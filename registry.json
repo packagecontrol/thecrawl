@@ -42014,6 +42014,26 @@
       "first_seen": "2021-05-21T20:09:25Z"
     },
     {
+      "details": "https://github.com/sublimelsp/LSP-ltex-ls-plus",
+      "name": "LSP-ltex-ls-plus",
+      "author": "LDAP",
+      "labels": [
+        "lsp",
+        "spellcheck",
+        "latex",
+        "markdown"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4070",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-05-29T19:57:41Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-lua",
       "name": "LSP-lua",
       "labels": [
