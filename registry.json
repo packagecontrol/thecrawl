@@ -7049,6 +7049,24 @@
       "first_seen": "2017-05-31T21:15:22Z"
     },
     {
+      "name": "Borliana Color Scheme",
+      "details": "https://github.com/Avijit-1234/Borliana-Color-Scheme",
+      "labels": [
+        "color scheme",
+        "dark",
+        "minimalist"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-06-01T20:04:31Z"
+    },
+    {
       "name": "Boron Color Scheme",
       "labels": [
         "color scheme"
@@ -64671,6 +64689,38 @@
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2013-10-17T08:50:53Z"
+    },
+    {
+      "name": "Sequoia Color Scheme",
+      "details": "https://github.com/Sequoia-Theme/sublime-text",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-06-01T20:04:31Z"
+    },
+    {
+      "name": "Serendipity Color Scheme",
+      "details": "https://github.com/Serendipity-Theme/sublime-text",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-06-01T20:04:31Z"
     },
     {
       "details": "https://github.com/facelessuser/SerializedDataConverter",
