@@ -11,16 +11,21 @@ const __dirname = path.dirname(__filename)
 const sourcesPath = path.join(__dirname, 'label-icons.json')
 const configPath = path.join(__dirname, 'label-icons-config.json')
 
-let labelIconSources = []
+let labelIconSourceSet = new Set()
 let labelIconAliases = {}
 let labelIconTints = {}
+
+const longDateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })
+const compactNumberFormatter = new Intl.NumberFormat('en', { notation: 'compact' })
+const groupedNumberFormatter = new Intl.NumberFormat('en', { useGrouping: true })
 {
   const rawSources = fs.readFileSync(sourcesPath, 'utf8')
   const sourcesData = JSON.parse(rawSources)
   if (!sourcesData || typeof sourcesData !== 'object') {
     throw new Error(`Unexpected data format in ${sourcesPath}; expected object mapping labels to tints`)
   }
-  labelIconSources = Object.keys(sourcesData)
+  const labelIconSources = Object.keys(sourcesData)
+  labelIconSourceSet = new Set(labelIconSources)
   labelIconTints = sourcesData
 
   const rawConfig = fs.readFileSync(configPath, 'utf8')
@@ -37,7 +42,7 @@ let labelIconTints = {}
 export function date_format(date) {
   if (typeof date !== 'string') return date
   const value = new Date(date)
-  return new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(value)
+  return longDateFormatter.format(value)
 }
 
 // simple to date string for some dates _with_ times
@@ -53,8 +58,7 @@ export function timestamp(date) {
 
 // compact number formatting (e.g. 10k)
 export function compact(count) {
-  const fmt = new Intl.NumberFormat('en', { notation: 'compact' })
-  return fmt.format(count)
+  return compactNumberFormatter.format(count)
 }
 
 export function label_icon_aliases_json() {
@@ -71,11 +75,11 @@ function canonicalLabel(label) {
   if (!normalized) return ''
 
   const alias = labelIconAliases[normalized]
-  if (alias && labelIconSources.includes(alias)) {
+  if (alias && labelIconSourceSet.has(alias)) {
     return alias
   }
 
-  if (labelIconSources.includes(normalized)) {
+  if (labelIconSourceSet.has(normalized)) {
     return normalized
   }
 
@@ -96,8 +100,7 @@ export function label_icon_tint(label) {
 
 // number formatting with grouping (e.g. 10,000)
 export function grouping(count) {
-  const fmt = new Intl.NumberFormat('en', { useGrouping: true })
-  return fmt.format(count)
+  return groupedNumberFormatter.format(count)
 }
 
 // merge: shallow-merge two objects, returning a new object
