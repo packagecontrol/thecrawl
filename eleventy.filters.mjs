@@ -78,28 +78,37 @@ export function search_index_json(packages) {
 }
 
 function compactSearchPackage(pkg) {
+  let platforms = pkg.platforms;
+  // Treat 'any' as empty platforms
+  if (pkg.platforms.length === 1 && pkg.platforms[0] === 'any')
+    platforms = []
+
   const row = [
     pkg.name,
+    pkg.magic_score,
     htmlDescription(pkg.description ?? ''),
     (pkg.author ?? []).join(','),
-    pkg.stars ?? 0,
-    pkg.installed ?? 0,
     timestamp(pkg.first_seen) || 0,
     timestamp(pkg.last_modified) || 0,
-    pkg.magic_score ?? 0,
-    compactMagicBreakdown(pkg.magic),
-    (pkg.platforms ?? []).join(','),
-    pkg.platform_statement ?? '',
+    pkg.stars ?? 0,
+    pkg.installed ?? 0,
     (pkg.labels ?? []).join(','),
+    pkg.outdated ? 1 : 0,
+    pkg.st3_only ? 1 : 0,
+    timestamp(pkg.removed) || 0,
+    timestamp(pkg.archived_at) || 0,
+    (platforms ?? []).join(','),
+    pkg.platform_statement ?? '',
   ]
 
-  if (pkg.outdated || pkg.st3_only || pkg.removed || pkg.archived_at) {
-    row.push(
-      pkg.outdated ? 1 : 0,
-      pkg.st3_only ? 1 : 0,
-      timestamp(pkg.removed) || 0,
-      timestamp(pkg.archived_at) || 0,
-    )
+  if (!isProd) {
+    row.push(compactMagicBreakdown(pkg.magic))
+  }
+
+  // Remove unused/default elements from the back. Elements are ordered by importance, so this should result in the most
+  // removals.
+  while (row[row.length - 1] === 0 || row[row.length - 1] == '') {
+    row.pop();
   }
 
   return row

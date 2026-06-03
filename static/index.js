@@ -54,47 +54,33 @@ function expandSearchPackage(row) {
     return row
   }
 
-  const [
-    name,
-    description,
-    author,
-    stars,
-    installed,
-    first_seen,
-    last_modified,
-    magic_score,
-    magic,
-    platforms,
-    platform_statement,
-    labels,
-    outdated,
-    st3_only,
-    removed,
-    archived_at,
-  ] = row
-
-  return {
-    name,
-    description,
-    author,
-    stars,
-    installed,
-    first_seen,
-    last_modified,
-    magic_score,
-    magic: expandMagicBreakdown(magic),
-    platforms,
-    platform_statement,
-    labels,
+  let pkg = {
+    name: row[0],
+    magic_score: row[1] ?? 0,
+    description: row[2] ?? '',
+    author: row[3] ?? '',
+    first_seen: row[4] ?? 0,
+    last_modified: row[5] ?? 0,
+    stars: row[6] ?? 0,
+    installed: row[7] ?? 0,
+    labels: row[8] ?? '',
+    outdated: row[9] === 1,
+    st3_only: row[10] === 1,
+    removed: row[11] ?? 0,
+    archived_at: row[12] ?? 0,
+    platforms: row[13] ?? 'any',
+    platform_statement: row[14] ?? '',
     permalink: `/packages/${encodeURIComponent(name)}`,
-    ...(outdated ? { outdated: true } : {}),
-    ...(st3_only ? { st3_only: true } : {}),
-    ...(removed ? { removed } : {}),
-    ...(archived_at ? { archived_at } : {}),
   }
+
+  if (window.isProd) {
+    pkg.magic = expandMagicBreakdown(row.shift())
+  }
+
+  return pkg
 }
 
-function expandMagicBreakdown(values = []) {
+function expandMagicBreakdown(values) {
   const [popularity, stars, freshness, longevity, recency, penalty] = values
   return { popularity, stars, freshness, longevity, recency, penalty }
 }

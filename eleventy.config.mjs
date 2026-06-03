@@ -581,6 +581,7 @@ export default async function (eleventyConfig) {
   })
 
   eleventyConfig.addGlobalData('site', {
+    isProd,
     origin: siteOrigin,
     prodOrigin,
     devOrigin,

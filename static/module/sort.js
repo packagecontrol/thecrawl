@@ -12,44 +12,32 @@ export class Sort {
 
       case 'installed':
         return sortedPackages.sort((a, b) => {
-          const A = parseInt(a.installed) || 0
-          const B = parseInt(b.installed) || 0
-          return B - A // High to low
+          return b.installed - a.installed // High to low
         })
 
       case 'stars':
         return sortedPackages.sort((a, b) => {
-          const A = parseInt(a.stars) || 0
-          const B = parseInt(b.stars) || 0
-          return B - A // High to low
+          return b.stars - a.stars // High to low
         })
 
       case 'stars-desc':
         return sortedPackages.sort((a, b) => {
-          const A = parseInt(a.stars) || 0
-          const B = parseInt(b.stars) || 0
-          return A - B // Low to high
+          return a.stars - b.stars // Low to high
         })
 
       case 'newest':
         return sortedPackages.sort((a, b) => {
-          const A = parseInt(a.first_seen) || 0
-          const B = parseInt(b.first_seen) || 0
-          return B - A // High to low
+          return b.first_seen - a.first_seen // High to low
         })
 
       case 'oldest':
         return sortedPackages.sort((a, b) => {
-          const A = parseInt(a.first_seen) || 0
-          const B = parseInt(b.first_seen) || 0
-          return A - B // Low to high
+          return a.first_seen - b.first_seen // Low to high
         })
 
       case 'update':
         return sortedPackages.sort((a, b) => {
-          const A = parseInt(a.last_modified) || 0
-          const B = parseInt(b.last_modified) || 0
-          return B - A // High to low
+          return b.last_modified - a.last_modified // High to low
         })
 
       case 'author':
