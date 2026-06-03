@@ -133,15 +133,15 @@ html.status main {
     --status-glitch-dot: hsl(30.72deg 88.92% 56.7%);
     --status-glitch-link: hsl(35.76deg 78.85% 63.24% / 89%);
     --status-update-connector: hsl(40.79deg 77.83% 37.28% / 31%);
-  }
 
-  :root[data-theme='dark'] &:hover {
-    --status-tag-line: hsl(130.99deg 34.37% 41.5%);
-    --status-tag-line-stroke: 0.5;
-    --status-tag-label: hsl(139.17deg 31.52% 46.09%);
-    --status-glitch-dot: hsl(30.72deg 77.22% 49.28%);
-    --status-glitch-link: hsl(48.34deg 85.59% 30.67% / 82%);
-    --status-update-connector: hsl(50.86deg 70.13% 49.15% / 24%);
+    :root[data-theme='dark'] & {
+      --status-tag-line: hsl(130.99deg 34.37% 41.5%);
+      --status-tag-line-stroke: 0.5;
+      --status-tag-label: hsl(139.17deg 31.52% 46.09%);
+      --status-glitch-dot: hsl(30.72deg 77.22% 49.28%);
+      --status-glitch-link: hsl(48.34deg 85.59% 30.67% / 82%);
+      --status-update-connector: hsl(50.86deg 70.13% 49.15% / 24%);
+    }
   }
 
   &.is-updates-mode {
