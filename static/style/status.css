@@ -102,7 +102,7 @@ html.status main {
   --status-error-dot: hsl(7deg 90.45% 50.1%);
   --status-error-dot-soft: hsl(7deg 100% 64.46% / 91%);
   --status-glitch-dot: hsl(35.76deg 93.03% 61.99%);
-  --status-glitch-link: hsl(38.27deg 91.15% 34.61% / 27%);
+  --status-glitch-link: hsl(38.27deg 82.93% 41.7% / 27%);
   --status-update-dot: var(--status-update-mode-color);
 
   :root[data-theme='dark'] & {
@@ -133,7 +133,7 @@ html.status main {
     --status-tag-line-stroke: 0.5;
     --status-tag-label: hsl(138.54deg 67.98% 42.65%);
     --status-glitch-dot: hsl(30.72deg 88.92% 56.7%);
-    --status-glitch-link: hsl(53.38deg 62.03% 46.18% / 89%);
+    --status-glitch-link: hsl(35.76deg 78.85% 63.24% / 89%);
   }
 
   position: relative;
@@ -285,6 +285,11 @@ html.status main {
     fill: var(--foreground-2);
     stroke: none;
   }
+}
+
+:root:not([data-theme='dark']) .status-chart.is-updates-mode,
+:root:not([data-theme='dark']) .status-chart.is-updates-mode:hover {
+  --status-glitch-link: hsl(38deg 22% 65% / 27%);
 }
 
 .status-chart.is-updates-mode svg {
