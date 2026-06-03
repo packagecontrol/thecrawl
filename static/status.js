@@ -890,10 +890,12 @@ class StatusChart {
   drawTagMarkers() {
     if (!this.tagMarkers.length) return
 
-    const runout = cssNumber(this.el, '--status-tag-runout', 9)
+    const baseRunout = cssNumber(this.el, '--status-tag-runout', 9)
+    const minRunout = cssNumber(this.el, '--status-tag-min-runout', 3)
     const topY = cssNumber(this.el, '--status-tag-top-y', 10)
+    const topLineY = this.yForHour(0)
     const topYCrisp = crisp(topY)
-    const topLineYCrisp = crisp(this.yForHour(0))
+    const topLineYCrisp = crisp(topLineY)
     const leanDeg = cssNumber(this.el, '--status-tag-lean-deg', 0.6)
     const labelOffsetX = cssNumber(this.el, '--status-tag-label-offset-x', 0)
     const labelOffsetY = cssNumber(this.el, '--status-tag-label-offset-y', 2)
@@ -930,7 +932,8 @@ class StatusChart {
 
     for (const dayGroup of groupsByDay.values()) {
       let oldestTopX = null
-      const dayElbowX = crisp(dayGroup[0].position.x + runout)
+      const dayRunout = this.tagRunoutForDayGroup(dayGroup, baseRunout, minRunout, leanRatio, topY, topLineY)
+      const dayElbowX = crisp(dayGroup[0].position.x + dayRunout)
       const oldestTag = dayGroup[0]?.marker?.tag || ''
       const latestTag = dayGroup[dayGroup.length - 1]?.marker?.tag || ''
       const hoverLabel = (dayGroup.length > 1 && oldestTag && latestTag)
@@ -941,7 +944,7 @@ class StatusChart {
         const { marker, position } = item
         const { x, y } = position
         const dy = Math.max(0, y - topY)
-        const projectedTopX = x + runout + dy * leanRatio
+        const projectedTopX = x + dayRunout + dy * leanRatio
 
         if (oldestTopX === null) {
           oldestTopX = crisp(projectedTopX)
@@ -992,6 +995,69 @@ class StatusChart {
     }
 
     this.setupTagLabelHover(labelEntries)
+  }
+
+  /**
+   * Compute the horizontal elbow/runout for version tag callout lines.
+   *
+   * A simple version uses a fixed runout, which looks good at normal viewport
+   * widths. On narrower viewports, the actual version line moves farther into
+   * the next column. We therefore say that the crossing between the 00:00 grid
+   * line and the version line should not cross the midpoint between two days.
+   * This way, the line always leans toward the day it belongs to.
+   *
+   * Keep the preferred fixed value while there is room, then shrink it just
+   * enough to keep that top-line crossing inside this tag's day column.
+   *
+   * For a single tag, the crossing point at the 00:00 line is approximately:
+   *
+   *   xCross = dotX + runout + (dotY - topLineY) * leanRatio
+   *
+   * We want xCross <= dotX + barWidth / 2, so:
+   *
+   *   runout <= barWidth / 2 - (dotY - topLineY) * leanRatio
+   *
+   * Same-day tag groups nudge later top endpoints by 1px each to keep the
+   * individual lines distinguishable, so the algorithm computes the largest
+   * top-line drift in the group and solves against that worst case. The result
+   * is clamped between the normal configured runout and a small minimum so the
+   * elbow remains visible even when the chart is very narrow.
+   */
+  tagRunoutForDayGroup(dayGroup, baseRunout, minRunout, leanRatio, topY, topLineY) {
+    const halfDayWidth = this.barWidth / 2
+    const maxTopLineDrift = this.maxTagTopLineDrift(dayGroup, leanRatio, topY, topLineY)
+    const maxRunout = halfDayWidth - maxTopLineDrift
+    const upperRunout = Math.max(minRunout, maxRunout)
+    return clamp(baseRunout, minRunout, upperRunout)
+  }
+
+  maxTagTopLineDrift(dayGroup, leanRatio, topY, topLineY) {
+    let maxDrift = 0
+
+    for (let i = 0; i < dayGroup.length; i += 1) {
+      const y = dayGroup[i]?.position?.y
+      if (!Number.isFinite(y)) continue
+
+      // For a single tag line:
+      //   xCross = dotX + runout + (dotY - topLineY) * leanRatio
+      // This is the part after runout. Multiple tags on the same day are
+      // spread by one extra pixel at the top, so include that proportional
+      // drift too.
+      const leanDrift = Math.max(0, y - topLineY) * leanRatio
+      const extraTopDrift = this.tagTopSpreadDrift(i, y, topY, topLineY)
+      maxDrift = Math.max(maxDrift, leanDrift + extraTopDrift)
+    }
+
+    return maxDrift
+  }
+
+  tagTopSpreadDrift(indexInDay, dotY, topY, topLineY) {
+    if (indexInDay <= 0 || dotY <= topLineY) return 0
+
+    const verticalSpan = dotY - topY
+    if (verticalSpan <= 0) return 0
+
+    return indexInDay * ((dotY - topLineY) / verticalSpan)
   }
 
   setupTagLabelHover(entries) {

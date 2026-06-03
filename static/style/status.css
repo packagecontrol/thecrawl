@@ -86,6 +86,7 @@ html.status main {
   --status-tag-line-stroke: 1;
   --status-tag-label: hsl(201.48deg 9.8% 67.95%);
   --status-tag-runout: 9;
+  --status-tag-min-runout: 3;
   --status-tag-top-y: 10;
   --status-tag-lean-deg: 0.6;
   --status-tag-label-offset-x: 0;
