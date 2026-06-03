@@ -29,6 +29,8 @@ const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
 /** @type {HTMLButtonElement | null} */
+const chartModeButton = document.querySelector('[data-status-mode-toggle]')
+/** @type {HTMLButtonElement | null} */
 const prevButton = document.querySelector('[data-control="prev"]')
 /** @type {HTMLButtonElement | null} */
 const nextButton = document.querySelector('[data-control="next"]')
@@ -44,11 +46,19 @@ const lastButton = document.querySelector('[data-control="last"]')
  */
 
 /** @typedef {{
+ *    name?: string,
+ *    detected_at?: string,
+ *    published_at?: string,
+ *  }} FoundUpdate
+ */
+
+/** @typedef {{
  *    date: string,
  *    run_id?: string,
  *    notes?: string,
  *    conclusion?: string,
  *    artifacts?: LogArtifact[],
+ *    found_updates?: FoundUpdate[],
  *    failuresChanged?: boolean,
  *    glitchStartIndex?: number | null
  *  }} LogEntry
@@ -71,6 +81,9 @@ let index = 0
 /** @type {StatusChart | null} */
 let chart = null
 let emptyStateMessage = ''
+const STATUS_CHART_MODE_STATUS = 'status'
+const STATUS_CHART_MODE_UPDATES = 'updates'
+let chartColorMode = STATUS_CHART_MODE_STATUS
 /** @type {TagMarker[]} */
 const tagMarkers = loadTagMarkers(tagDataEl)
 
@@ -118,6 +131,38 @@ function bindControls() {
   prevButton?.addEventListener('click', () => render(index + 1))
   nextButton?.addEventListener('click', () => render(index - 1))
   lastButton?.addEventListener('click', () => render(0))
+
+  chartModeButton?.addEventListener('mouseenter', previewUpdatesMode)
+  chartModeButton?.addEventListener('mouseleave', restoreChartColorMode)
+  chartModeButton?.addEventListener('focus', previewUpdatesMode)
+  chartModeButton?.addEventListener('blur', restoreChartColorMode)
+  chartModeButton?.addEventListener('click', toggleUpdatesMode)
+}
+
+function previewUpdatesMode() {
+  if (chartColorMode !== STATUS_CHART_MODE_STATUS) return
+  applyChartColorMode(STATUS_CHART_MODE_UPDATES)
+}
+
+function restoreChartColorMode() {
+  applyChartColorMode(chartColorMode)
+}
+
+function toggleUpdatesMode() {
+  chartColorMode = chartColorMode === STATUS_CHART_MODE_UPDATES
+    ? STATUS_CHART_MODE_STATUS
+    : STATUS_CHART_MODE_UPDATES
+  applyChartColorMode(chartColorMode)
+  updateChartModeButton()
+}
+
+function applyChartColorMode(mode) {
+  chartEl?.classList.toggle('is-updates-mode', mode === STATUS_CHART_MODE_UPDATES)
+}
+
+function updateChartModeButton() {
+  const isUpdatesMode = chartColorMode === STATUS_CHART_MODE_UPDATES
+  chartModeButton?.setAttribute('aria-pressed', String(isUpdatesMode))
 }
 
 function bindKeyboard() {
@@ -613,11 +658,20 @@ class StatusChart {
     this.tagLayer.setAttribute('class', 'tag-lines')
     this.glitchLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.glitchLayer.setAttribute('class', 'glitch-links')
+    this.updateLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.updateLayer.setAttribute('class', 'update-lines')
+    this.updateConnectorLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.updateConnectorLayer.setAttribute('class', 'update-connectors')
+    this.updateMarkerLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.updateMarkerLayer.setAttribute('class', 'update-markers')
+    this.updateLayer.appendChild(this.updateConnectorLayer)
+    this.updateLayer.appendChild(this.updateMarkerLayer)
     this.dotLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.svg.appendChild(this.gridLayer)
     this.svg.appendChild(this.labelLayer)
     this.svg.appendChild(this.tagLayer)
     this.svg.appendChild(this.glitchLayer)
+    this.svg.appendChild(this.updateLayer)
     this.svg.appendChild(this.dotLayer)
 
     // Fixed chart constants
@@ -634,6 +688,8 @@ class StatusChart {
     this.points = []
     this.entries = []
     this.tagMarkers = []
+    this.selectedUpdateEntryKey = ''
+    this.hoveredUpdateEntryKey = ''
     this.gridAnchorDayKey = currentLocalDayKey()
 
     this.resizeObserver = new ResizeObserver(() => this.layout())
@@ -769,6 +825,8 @@ class StatusChart {
     this.points = []
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
     while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
+    while (this.updateConnectorLayer.firstChild) this.updateConnectorLayer.firstChild.remove()
+    while (this.updateMarkerLayer.firstChild) this.updateMarkerLayer.firstChild.remove()
     while (this.tagLayer.firstChild) this.tagLayer.firstChild.remove()
 
     this.drawTagMarkers()
@@ -807,6 +865,7 @@ class StatusChart {
     })
 
     this.drawGlitchLinks(positions)
+    this.drawUpdateLines(positions)
 
     // Append neutral first, then everything else on top
     neutralNodes.forEach(({ entry, node }) => {
@@ -1077,11 +1136,12 @@ class StatusChart {
     circle.setAttribute('cx', x)
     circle.setAttribute('cy', y)
     circle.setAttribute('r', radius)
-    circle.dataset.key = (entry.run_id || '') + '|' + (entry.date || '')
+    circle.dataset.key = entryKey(entry)
     const classes = [
       'dot',
       classForEntry(entry),
       isGlitch ? 'glitch' : '',
+      hasFoundUpdates(entry) ? 'has-updates' : '',
       entry.notes ? '' : 'no-notes',
     ]
       .filter(Boolean)
@@ -1093,11 +1153,94 @@ class StatusChart {
       }
     })
     circle.addEventListener('mouseenter', () => {
+      if (hasFoundUpdates(entry)) {
+        this.showUpdateConnectors(entry)
+      }
+      else {
+        this.hideUpdateConnectors()
+      }
       if (typeof this.onHover === 'function') {
         this.onHover(entry)
       }
     })
+    circle.addEventListener('mouseleave', () => {
+      this.hideUpdateConnectors()
+    })
     return circle
+  }
+
+  drawUpdateLines(positions) {
+    const todayDayId = localDayId(Date.now())
+    const MARKER_HALF_WIDTH = 3
+    let connectorIndex = 0
+
+    this.entries.forEach((entry, idx) => {
+      const runPos = positions[idx]
+      if (!runPos) return
+
+      const key = entryKey(entry)
+      const updates = updatesForEntry(entry)
+      for (const update of updates) {
+        const publishedTs = safeDate(update.published_at)
+        if (!publishedTs) continue
+
+        const publishedPos = this.positionForTimestamp(publishedTs, { todayDayId })
+        if (!publishedPos) continue
+
+        const connector = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        connector.setAttribute('class', 'update-connector')
+        connector.setAttribute('d', this.updateConnectorPath(runPos, publishedPos, connectorIndex))
+        connector.dataset.entryKey = key
+        connectorIndex += 1
+
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        marker.setAttribute('class', 'update-line')
+        marker.setAttribute('x1', String(crisp(publishedPos.x - MARKER_HALF_WIDTH)))
+        marker.setAttribute('y1', String(crisp(publishedPos.y)))
+        marker.setAttribute('x2', String(crisp(publishedPos.x + MARKER_HALF_WIDTH)))
+        marker.setAttribute('y2', String(crisp(publishedPos.y)))
+
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
+        title.textContent = updateLineTitle(update)
+        marker.appendChild(title)
+
+        this.updateConnectorLayer.appendChild(connector)
+        this.updateMarkerLayer.appendChild(marker)
+      }
+    })
+  }
+
+  showUpdateConnectors(entry) {
+    this.hoveredUpdateEntryKey = entryKey(entry)
+    this.syncUpdateConnectorHighlights()
+  }
+
+  hideUpdateConnectors() {
+    this.hoveredUpdateEntryKey = ''
+    this.syncUpdateConnectorHighlights()
+  }
+
+  syncUpdateConnectorHighlights() {
+    for (const node of this.updateConnectorLayer.children) {
+      const key = node.dataset.entryKey
+      node.classList.toggle('is-active', key === this.hoveredUpdateEntryKey || key === this.selectedUpdateEntryKey)
+    }
+  }
+
+  updateConnectorPath(runPos, publishedPos, connectorIndex) {
+    const verticalDirection = publishedPos.y < runPos.y ? -1 : 1
+    const horizontalDirection = connectorIndex % 2 === 0 ? -1 : 1
+    const verticalGap = Math.abs(publishedPos.y - runPos.y)
+    const horizontalGap = Math.abs(publishedPos.x - runPos.x)
+    const lateralOffset = clamp(horizontalGap * 0.18 + verticalGap * 0.35, 4, 26)
+    const verticalOffset = clamp(verticalGap * 0.12, 3, 12)
+    const controlX = runPos.x + horizontalDirection * lateralOffset
+    const controlY = runPos.y + verticalDirection * verticalOffset
+
+    return [
+      `M ${crisp(runPos.x)} ${crisp(runPos.y)}`,
+      `Q ${crisp(controlX)} ${crisp(controlY)} ${crisp(publishedPos.x)} ${crisp(publishedPos.y)}`,
+    ].join(' ')
   }
 
   drawGlitchLinks(positions) {
@@ -1157,10 +1300,10 @@ class StatusChart {
   }
 
   highlight(entry) {
-    const key = (entry?.run_id || '') + '|' + (entry?.date || '')
+    const key = entryKey(entry)
     let activeNode = null
     this.points.forEach(({ entry: e, node }) => {
-      const k = (e.run_id || '') + '|' + (e.date || '')
+      const k = entryKey(e)
       if (k === key) {
         node.classList.add('active')
         activeNode = node
@@ -1169,11 +1312,18 @@ class StatusChart {
         node.classList.remove('active')
       }
     })
+    this.selectedUpdateEntryKey = hasFoundUpdates(entry) ? key : ''
+    this.syncUpdateConnectorHighlights()
+
     if (activeNode && activeNode.parentNode === this.dotLayer) {
       // Move active node to the end so it paints on top of siblings
       this.dotLayer.appendChild(activeNode)
     }
   }
+}
+
+function entryKey(entry) {
+  return (entry?.run_id || '') + '|' + (entry?.date || '')
 }
 
 function classForEntry(entry) {
@@ -1182,6 +1332,20 @@ function classForEntry(entry) {
     return 'changed'
   }
   return base
+}
+
+function hasFoundUpdates(entry) {
+  return updatesForEntry(entry).length > 0
+}
+
+function updatesForEntry(entry) {
+  return Array.isArray(entry?.found_updates) ? entry.found_updates : []
+}
+
+function updateLineTitle(update) {
+  const name = String(update.name || 'Package update')
+  const publishedAt = formatTagDateShort(update.published_at)
+  return `${name} published at ${publishedAt}`
 }
 
 function formatHourLabel(hour) {

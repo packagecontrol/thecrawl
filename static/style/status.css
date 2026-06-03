@@ -22,6 +22,62 @@ html.status main {
   margin-right: auto;
 }
 
+.status-chart-shell {
+  --status-update-mode-color: hsl(103.73deg 65% 42%);
+
+  width: 100%;
+  max-width: var(--max-content);
+  margin: 0 auto calc(var(--grid-line) * 1.5) auto;
+
+  :root[data-theme='dark'] & {
+    --status-update-mode-color: var(--green-2);
+  }
+}
+
+.status-chart-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  max-width: var(--max-line);
+  margin: -1rem auto 1rem auto;
+
+  @media (width >= 52rem) {
+    margin-top: -2rem;
+  }
+}
+
+.status-chart-mode-button {
+  all: unset;
+  padding: 1px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--foreground-3);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 18px;
+  transition: color .12s ease, background-color .12s ease;
+
+  &:hover,
+  &:focus-visible,
+  &[aria-pressed='true'] {
+    color: var(--status-update-mode-color);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: hsl(138.66deg 57.49% 40.59%);
+    border-style: solid;
+    border-width: 1px;
+
+    :root[data-theme='dark'] & {
+      border-color: hsl(93.66deg 57.49% 40.59%);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--orange-1);
+    outline-offset: 3px;
+  }
+}
+
 .status-chart {
   --status-dot: hsl(222.25deg 15.62% 63.35%);
   --status-dot-active-fill: hsl(273.7deg 12.38% 32.69%);
@@ -46,7 +102,11 @@ html.status main {
   --status-error-dot: hsl(7deg 90.45% 50.1%);
   --status-error-dot-soft: hsl(7deg 100% 64.46% / 91%);
   --status-glitch-dot: hsl(35.76deg 93.03% 61.99%);
-  --status-glitch-link: hsl(38.27deg 91.15% 34.61% / 27%);
+  --status-glitch-link: hsl(38.27deg 82.93% 41.7% / 27%);
+  --status-update-dot: var(--status-update-mode-color);
+  --status-update-marker: hsl(103.73deg 65% 42% / 38%);
+  --status-update-connector: hsl(103.73deg 68.44% 40% / 15%);
+  --status-update-connector-active: hsl(116.32deg 68.44% 40% / 52%);
 
   :root[data-theme='dark'] & {
     --status-dot: hsl(245deg 34.8% 64.47%);
@@ -61,29 +121,44 @@ html.status main {
     --status-glitch-link: hsl(253.48deg 32.4% 48.82% / 69%);
     --status-error-dot: var(--red-2);
     --status-error-dot-soft: hsl(0.51deg 85.44% 66.12% / 90%);
+    --status-update-marker: hsl(80deg 70% 49% / 42%);
+    --status-update-connector: hsl(80deg 70.13% 49.15% / 5%);
+    --status-update-connector-active: hsl(98.69deg 70.13% 49.15% / 45%);
   }
 
-  :root[data-theme='dark'] &:hover {
-    --status-tag-line: hsl(130.99deg 34.37% 41.5%);
-    --status-tag-line-stroke: 0.5;
-    --status-tag-label: hsl(139.17deg 31.52% 46.09%);
-    --status-glitch-dot: hsl(30.72deg 77.22% 49.28%);
-    --status-glitch-link: hsl(48.34deg 85.59% 30.67% / 82%);
-  }
-
-  :root:not([data-theme='dark']) &:hover {
+  &:hover {
     --status-tag-line: hsl(140.43deg 38.59% 66.91%);
     --status-tag-line-stroke: 0.5;
     --status-tag-label: hsl(138.54deg 67.98% 42.65%);
     --status-glitch-dot: hsl(30.72deg 88.92% 56.7%);
-    --status-glitch-link: hsl(53.38deg 62.03% 46.18% / 89%);
+    --status-glitch-link: hsl(35.76deg 78.85% 63.24% / 89%);
+    --status-update-connector: hsl(40.79deg 77.83% 37.28% / 31%);
+
+    :root[data-theme='dark'] & {
+      --status-tag-line: hsl(130.99deg 34.37% 41.5%);
+      --status-tag-line-stroke: 0.5;
+      --status-tag-label: hsl(139.17deg 31.52% 46.09%);
+      --status-glitch-dot: hsl(30.72deg 77.22% 49.28%);
+      --status-glitch-link: hsl(48.34deg 85.59% 30.67% / 82%);
+      --status-update-connector: hsl(50.86deg 70.13% 49.15% / 24%);
+    }
+  }
+
+  &.is-updates-mode {
+    --status-dot: hsl(222.25deg 15.62% 63.35% / 50%);
+    --status-glitch-link: hsl(38deg 22% 65% / 27%);
+
+    :root[data-theme='dark'] & {
+      --status-dot: hsl(245deg 34.8% 64.47% / 50%);
+      --status-glitch-link: hsl(253.48deg 24.79% 34.99% / 69%);
+    }
   }
 
   position: relative;
   width: 100%;
   height: 380px;
-  margin: 0 auto calc(var(--grid-line) * 1.5) auto;
-  max-width: var(--max-content);
+  margin: 0 auto;
+  max-width: 100%;
 
   svg {
     position: absolute;
@@ -198,6 +273,23 @@ html.status main {
     pointer-events: none;
   }
 
+  .update-line,
+  .update-connector {
+    fill: none;
+    stroke: transparent;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+  }
+
+  .update-line {
+    stroke-width: 0.8;
+  }
+
+  .update-connector {
+    stroke-width: 0.7;
+  }
+
   .y-label {
     fill: var(--foreground-3);
     font-size: 9px;
@@ -227,6 +319,52 @@ html.status main {
   .x-arrow {
     fill: var(--foreground-2);
     stroke: none;
+  }
+}
+
+.status-chart.is-updates-mode svg {
+  .dot,
+  .dot.warn,
+  .dot.error,
+  .dot.error:not(.no-notes):not(.active),
+  .dot.muted,
+  .dot.changed,
+  .dot.glitch {
+    fill: var(--status-dot);
+  }
+
+  .dot.has-updates,
+  .dot.has-updates.warn,
+  .dot.has-updates.error,
+  .dot.has-updates.error:not(.no-notes):not(.active),
+  .dot.has-updates.muted,
+  .dot.has-updates.changed,
+  .dot.has-updates.glitch {
+    fill: var(--status-update-dot);
+  }
+
+  .dot.active:not(.has-updates) {
+    fill: var(--status-dot-active-fill);
+  }
+
+  .update-line {
+    stroke: var(--status-update-marker);
+  }
+
+  .update-connector {
+    stroke: var(--status-update-connector);
+  }
+
+  .update-connector.is-active {
+    stroke: var(--status-update-connector-active);
+  }
+
+  .dot.has-updates.active {
+    stroke: hsl(97.65deg 80.68% 33.02%);
+  }
+
+  :root[data-theme='dark'] & .dot.has-updates.active {
+    stroke: hsl(79.76deg 100% 50%);
   }
 }
 
