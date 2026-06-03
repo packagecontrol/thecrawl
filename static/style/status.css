@@ -146,14 +146,11 @@ html.status main {
 
   &.is-updates-mode {
     --status-dot: hsl(222.25deg 15.62% 63.35% / 50%);
+    --status-glitch-link: hsl(38deg 22% 65% / 27%);
 
     :root[data-theme='dark'] & {
       --status-dot: hsl(245deg 34.8% 64.47% / 50%);
-    }
-
-    :root:not([data-theme='dark']) &,
-    :root:not([data-theme='dark']) &:hover {
-      --status-glitch-link: hsl(38deg 22% 65% / 27%);
+      --status-glitch-link: hsl(253.48deg 24.79% 34.99% / 69%);
     }
   }
 
