@@ -22,6 +22,62 @@ html.status main {
   margin-right: auto;
 }
 
+.status-chart-shell {
+  --status-update-mode-color: hsl(103.73deg 65% 42%);
+
+  width: 100%;
+  max-width: var(--max-content);
+  margin: 0 auto calc(var(--grid-line) * 1.5) auto;
+
+  :root[data-theme='dark'] & {
+    --status-update-mode-color: var(--green-2);
+  }
+}
+
+.status-chart-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  max-width: var(--max-line);
+  margin: -1rem auto 1rem auto;
+
+  @media (width >= 52rem) {
+    margin-top: -2rem;
+  }
+}
+
+.status-chart-mode-button {
+  all: unset;
+  padding: 1px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--foreground-3);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 18px;
+  transition: color .12s ease, background-color .12s ease;
+
+  &:hover,
+  &:focus-visible,
+  &[aria-pressed='true'] {
+    color: var(--status-update-mode-color);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: hsl(138.66deg 57.49% 40.59%);
+    border-style: solid;
+    border-width: 1px;
+
+    :root[data-theme='dark'] & {
+      border-color: hsl(93.66deg 57.49% 40.59%);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--orange-1);
+    outline-offset: 3px;
+  }
+}
+
 .status-chart {
   --status-dot: hsl(222.25deg 15.62% 63.35%);
   --status-dot-active-fill: hsl(273.7deg 12.38% 32.69%);
@@ -47,6 +103,7 @@ html.status main {
   --status-error-dot-soft: hsl(7deg 100% 64.46% / 91%);
   --status-glitch-dot: hsl(35.76deg 93.03% 61.99%);
   --status-glitch-link: hsl(38.27deg 91.15% 34.61% / 27%);
+  --status-update-dot: var(--status-update-mode-color);
 
   :root[data-theme='dark'] & {
     --status-dot: hsl(245deg 34.8% 64.47%);
@@ -82,8 +139,8 @@ html.status main {
   position: relative;
   width: 100%;
   height: 380px;
-  margin: 0 auto calc(var(--grid-line) * 1.5) auto;
-  max-width: var(--max-content);
+  margin: 0 auto;
+  max-width: 100%;
 
   svg {
     position: absolute;
@@ -227,6 +284,33 @@ html.status main {
   .x-arrow {
     fill: var(--foreground-2);
     stroke: none;
+  }
+}
+
+.status-chart.is-updates-mode svg {
+  .dot,
+  .dot.warn,
+  .dot.error,
+  .dot.error:not(.no-notes):not(.active),
+  .dot.muted,
+  .dot.changed,
+  .dot.glitch {
+    fill: var(--status-dot);
+  }
+
+  .dot.has-updates,
+  .dot.has-updates.warn,
+  .dot.has-updates.error,
+  .dot.has-updates.error:not(.no-notes):not(.active),
+  .dot.has-updates.muted,
+  .dot.has-updates.changed,
+  .dot.has-updates.glitch {
+    fill: var(--status-update-dot);
+  }
+
+  .dot.active,
+  .dot.has-updates.active {
+    fill: var(--status-dot-active-fill);
   }
 }
 

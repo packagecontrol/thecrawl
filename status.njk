@@ -4,8 +4,15 @@ title: Status
 description: "Latest crawler runs and notes."
 ---
 
-<div class="status-chart" data-status-chart aria-hidden="true">
-  <svg role="presentation"></svg>
+<div class="status-chart-shell">
+  <div class="status-chart-toolbar">
+    <button type="button" class="status-chart-mode-button" data-status-mode-toggle aria-pressed="false">
+      Which runs actually did discover new updates?
+    </button>
+  </div>
+  <div class="status-chart" data-status-chart aria-hidden="true">
+    <svg role="presentation"></svg>
+  </div>
 </div>
 
 <section class="status-page">

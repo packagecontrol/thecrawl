@@ -29,6 +29,8 @@ const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
 /** @type {HTMLButtonElement | null} */
+const chartModeButton = document.querySelector('[data-status-mode-toggle]')
+/** @type {HTMLButtonElement | null} */
 const prevButton = document.querySelector('[data-control="prev"]')
 /** @type {HTMLButtonElement | null} */
 const nextButton = document.querySelector('[data-control="next"]')
@@ -49,6 +51,7 @@ const lastButton = document.querySelector('[data-control="last"]')
  *    notes?: string,
  *    conclusion?: string,
  *    artifacts?: LogArtifact[],
+ *    found_updates?: unknown[],
  *    failuresChanged?: boolean,
  *    glitchStartIndex?: number | null
  *  }} LogEntry
@@ -71,6 +74,9 @@ let index = 0
 /** @type {StatusChart | null} */
 let chart = null
 let emptyStateMessage = ''
+const STATUS_CHART_MODE_STATUS = 'status'
+const STATUS_CHART_MODE_UPDATES = 'updates'
+let chartColorMode = STATUS_CHART_MODE_STATUS
 /** @type {TagMarker[]} */
 const tagMarkers = loadTagMarkers(tagDataEl)
 
@@ -118,6 +124,38 @@ function bindControls() {
   prevButton?.addEventListener('click', () => render(index + 1))
   nextButton?.addEventListener('click', () => render(index - 1))
   lastButton?.addEventListener('click', () => render(0))
+
+  chartModeButton?.addEventListener('mouseenter', previewUpdatesMode)
+  chartModeButton?.addEventListener('mouseleave', restoreChartColorMode)
+  chartModeButton?.addEventListener('focus', previewUpdatesMode)
+  chartModeButton?.addEventListener('blur', restoreChartColorMode)
+  chartModeButton?.addEventListener('click', toggleUpdatesMode)
+}
+
+function previewUpdatesMode() {
+  if (chartColorMode !== STATUS_CHART_MODE_STATUS) return
+  applyChartColorMode(STATUS_CHART_MODE_UPDATES)
+}
+
+function restoreChartColorMode() {
+  applyChartColorMode(chartColorMode)
+}
+
+function toggleUpdatesMode() {
+  chartColorMode = chartColorMode === STATUS_CHART_MODE_UPDATES
+    ? STATUS_CHART_MODE_STATUS
+    : STATUS_CHART_MODE_UPDATES
+  applyChartColorMode(chartColorMode)
+  updateChartModeButton()
+}
+
+function applyChartColorMode(mode) {
+  chartEl?.classList.toggle('is-updates-mode', mode === STATUS_CHART_MODE_UPDATES)
+}
+
+function updateChartModeButton() {
+  const isUpdatesMode = chartColorMode === STATUS_CHART_MODE_UPDATES
+  chartModeButton?.setAttribute('aria-pressed', String(isUpdatesMode))
 }
 
 function bindKeyboard() {
@@ -1082,6 +1120,7 @@ class StatusChart {
       'dot',
       classForEntry(entry),
       isGlitch ? 'glitch' : '',
+      hasFoundUpdates(entry) ? 'has-updates' : '',
       entry.notes ? '' : 'no-notes',
     ]
       .filter(Boolean)
@@ -1182,6 +1221,10 @@ function classForEntry(entry) {
     return 'changed'
   }
   return base
+}
+
+function hasFoundUpdates(entry) {
+  return Array.isArray(entry?.found_updates) && entry.found_updates.length > 0
 }
 
 function formatHourLabel(hour) {
