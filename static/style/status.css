@@ -106,6 +106,7 @@ html.status main {
   --status-update-dot: var(--status-update-mode-color);
   --status-update-marker: hsl(103.73deg 65% 42% / 38%);
   --status-update-connector: hsl(103.73deg 68.44% 40% / 15%);
+  --status-update-connector-active: hsl(116.32deg 68.44% 40% / 52%);
 
   :root[data-theme='dark'] & {
     --status-dot: hsl(245deg 34.8% 64.47%);
@@ -122,6 +123,7 @@ html.status main {
     --status-error-dot-soft: hsl(0.51deg 85.44% 66.12% / 90%);
     --status-update-marker: hsl(80deg 70% 49% / 42%);
     --status-update-connector: hsl(80deg 70.13% 49.15% / 5%);
+    --status-update-connector-active: hsl(98.69deg 70.13% 49.15% / 45%);
   }
 
   :root[data-theme='dark'] &:hover {
@@ -348,6 +350,20 @@ html.status main {
   .update-connector {
     stroke: var(--status-update-connector);
   }
+
+  .update-connector.is-active {
+    stroke: var(--status-update-connector-active);
+  }
+}
+
+:root:not([data-theme='dark']) .status-chart.is-updates-mode svg .dot.has-updates.active {
+  fill: hsl(103.73deg 65% 42%);
+  stroke: hsl(97.65deg 80.68% 33.02%);
+}
+
+:root[data-theme='dark'] .status-chart.is-updates-mode svg .dot.has-updates.active {
+  fill: var(--green-2);
+  stroke: hsl(79.76deg 100% 50%);
 }
 
 .status-heading {

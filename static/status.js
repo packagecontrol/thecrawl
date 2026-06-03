@@ -688,6 +688,8 @@ class StatusChart {
     this.points = []
     this.entries = []
     this.tagMarkers = []
+    this.selectedUpdateEntryKey = ''
+    this.hoveredUpdateEntryKey = ''
     this.gridAnchorDayKey = currentLocalDayKey()
 
     this.resizeObserver = new ResizeObserver(() => this.layout())
@@ -1134,7 +1136,7 @@ class StatusChart {
     circle.setAttribute('cx', x)
     circle.setAttribute('cy', y)
     circle.setAttribute('r', radius)
-    circle.dataset.key = (entry.run_id || '') + '|' + (entry.date || '')
+    circle.dataset.key = entryKey(entry)
     const classes = [
       'dot',
       classForEntry(entry),
@@ -1151,9 +1153,18 @@ class StatusChart {
       }
     })
     circle.addEventListener('mouseenter', () => {
+      if (hasFoundUpdates(entry)) {
+        this.showUpdateConnectors(entry)
+      }
+      else {
+        this.hideUpdateConnectors()
+      }
       if (typeof this.onHover === 'function') {
         this.onHover(entry)
       }
+    })
+    circle.addEventListener('mouseleave', () => {
+      this.hideUpdateConnectors()
     })
     return circle
   }
@@ -1167,6 +1178,7 @@ class StatusChart {
       const runPos = positions[idx]
       if (!runPos) return
 
+      const key = entryKey(entry)
       const updates = updatesForEntry(entry)
       for (const update of updates) {
         const publishedTs = safeDate(update.published_at)
@@ -1178,6 +1190,7 @@ class StatusChart {
         const connector = document.createElementNS('http://www.w3.org/2000/svg', 'path')
         connector.setAttribute('class', 'update-connector')
         connector.setAttribute('d', this.updateConnectorPath(runPos, publishedPos, connectorIndex))
+        connector.dataset.entryKey = key
         connectorIndex += 1
 
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'line')
@@ -1195,6 +1208,23 @@ class StatusChart {
         this.updateMarkerLayer.appendChild(marker)
       }
     })
+  }
+
+  showUpdateConnectors(entry) {
+    this.hoveredUpdateEntryKey = entryKey(entry)
+    this.syncUpdateConnectorHighlights()
+  }
+
+  hideUpdateConnectors() {
+    this.hoveredUpdateEntryKey = ''
+    this.syncUpdateConnectorHighlights()
+  }
+
+  syncUpdateConnectorHighlights() {
+    for (const node of this.updateConnectorLayer.children) {
+      const key = node.dataset.entryKey
+      node.classList.toggle('is-active', key === this.hoveredUpdateEntryKey || key === this.selectedUpdateEntryKey)
+    }
   }
 
   updateConnectorPath(runPos, publishedPos, connectorIndex) {
@@ -1270,10 +1300,10 @@ class StatusChart {
   }
 
   highlight(entry) {
-    const key = (entry?.run_id || '') + '|' + (entry?.date || '')
+    const key = entryKey(entry)
     let activeNode = null
     this.points.forEach(({ entry: e, node }) => {
-      const k = (e.run_id || '') + '|' + (e.date || '')
+      const k = entryKey(e)
       if (k === key) {
         node.classList.add('active')
         activeNode = node
@@ -1282,11 +1312,18 @@ class StatusChart {
         node.classList.remove('active')
       }
     })
+    this.selectedUpdateEntryKey = hasFoundUpdates(entry) ? key : ''
+    this.syncUpdateConnectorHighlights()
+
     if (activeNode && activeNode.parentNode === this.dotLayer) {
       // Move active node to the end so it paints on top of siblings
       this.dotLayer.appendChild(activeNode)
     }
   }
+}
+
+function entryKey(entry) {
+  return (entry?.run_id || '') + '|' + (entry?.date || '')
 }
 
 function classForEntry(entry) {
