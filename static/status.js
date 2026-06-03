@@ -46,12 +46,19 @@ const lastButton = document.querySelector('[data-control="last"]')
  */
 
 /** @typedef {{
+ *    name?: string,
+ *    detected_at?: string,
+ *    published_at?: string,
+ *  }} FoundUpdate
+ */
+
+/** @typedef {{
  *    date: string,
  *    run_id?: string,
  *    notes?: string,
  *    conclusion?: string,
  *    artifacts?: LogArtifact[],
- *    found_updates?: unknown[],
+ *    found_updates?: FoundUpdate[],
  *    failuresChanged?: boolean,
  *    glitchStartIndex?: number | null
  *  }} LogEntry
@@ -651,11 +658,14 @@ class StatusChart {
     this.tagLayer.setAttribute('class', 'tag-lines')
     this.glitchLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.glitchLayer.setAttribute('class', 'glitch-links')
+    this.updateLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.updateLayer.setAttribute('class', 'update-lines')
     this.dotLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.svg.appendChild(this.gridLayer)
     this.svg.appendChild(this.labelLayer)
     this.svg.appendChild(this.tagLayer)
     this.svg.appendChild(this.glitchLayer)
+    this.svg.appendChild(this.updateLayer)
     this.svg.appendChild(this.dotLayer)
 
     // Fixed chart constants
@@ -807,6 +817,7 @@ class StatusChart {
     this.points = []
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
     while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
+    while (this.updateLayer.firstChild) this.updateLayer.firstChild.remove()
     while (this.tagLayer.firstChild) this.tagLayer.firstChild.remove()
 
     this.drawTagMarkers()
@@ -845,6 +856,7 @@ class StatusChart {
     })
 
     this.drawGlitchLinks(positions)
+    this.drawUpdateLines(positions)
 
     // Append neutral first, then everything else on top
     neutralNodes.forEach(({ entry, node }) => {
@@ -1139,6 +1151,37 @@ class StatusChart {
     return circle
   }
 
+  drawUpdateLines(positions) {
+    const todayDayId = localDayId(Date.now())
+    const MARKER_HALF_WIDTH = 3
+
+    this.entries.forEach((entry, idx) => {
+      if (!positions[idx]) return
+
+      const updates = updatesForEntry(entry)
+      for (const update of updates) {
+        const publishedTs = safeDate(update.published_at)
+        if (!publishedTs) continue
+
+        const publishedPos = this.positionForTimestamp(publishedTs, { todayDayId })
+        if (!publishedPos) continue
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        line.setAttribute('class', 'update-line')
+        line.setAttribute('x1', String(crisp(publishedPos.x - MARKER_HALF_WIDTH)))
+        line.setAttribute('y1', String(crisp(publishedPos.y)))
+        line.setAttribute('x2', String(crisp(publishedPos.x + MARKER_HALF_WIDTH)))
+        line.setAttribute('y2', String(crisp(publishedPos.y)))
+
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
+        title.textContent = updateLineTitle(update)
+        line.appendChild(title)
+
+        this.updateLayer.appendChild(line)
+      }
+    })
+  }
+
   drawGlitchLinks(positions) {
     const OFFSET = 4
     const CORNER_RADIUS = 2
@@ -1224,7 +1267,17 @@ function classForEntry(entry) {
 }
 
 function hasFoundUpdates(entry) {
-  return Array.isArray(entry?.found_updates) && entry.found_updates.length > 0
+  return updatesForEntry(entry).length > 0
+}
+
+function updatesForEntry(entry) {
+  return Array.isArray(entry?.found_updates) ? entry.found_updates : []
+}
+
+function updateLineTitle(update) {
+  const name = String(update.name || 'Package update')
+  const publishedAt = formatTagDateShort(update.published_at)
+  return `${name} published at ${publishedAt}`
 }
 
 function formatHourLabel(hour) {

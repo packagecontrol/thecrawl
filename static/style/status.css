@@ -104,6 +104,7 @@ html.status main {
   --status-glitch-dot: hsl(35.76deg 93.03% 61.99%);
   --status-glitch-link: hsl(38.27deg 82.93% 41.7% / 27%);
   --status-update-dot: var(--status-update-mode-color);
+  --status-update-line: hsl(103.73deg 65% 42% / 38%);
 
   :root[data-theme='dark'] & {
     --status-dot: hsl(245deg 34.8% 64.47%);
@@ -118,6 +119,7 @@ html.status main {
     --status-glitch-link: hsl(253.48deg 32.4% 48.82% / 69%);
     --status-error-dot: var(--red-2);
     --status-error-dot-soft: hsl(0.51deg 85.44% 66.12% / 90%);
+    --status-update-line: hsl(80deg 70% 49% / 42%);
   }
 
   :root[data-theme='dark'] &:hover {
@@ -255,6 +257,14 @@ html.status main {
     pointer-events: none;
   }
 
+  .update-line {
+    stroke: transparent;
+    stroke-width: 0.8;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+  }
+
   .y-label {
     fill: var(--foreground-3);
     font-size: 9px;
@@ -316,6 +326,10 @@ html.status main {
   .dot.active,
   .dot.has-updates.active {
     fill: var(--status-dot-active-fill);
+  }
+
+  .update-line {
+    stroke: var(--status-update-line);
   }
 }
 
