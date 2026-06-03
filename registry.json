@@ -41947,7 +41947,7 @@
     },
     {
       "name": "LSP-lean",
-      "details": "https://github.com/LexouDuck/SublimeText-LSP-Lean",
+      "details": "https://github.com/sublimelsp/LSP-lean",
       "labels": [
         "lsp",
         "lean"
