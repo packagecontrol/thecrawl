@@ -1161,6 +1161,7 @@ class StatusChart {
   drawUpdateLines(positions) {
     const todayDayId = localDayId(Date.now())
     const MARKER_HALF_WIDTH = 3
+    let connectorIndex = 0
 
     this.entries.forEach((entry, idx) => {
       const runPos = positions[idx]
@@ -1174,12 +1175,10 @@ class StatusChart {
         const publishedPos = this.positionForTimestamp(publishedTs, { todayDayId })
         if (!publishedPos) continue
 
-        const connector = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        const connector = document.createElementNS('http://www.w3.org/2000/svg', 'path')
         connector.setAttribute('class', 'update-connector')
-        connector.setAttribute('x1', String(crisp(publishedPos.x)))
-        connector.setAttribute('y1', String(crisp(publishedPos.y)))
-        connector.setAttribute('x2', String(crisp(runPos.x)))
-        connector.setAttribute('y2', String(crisp(runPos.y)))
+        connector.setAttribute('d', this.updateConnectorPath(runPos, publishedPos, connectorIndex))
+        connectorIndex += 1
 
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'line')
         marker.setAttribute('class', 'update-line')
@@ -1196,6 +1195,22 @@ class StatusChart {
         this.updateMarkerLayer.appendChild(marker)
       }
     })
+  }
+
+  updateConnectorPath(runPos, publishedPos, connectorIndex) {
+    const verticalDirection = publishedPos.y < runPos.y ? -1 : 1
+    const horizontalDirection = connectorIndex % 2 === 0 ? -1 : 1
+    const verticalGap = Math.abs(publishedPos.y - runPos.y)
+    const horizontalGap = Math.abs(publishedPos.x - runPos.x)
+    const lateralOffset = clamp(horizontalGap * 0.18 + verticalGap * 0.35, 4, 26)
+    const verticalOffset = clamp(verticalGap * 0.12, 3, 12)
+    const controlX = runPos.x + horizontalDirection * lateralOffset
+    const controlY = runPos.y + verticalDirection * verticalOffset
+
+    return [
+      `M ${crisp(runPos.x)} ${crisp(runPos.y)}`,
+      `Q ${crisp(controlX)} ${crisp(controlY)} ${crisp(publishedPos.x)} ${crisp(publishedPos.y)}`,
+    ].join(' ')
   }
 
   drawGlitchLinks(positions) {
