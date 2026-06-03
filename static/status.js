@@ -660,6 +660,12 @@ class StatusChart {
     this.glitchLayer.setAttribute('class', 'glitch-links')
     this.updateLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.updateLayer.setAttribute('class', 'update-lines')
+    this.updateConnectorLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.updateConnectorLayer.setAttribute('class', 'update-connectors')
+    this.updateMarkerLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.updateMarkerLayer.setAttribute('class', 'update-markers')
+    this.updateLayer.appendChild(this.updateConnectorLayer)
+    this.updateLayer.appendChild(this.updateMarkerLayer)
     this.dotLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.svg.appendChild(this.gridLayer)
     this.svg.appendChild(this.labelLayer)
@@ -817,7 +823,8 @@ class StatusChart {
     this.points = []
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
     while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
-    while (this.updateLayer.firstChild) this.updateLayer.firstChild.remove()
+    while (this.updateConnectorLayer.firstChild) this.updateConnectorLayer.firstChild.remove()
+    while (this.updateMarkerLayer.firstChild) this.updateMarkerLayer.firstChild.remove()
     while (this.tagLayer.firstChild) this.tagLayer.firstChild.remove()
 
     this.drawTagMarkers()
@@ -1156,7 +1163,8 @@ class StatusChart {
     const MARKER_HALF_WIDTH = 3
 
     this.entries.forEach((entry, idx) => {
-      if (!positions[idx]) return
+      const runPos = positions[idx]
+      if (!runPos) return
 
       const updates = updatesForEntry(entry)
       for (const update of updates) {
@@ -1166,18 +1174,26 @@ class StatusChart {
         const publishedPos = this.positionForTimestamp(publishedTs, { todayDayId })
         if (!publishedPos) continue
 
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-        line.setAttribute('class', 'update-line')
-        line.setAttribute('x1', String(crisp(publishedPos.x - MARKER_HALF_WIDTH)))
-        line.setAttribute('y1', String(crisp(publishedPos.y)))
-        line.setAttribute('x2', String(crisp(publishedPos.x + MARKER_HALF_WIDTH)))
-        line.setAttribute('y2', String(crisp(publishedPos.y)))
+        const connector = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        connector.setAttribute('class', 'update-connector')
+        connector.setAttribute('x1', String(crisp(publishedPos.x)))
+        connector.setAttribute('y1', String(crisp(publishedPos.y)))
+        connector.setAttribute('x2', String(crisp(runPos.x)))
+        connector.setAttribute('y2', String(crisp(runPos.y)))
+
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        marker.setAttribute('class', 'update-line')
+        marker.setAttribute('x1', String(crisp(publishedPos.x - MARKER_HALF_WIDTH)))
+        marker.setAttribute('y1', String(crisp(publishedPos.y)))
+        marker.setAttribute('x2', String(crisp(publishedPos.x + MARKER_HALF_WIDTH)))
+        marker.setAttribute('y2', String(crisp(publishedPos.y)))
 
         const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
         title.textContent = updateLineTitle(update)
-        line.appendChild(title)
+        marker.appendChild(title)
 
-        this.updateLayer.appendChild(line)
+        this.updateConnectorLayer.appendChild(connector)
+        this.updateMarkerLayer.appendChild(marker)
       }
     })
   }
