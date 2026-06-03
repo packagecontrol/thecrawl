@@ -346,8 +346,7 @@ html.status main {
     fill: var(--status-update-dot);
   }
 
-  .dot.active,
-  .dot.has-updates.active {
+  .dot.active:not(.has-updates) {
     fill: var(--status-dot-active-fill);
   }
 
@@ -364,12 +363,10 @@ html.status main {
   }
 
   :root:not([data-theme='dark']) & .dot.has-updates.active {
-    fill: hsl(103.73deg 65% 42%);
     stroke: hsl(97.65deg 80.68% 33.02%);
   }
 
   :root[data-theme='dark'] & .dot.has-updates.active {
-    fill: var(--green-2);
     stroke: hsl(79.76deg 100% 50%);
   }
 }
