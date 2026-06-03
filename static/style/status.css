@@ -312,6 +312,14 @@ html.status main {
   }
 }
 
+.status-chart.is-updates-mode {
+  --status-dot: hsl(222.25deg 15.62% 63.35% / 50%);
+}
+
+:root[data-theme='dark'] .status-chart.is-updates-mode {
+  --status-dot: hsl(245deg 34.8% 64.47% / 50%);
+}
+
 :root:not([data-theme='dark']) .status-chart.is-updates-mode,
 :root:not([data-theme='dark']) .status-chart.is-updates-mode:hover {
   --status-glitch-link: hsl(38deg 22% 65% / 27%);
