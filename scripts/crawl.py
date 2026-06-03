@@ -300,20 +300,12 @@ def next_packages_to_crawl(
                     f"Next package runs in {pl(round(delta.total_seconds()), 'seconds')}."
                 )
 
-    if presto:
-        key = lambda pkg: (
-            workspace["packages"]  # type: ignore[call-overload]
-            .get(pkg["name"], {})
-            .get("last_seen", "0000-00-00T00:00:00Z")
-        )
-    else:
-        key = lambda pkg: (
-            workspace["packages"]  # type: ignore[call-overload]
-            .get(pkg["name"], {})
-            .get("next_crawl", now_string)
-        )
-
-    return sorted(packages_to_crawl, key=key)[:limit]
+    key = lambda pkg: (
+        workspace["packages"]  # type: ignore[call-overload]
+        .get(pkg["name"], {})
+        .get("last_seen" if presto else "next_crawl", "0000-00-00T00:00:00Z")
+    )
+    return sorted(packages_to_crawl, key=key)[:limit]  # type: ignore[arg-type]
 
 
 def maintenance(registry: Registry, workspace: Workspace) -> None:
