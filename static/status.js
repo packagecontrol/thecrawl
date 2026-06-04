@@ -667,12 +667,15 @@ class StatusChart {
     this.updateLayer.appendChild(this.updateConnectorLayer)
     this.updateLayer.appendChild(this.updateMarkerLayer)
     this.dotLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.inlineTagLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.inlineTagLayer.setAttribute('class', 'inline-tag-labels')
     this.svg.appendChild(this.gridLayer)
     this.svg.appendChild(this.labelLayer)
     this.svg.appendChild(this.tagLayer)
     this.svg.appendChild(this.glitchLayer)
     this.svg.appendChild(this.updateLayer)
     this.svg.appendChild(this.dotLayer)
+    this.svg.appendChild(this.inlineTagLayer)
 
     // Fixed chart constants
     this.padding = { top: 16, right: 32, bottom: 16, left: 32 }
@@ -828,6 +831,7 @@ class StatusChart {
     while (this.updateConnectorLayer.firstChild) this.updateConnectorLayer.firstChild.remove()
     while (this.updateMarkerLayer.firstChild) this.updateMarkerLayer.firstChild.remove()
     while (this.tagLayer.firstChild) this.tagLayer.firstChild.remove()
+    while (this.inlineTagLayer.firstChild) this.inlineTagLayer.firstChild.remove()
 
     this.drawTagMarkers()
     this.drawOverflowTagMarker()
@@ -932,6 +936,7 @@ class StatusChart {
 
     for (const dayGroup of groupsByDay.values()) {
       let oldestTopX = null
+      const dayLineNodes = []
       const dayRunout = this.tagRunoutForDayGroup(dayGroup, baseRunout, minRunout, leanRatio, topY, topLineY)
       const dayElbowX = crisp(dayGroup[0].position.x + dayRunout)
       const oldestTag = dayGroup[0]?.marker?.tag || ''
@@ -969,6 +974,7 @@ class StatusChart {
         line.setAttribute('d', defaultPath)
         line.dataset.tag = marker.tag
         this.tagLayer.appendChild(line)
+        dayLineNodes.push(line)
 
         const isLatestInDay = indexInDay === dayGroup.length - 1
         if (isLatestInDay) {
@@ -982,10 +988,14 @@ class StatusChart {
           labelEntries.push({
             node: label,
             lineNode: line,
+            lineNodes: dayLineNodes,
             lineDefaultPath: defaultPath,
             lineTopPath: topLinePath,
             x: topX,
+            y,
             dayIndex: position.dayIndex,
+            position,
+            markerItems: dayGroup,
             defaultText: marker.tag,
             hoverText: hoverLabel,
             expandsOnHover: hoverLabel !== marker.tag,
@@ -994,7 +1004,9 @@ class StatusChart {
       })
     }
 
-    this.setupTagLabelHover(labelEntries)
+    const omittedEntries = this.omitOverlappingTopTagCallouts(labelEntries)
+    this.drawInlineTagLabels(omittedEntries)
+    this.setupTagLabelHover(labelEntries.filter(entry => !entry.isTopCalloutOmitted))
   }
 
   /**
@@ -1058,6 +1070,242 @@ class StatusChart {
     if (verticalSpan <= 0) return 0
 
     return indexInDay * ((dotY - topLineY) / verticalSpan)
+  }
+
+  omitOverlappingTopTagCallouts(entries) {
+    if (!entries.length) return []
+
+    const gap = cssNumber(this.el, '--status-tag-label-min-gap-x', 2)
+    const ordered = [...entries].sort((a, b) => b.x - a.x)
+    const kept = []
+    const omitted = []
+
+    for (const entry of ordered) {
+      entry.labelWidth = this.tagLabelWidth(entry.node, entry.defaultText)
+      const shouldOmit = kept.some(keptEntry => this.topTagCalloutOverlapsKeptEntry(entry, keptEntry, gap))
+
+      if (shouldOmit) {
+        entry.isTopCalloutOmitted = true
+        omitted.push(entry)
+        this.removeTopTagCallout(entry)
+      }
+      else {
+        kept.push(entry)
+      }
+    }
+
+    return omitted
+  }
+
+  topTagCalloutOverlapsKeptEntry(entry, keptEntry, gap) {
+    // Use stable day-column distance for adjacent days. The rendered top-label
+    // x positions can shift as tag runout shrinks, which otherwise makes the
+    // omit/inline decision flicker across nearby viewport widths.
+    const dayDistance = Math.abs(entry.dayIndex - keptEntry.dayIndex)
+    const availableWidth = dayDistance > 0
+      ? dayDistance * this.barWidth
+      : Math.abs(entry.x - keptEntry.x)
+    const requiredWidth = ((entry.labelWidth || 0) + (keptEntry.labelWidth || 0)) / 2 + gap
+    return availableWidth <= requiredWidth
+  }
+
+  removeTopTagCallout(entry) {
+    entry.node.remove()
+    const lineNodes = entry.lineNodes || [entry.lineNode]
+    for (const lineNode of lineNodes) {
+      lineNode?.remove()
+    }
+  }
+
+  drawInlineTagLabels(entries) {
+    if (!entries.length) return
+
+    const clusters = this.inlineTagClusters(entries)
+    for (const cluster of clusters) {
+      this.drawInlineTagLabel(this.inlineTagLabelData(cluster))
+    }
+  }
+
+  /**
+   * Multiple inline version callouts within a short period can visually
+   * overlap. Combine versions that occur within n visual hours into one
+   * callout, draw it at the newest version's position, and reveal the full
+   * version range on hover.
+   */
+  inlineTagClusters(entries) {
+    const clusterHours = cssNumber(this.el, '--status-tag-inline-cluster-hours', 1)
+    const maxGapY = this.hourHeight * clusterHours
+    const sorted = [...entries].sort((a, b) => a.y - b.y)
+    const clusters = []
+
+    for (const entry of sorted) {
+      const current = clusters[clusters.length - 1]
+      if (!current || entry.y - current.lastY > maxGapY) {
+        clusters.push({ entries: [entry], lastY: entry.y })
+      }
+      else {
+        current.entries.push(entry)
+        current.lastY = entry.y
+      }
+    }
+
+    return clusters.map(cluster => cluster.entries)
+  }
+
+  inlineTagLabelData(entries) {
+    const markerItems = entries
+      .flatMap(entry => entry.markerItems || [])
+      .sort((a, b) => a.ts - b.ts)
+    const oldest = markerItems[0]
+    const latest = markerItems[markerItems.length - 1]
+    const defaultText = latest?.marker?.tag || entries[entries.length - 1]?.defaultText || ''
+    const hoverText = markerItems.length > 1 && oldest?.marker?.tag
+      ? `${oldest.marker.tag}..${defaultText}`
+      : defaultText
+
+    return {
+      x: latest?.position?.x ?? entries[entries.length - 1]?.position?.x ?? 0,
+      y: latest?.position?.y ?? entries[entries.length - 1]?.position?.y ?? 0,
+      defaultText,
+      hoverText,
+      expandsOnHover: hoverText !== defaultText,
+    }
+  }
+
+  drawInlineTagLabel(data) {
+    if (!data.defaultText) return
+
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    group.setAttribute('class', 'tag-inline-callout')
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    line.setAttribute('class', 'tag-inline-line')
+    group.appendChild(line)
+
+    const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    bg.setAttribute('class', 'tag-inline-label-bg')
+    group.appendChild(bg)
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+    label.setAttribute('class', 'tag-inline-label')
+    label.textContent = data.defaultText
+    group.appendChild(label)
+
+    const entry = { ...data, group, line, bg, node: label }
+    this.inlineTagLayer.appendChild(group)
+    this.layoutInlineTagLabel(entry)
+
+    if (entry.expandsOnHover) {
+      group.addEventListener('mouseenter', () => {
+        label.textContent = entry.hoverText
+        this.layoutInlineTagBackground(entry)
+      })
+      group.addEventListener('mouseleave', () => {
+        label.textContent = entry.defaultText
+        this.layoutInlineTagBackground(entry)
+      })
+    }
+  }
+
+  layoutInlineTagLabel(entry) {
+    const geometry = this.inlineTagGeometry(entry)
+
+    Object.assign(entry, geometry)
+    entry.node.setAttribute('x', String(crisp(geometry.textX)))
+    entry.node.setAttribute('y', String(crisp(geometry.textY)))
+    entry.node.setAttribute('text-anchor', 'start')
+    this.layoutInlineTagBackground(entry)
+    this.layoutInlineTagLine(entry)
+  }
+
+  layoutInlineTagBackground(entry) {
+    const paddingX = cssNumber(this.el, '--status-tag-inline-padding-x', 2)
+    const paddingY = cssNumber(this.el, '--status-tag-inline-padding-y', 1)
+    const radius = cssNumber(this.el, '--status-tag-inline-radius', 3)
+    const box = this.tagLabelBox(entry.node)
+
+    entry.bg.setAttribute('x', String(box.x - paddingX))
+    entry.bg.setAttribute('y', String(box.y - paddingY))
+    entry.bg.setAttribute('width', String(box.width + paddingX * 2))
+    entry.bg.setAttribute('height', String(box.height + paddingY * 2))
+    entry.bg.setAttribute('rx', String(radius))
+    entry.bg.setAttribute('ry', String(radius))
+  }
+
+  layoutInlineTagLine(entry) {
+    const path = [
+      `M ${crisp(entry.lineStartX)} ${crisp(entry.y)}`,
+      `L ${crisp(entry.lineElbowX)} ${crisp(entry.y)}`,
+      `L ${crisp(entry.lineElbowX)} ${crisp(entry.lineEndY)}`,
+    ].join(' ')
+
+    entry.line.setAttribute('d', path)
+  }
+
+  inlineTagGeometry(entry) {
+    const runout = cssNumber(this.el, '--status-tag-inline-runout', 6)
+    const rise = cssNumber(this.el, '--status-tag-inline-rise', 6)
+    const textOffsetX = cssNumber(this.el, '--status-tag-inline-text-offset-x', -3)
+    const textOffsetY = cssNumber(this.el, '--status-tag-inline-text-offset-y', -3)
+    const downTextShiftX = cssNumber(this.el, '--status-tag-inline-down-text-shift-x', 1)
+    const downTextShiftY = cssNumber(this.el, '--status-tag-inline-down-text-shift-y', -3)
+    const nearTopHours = cssNumber(this.el, '--status-tag-inline-near-top-hours', 1)
+    const fallbackFontSize = cssNumber(this.el, '--status-tag-inline-font-size', 9)
+    const topLineY = this.yForHour(0)
+    const drawsDown = entry.y - topLineY <= this.hourHeight * nearTopHours
+    const ydir = drawsDown ? 1 : -1
+    const lineStartX = entry.x + this.radius
+    const lineElbowX = lineStartX + runout
+    const lineEndY = entry.y + ydir * rise
+    const textX = lineElbowX + textOffsetX + (drawsDown ? downTextShiftX : 0)
+    const textY = drawsDown
+      ? lineEndY + fallbackFontSize + Math.abs(textOffsetY) + downTextShiftY
+      : lineEndY + textOffsetY
+
+    return {
+      lineStartX,
+      lineElbowX,
+      lineEndY,
+      textX,
+      textY,
+    }
+  }
+
+  tagLabelBox(node) {
+    try {
+      if (typeof node.getBBox === 'function') {
+        const box = node.getBBox()
+        if (box && Number.isFinite(box.width) && Number.isFinite(box.height)) {
+          return box
+        }
+      }
+    }
+    catch {
+      // Fall back below when SVG layout metrics are unavailable.
+    }
+
+    const fallbackFontSize = cssNumber(this.el, '--status-tag-inline-font-size', 9)
+    return {
+      x: Number.parseFloat(node.getAttribute('x') || '0'),
+      y: Number.parseFloat(node.getAttribute('y') || '0') - fallbackFontSize,
+      width: this.tagLabelWidth(node, node.textContent),
+      height: fallbackFontSize,
+    }
+  }
+
+  tagLabelWidth(node, text) {
+    try {
+      if (typeof node.getComputedTextLength === 'function') {
+        const width = node.getComputedTextLength()
+        if (Number.isFinite(width) && width > 0) return width
+      }
+    }
+    catch {
+      // Fall back to the measured monospace-ish digit width below.
+    }
+
+    const charWidth = cssNumber(this.el, '--status-tag-label-fallback-char-width', 6)
+    return String(text || '').length * charWidth
   }
 
   setupTagLabelHover(entries) {
