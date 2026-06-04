@@ -96,7 +96,7 @@ jobs:
       - name: Run crawler
         run: |
           set -o pipefail
-          PYTHONUNBUFFERED=1 uv run -m scripts.crawl --limit 1000 \
+          PYTHONUNBUFFERED=1 uv run -m scripts.crawl --limit 1500 \
             --registry ./wrk/registry.json \
             --workspace ./wrk/workspace.json \
             2>&1 | tee crawl.log
