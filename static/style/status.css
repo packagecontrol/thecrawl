@@ -85,12 +85,32 @@ html.status main {
   --status-tag-line: hsl(222.25deg 3.29% 81.37%);
   --status-tag-line-stroke: 1;
   --status-tag-label: hsl(201.48deg 9.8% 67.95%);
-  --status-tag-runout: 9;
+  /* Top version labels and their long callout lines. */
+  --status-tag-runout: 9; /* preferred horizontal elbow length */
+  --status-tag-min-runout: 3; /* narrow-width lower bound */
   --status-tag-top-y: 10;
   --status-tag-lean-deg: 0.6;
   --status-tag-label-offset-x: 0;
   --status-tag-label-offset-y: 3;
+  --status-tag-label-min-gap-x: 2; /* overlap threshold between adjacent labels */
+  --status-tag-label-fallback-char-width: 6; /* before SVG text metrics are available */
   --status-tag-hover-hide-day-radius: 1;
+
+  /* Inline fallback for top labels that would collide on narrow viewports. */
+  --status-tag-inline-cluster-hours: 1; /* merge nearby omitted labels */
+  --status-tag-inline-near-top-hours: 1; /* draw downward when too close to 00:00 */
+  --status-tag-inline-runout: 6; /* short horizontal elbow from dot edge */
+  --status-tag-inline-rise: 6; /* short vertical elbow */
+  --status-tag-inline-text-offset-x: -3; /* text starts slightly before vertical elbow */
+  --status-tag-inline-text-offset-y: -3;
+  --status-tag-inline-down-text-shift-x: 1; /* optical tweak for downward labels */
+  --status-tag-inline-down-text-shift-y: -3;
+  --status-tag-inline-padding-x: 2;
+  --status-tag-inline-padding-y: 1;
+  --status-tag-inline-radius: 3;
+  --status-tag-inline-font-size: 9px;
+
+  /* Left-edge marker for tag history continuing outside the visible window. */
   --status-tag-overflow-shaft: 30;
   --status-tag-overflow-center-offset: 3;
   --status-tag-overflow-shift-x: -3;
@@ -203,6 +223,31 @@ html.status main {
 
   .tag-label-neighbor-hidden {
     opacity: 0;
+  }
+
+  .tag-inline-callout {
+    pointer-events: auto;
+  }
+
+  .tag-inline-line {
+    fill: none;
+    stroke: var(--status-tag-line);
+    stroke-width: var(--status-tag-line-stroke);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .tag-inline-label-bg {
+    fill: var(--background-2);
+    stroke: none;
+  }
+
+  .tag-inline-label {
+    fill: var(--status-tag-label);
+    font-size: var(--status-tag-inline-font-size);
+    pointer-events: auto;
+    cursor: default;
   }
 
   .tag-overflow-line {
