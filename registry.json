@@ -7466,20 +7466,13 @@
     },
     {
       "name": "Brevis Autocomplete",
-      "details": "https://github.com/dlzi/brevis-autocomplete",
       "labels": [
         "auto-complete",
         "language syntax"
       ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2019-04-19T14:40:22Z"
+      "first_seen": "2019-04-19T14:40:22Z",
+      "removed": "2026-06-06T14:17:27Z"
     },
     {
       "name": "BridleNSIS",
@@ -28347,22 +28340,12 @@
     },
     {
       "name": "GoEscape",
-      "details": "https://bitbucket.org/shellzen/goescape",
       "labels": [
         "go"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=3000",
-          "platforms": [
-            "linux"
-          ],
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2016-07-18T01:26:08Z"
+      "first_seen": "2016-07-18T01:26:08Z",
+      "removed": "2026-06-06T14:17:27Z"
     },
     {
       "name": "GoFeather",
@@ -86185,19 +86168,12 @@
     },
     {
       "name": "W2P",
-      "details": "https://bitbucket.org/kfog/w2p",
       "labels": [
         "web2py"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=3000",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2015-05-04T12:16:32Z"
+      "first_seen": "2015-05-04T12:16:32Z",
+      "removed": "2026-06-06T14:17:27Z"
     },
     {
       "name": "W3CValidators",
