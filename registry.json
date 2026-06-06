@@ -90098,21 +90098,10 @@
         },
         {
           "base": "https://pypi.org/project/charset-normalizer",
-          "asset": "charset_normalizer-*-cp${py_version}-cp${py_version}-macosx_*_x86_64.whl",
-          "platforms": [
-            "osx-x64"
-          ],
-          "python_versions": [
-            "3.8",
-            "3.13",
-            "3.14"
-          ]
-        },
-        {
-          "base": "https://pypi.org/project/charset-normalizer",
           "asset": "charset_normalizer-*-cp${py_version}-cp${py_version}-macosx_*_universal2.whl",
           "platforms": [
-            "osx-arm64"
+            "osx-arm64",
+            "osx-x64"
           ],
           "python_versions": [
             "3.8",
