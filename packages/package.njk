@@ -9,6 +9,7 @@ eleventyComputed:
   title: "{{ pkg.name | safe }}"
   description: "{{ pkg.description | default('') }}"
 isPackagePage: true
+page_type: package
 ---
 
 {% import "packages/macros.njk" as pack %}

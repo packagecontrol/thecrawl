@@ -13,15 +13,15 @@
   };
 
   const root = document.documentElement
-  const isHome = root.classList.contains('home')
+  const isHome = root.classList.contains('page-home')
   const titlePrefix = (() => {
     if (isHome) {
       return 'Search'
     }
-    if (root.classList.contains('labels-in-package-control-r')) {
+    if (root.classList.contains('page-labels')) {
       return 'Labels'
     }
-    if (root.classList.contains('libraries-in-package-control-r')) {
+    if (root.classList.contains('page-libraries')) {
       return 'Libraries'
     }
     return null
