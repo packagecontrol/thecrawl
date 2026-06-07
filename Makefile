@@ -19,6 +19,8 @@ update-data:
 	curl -o static/logs.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/logs.json"
 
 up:
+	# Package Control Channel is needed to link each package to its exact
+	# registry source file and line number.
 	rm -rf $(PACKAGE_CONTROL_CHANNEL_DIR)
 	git clone --depth 1 $(PACKAGE_CONTROL_CHANNEL_REPO) $(PACKAGE_CONTROL_CHANNEL_DIR)
 	$(MAKE) update-data
