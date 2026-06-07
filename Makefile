@@ -5,7 +5,7 @@ build:
 	npm install
 	$(MAKE) up
 	# compile eleventy (production)
-	ELEVENTY_ENV=production NODE_ENV=production npx @11ty/eleventy
+	ELEVENTY_ENV=production NODE_ENV=production npx @11ty/eleventy --quiet
 	# add compiled channels for public consumption
 	curl -o _site/channel.json -L "https://github.com/packagecontrol/thecrawl/releases/download/the-channel/channel.json"
 	curl -o _site/channel_st3.json -L "https://github.com/packagecontrol/thecrawl/releases/download/the-st3-channel/channel_st3.json"
