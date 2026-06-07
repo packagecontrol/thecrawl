@@ -337,14 +337,18 @@ function latestReleaseVersion(releases) {
     .find(release => release.version)?.version ?? ''
 }
 
-export default function (eleventyConfig) {
+export default async function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
   const prodOrigin = 'https://packages.sublimetext.io'
   const devOrigin = process.env.DEV_ORIGIN || 'http://localhost:8080'
   const siteOrigin = isProd ? prodOrigin : devOrigin
 
   eleventyConfig.addPassthroughCopy('assets')
-  eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + util.gitHash : 'static' })
+  eleventyConfig.addPassthroughCopy(
+    { static: isProd ? 'static_' + util.gitHash : 'static' },
+    { filter: src => !src.endsWith('.test.js') },
+  )
+  eleventyConfig.addWatchTarget('./eleventy.install-chart.mjs')
 
   eleventyConfig.ignores.add('.AFileIcon')
   eleventyConfig.ignores.add('util')
@@ -593,6 +597,22 @@ export default function (eleventyConfig) {
       return page.url.slice(0, -1 * '.html'.length)
     }
   })
+
+  let installChartModuleMtime = null
+  let renderInstallChart = null
+  async function loadInstallChartModule() {
+    const mtime = fs.statSync('eleventy.install-chart.mjs').mtimeMs
+    if (mtime === installChartModuleMtime) {
+      return
+    }
+
+    installChartModuleMtime = mtime
+    ;({ renderInstallChart } = await import(`./eleventy.install-chart.mjs?mtime=${mtime}`))
+  }
+
+  await loadInstallChartModule()
+  eleventyConfig.on('eleventy.before', loadInstallChartModule)
+  eleventyConfig.addFilter('install_chart', pkg => renderInstallChart(pkg))
 
   // Register all named exports from external module as filters
   for (const [name, fn] of Object.entries(filters)) {

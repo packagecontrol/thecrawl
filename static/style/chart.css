@@ -144,8 +144,8 @@ section:has(.chart-container)::after {
     pointer-events: none; /* tooltip is on the hit circle */
   }
   /*
-    Interaction-heavy release callout selectors live in the template's
-    dynamic <style> block in _includes/packages/install_chart.njk.
+    Interaction-heavy release callout selectors live in the chart renderer's
+    dynamic <style> block in eleventy.install-chart.mjs.
     Only baseline visual styles are in this shared stylesheet.
   */
   .release-point {
