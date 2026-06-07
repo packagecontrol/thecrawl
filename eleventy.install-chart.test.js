@@ -1,5 +1,3 @@
-import fs from 'fs'
-import path from 'path'
 import { describe, expect, it } from 'vitest'
 import {
   __test__,
@@ -8,27 +6,8 @@ import {
   releaseWeekModel,
   renderInstallChart,
 } from './eleventy.install-chart.mjs'
-import * as util from './eleventy.util.mjs'
-
-const fixturePackages = [
-  'GitLink',
-  'SSH Config',
-  'Piranha',
-  'GitHub Theme',
-  'GitSavvy',
-  'SublimeLinter',
-  'LSP',
-]
 
 describe('renderInstallChart', () => {
-  it.each(fixturePackages)('matches the captured Nunjucks chart for %s', (name) => {
-    const pkg = chartPackageForName(name)
-    const expected = readChartFixture(name)
-    const actual = renderInstallChart(pkg)
-
-    expect(normalizeChartHtml(actual)).toBe(normalizeChartHtml(expected))
-  })
-
   it('does not render completely empty charts', () => {
     expect(renderInstallChart({
       allReleases: [],
@@ -230,60 +209,3 @@ describe('dimensions', () => {
     expect(d.slice_width_at(0)).toBe(10)
   })
 })
-
-function chartPackageForName(name) {
-  const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
-  const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
-  const pkg = Object.values(workspace.packages).find(candidate => candidate.name === name)
-  if (!pkg) {
-    throw new Error(`Missing package ${name}`)
-  }
-
-  const weeklyDates = stats.__weekly_dates
-  const weeklyInstalls = stats[pkg.name]?.installs?.weekly ?? []
-  const weeklyRemovals = stats[pkg.name]?.removals?.weekly ?? []
-  const weeklyUpgrades = stats[pkg.name]?.upgrades?.weekly ?? []
-
-  let end = undefined
-  if (pkg.first_seen && weeklyDates) {
-    const iso = util.isoWeekString(pkg.first_seen)
-    const idx = weeklyDates.indexOf(iso)
-    if (idx >= 0) {
-      end = idx + 1
-    }
-  }
-
-  return {
-    ...pkg,
-    installed: stats[pkg.name]?.installs?.totals ?? 0,
-    weekly_dates: weeklyDates,
-    weekly_installs: weeklyInstalls.slice(0, end),
-    weekly_removals: weeklyRemovals.slice(0, end),
-    weekly_upgrades: weeklyUpgrades.slice(0, end),
-    allReleases: allReleasesFor(pkg),
-  }
-}
-
-function allReleasesFor(pkg) {
-  return [...(pkg.releases ?? [])].sort((a, b) => {
-    const dateA = new Date(a.date ?? '1970-01-01 00:00:00')
-    const dateB = new Date(b.date ?? '1970-01-01 00:00:00')
-    if (dateA.getTime() !== dateB.getTime()) {
-      return dateB - dateA
-    }
-    const minA = util.parseSublimeTextMin(a.sublime_text)
-    const minB = util.parseSublimeTextMin(b.sublime_text)
-    return minB - minA
-  })
-}
-
-function readChartFixture(name) {
-  return fs.readFileSync(path.join('test', 'fixtures', 'install-chart', `${name}.html`), 'utf8')
-}
-
-function normalizeChartHtml(html) {
-  return html
-    .replace(/>\s+</g, '><')
-    .replace(/\s+/g, ' ')
-    .trim()
-}

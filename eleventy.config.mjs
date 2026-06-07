@@ -353,7 +353,6 @@ export default async function (eleventyConfig) {
   eleventyConfig.ignores.add('.AFileIcon')
   eleventyConfig.ignores.add('util')
   eleventyConfig.ignores.add('README.md')
-  eleventyConfig.ignores.add('test')
   eleventyConfig.ignores.add('**/*.test.js')
 
   const inlineJsCache = new Map()
