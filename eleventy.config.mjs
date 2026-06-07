@@ -344,7 +344,10 @@ export default async function (eleventyConfig) {
   const siteOrigin = isProd ? prodOrigin : devOrigin
 
   eleventyConfig.addPassthroughCopy('assets')
-  eleventyConfig.addPassthroughCopy({ static: isProd ? 'static_' + util.gitHash : 'static' })
+  eleventyConfig.addPassthroughCopy(
+    { static: isProd ? 'static_' + util.gitHash : 'static' },
+    { filter: src => !src.endsWith('.test.js') },
+  )
   eleventyConfig.addWatchTarget('./eleventy.install-chart.mjs')
 
   eleventyConfig.ignores.add('.AFileIcon')
