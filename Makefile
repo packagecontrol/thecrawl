@@ -7,16 +7,16 @@ build:
 	# compile eleventy (production)
 	ELEVENTY_ENV=production NODE_ENV=production npx @11ty/eleventy --quiet
 	# add compiled channels for public consumption
-	curl -o _site/channel.json -L "https://github.com/packagecontrol/thecrawl/releases/download/the-channel/channel.json"
-	curl -o _site/channel_st3.json -L "https://github.com/packagecontrol/thecrawl/releases/download/the-st3-channel/channel_st3.json"
+	curl -L --fail --parallel \
+		-o _site/channel.json "https://github.com/packagecontrol/thecrawl/releases/download/the-channel/channel.json" \
+		-o _site/channel_st3.json "https://github.com/packagecontrol/thecrawl/releases/download/the-st3-channel/channel_st3.json"
 
 update-data:
-	# workspace from https://github.com/packagecontrol/thecrawl
-	curl -o workspace.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/workspace.json"
-	# installation stats
-	curl -o stats.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/stats.json"
-	# thecrawl logs
-	curl -o static/logs.json -L "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/logs.json"
+	mkdir -p static
+	curl -L --fail --parallel \
+		-o workspace.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/workspace.json" \
+		-o stats.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/stats.json" \
+		-o static/logs.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/logs.json"
 
 up:
 	# Package Control Channel is needed to link each package to its exact
