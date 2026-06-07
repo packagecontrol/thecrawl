@@ -186,7 +186,7 @@ window.addEventListener('popstate', syncFromUrl)
 // Add event delegation for search links
 document.addEventListener('click', (event) => {
   // but only on the homepage ...
-  if (!document.documentElement.classList.contains('home')) {
+  if (!document.documentElement.classList.contains('page-home')) {
     return
   }
 

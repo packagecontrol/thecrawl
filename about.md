@@ -1,6 +1,7 @@
 ---
 layout: layout.njk
 title: About / FAQ
+page_type: about
 ---
 
 # About

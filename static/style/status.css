@@ -1,8 +1,8 @@
-html.status {
+html.page-status {
   scrollbar-gutter: stable;
 }
 
-html.status main {
+html.page-status main {
   margin-top: calc(var(--grid-line) * 1.5);
   min-height: 66vh;
 }
