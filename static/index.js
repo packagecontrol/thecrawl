@@ -30,7 +30,7 @@ async function fetchSearchData() {
 }
 
 const rawIndex = await fetchSearchData()
-const packages = Array.isArray(rawIndex) ? rawIndex : (rawIndex.packages || [])
+const packages = normalizeSearchPackages(rawIndex)
 const allLabelRecords = buildLabelRecords(packages)
 const knownLabels = new Set(
   allLabelRecords.flatMap(record => record.map(entry => entry.normalizedLabel)),
@@ -39,6 +39,65 @@ window.__LABEL_ICON_ALIASES__ = rawIndex.label_icon_aliases ?? {}
 window.__LABEL_ICON_TINTS__ = rawIndex.label_icon_tints ?? {}
 
 const minisrch = createMinisearch(MiniSearch, packages)
+
+function normalizeSearchPackages(rawIndex) {
+  const packages = Array.isArray(rawIndex) ? rawIndex : (rawIndex.packages || [])
+  if (!Array.isArray(packages[0])) {
+    return packages
+  }
+
+  return packages.map(expandSearchPackage)
+}
+
+function expandSearchPackage(row) {
+  if (!Array.isArray(row)) {
+    return row
+  }
+
+  const [
+    name,
+    description,
+    author,
+    stars,
+    installed,
+    first_seen,
+    last_modified,
+    magic_score,
+    magic,
+    platforms,
+    platform_statement,
+    labels,
+    outdated,
+    st3_only,
+    removed,
+    archived_at,
+  ] = row
+
+  return {
+    name,
+    description,
+    author,
+    stars,
+    installed,
+    first_seen,
+    last_modified,
+    magic_score,
+    magic: expandMagicBreakdown(magic),
+    platforms,
+    platform_statement,
+    labels,
+    permalink: `/packages/${encodeURIComponent(name)}`,
+    ...(outdated ? { outdated: true } : {}),
+    ...(st3_only ? { st3_only: true } : {}),
+    ...(removed ? { removed } : {}),
+    ...(archived_at ? { archived_at } : {}),
+  }
+}
+
+function expandMagicBreakdown(values = []) {
+  const [popularity, stars, freshness, longevity, recency, penalty] = values
+  return { popularity, stars, freshness, longevity, recency, penalty }
+}
 
 /**
  * Handle search features on the index and package pages.

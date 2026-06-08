@@ -47,7 +47,6 @@ function createMinisearchInstance(MiniSearch) {
       'stars',
       'installed',
       'first_seen',
-      'created_at',
       'last_modified',
       'archived_at',
       'removed',
