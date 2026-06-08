@@ -1,3 +1,7 @@
+html.page-package {
+  overflow-y: scroll;
+}
+
 .package-title {
   padding-top: 12px;
   margin-bottom: 16px;
