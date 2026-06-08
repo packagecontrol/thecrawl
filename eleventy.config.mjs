@@ -4,6 +4,7 @@ import { spawnSync } from 'child_process'
 import { minify } from 'terser'
 import * as util from './eleventy.util.mjs'
 import * as filters from './eleventy.filters.mjs'
+import { bundleCss } from './util/bundle-css.mjs'
 
 const repackagerSite = 'https://repackager.sublimetext.io'
 const supportedRepackagerHosts = [
@@ -349,6 +350,14 @@ export default async function (eleventyConfig) {
     { filter: src => !src.endsWith('.test.js') },
   )
   eleventyConfig.addWatchTarget('./eleventy.install-chart.mjs')
+
+  eleventyConfig.on('eleventy.after', () => {
+    if (!isProd) {
+      return
+    }
+
+    bundleCss(path.join('_site', `static_${util.gitHash}`, 'styles.css'))
+  })
 
   eleventyConfig.ignores.add('.AFileIcon')
   eleventyConfig.ignores.add('util')
