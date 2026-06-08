@@ -142,7 +142,6 @@ page_type: package
 {% endif %}
 
 {% if pkg.readme and not pkg.removed %}
-  <link rel="stylesheet" href="{{ '/static/style/readme.css' | bust}}">
   <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="main-content"></section>
   <script>
     (() => {

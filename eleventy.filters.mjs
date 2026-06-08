@@ -69,6 +69,69 @@ export function label_icon_tints_json() {
   return JSON.stringify(labelIconTints)
 }
 
+export function search_index_json(packages) {
+  return JSON.stringify({
+    packages: packages.map(compactSearchPackage),
+    label_icon_aliases: labelIconAliases,
+    label_icon_tints: labelIconTints,
+  })
+}
+
+function compactSearchPackage(pkg) {
+  const row = [
+    pkg.name,
+    htmlDescription(pkg.description ?? ''),
+    (pkg.author ?? []).join(','),
+    pkg.stars ?? 0,
+    pkg.installed ?? 0,
+    timestamp(pkg.first_seen) || 0,
+    timestamp(pkg.last_modified) || 0,
+    pkg.magic_score ?? 0,
+    compactMagicBreakdown(pkg.magic),
+    (pkg.platforms ?? []).join(','),
+    pkg.platform_statement ?? '',
+    (pkg.labels ?? []).join(','),
+  ]
+
+  if (pkg.outdated || pkg.st3_only || pkg.removed || pkg.archived_at) {
+    row.push(
+      pkg.outdated ? 1 : 0,
+      pkg.st3_only ? 1 : 0,
+      timestamp(pkg.removed) || 0,
+      timestamp(pkg.archived_at) || 0,
+    )
+  }
+
+  return row
+}
+
+function compactMagicBreakdown(magic = {}) {
+  return [
+    magic.popularity ?? 0,
+    magic.stars ?? 0,
+    magic.freshness ?? 0,
+    magic.longevity ?? 0,
+    magic.recency ?? 0,
+    magic.penalty ?? 0,
+  ]
+}
+
+function htmlDescription(description) {
+  return escapeHtml(String(description)).replace(/\r?\n/g, '<br>')
+}
+
+const HTML_ESCAPE_MAP = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  '\'': '&#39;',
+}
+
+function escapeHtml(value) {
+  return value.replace(/[&<>"']/g, char => HTML_ESCAPE_MAP[char])
+}
+
 function canonicalLabel(label) {
   if (typeof label !== 'string') return ''
   const normalized = label.trim().toLowerCase()
