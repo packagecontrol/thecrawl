@@ -22,7 +22,8 @@ export class Card {
     }
 
     this.clone.querySelector('.card-heading a').innerHTML = this.pkg.name
-    this.clone.querySelector('.card-heading a').setAttribute('href', this.pkg.permalink)
+    const permalink = '/packages/' + encodeURIComponent(this.pkg.name)
+    this.clone.querySelector('.card-heading a').setAttribute('href', permalink)
     this.authors(this.clone.querySelector('p.authors'))
 
     const descr_el = this.clone.querySelector('p.description')
