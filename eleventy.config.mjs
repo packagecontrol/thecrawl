@@ -551,17 +551,20 @@ export default async function (eleventyConfig) {
       }
 
       pkg.labels.forEach((label) => {
-        if (labels[label]) {
-          labels[label]++
+        const canonical = label.trim().toLowerCase()
+        if (canonical in labels) {
+          labels[canonical].count += 1
         } else {
-          labels[label] = 1
+          labels[canonical] = {
+            key: label,
+            count: 1,
+          }
         }
       })
     })
 
-    return Object.entries(labels)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([key, count]) => ({ key, count }))
+    return Object.values(labels)
+      .sort((a, b) => a.key.localeCompare(b.key))
   })
 
   eleventyConfig.addCollection('libraries', () => {
