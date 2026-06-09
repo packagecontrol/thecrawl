@@ -64,7 +64,7 @@ function main() {
   ensureDir(path.dirname(spritePath))
 
   /** @type {Set<string>} */
-  const usedLabels = new Set()
+  const usedLabels = {}
   /** @type {Record<string, string>} */
   let aliases = {}
   /** @type {Set<string>} */
@@ -106,7 +106,8 @@ function main() {
         const key = label.trim().toLowerCase()
         if (!key) continue
         const canonical = (aliases[key] && aliases[key].trim().toLowerCase()) || key
-        usedLabels.add(canonical)
+        usedLabels[canonical] ??= 0
+        usedLabels[canonical] += 1
       }
     }
   }
@@ -140,7 +141,7 @@ function main() {
 
     const typeKey = type.trim().toLowerCase()
     // If we have a set of used labels, restrict icons to those labels (or alias targets)
-    if (usedLabels.size > 0 && !usedLabels.has(typeKey)) {
+    if (usedLabels.size > 0 && (!(typeKey in usedLabels) || usedLabels[typeKey] <= 1)) {
       continue
     }
 
