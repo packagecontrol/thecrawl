@@ -53,7 +53,6 @@ function createMinisearchInstance(MiniSearch) {
       'platforms',
       'platform_statement',
       'labels',
-      'permalink',
       'magic_score',
       'magic',
       'outdated',

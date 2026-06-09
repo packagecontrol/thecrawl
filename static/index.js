@@ -86,7 +86,6 @@ function expandSearchPackage(row) {
     platforms,
     platform_statement,
     labels,
-    permalink: `/packages/${encodeURIComponent(name)}`,
     ...(outdated ? { outdated: true } : {}),
     ...(st3_only ? { st3_only: true } : {}),
     ...(removed ? { removed } : {}),
