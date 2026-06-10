@@ -857,16 +857,21 @@ def test_parse_try_key_value_definition_keeps_stdin_semicolon_literal():
 
 
 @pytest.mark.parametrize(
-    ("platform_alias", "expected"),
+    ("platform_key", "platform_alias", "expected"),
     [
-        ("windows", ["windows-x64", "windows-x32"]),
-        ("osx", ["osx-x64", "osx-arm64"]),
-        ("linux", ["linux-x64", "linux-arm64"]),
+        ("platforms", "windows", ["windows-x64", "windows-x32"]),
+        ("platforms", "osx", ["osx-x64", "osx-arm64"]),
+        ("platforms", "linux", ["linux-x64", "linux-arm64"]),
+        ("platform", "osx", ["osx-x64", "osx-arm64"]),
     ],
 )
-def test_parse_try_definition_expands_inline_platform_alias(platform_alias, expected):
+def test_parse_try_definition_expands_inline_platform_alias(
+    platform_key,
+    platform_alias,
+    expected,
+):
     assert crawl_libraries.parse_try_definition(
-        f"base: pypi:lxml; platforms: {platform_alias}",
+        f"base: pypi:lxml; {platform_key}: {platform_alias}",
         split_semicolon=True,
         expand_platform_aliases=True,
     ) == [
@@ -878,6 +883,14 @@ def test_parse_try_definition_keeps_stdin_osx_platform_literal():
     assert crawl_libraries.parse_try_definition(
         "base: pypi:lxml\nplatforms: osx",
     ) == [{"base": "pypi:lxml", "platforms": "osx"}]
+
+
+def test_parse_try_definition_keeps_json_platform_literal():
+    assert crawl_libraries.parse_try_definition(
+        '{"base": "pypi:lxml", "platform": "osx"}',
+        split_semicolon=True,
+        expand_platform_aliases=True,
+    ) == [{"base": "pypi:lxml", "platform": "osx"}]
 
 
 @pytest.mark.parametrize(

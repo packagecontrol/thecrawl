@@ -503,6 +503,8 @@ def parse_try_definition(
 
 def expand_try_platform_aliases(releases: list[dict]) -> None:
     for release in releases:
+        if "platform" in release and "platforms" not in release:
+            release["platforms"] = release.pop("platform")
         if "platforms" in release:
             release["platforms"] = expand_try_platform_alias(release["platforms"])
 
