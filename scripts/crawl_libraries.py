@@ -94,6 +94,7 @@ class Args:
     name: str | None
     explain: str | None
     try_definition: str | None
+    try_definition_shortcut: bool
     write: bool
     verbose: bool
     limit: int
@@ -131,7 +132,8 @@ def parse_args() -> Args:
         metavar="DEF",
         help=(
             "Use an in-memory release definition with --name or --explain. "
-            "Use '-' or omit DEF to read from stdin."
+            "Inline DEF accepts JSON or key: value shorthand with ';' "
+            "separators. Use '-' or omit DEF to read from stdin."
         ),
     )
     parser.add_argument(
@@ -175,6 +177,7 @@ def parse_args() -> Args:
     if ns.limit < 1:
         parser.error("--limit must be a positive integer.")
 
+    try_definition_shortcut = ns.try_definition not in (None, "-")
     if ns.try_definition == "-":
         ns.try_definition = sys.stdin.read()
 
@@ -188,6 +191,7 @@ def parse_args() -> Args:
         name=ns.name,
         explain=ns.explain,
         try_definition=ns.try_definition,
+        try_definition_shortcut=try_definition_shortcut,
         write=ns.write,
         verbose=ns.verbose or ns.write,
         limit=ns.limit,
@@ -359,6 +363,7 @@ def find_or_build_library(name: str, args: Args) -> RegistryEntry | None:
                 name,
                 find_library(registry, name),
                 args.try_definition,
+                split_semicolon=args.try_definition_shortcut,
             )
         except ValueError as exc:
             print(f"Invalid --try definition: {exc}")
@@ -437,15 +442,21 @@ def synthesize_library_entry(
     name: str,
     registry_entry: RegistryEntry | None,
     definition: str,
+    *,
+    split_semicolon: bool = False,
 ) -> RegistryEntry:
-    releases = parse_try_definition(definition)
+    releases = parse_try_definition(definition, split_semicolon=split_semicolon)
     library: RegistryEntry = {"name": name, "releases": releases}
     if registry_entry:
         return registry_entry.copy() | library
     return library
 
 
-def parse_try_definition(definition: str) -> list[ReleaseEntry]:
+def parse_try_definition(
+    definition: str,
+    *,
+    split_semicolon: bool = False,
+) -> list[ReleaseEntry]:
     definition = definition.strip()
     if not definition:
         raise ValueError("empty release definition")
@@ -453,7 +464,10 @@ def parse_try_definition(definition: str) -> list[ReleaseEntry]:
     try:
         parsed = json.loads(definition)
     except json.JSONDecodeError:
-        parsed = parse_try_key_value_definition(definition)
+        parsed = parse_try_key_value_definition(
+            definition,
+            split_semicolon=split_semicolon,
+        )
 
     if isinstance(parsed, dict) and "releases" in parsed:
         parsed = parsed["releases"]
@@ -467,17 +481,22 @@ def parse_try_definition(definition: str) -> list[ReleaseEntry]:
     return parsed
 
 
-def parse_try_key_value_definition(definition: str) -> dict | list[dict]:
+def parse_try_key_value_definition(
+    definition: str,
+    *,
+    split_semicolon: bool = False,
+) -> dict | list[dict]:
     """
     Parse the lightweight ``--try`` shorthand.
 
     This intentionally supports only the small subset that is useful at the
-    command line: ``key: value`` pairs, blank lines, comments, and top-level
-    list items introduced with ``-``. It is YAML-ish for convenience, but it is
-    not a YAML parser: there are no nested mappings, continuation lines, escape
-    handling for single-quoted strings, or indentation semantics. Values stay as
-    strings except for booleans/null, JSON double-quoted strings, and simple
-    bracketed lists.
+    command line: ``key: value`` pairs, blank lines, comments, optional
+    semicolon separators, and top-level list items introduced with ``-``. It is
+    YAML-ish for convenience, but it is not a YAML parser:
+    there are no nested mappings, continuation lines, escape handling for
+    single-quoted strings, or indentation semantics. Values stay as strings
+    except for booleans/null, JSON double-quoted strings, and simple bracketed
+    lists.
 
     Use JSON for anything more structured or ambiguous.
     """
@@ -485,7 +504,10 @@ def parse_try_key_value_definition(definition: str) -> dict | list[dict]:
     current: dict | None = None
     saw_list_marker = False
 
-    for raw_line in definition.splitlines():
+    for raw_line in split_try_definition_lines(
+        definition,
+        split_semicolon=split_semicolon,
+    ):
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
@@ -513,6 +535,53 @@ def parse_try_key_value_definition(definition: str) -> dict | list[dict]:
     if not entries:
         raise ValueError("empty release definition")
     return entries if saw_list_marker else entries[0]
+
+
+def split_try_definition_lines(
+    definition: str,
+    *,
+    split_semicolon: bool = False,
+) -> list[str]:
+    lines: list[str] = []
+    for raw_line in definition.splitlines():
+        if split_semicolon:
+            lines.extend(split_try_definition_line(raw_line))
+        else:
+            lines.append(raw_line)
+    return lines
+
+
+def split_try_definition_line(raw_line: str) -> list[str]:
+    parts: list[str] = []
+    start = 0
+    quote = ""
+    escaped = False
+    bracket_depth = 0
+
+    for index, char in enumerate(raw_line):
+        if quote:
+            if quote == '"' and char == "\\" and not escaped:
+                escaped = True
+                continue
+            if char == quote and not escaped:
+                quote = ""
+            escaped = False
+            continue
+        if char in ('"', "'"):
+            quote = char
+            continue
+        if char in "[{(":
+            bracket_depth += 1
+            continue
+        if char in "]})" and bracket_depth:
+            bracket_depth -= 1
+            continue
+        if char == ";" and bracket_depth == 0:
+            parts.append(raw_line[start:index])
+            start = index + 1
+
+    parts.append(raw_line[start:])
+    return parts
 
 
 def is_try_key(key: str) -> bool:

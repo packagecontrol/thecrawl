@@ -22,6 +22,7 @@ def make_args(
     name=None,
     explain=None,
     try_definition=None,
+    try_definition_shortcut=False,
     limit=10,
     allowed_source=None,
     write=False,
@@ -35,6 +36,7 @@ def make_args(
         name=name,
         explain=explain,
         try_definition=try_definition,
+        try_definition_shortcut=try_definition_shortcut,
         write=write,
         verbose=verbose,
         limit=limit,
@@ -745,6 +747,7 @@ def test_parse_args_try_heredoc_reads_stdin(monkeypatch, tmp_path):
 
     assert args.name == "lxml"
     assert args.try_definition == "base: pypi:lxml\n"
+    assert args.try_definition_shortcut is False
 
 
 def test_parse_args_try_accepts_explain(monkeypatch, tmp_path):
@@ -760,6 +763,48 @@ def test_parse_args_try_accepts_explain(monkeypatch, tmp_path):
 
     assert args.explain == "lxml"
     assert args.try_definition == "base: pypi:lxml"
+    assert args.try_definition_shortcut is True
+
+
+@pytest.mark.parametrize(
+    ("definition", "split_semicolon", "expected"),
+    [
+        ("base: pypi:lxml", False, ["base: pypi:lxml"]),
+        (
+            "base: pypi:lxml\nplatforms: windows-x32",
+            False,
+            ["base: pypi:lxml", "platforms: windows-x32"],
+        ),
+        (
+            "base: pypi:lxml; platforms: windows-x32",
+            True,
+            ["base: pypi:lxml", " platforms: windows-x32"],
+        ),
+        (
+            "asset: \"foo;bar\"; platforms: windows-x32",
+            True,
+            ['asset: "foo;bar"', " platforms: windows-x32"],
+        ),
+        (
+            'asset: ["foo;bar", "*.zip"]; platforms: windows-x32',
+            True,
+            ['asset: ["foo;bar", "*.zip"]', " platforms: windows-x32"],
+        ),
+        (
+            "- base: pypi:lxml; platforms: windows-x32\n- base: pypi:numpy",
+            True,
+            ["- base: pypi:lxml", " platforms: windows-x32", "- base: pypi:numpy"],
+        ),
+    ],
+)
+def test_split_try_definition_lines(definition, split_semicolon, expected):
+    assert (
+        crawl_libraries.split_try_definition_lines(
+            definition,
+            split_semicolon=split_semicolon,
+        )
+        == expected
+    )
 
 
 @pytest.mark.parametrize(
@@ -798,6 +843,19 @@ def test_parse_try_key_value_definition_supported(definition, expected):
     assert crawl_libraries.parse_try_key_value_definition(definition) == expected
 
 
+def test_parse_try_key_value_definition_supports_inline_separator():
+    assert crawl_libraries.parse_try_key_value_definition(
+        "base: pypi:lxml; platforms: windows-x32",
+        split_semicolon=True,
+    ) == {"base": "pypi:lxml", "platforms": "windows-x32"}
+
+
+def test_parse_try_key_value_definition_keeps_stdin_semicolon_literal():
+    assert crawl_libraries.parse_try_key_value_definition(
+        "base: pypi:lxml; platforms: windows-x32"
+    ) == {"base": "pypi:lxml; platforms: windows-x32"}
+
+
 @pytest.mark.parametrize(
     "definition",
     [
@@ -834,7 +892,8 @@ async def test_handle_try_crawls_inline_release_definition(monkeypatch, tmp_path
         repo_path,
         output_path,
         name="example",
-        try_definition="base: pypi:example\nplatforms: windows-x32",
+        try_definition="base: pypi:example; platforms: windows-x32",
+        try_definition_shortcut=True,
     )
     calls = []
 
