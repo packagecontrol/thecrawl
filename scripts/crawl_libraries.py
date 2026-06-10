@@ -25,6 +25,7 @@ from ._lib_matrix_printer import format_library_matrix
 from ._resolve_lib import (
     Release,
     ReleaseEntry,
+    SUPPORTED_PLATFORMS,
     explain_library,
     load_json,
     resolve_library,
@@ -35,6 +36,14 @@ from ._explain_package import print_library_explain
 
 DEFAULT_REGISTRY = "./registry.json"
 DEFAULT_WORKSPACE = "./workspace.json"
+TRY_PLATFORM_ALIASES = {
+    os_name: [
+        platform
+        for platform in SUPPORTED_PLATFORMS
+        if platform.startswith(f"{os_name}-")
+    ]
+    for os_name in ("windows", "osx", "linux")
+}
 
 
 type Url = str
@@ -364,6 +373,7 @@ def find_or_build_library(name: str, args: Args) -> RegistryEntry | None:
                 find_library(registry, name),
                 args.try_definition,
                 split_semicolon=args.try_definition_shortcut,
+                expand_platform_aliases=args.try_definition_shortcut,
             )
         except ValueError as exc:
             print(f"Invalid --try definition: {exc}")
@@ -444,8 +454,13 @@ def synthesize_library_entry(
     definition: str,
     *,
     split_semicolon: bool = False,
+    expand_platform_aliases: bool = False,
 ) -> RegistryEntry:
-    releases = parse_try_definition(definition, split_semicolon=split_semicolon)
+    releases = parse_try_definition(
+        definition,
+        split_semicolon=split_semicolon,
+        expand_platform_aliases=expand_platform_aliases,
+    )
     library: RegistryEntry = {"name": name, "releases": releases}
     if registry_entry:
         return registry_entry.copy() | library
@@ -456,11 +471,13 @@ def parse_try_definition(
     definition: str,
     *,
     split_semicolon: bool = False,
+    expand_platform_aliases: bool = False,
 ) -> list[ReleaseEntry]:
     definition = definition.strip()
     if not definition:
         raise ValueError("empty release definition")
 
+    parsed_from_shorthand = False
     try:
         parsed = json.loads(definition)
     except json.JSONDecodeError:
@@ -468,6 +485,7 @@ def parse_try_definition(
             definition,
             split_semicolon=split_semicolon,
         )
+        parsed_from_shorthand = True
 
     if isinstance(parsed, dict) and "releases" in parsed:
         parsed = parsed["releases"]
@@ -478,7 +496,34 @@ def parse_try_definition(
         raise ValueError("expected a release object or a non-empty release list")
     if not all(isinstance(item, dict) for item in parsed):
         raise ValueError("release entries must be objects")
+    if expand_platform_aliases and parsed_from_shorthand:
+        expand_try_platform_aliases(parsed)
     return parsed
+
+
+def expand_try_platform_aliases(releases: list[dict]) -> None:
+    for release in releases:
+        if "platforms" in release:
+            release["platforms"] = expand_try_platform_alias(release["platforms"])
+
+
+def expand_try_platform_alias(platforms: object) -> object:
+    if isinstance(platforms, str):
+        return TRY_PLATFORM_ALIASES.get(platforms, platforms)
+    if isinstance(platforms, list):
+        expanded: list[object] = []
+        for platform in platforms:
+            replacement = (
+                TRY_PLATFORM_ALIASES.get(platform)
+                if isinstance(platform, str) else
+                None
+            )
+            if replacement:
+                expanded.extend(replacement)
+            else:
+                expanded.append(platform)
+        return expanded
+    return platforms
 
 
 def parse_try_key_value_definition(
