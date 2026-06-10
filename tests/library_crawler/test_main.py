@@ -22,7 +22,7 @@ def make_args(
     name=None,
     explain=None,
     try_definition=None,
-    try_definition_shortcut=False,
+    allow_try_shortcuts=False,
     limit=10,
     allowed_source=None,
     write=False,
@@ -36,7 +36,7 @@ def make_args(
         name=name,
         explain=explain,
         try_definition=try_definition,
-        try_definition_shortcut=try_definition_shortcut,
+        allow_try_shortcuts=allow_try_shortcuts,
         write=write,
         verbose=verbose,
         limit=limit,
@@ -747,7 +747,7 @@ def test_parse_args_try_heredoc_reads_stdin(monkeypatch, tmp_path):
 
     assert args.name == "lxml"
     assert args.try_definition == "base: pypi:lxml\n"
-    assert args.try_definition_shortcut is False
+    assert args.allow_try_shortcuts is False
 
 
 def test_parse_args_try_accepts_explain(monkeypatch, tmp_path):
@@ -763,7 +763,7 @@ def test_parse_args_try_accepts_explain(monkeypatch, tmp_path):
 
     assert args.explain == "lxml"
     assert args.try_definition == "base: pypi:lxml"
-    assert args.try_definition_shortcut is True
+    assert args.allow_try_shortcuts is True
 
 
 def test_parse_args_try_accepts_inline_without_name(monkeypatch, tmp_path):
@@ -779,7 +779,7 @@ def test_parse_args_try_accepts_inline_without_name(monkeypatch, tmp_path):
 
     assert args.name is None
     assert args.try_definition == "base: pypi:lxml"
-    assert args.try_definition_shortcut is True
+    assert args.allow_try_shortcuts is True
 
 
 def test_parse_args_try_accepts_bare_explain(monkeypatch, tmp_path):
@@ -795,7 +795,7 @@ def test_parse_args_try_accepts_bare_explain(monkeypatch, tmp_path):
 
     assert args.explain == ""
     assert args.try_definition == "base: pypi:lxml"
-    assert args.try_definition_shortcut is True
+    assert args.allow_try_shortcuts is True
 
 
 def test_parse_args_try_stdin_requires_name(monkeypatch, tmp_path):
@@ -914,8 +914,7 @@ def test_parse_try_definition_expands_inline_platform_alias(
 ):
     assert crawl_libraries.parse_try_definition(
         f"base: pypi:lxml; {platform_key}: {platform_alias}",
-        split_semicolon=True,
-        expand_platform_aliases=True,
+        allow_try_shortcuts=True,
     ) == [
         {"base": "pypi:lxml", "platforms": expected},
     ]
@@ -930,16 +929,14 @@ def test_parse_try_definition_keeps_stdin_osx_platform_literal():
 def test_parse_try_definition_accepts_inline_python_alias():
     assert crawl_libraries.parse_try_definition(
         "base: pypi:lxml; python: 3.3",
-        split_semicolon=True,
-        expand_platform_aliases=True,
+        allow_try_shortcuts=True,
     ) == [{"base": "pypi:lxml", "python_versions": "3.3"}]
 
 
 def test_parse_try_definition_keeps_json_alias_literals():
     assert crawl_libraries.parse_try_definition(
         '{"base": "pypi:lxml", "platform": "osx", "python": "3.3"}',
-        split_semicolon=True,
-        expand_platform_aliases=True,
+        allow_try_shortcuts=True,
     ) == [{"base": "pypi:lxml", "platform": "osx", "python": "3.3"}]
 
 
@@ -953,7 +950,7 @@ def test_parse_try_definition_keeps_json_alias_literals():
 def test_infer_try_library_name(definition, expected):
     assert crawl_libraries.infer_try_library_name(
         definition,
-        split_semicolon=True,
+        allow_try_shortcuts=True,
     ) == expected
 
 
@@ -994,7 +991,7 @@ async def test_handle_try_crawls_inline_release_definition(monkeypatch, tmp_path
         output_path,
         name="example",
         try_definition="base: pypi:example; platforms: windows-x32",
-        try_definition_shortcut=True,
+        allow_try_shortcuts=True,
     )
     calls = []
 
@@ -1091,7 +1088,7 @@ async def test_handle_try_infers_name_from_inline_base(monkeypatch, tmp_path):
             "base: pypi:pyobjc-framework-Cocoa; platforms: osx; "
             "python_versions:3.8"
         ),
-        try_definition_shortcut=True,
+        allow_try_shortcuts=True,
     )
     calls = []
 
@@ -1303,7 +1300,7 @@ async def test_handle_explain_infers_name_from_inline_try(monkeypatch, tmp_path)
         output_path,
         explain="",
         try_definition="base: pypi:pyobjc-framework-Cocoa; platform: osx",
-        try_definition_shortcut=True,
+        allow_try_shortcuts=True,
     )
     captured = {}
 

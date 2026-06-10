@@ -103,7 +103,7 @@ class Args:
     name: str | None
     explain: str | None
     try_definition: str | None
-    try_definition_shortcut: bool
+    allow_try_shortcuts: bool
     write: bool
     verbose: bool
     limit: int
@@ -180,11 +180,11 @@ def parse_args() -> Args:
 
     if ns.explain is not None and ns.name:
         parser.error("Use either --name or --explain, not both.")
-    try_definition_shortcut = ns.try_definition not in (None, "-")
+    allow_try_shortcuts = ns.try_definition not in (None, "-")
     if (
         ns.try_definition is not None
         and not (ns.name or ns.explain is not None)
-        and not try_definition_shortcut
+        and not allow_try_shortcuts
     ):
         parser.error("--try from stdin requires --name or --explain.")
     if ns.write and not ns.name:
@@ -207,7 +207,7 @@ def parse_args() -> Args:
         name=ns.name,
         explain=ns.explain,
         try_definition=ns.try_definition,
-        try_definition_shortcut=try_definition_shortcut,
+        allow_try_shortcuts=allow_try_shortcuts,
         write=ns.write,
         verbose=ns.verbose or ns.write,
         limit=ns.limit,
@@ -357,7 +357,7 @@ def infer_try_name_or_report_error(args: Args) -> str | None:
     try:
         name = infer_try_library_name(
             args.try_definition,
-            split_semicolon=args.try_definition_shortcut,
+            allow_try_shortcuts=args.allow_try_shortcuts,
         )
     except ValueError as exc:
         print(f"Invalid --try definition: {exc}")
@@ -371,9 +371,12 @@ def infer_try_name_or_report_error(args: Args) -> str | None:
 def infer_try_library_name(
     definition: str,
     *,
-    split_semicolon: bool,
+    allow_try_shortcuts: bool,
 ) -> str | None:
-    releases = parse_try_definition(definition, split_semicolon=split_semicolon)
+    releases = parse_try_definition(
+        definition,
+        allow_try_shortcuts=allow_try_shortcuts,
+    )
     for release in releases:
         name = infer_try_library_name_from_release(release)
         if name:
@@ -434,8 +437,7 @@ def find_or_build_library(name: str, args: Args) -> RegistryEntry | None:
                 name,
                 find_library(registry, name),
                 args.try_definition,
-                split_semicolon=args.try_definition_shortcut,
-                expand_platform_aliases=args.try_definition_shortcut,
+                allow_try_shortcuts=args.allow_try_shortcuts,
             )
         except ValueError as exc:
             print(f"Invalid --try definition: {exc}")
@@ -515,13 +517,11 @@ def synthesize_library_entry(
     registry_entry: RegistryEntry | None,
     definition: str,
     *,
-    split_semicolon: bool = False,
-    expand_platform_aliases: bool = False,
+    allow_try_shortcuts: bool = False,
 ) -> RegistryEntry:
     releases = parse_try_definition(
         definition,
-        split_semicolon=split_semicolon,
-        expand_platform_aliases=expand_platform_aliases,
+        allow_try_shortcuts=allow_try_shortcuts,
     )
     library: RegistryEntry = {"name": name, "releases": releases}
     if registry_entry:
@@ -532,8 +532,7 @@ def synthesize_library_entry(
 def parse_try_definition(
     definition: str,
     *,
-    split_semicolon: bool = False,
-    expand_platform_aliases: bool = False,
+    allow_try_shortcuts: bool = False,
 ) -> list[ReleaseEntry]:
     definition = definition.strip()
     if not definition:
@@ -545,7 +544,7 @@ def parse_try_definition(
     except json.JSONDecodeError:
         parsed = parse_try_key_value_definition(
             definition,
-            split_semicolon=split_semicolon,
+            split_semicolon=allow_try_shortcuts,
         )
         parsed_from_shorthand = True
 
@@ -558,7 +557,7 @@ def parse_try_definition(
         raise ValueError("expected a release object or a non-empty release list")
     if not all(isinstance(item, dict) for item in parsed):
         raise ValueError("release entries must be objects")
-    if expand_platform_aliases and parsed_from_shorthand:
+    if allow_try_shortcuts and parsed_from_shorthand:
         normalize_try_shorthand_aliases(parsed)
     return parsed
 
