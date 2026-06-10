@@ -782,6 +782,22 @@ def test_parse_args_try_accepts_inline_without_name(monkeypatch, tmp_path):
     assert args.try_definition_shortcut is True
 
 
+def test_parse_args_try_accepts_bare_explain(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--try", "base: pypi:lxml", "--explain"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.explain == ""
+    assert args.try_definition == "base: pypi:lxml"
+    assert args.try_definition_shortcut is True
+
+
 def test_parse_args_try_stdin_requires_name(monkeypatch, tmp_path):
     repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": []})
@@ -1275,6 +1291,53 @@ async def test_handle_explain_uses_try_definition(monkeypatch, tmp_path):
         "author": "registry author",
         "issues": "https://example.com/issues",
     }
+
+
+@pytest.mark.asyncio
+async def test_handle_explain_infers_name_from_inline_try(monkeypatch, tmp_path):
+    repo_path = tmp_path / "missing-registry.json"
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        explain="",
+        try_definition="base: pypi:pyobjc-framework-Cocoa; platform: osx",
+        try_definition_shortcut=True,
+    )
+    captured = {}
+
+    def fake_explain_library(library):
+        captured["library"] = library
+        return []
+
+    def fake_print_library_explain(name, rows, metadata=None):
+        captured["name"] = name
+        captured["rows"] = rows
+        captured["metadata"] = metadata
+
+    monkeypatch.setattr(crawl_libraries, "explain_library", fake_explain_library)
+    monkeypatch.setattr(
+        crawl_libraries,
+        "print_library_explain",
+        fake_print_library_explain,
+    )
+
+    result = await crawl_libraries.run(args)
+
+    assert result == 0
+    assert captured["library"] == {
+        "name": "pyobjc-framework-Cocoa",
+        "releases": [
+            {
+                "base": "pypi:pyobjc-framework-Cocoa",
+                "platforms": ["osx-x64", "osx-arm64"],
+            }
+        ],
+    }
+    assert captured["name"] == "pyobjc-framework-Cocoa"
+    assert captured["rows"] == []
+    assert captured["metadata"] == {"name": "pyobjc-framework-Cocoa"}
 
 
 @pytest.mark.parametrize(

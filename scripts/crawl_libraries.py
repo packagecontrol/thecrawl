@@ -131,6 +131,9 @@ def parse_args() -> Args:
     parser.add_argument("--name", help="Library name from registry to crawl")
     parser.add_argument(
         "--explain",
+        nargs="?",
+        const="",
+        metavar="NAME",
         help="Library name to print resolved release definitions for",
     )
     parser.add_argument(
@@ -175,12 +178,12 @@ def parse_args() -> Args:
     )
     ns = parser.parse_args()
 
-    if ns.explain and ns.name:
+    if ns.explain is not None and ns.name:
         parser.error("Use either --name or --explain, not both.")
     try_definition_shortcut = ns.try_definition not in (None, "-")
     if (
         ns.try_definition is not None
-        and not (ns.name or ns.explain)
+        and not (ns.name or ns.explain is not None)
         and not try_definition_shortcut
     ):
         parser.error("--try from stdin requires --name or --explain.")
@@ -228,20 +231,15 @@ async def run(args: Args) -> int:
     if args.name:
         return await handle_name(args.name, args)
 
-    if args.explain:
-        return await handle_explain(args.explain, args)
+    if args.explain is not None:
+        name = args.explain or infer_try_name_or_report_error(args)
+        if not name:
+            return 1
+        return await handle_explain(name, args)
 
     if args.try_definition is not None:
-        try:
-            name = infer_try_library_name(
-                args.try_definition,
-                split_semicolon=args.try_definition_shortcut,
-            )
-        except ValueError as exc:
-            print(f"Invalid --try definition: {exc}")
-            return 1
+        name = infer_try_name_or_report_error(args)
         if not name:
-            print("Could not infer library name from --try definition.")
             return 1
         return await handle_name(name, args)
 
@@ -350,6 +348,24 @@ async def run(args: Args) -> int:
     print(f"Crawled {len(selected_libs)} libraries.")
     print(format_change_message(added_names, updated_names))
     return 0
+
+
+def infer_try_name_or_report_error(args: Args) -> str | None:
+    if args.try_definition is None:
+        print("Could not infer library name without --try definition.")
+        return None
+    try:
+        name = infer_try_library_name(
+            args.try_definition,
+            split_semicolon=args.try_definition_shortcut,
+        )
+    except ValueError as exc:
+        print(f"Invalid --try definition: {exc}")
+        return None
+    if not name:
+        print("Could not infer library name from --try definition.")
+        return None
+    return name
 
 
 def infer_try_library_name(
