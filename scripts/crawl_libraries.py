@@ -497,16 +497,18 @@ def parse_try_definition(
     if not all(isinstance(item, dict) for item in parsed):
         raise ValueError("release entries must be objects")
     if expand_platform_aliases and parsed_from_shorthand:
-        expand_try_platform_aliases(parsed)
+        normalize_try_shorthand_aliases(parsed)
     return parsed
 
 
-def expand_try_platform_aliases(releases: list[dict]) -> None:
+def normalize_try_shorthand_aliases(releases: list[dict]) -> None:
     for release in releases:
         if "platform" in release and "platforms" not in release:
             release["platforms"] = release.pop("platform")
         if "platforms" in release:
             release["platforms"] = expand_try_platform_alias(release["platforms"])
+        if "python" in release and "python_versions" not in release:
+            release["python_versions"] = release.pop("python")
 
 
 def expand_try_platform_alias(platforms: object) -> object:

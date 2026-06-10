@@ -885,12 +885,20 @@ def test_parse_try_definition_keeps_stdin_osx_platform_literal():
     ) == [{"base": "pypi:lxml", "platforms": "osx"}]
 
 
-def test_parse_try_definition_keeps_json_platform_literal():
+def test_parse_try_definition_accepts_inline_python_alias():
     assert crawl_libraries.parse_try_definition(
-        '{"base": "pypi:lxml", "platform": "osx"}',
+        "base: pypi:lxml; python: 3.3",
         split_semicolon=True,
         expand_platform_aliases=True,
-    ) == [{"base": "pypi:lxml", "platform": "osx"}]
+    ) == [{"base": "pypi:lxml", "python_versions": "3.3"}]
+
+
+def test_parse_try_definition_keeps_json_alias_literals():
+    assert crawl_libraries.parse_try_definition(
+        '{"base": "pypi:lxml", "platform": "osx", "python": "3.3"}',
+        split_semicolon=True,
+        expand_platform_aliases=True,
+    ) == [{"base": "pypi:lxml", "platform": "osx", "python": "3.3"}]
 
 
 @pytest.mark.parametrize(
