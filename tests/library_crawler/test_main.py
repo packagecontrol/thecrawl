@@ -766,6 +766,32 @@ def test_parse_args_try_accepts_explain(monkeypatch, tmp_path):
     assert args.try_definition_shortcut is True
 
 
+def test_parse_args_try_accepts_inline_without_name(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--try", "base: pypi:lxml"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.name is None
+    assert args.try_definition == "base: pypi:lxml"
+    assert args.try_definition_shortcut is True
+
+
+def test_parse_args_try_stdin_requires_name(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr("sys.argv", ["crawl_libraries", "--try"])
+
+    with pytest.raises(SystemExit):
+        crawl_libraries.parse_args()
+
+
 @pytest.mark.parametrize(
     ("definition", "split_semicolon", "expected"),
     [
@@ -902,6 +928,20 @@ def test_parse_try_definition_keeps_json_alias_literals():
 
 
 @pytest.mark.parametrize(
+    ("definition", "expected"),
+    [
+        ("base: pypi:lxml", "lxml"),
+        ("base: github:owner/repo", "repo"),
+    ],
+)
+def test_infer_try_library_name(definition, expected):
+    assert crawl_libraries.infer_try_library_name(
+        definition,
+        split_semicolon=True,
+    ) == expected
+
+
+@pytest.mark.parametrize(
     "definition",
     [
         "base pypi:lxml",
@@ -1021,6 +1061,60 @@ async def test_handle_try_crawls_without_registry_file(monkeypatch, tmp_path):
 
     assert result == 0
     assert calls == [{"name": "example", "releases": [{"base": "pypi:example"}]}]
+
+
+@pytest.mark.asyncio
+async def test_handle_try_infers_name_from_inline_base(monkeypatch, tmp_path):
+    repo_path = tmp_path / "missing-registry.json"
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        try_definition=(
+            "base: pypi:pyobjc-framework-Cocoa; platforms: osx; "
+            "python_versions:3.8"
+        ),
+        try_definition_shortcut=True,
+    )
+    calls = []
+
+    async def resolver(library, cache_dir, session):
+        calls.append(library)
+        return (
+            make_info(library["name"])
+            | {
+                "releases": [
+                    {
+                        "url": "https://example.com/example-1.0.0.whl",
+                        "version": "1.0.0",
+                        "date": "2026-01-01T00:00:00Z",
+                        "platforms": ["osx-x64"],
+                        "python_versions": ["3.8"],
+                        "sublime_text": "*",
+                    }
+                ]
+            },
+            ["stub"],
+        )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", resolver)
+
+    result = await crawl_libraries.run(args)
+
+    assert result == 0
+    assert calls == [
+        {
+            "name": "pyobjc-framework-Cocoa",
+            "releases": [
+                {
+                    "base": "pypi:pyobjc-framework-Cocoa",
+                    "platforms": ["osx-x64", "osx-arm64"],
+                    "python_versions": "3.8",
+                }
+            ],
+        }
+    ]
 
 
 @pytest.mark.asyncio

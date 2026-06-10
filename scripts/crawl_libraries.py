@@ -177,8 +177,13 @@ def parse_args() -> Args:
 
     if ns.explain and ns.name:
         parser.error("Use either --name or --explain, not both.")
-    if ns.try_definition is not None and not (ns.name or ns.explain):
-        parser.error("--try requires --name or --explain.")
+    try_definition_shortcut = ns.try_definition not in (None, "-")
+    if (
+        ns.try_definition is not None
+        and not (ns.name or ns.explain)
+        and not try_definition_shortcut
+    ):
+        parser.error("--try from stdin requires --name or --explain.")
     if ns.write and not ns.name:
         parser.error("--write requires --name.")
     if ns.write and ns.try_definition is not None:
@@ -186,7 +191,6 @@ def parse_args() -> Args:
     if ns.limit < 1:
         parser.error("--limit must be a positive integer.")
 
-    try_definition_shortcut = ns.try_definition not in (None, "-")
     if ns.try_definition == "-":
         ns.try_definition = sys.stdin.read()
 
@@ -226,6 +230,20 @@ async def run(args: Args) -> int:
 
     if args.explain:
         return await handle_explain(args.explain, args)
+
+    if args.try_definition is not None:
+        try:
+            name = infer_try_library_name(
+                args.try_definition,
+                split_semicolon=args.try_definition_shortcut,
+            )
+        except ValueError as exc:
+            print(f"Invalid --try definition: {exc}")
+            return 1
+        if not name:
+            print("Could not infer library name from --try definition.")
+            return 1
+        return await handle_name(name, args)
 
     registry: Registry = load_json(args.registry)  # type: ignore[assignment]
 
@@ -332,6 +350,34 @@ async def run(args: Args) -> int:
     print(f"Crawled {len(selected_libs)} libraries.")
     print(format_change_message(added_names, updated_names))
     return 0
+
+
+def infer_try_library_name(
+    definition: str,
+    *,
+    split_semicolon: bool,
+) -> str | None:
+    releases = parse_try_definition(definition, split_semicolon=split_semicolon)
+    for release in releases:
+        name = infer_try_library_name_from_release(release)
+        if name:
+            return name
+    return None
+
+
+def infer_try_library_name_from_release(release: ReleaseEntry) -> str | None:
+    base = release.get("base")
+    if not isinstance(base, str):
+        return None
+    if base.startswith("pypi:"):
+        return base.split(":", 1)[1] or None
+    if base.startswith("github:"):
+        return base.rstrip("/").rsplit("/", 1)[-1] or None
+    if "pypi.org/project/" in base:
+        return base.rstrip("/").rsplit("/", 1)[-1] or None
+    if "github.com/" in base:
+        return base.rstrip("/").rsplit("/", 1)[-1] or None
+    return None
 
 
 async def handle_name(name: str, args: Args) -> int:
