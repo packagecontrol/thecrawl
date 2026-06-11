@@ -198,7 +198,7 @@ select {
     border: none;
     color: var(--foreground-2);
     background: inherit;
-    visibility: hidden;
+    display: none;
     padding: 7px 7px 4px;
     margin-right: 2px;
     border-radius: 50%;
@@ -221,6 +221,11 @@ select {
       outline: 2px solid var(--orange-1);
       outline-offset: -5px;
     }
+  }
+
+  .input-with-clearance:has(input:not(:placeholder-shown)) .clear-btn {
+    display: block;
+    visibility: hidden;
   }
 
   .input-with-clearance:has(input:not(:placeholder-shown)):is(:hover, :focus-within) .clear-btn {
