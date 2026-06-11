@@ -86,6 +86,57 @@ async def test_main_with_fake_channel(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_seeded_entries_move_to_fetched_repository_source(tmp_path):
+    old_repo_path = tmp_path / "old_repo.json"
+    new_repo_path = tmp_path / "new_repo.json"
+    make_repository(
+        new_repo_path,
+        ["MovedPackage", "FreshPackage"],
+        library_names=["MovedLibrary"],
+    )
+
+    seed_file = tmp_path / "seed.json"
+    seed_file.write_text(json.dumps({
+        "packages": [
+            {
+                "name": "MovedPackage",
+                "source": old_repo_path.as_uri(),
+                "first_seen": "2024-01-01T00:00:00Z",
+            },
+            {
+                "name": "RemovedPackage",
+                "source": old_repo_path.as_uri(),
+                "first_seen": "2024-02-01T00:00:00Z",
+            },
+        ],
+        "libraries": [
+            {
+                "name": "MovedLibrary",
+                "source": old_repo_path.as_uri(),
+            },
+        ],
+    }))
+
+    channel_path = tmp_path / "channel.json"
+    make_channel(channel_path, [new_repo_path])
+    output_file = tmp_path / "output.json"
+
+    await main(str(output_file), [channel_path.as_uri()], seed_path=str(seed_file))
+
+    result = json.loads(output_file.read_text(encoding="utf-8"))
+    packages = {pkg["name"]: pkg for pkg in result["packages"]}
+    libraries = {lib["name"]: lib for lib in result["libraries"]}
+
+    assert result["repositories"] == [new_repo_path.as_uri()]
+    assert packages["MovedPackage"]["source"] == new_repo_path.as_uri()
+    assert packages["MovedPackage"]["first_seen"] == "2024-01-01T00:00:00Z"
+    assert packages["FreshPackage"]["source"] == new_repo_path.as_uri()
+    assert packages["RemovedPackage"]["source"] == old_repo_path.as_uri()
+    assert packages["RemovedPackage"].get("removed")
+    assert libraries["MovedLibrary"]["source"] == new_repo_path.as_uri()
+
+
+@pytest.mark.asyncio
 async def test_main_with_two_repos_order_preserved(tmp_path):
     # Create two fake repo files
     repo1_path = tmp_path / "repo1.json"
