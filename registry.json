@@ -29441,6 +29441,22 @@
       "first_seen": "2014-03-10T16:40:23Z"
     },
     {
+      "name": "GrADS",
+      "details": "https://github.com/fox91/GrADS-Sublime-syntax",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4075",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-06-11T19:13:20Z"
+    },
+    {
       "name": "Grails",
       "details": "https://github.com/osoco/sublimetext-grails",
       "labels": [
@@ -40613,6 +40629,24 @@
       "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2013-08-05T12:23:58Z"
+    },
+    {
+      "name": "LLM",
+      "details": "https://github.com/tonylchang/sublime-llm",
+      "labels": [
+        "ai",
+        "llm",
+        "chat"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-06-11T19:13:20Z"
     },
     {
       "name": "LLVM",
