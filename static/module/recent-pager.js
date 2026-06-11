@@ -61,7 +61,6 @@ const headerTemplate = document.createElement('template')
 headerTemplate.innerHTML = HEADER_TEMPLATE_HTML.trim()
 
 window.addEventListener('resize', recomputeStickinesOfPagers)
-window.addEventListener('orientationchange', recomputeStickinesOfPagers)
 
 function recomputeStickinesOfPagers() {
   pagerRegistry.forEach(
