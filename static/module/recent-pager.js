@@ -29,6 +29,10 @@ const RECENT_PAGER_STYLES = `
       & .pager-pagination {
         top: -11px;
       }
+
+      &.shadow {
+        box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+      }
     }
   }
 `
@@ -156,6 +160,14 @@ class RecentPager {
     bindControl(first, () => this.goto(1))
     bindControl(prev, () => this.goto(this.page - 1))
     bindControl(next, () => this.goto(this.page + 1))
+
+    const sentinel = document.createElement('div')
+    sentinel.classList.add('scroll-sentinel')
+    this.section.insertBefore(sentinel, header)
+
+    let observer = new IntersectionObserver(
+      ([entry]) => this.updateOverlapShadow(!entry.isIntersecting))
+    observer.observe(sentinel)
 
     this.controls = { first, prev, next }
     this.monthIndicator = month
@@ -315,6 +327,11 @@ class RecentPager {
     }
 
     this.updateHeadingText()
+  }
+
+  updateOverlapShadow(enable) {
+    const header = this.section.querySelector('.pager-header')
+    header.classList.toggle('shadow', enable)
   }
 
   goto(page, options = {}) {
