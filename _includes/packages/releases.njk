@@ -1,6 +1,6 @@
 {% import "packages/macros.njk" as pack %}
 
-{% if pkg.releases | length > 1 %}
+{% if (pkg.releases | length + pkg.otherReleases | length) > 1 %}
   <h2>Versions</h2>
 {% else %}
   <h2>Version</h2>
