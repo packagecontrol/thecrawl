@@ -543,25 +543,7 @@ export default async function (eleventyConfig) {
   })
 
   eleventyConfig.addCollection('labels', () => {
-    const labels = {}
-
-    all_packages.map((pkg) => {
-      if (!pkg.labels) {
-        return
-      }
-
-      pkg.labels.forEach((label) => {
-        if (labels[label]) {
-          labels[label]++
-        } else {
-          labels[label] = 1
-        }
-      })
-    })
-
-    return Object.entries(labels)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([key, count]) => ({ key, count }))
+    return util.collectLabels(all_packages)
   })
 
   eleventyConfig.addCollection('libraries', () => {

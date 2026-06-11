@@ -64,6 +64,59 @@ export function sortFeaturedLabelsFirst(labels = [], rank = new Map()) {
 }
 
 /**
+ * Collect package labels for the labels page.
+ *
+ * Labels are deduplicated case-insensitively for counting, while display casing
+ * is chosen from the most frequently used variant in the workspace.
+ *
+ * @param {Array<{labels?: string[]}>} packages
+ * @returns {Array<{key: string, count: number}>}
+ */
+export function collectLabels(packages) {
+  const labels = new Map()
+
+  for (const pkg of packages) {
+    for (const label of pkg.labels ?? []) {
+      const canonical = label.trim().toLowerCase()
+      let entry = labels.get(canonical)
+      if (!entry) {
+        entry = {
+          count: 0,
+          variants: new Map(),
+        }
+        labels.set(canonical, entry)
+      }
+
+      entry.count += 1
+      entry.variants.set(label, (entry.variants.get(label) ?? 0) + 1)
+    }
+  }
+
+  return Array.from(labels.values())
+    .map(labelEntry)
+    .sort((a, b) => a.key.localeCompare(b.key))
+}
+
+function labelEntry(entry) {
+  return {
+    key: mostFrequentLabelVariant(entry.variants),
+    count: entry.count,
+  }
+}
+
+function mostFrequentLabelVariant(variants) {
+  let winner = null
+
+  for (const [key, count] of variants) {
+    if (!winner || count > winner.count) {
+      winner = { key, count }
+    }
+  }
+
+  return winner.key
+}
+
+/**
  * Build a human-readable platform statement for cards.
  * Input is already canonicalized (lowercase tokens like macos/linux/windows/any).
  */
@@ -847,6 +900,44 @@ if (import.meta.vitest) {
         'two',
         'three',
         'four',
+      ])
+    })
+  })
+
+  describe('collectLabels', () => {
+    it('deduplicates labels case-insensitively', () => {
+      const packages = [
+        { labels: ['c', 'syntax'] },
+        { labels: ['C', 'Syntax'] },
+      ]
+
+      expect(collectLabels(packages)).toEqual([
+        { key: 'c', count: 2 },
+        { key: 'syntax', count: 2 },
+      ])
+    })
+
+    it('uses the most frequent casing for display', () => {
+      const packages = [
+        { labels: ['sublimelinter', 'c++'] },
+        { labels: ['SublimeLinter', 'C++'] },
+        { labels: ['SublimeLinter', 'C++'] },
+      ]
+
+      expect(collectLabels(packages)).toEqual([
+        { key: 'C++', count: 3 },
+        { key: 'SublimeLinter', count: 3 },
+      ])
+    })
+
+    it('keeps the first casing when variants are tied', () => {
+      const packages = [
+        { labels: ['REPL'] },
+        { labels: ['repl'] },
+      ]
+
+      expect(collectLabels(packages)).toEqual([
+        { key: 'REPL', count: 2 },
       ])
     })
   })
