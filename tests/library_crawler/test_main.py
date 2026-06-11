@@ -26,6 +26,7 @@ def make_args(
     limit=10,
     allowed_source=None,
     write=False,
+    json_output=False,
     verbose=False,
 ):
     if allowed_source is None:
@@ -38,6 +39,7 @@ def make_args(
         try_definition=try_definition,
         allow_try_shortcuts=allow_try_shortcuts,
         write=write,
+        json_output=json_output,
         verbose=verbose,
         limit=limit,
         workspace=output_path,
@@ -733,6 +735,35 @@ async def test_parse_args_write_implies_verbose(monkeypatch, tmp_path):
     assert args.verbose is True
 
 
+def test_parse_args_json(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--name", "example", "--json"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.json_output is True
+
+
+def test_parse_args_json_accepts_inline_try(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--try", "base: pypi:lxml", "--json"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.json_output is True
+    assert args.allow_try_shortcuts is True
+
+
 def test_parse_args_try_heredoc_reads_stdin(monkeypatch, tmp_path):
     repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": []})
@@ -798,14 +829,23 @@ def test_parse_args_try_accepts_bare_explain(monkeypatch, tmp_path):
     assert args.allow_try_shortcuts is True
 
 
-def test_parse_args_try_stdin_requires_name(monkeypatch, tmp_path):
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["crawl_libraries", "--try"],
+        ["crawl_libraries", "--try", "--json"],
+    ],
+)
+def test_parse_args_try_stdin_requires_name(monkeypatch, tmp_path, capsys, argv):
     repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": []})
     monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
-    monkeypatch.setattr("sys.argv", ["crawl_libraries", "--try"])
+    monkeypatch.setattr("sys.argv", argv)
 
     with pytest.raises(SystemExit):
         crawl_libraries.parse_args()
+
+    assert "--try from stdin requires --name or --explain." in capsys.readouterr().err
 
 
 @pytest.mark.parametrize(
@@ -1131,6 +1171,41 @@ async def test_handle_try_infers_name_from_inline_base(monkeypatch, tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_handle_name_json_reports_entry_only(monkeypatch, tmp_path, capsys):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": [{"name": "example"}]})
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        name="example",
+        json_output=True,
+    )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver([]))
+    monkeypatch.setattr(
+        crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
+    )
+
+    await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert json.loads(captured.out) == {
+        "name": "example",
+        "description": "example desc",
+        "author": "example author",
+        "issues": "https://example.com/example/issues",
+        "releases": [{"version": "1.0.0", "date": "2026-01-01T00:00:00Z"}],
+        "added": "2026-01-01T00:00:00Z",
+        "last_crawl": "2026-01-01T00:00:00Z",
+        "latest_version": "1.0.0",
+    }
+    assert "release matrix" not in captured.out
+    assert "Resolved example" not in captured.out
+
+
+@pytest.mark.asyncio
 async def test_handle_name_verbose_reports_raw_json(monkeypatch, tmp_path, capsys):
     repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": [{"name": "example"}]})
@@ -1225,6 +1300,81 @@ async def test_handle_explain_renders_release_variation_rows(monkeypatch, tmp_pa
     assert captured["name"] == "alpha"
     assert captured["rows"] == explain_rows
     assert captured["metadata"] == {"name": "alpha"}
+
+
+@pytest.mark.asyncio
+async def test_handle_explain_json_reports_normalized_library(monkeypatch, tmp_path, capsys):
+    repo_path = tmp_path / "registry.json"
+    write_json(
+        repo_path,
+        {
+            "libraries": [
+                {
+                    "name": "alpha",
+                    "description": "registry description",
+                    "releases": [{"base": "pypi:old"}],
+                }
+            ]
+        },
+    )
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        explain="alpha",
+        try_definition="base: pypi:alpha; platform: osx",
+        allow_try_shortcuts=True,
+        json_output=True,
+    )
+
+    def fake_explain_library(library):
+        return [
+            (
+                library["releases"][0],
+                [
+                    {
+                        "base": "https://pypi.org/project/alpha",
+                        "asset": ["*.whl"],
+                        "platform": "osx-x64",
+                        "python_version": "3.8",
+                        "sublime_text": "*",
+                        "version": "*",
+                        "tag_prefix": "v?",
+                    }
+                ],
+            )
+        ]
+
+    def fail_print_library_explain(name, rows, metadata=None):
+        raise AssertionError("explain table should not be rendered")
+
+    monkeypatch.setattr(crawl_libraries, "explain_library", fake_explain_library)
+    monkeypatch.setattr(
+        crawl_libraries,
+        "print_library_explain",
+        fail_print_library_explain,
+    )
+
+    result = await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert result == 0
+    assert json.loads(captured.out) == {
+        "name": "alpha",
+        "description": "registry description",
+        "releases": [
+            {
+                "base": "https://pypi.org/project/alpha",
+                "asset": ["*.whl"],
+                "platform": "osx-x64",
+                "python_version": "3.8",
+                "sublime_text": "*",
+                "version": "*",
+                "tag_prefix": "v?",
+            }
+        ],
+    }
 
 
 @pytest.mark.asyncio

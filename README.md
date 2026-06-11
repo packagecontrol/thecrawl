@@ -195,11 +195,13 @@ matrix. Use `--explain` to print each release definition side-by-side with the
 concretized variations the crawler will use, including inferred defaults.
 
 These modes are dry by default. For `--name`, add `--write` to write the
-resolved entry to the workspace.
+resolved entry to the workspace. Add `--json` to print pretty JSON.
 
 ```bash
 $ uv run -m scripts.crawl_libraries --name lxml
+$ uv run -m scripts.crawl_libraries --name lxml --json
 $ uv run -m scripts.crawl_libraries --explain lxml
+$ uv run -m scripts.crawl_libraries --explain lxml --json
 ```
 
 #### Trying release definitions

@@ -105,6 +105,7 @@ class Args:
     try_definition: str | None
     allow_try_shortcuts: bool
     write: bool
+    json_output: bool
     verbose: bool
     limit: int
     workspace: Path
@@ -154,6 +155,11 @@ def parse_args() -> Args:
         help="Write the resolved library entry to the workspace when using --name.",
     )
     parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the selected library entry as pretty JSON.",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
@@ -191,6 +197,8 @@ def parse_args() -> Args:
         parser.error("--write requires --name.")
     if ns.write and ns.try_definition is not None:
         parser.error("--write cannot be used with --try.")
+    if ns.json and not (ns.name or ns.explain is not None or allow_try_shortcuts):
+        parser.error("--json requires --name, --explain, or inline --try.")
     if ns.limit < 1:
         parser.error("--limit must be a positive integer.")
 
@@ -209,6 +217,7 @@ def parse_args() -> Args:
         try_definition=ns.try_definition,
         allow_try_shortcuts=allow_try_shortcuts,
         write=ns.write,
+        json_output=ns.json,
         verbose=ns.verbose or ns.write,
         limit=ns.limit,
         workspace=Path(os.path.abspath(ns.workspace)),
@@ -420,6 +429,12 @@ async def handle_explain(name: str, args: Args) -> int:
         return 1
 
     explain_rows = explain_library(library)
+    if args.json_output:
+        metadata = {key: value for key, value in library.items() if key != "releases"}
+        releases = [release for _, normalized in explain_rows for release in normalized]
+        print(json.dumps(metadata | {"releases": releases}, indent=2, ensure_ascii=False))
+        return 0
+
     metadata = {key: value for key, value in library.items() if key != "releases"}
     print_library_explain(name, explain_rows, metadata=metadata)
     return 0
@@ -482,6 +497,10 @@ async def crawl_single_library(
         if args.write:
             workspace_entries[name] = entry
             write_json(args.workspace, workspace, pretty=True, ensure_ascii=True)
+
+        if args.json_output:
+            print(json.dumps(entry, indent=2, ensure_ascii=False))
+            return 0
 
         if args.verbose:
             source_label = ", ".join(sources) if sources else "cache"
