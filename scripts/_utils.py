@@ -1,5 +1,6 @@
 from __future__ import annotations
 from itertools import chain
+import aiohttp
 import hashlib
 import json
 import os
@@ -374,3 +375,13 @@ def map_name_to_range(
     # Map to range with *minimal* modulo bias using multiply-high:
     # floor(x * upper_bound / 2^64)
     return (x * upper_bound) >> 64
+
+
+def create_aiohttp_session(**kwargs):
+    if 'connector' not in kwargs:
+        kwargs['connector'] = aiohttp.TCPConnector(limit=100, limit_per_host=32)
+
+    kwargs.setdefault('raise_for_status', True)
+    kwargs.setdefault('headers', {'User-Agent': 'thecrawl'})
+
+    return aiohttp.ClientSession(**kwargs)

@@ -12,7 +12,6 @@ from functools import partial
 from pathlib import Path
 from typing import Literal, Required, TypedDict
 
-import aiohttp
 from rich.console import Console
 from rich.progress import track
 
@@ -29,7 +28,7 @@ from ._resolve_lib import (
     load_json,
     resolve_library,
 )
-from ._utils import err, format_name_list, write_json
+from ._utils import err, format_name_list, write_json, create_aiohttp_session
 from ._explain_package import print_library_explain
 
 
@@ -281,7 +280,7 @@ async def run(args: Args) -> int:
         disable=disable_progress
     )
 
-    async with aiohttp.ClientSession() as aio_session:
+    async with create_aiohttp_session() as aio_session:
         ordered_libs = sorted(selected_libs, key=lambda lib: lib.lname)
         tasks = {
             lib.name: asyncio.create_task(
@@ -384,7 +383,7 @@ async def crawl_single_library(
     workspace_entries = workspace["libraries"]
 
     try:
-        async with aiohttp.ClientSession() as aio_session:
+        async with create_aiohttp_session() as aio_session:
             info, sources = await resolve_library(
                 library, args.cache_dir, aio_session
             )

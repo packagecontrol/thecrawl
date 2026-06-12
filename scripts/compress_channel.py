@@ -8,7 +8,7 @@ import json
 import os
 import sys
 
-from ._utils import pl, write_json
+from ._utils import pl, write_json, create_aiohttp_session
 
 
 NEW_CHANNEL = (
@@ -54,7 +54,7 @@ async def main(
     legacy: bool = False,
     in_channel: str = NEW_CHANNEL,
 ) -> None:
-    async with aiohttp.ClientSession() as session:
+    async with create_aiohttp_session() as session:
         new_channel = await load_channel(in_channel, session)
 
     channel = {
@@ -147,18 +147,12 @@ async def load_channel(location: str, session: aiohttp.ClientSession) -> dict:
 
 
 async def http_get_json(location: str, session: aiohttp.ClientSession) -> dict:
-    text = await http_get(location, session)
-    return json.loads(text)
-
-
-async def http_get(location: str, session: aiohttp.ClientSession) -> str:
     headers = {
-        'User-Agent': 'Mozilla/5.0',
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'
     }
-    async with session.get(location, headers=headers, raise_for_status=True) as resp:
-        return await resp.text()
+    async with session.get(location, headers=headers) as resp:
+        return await resp.json(content_type=None)
 
 
 if __name__ == "__main__":

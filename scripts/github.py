@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 from typing import AsyncIterable, Iterable, TypedDict
 
-from ._utils import drop_falsy, normalize_tz_aware_datetime
+from ._utils import drop_falsy, normalize_tz_aware_datetime, create_aiohttp_session
 
 # This module exposes a single entrypoint
 # fetch_repo_info(Url, Iterable[QueryScope]) -> RepoInfo
@@ -268,7 +268,8 @@ async def fetch_root_entries_per_rest_api(
     async with session.get(
         url,
         headers=github_headers("application/vnd.github+json"),
-        params={"ref": "HEAD"}
+        params={"ref": "HEAD"},
+        raise_for_status=False
     ) as resp:
         if resp.status in {404, 409}:
             return []
@@ -290,7 +291,6 @@ async def make_graphql_query(session: aiohttp.ClientSession, query: str, variabl
         GITHUB_API_URL,
         json={"query": query, "variables": variables},
         headers=headers,
-        raise_for_status=True
     ) as resp:
         data = await resp.json()
         if "errors" in data:
@@ -715,7 +715,7 @@ if __name__ == "__main__":
             url = f"https://github.com/{owner_repo}"
 
         print(f"Fetching GitHub info for: {url}")
-        async with aiohttp.ClientSession() as session:
+        async with create_aiohttp_session() as session:
             hints = ["too_many_files"] if args.rest_files else []
             scopes = ["METADATA"]
             if want_tags:

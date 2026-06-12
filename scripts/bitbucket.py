@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from ._utils import drop_falsy, err, normalize_tz_aware_datetime
+from ._utils import drop_falsy, err, normalize_tz_aware_datetime, create_aiohttp_session
 
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
@@ -66,7 +66,6 @@ async def fetch_json(session: aiohttp.ClientSession, url: str) -> dict:
     if token := os.getenv("BITBUCKET_TOKEN"):
         headers["Authorization"] = f"Bearer {token}"
     async with session.get(url, headers=headers) as resp:
-        resp.raise_for_status()
         return await resp.json()
 
 
@@ -266,7 +265,7 @@ if __name__ == "__main__":
             url = "https://bitbucket.org/hxss/html2scss"
 
         print(f"Fetching Bitbucket info for: {url}")
-        async with aiohttp.ClientSession() as session:
+        async with create_aiohttp_session() as session:
             info = await fetch_bitbucket_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
             print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
             print("Tags:")

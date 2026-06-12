@@ -7,7 +7,7 @@ from urllib.parse import urlparse, urlencode, quote
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from ._utils import drop_falsy, err, normalize_tz_aware_datetime
+from ._utils import drop_falsy, err, normalize_tz_aware_datetime, create_aiohttp_session
 
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
@@ -69,24 +69,14 @@ def parse_owner_repo(url: str):
     return path_parts[0], path_parts[1]
 
 
-def _auth_headers() -> dict[str, str]:
+async def fetch_json(session: aiohttp.ClientSession, url: str) -> dict:
     headers: dict[str, str] = {}
     # Codeberg (Forgejo/Gitea) supports Authorization: token <TOKEN>
     if token := os.getenv("CODEBERG_TOKEN"):
         headers["Authorization"] = f"token {token}"
-    return headers
 
-
-async def fetch_json(session: aiohttp.ClientSession, url: str) -> dict:
-    async with session.get(url, headers=_auth_headers()) as resp:
-        resp.raise_for_status()
+    async with session.get(url, headers=headers) as resp:
         return await resp.json()
-
-
-async def fetch_(session: aiohttp.ClientSession, url: str):
-    async with session.get(url, headers=_auth_headers()) as resp:
-        resp.raise_for_status()
-        return await resp.json(), dict(resp.headers)
 
 
 async def fetch_repo_metadata(
@@ -310,7 +300,7 @@ if __name__ == "__main__":
             url = "https://codeberg.org/ISSOtm/sublime-Bison"
 
         print(f"Fetching Codeberg info for: {url}")
-        async with aiohttp.ClientSession() as session:
+        async with create_aiohttp_session() as session:
             info = await fetch_codeberg_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
             print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
             print("Tags:")

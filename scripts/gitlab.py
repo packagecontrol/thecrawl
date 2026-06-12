@@ -7,7 +7,7 @@ import re
 from urllib.parse import urlparse, quote
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from ._utils import drop_falsy, err, normalize_tz_aware_datetime
+from ._utils import drop_falsy, err, normalize_tz_aware_datetime, create_aiohttp_session
 
 QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 Url = str
@@ -73,7 +73,6 @@ async def fetch_(session: aiohttp.ClientSession, url: str):
     if token := os.getenv("GITLAB_TOKEN"):
         headers["PRIVATE-TOKEN"] = token
     async with session.get(url, headers=headers) as resp:
-        resp.raise_for_status()
         data = await resp.json()
         return data, dict(resp.headers)
 
@@ -281,7 +280,7 @@ if __name__ == "__main__":
             url = "https://gitlab.com/jiehong/sublime_jq"
 
         print(f"Fetching GitLab info for: {url}")
-        async with aiohttp.ClientSession() as session:
+        async with create_aiohttp_session() as session:
             info = await fetch_gitlab_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
             print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
             print("Tags:")

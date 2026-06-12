@@ -8,9 +8,9 @@ from scripts.generate_registry import main
 
 
 @pytest.fixture(autouse=True)
-def patch_http_get(monkeypatch):
+def patch_http_get_json(monkeypatch):
     """
-    Patch generate_registry.http_get to support file:// URLs for all tests.
+    Patch generate_registry.http_get_json to support file:// URLs for all tests.
     """
     from scripts import generate_registry
 
@@ -18,9 +18,9 @@ def patch_http_get(monkeypatch):
         if location.startswith("file://"):
             path = Path.from_uri(location)
             with open(path, "r", encoding="utf-8") as f:
-                return f.read()
+                return json.loads(f.read())
         raise RuntimeError("Only file:// URLs are supported in this test")
-    monkeypatch.setattr(generate_registry, "http_get", fake_http_get)
+    monkeypatch.setattr(generate_registry, "http_get_json", fake_http_get)
 
 
 def make_channel(path: Path, repositories: list[Path]):

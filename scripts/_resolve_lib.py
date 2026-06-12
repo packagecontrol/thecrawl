@@ -627,7 +627,7 @@ async def _fetch_pypi_json(
             headers["If-Modified-Since"] = entry["last_modified"]
 
     url = PYPI_BASE.format(name)
-    async with aio_session.get(url, headers=headers) as resp:
+    async with aio_session.get(url, headers=headers, raise_for_status=False) as resp:
         if resp.status == 304:
             async with PYPI_META_LOCK:
                 meta = load_json(meta_path) if meta_path.exists() else {}

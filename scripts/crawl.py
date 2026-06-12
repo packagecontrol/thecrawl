@@ -37,6 +37,7 @@ from ._utils import (
     write_json,
     pl,
     pick,
+    create_aiohttp_session,
     VersionInfo,
 )
 from ._explain_package import print_package_explain, print_package_explain_effective
@@ -207,7 +208,7 @@ async def main_(
         tocrawl = next_packages_to_crawl(registry, workspace, limit=limit, presto=presto)
 
     updated_packages: list[str] = []
-    async with aiohttp.ClientSession() as session:
+    async with create_aiohttp_session() as session:
         tasks = [
             crawl(
                 session,
