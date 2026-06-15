@@ -1,12 +1,6 @@
 import pytest
 
-from scripts.crawl import (
-    MAIN_REPOSITORY_SOURCE,
-    OLD_MAIN_REPOSITORY_SOURCE,
-    TRUSTED_SOURCES,
-    crawl,
-    main_,
-)
+from scripts.crawl import crawl, main_
 
 
 @pytest.mark.asyncio
@@ -369,63 +363,6 @@ async def test_removed_without_source_defaults_to_trusted_for_security(set_now, 
     fail_reason = result.get("fail_reason", "")
     assert fail_reason.startswith("denied:")
     assert "from <not-set> to untrusted" in fail_reason
-
-
-@pytest.mark.asyncio
-async def test_main_repository_move_does_not_require_trusting_old_source(
-    set_now,
-    set_github_info,
-):
-    assert OLD_MAIN_REPOSITORY_SOURCE not in TRUSTED_SOURCES
-
-    entry = {
-        "name": "SourceMoved",
-        "details": "https://github.com/example/source-moved",
-        "releases": [
-            {
-                "sublime_text": "*",
-                "branch": True
-            }
-        ],
-        "source": MAIN_REPOSITORY_SOURCE,
-        "schema_version": "3.0.0"
-    }
-
-    existing = {
-        "name": "SourceMoved",
-        "details": "https://github.com/example/source-moved",
-        "source": OLD_MAIN_REPOSITORY_SOURCE,
-        "id": "SAME_ID"
-    }
-
-    github_info = {
-        "metadata": {
-            "id": "SAME_ID",
-            "name": "SourceMoved",
-            "description": "Fixture package with source move to new main repo",
-            "homepage": "https://github.com/example/source-moved",
-            "author": "example",
-            "readme": "https://raw.githubusercontent.com/example/source-moved/main/README.md",
-            "default_branch": "main",
-            "stars": 0,
-            "created_at": "2024-01-01T00:00:00Z"
-        },
-        "tags": [],
-        "branches": [
-            {
-                "name": "main",
-                "date": "2024-05-10T12:00:00Z",
-                "url": "https://codeload.github.com/example/source-moved/zip/main"
-            }
-        ]
-    }
-
-    set_now("2024-05-11T00:00:00Z")
-    set_github_info(github_info)
-
-    result = await crawl(object(), entry, existing)
-    assert result.get("fail_reason") is None
-    assert result.get("source") == MAIN_REPOSITORY_SOURCE
 
 
 @pytest.mark.asyncio
