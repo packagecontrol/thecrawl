@@ -8,6 +8,39 @@
   <meta name="description" content="{{ descr }}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  {% if isPackagePage and pkg.readme and not pkg.removed %}
+    <script data-readme-url="{{ pkg.readme }}">
+      (() => {
+        const script = document.currentScript
+        const source = script?.dataset.readmeUrl
+        if (!source || hasFreshCachedReadme(source)) {
+          return
+        }
+
+        const fetches = window.__packageReadmeFetches ??= new Map()
+        if (!fetches.has(source)) {
+          const request = fetch(source).then((response) => {
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`)
+            return response.text()
+          })
+          request.catch(() => {})
+          fetches.set(source, request)
+        }
+
+        function hasFreshCachedReadme(url) {
+          try {
+            const cached = JSON.parse(sessionStorage.getItem('md:' + url) || 'null')
+            const now = Math.floor(Date.now() / 1000)
+            const ttl = 60 * 60
+            return cached && (now - cached.time) < ttl
+          } catch {
+            return false
+          }
+        }
+      })()
+    </script>
+  {% endif %}
+
   {% inline_js 'static/_handle_theme.js' %}
   {% inline_js 'static/_handle_search_url.js' %}
   {% inline_js 'static/_human_date.js' %}
