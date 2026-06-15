@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -198,17 +199,46 @@ def run_checked(command: list[str]) -> None:
 
 
 def bash_executable() -> str | None:
+    if os.name != "nt":
+        return shutil.which("bash")
+
+    for candidate in windows_bash_candidates():
+        candidate_path = Path(candidate)
+        if (
+            "git" in candidate.lower()
+            and candidate_path.name.lower() == "bash.exe"
+            and candidate_path.is_file()
+        ):
+            return candidate
+
+    return None
+
+
+def windows_bash_candidates() -> Iterator[str]:
     try:
         where_output = subprocess.check_output(["where", "bash"], text=True)
     except Exception:
-        return shutil.which("bash")
-
+        where_output = ""
     for line in where_output.splitlines():
         candidate = line.strip()
-        if "git" in candidate.lower() and candidate.lower().endswith("bash.exe"):
-            return candidate
+        if candidate:
+            yield candidate
 
-    return shutil.which("bash")
+    try:
+        git_exec_path = subprocess.check_output(["git", "--exec-path"], text=True).strip()
+    except Exception:
+        git_exec_path = ""
+    if git_exec_path:
+        for parent in Path(git_exec_path).resolve().parents:
+            if parent.name.lower() == "git":
+                yield str(parent / "bin" / "bash.exe")
+                yield str(parent / "usr" / "bin" / "bash.exe")
+                break
+
+    for root in [os.environ.get("ProgramFiles"), os.environ.get("ProgramW6432")]:
+        if root:
+            yield str(Path(root) / "Git" / "bin" / "bash.exe")
+            yield str(Path(root) / "Git" / "usr" / "bin" / "bash.exe")
 
 
 def project_root() -> Path:
