@@ -12,7 +12,11 @@
 {%- endmacro %}
 
 {% macro release(version, omit_requirements=false) %}
-  <a class="download" href="{{ version.download_url or version.url }}" title="Download package">{{ version.version }}</a>
+  {% if version.web %}
+    <a class="release" href="{{ version.web }}" title="See release">{{ version.version }}</a>
+  {% else %}
+    {{ version.version }}
+  {% endif %}
 
   {% if not omit_requirements %}
     {% set requirement -%}
@@ -37,13 +41,10 @@
     {% endif %}
   {% endif %}
 
-  {% set notes_separator = '·' %}
-  {% if version.web %}
-    <span class="download-notes-sep">{{ notes_separator }}</span>
-    <a class="release" href="{{ version.web }}" title="See release">
-      {{ util.icon('note') }}
-    </a>
-  {% endif %}
+  <span class="download-notes-sep">·</span>
+  <a class="download" href="{{ version.download_url or version.url }}" title="Download package">
+    {{ util.icon('download') }}
+  </a>
 
   <br>
 
