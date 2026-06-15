@@ -65,6 +65,113 @@ def test_generate_channel_filters_removed_and_dropped_packages(tmp_path):
     ]
 
 
+def test_generate_channel_omits_live_items_from_unknown_sources(tmp_path, capsys):
+    registry = {"repositories": ["https://repo.one"]}
+    workspace = {
+        "packages": {
+            "known_pkg": {
+                "name": "Known Package",
+                "author": ["Ada"],
+                "last_modified": "2024-03-20T01:02:03Z",
+                "source": "https://repo.one",
+                "releases": [
+                    {
+                        "sublime_text": "4100",
+                        "platforms": ["*"],
+                        "version": "1.0.0",
+                        "url": "https://repo.one/known.zip",
+                        "date": "2024-03-20T01:02:03Z",
+                    }
+                ],
+            },
+            "unknown_pkg": {
+                "name": "Unknown Package",
+                "author": ["Ada"],
+                "last_modified": "2024-03-20T01:02:03Z",
+                "source": "https://repo.unknown",
+                "releases": [
+                    {
+                        "sublime_text": "4100",
+                        "platforms": ["*"],
+                        "version": "1.0.0",
+                        "url": "https://repo.unknown/unknown.zip",
+                        "date": "2024-03-20T01:02:03Z",
+                    }
+                ],
+            },
+            "unknown_removed": {
+                "name": "Unknown Removed",
+                "removed": True,
+                "source": "https://repo.unknown",
+            },
+            "unknown_dropped": {
+                "name": "Unknown Dropped",
+                "author": ["Ada"],
+                "last_modified": "2024-03-20T01:02:03Z",
+                "source": "https://repo.unknown",
+                "releases": [],
+            },
+        },
+        "libraries": {
+            "known_lib": {
+                "name": "Known Library",
+                "source": "https://repo.one",
+                "releases": [
+                    {
+                        "sublime_text": "4100",
+                        "platforms": ["*"],
+                        "python_versions": ["3.8"],
+                        "version": "1.0.0",
+                        "url": "https://repo.one/known.whl",
+                        "date": "2024-01-02T03:04:05Z",
+                    }
+                ],
+            },
+            "unknown_lib": {
+                "name": "Unknown Library",
+                "source": "https://repo.unknown",
+                "releases": [
+                    {
+                        "sublime_text": "4100",
+                        "platforms": ["*"],
+                        "python_versions": ["3.8"],
+                        "version": "1.0.0",
+                        "url": "https://repo.unknown/unknown.whl",
+                        "date": "2024-01-02T03:04:05Z",
+                    }
+                ],
+            },
+            "unknown_removed_lib": {
+                "name": "Unknown Removed Library",
+                "removed": True,
+                "source": "https://repo.unknown",
+            },
+            "unknown_dropped_lib": {
+                "name": "Unknown Dropped Library",
+                "source": "https://repo.unknown",
+                "releases": [],
+            },
+        },
+    }
+
+    registry_path = tmp_path / "registry.json"
+    workspace_path = tmp_path / "workspace.json"
+    output_path = tmp_path / "channel.json"
+
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    workspace_path.write_text(json.dumps(workspace), encoding="utf-8")
+
+    main(str(registry_path), str(workspace_path), str(output_path), False, False)
+
+    channel = json.loads(output_path.read_text(encoding="utf-8"))
+    stdout = capsys.readouterr().out
+
+    assert channel["repositories"] == ["https://repo.one"]
+    assert list(channel["packages_cache"].keys()) == ["https://repo.one"]
+    assert list(channel["libraries_cache"].keys()) == ["https://repo.one"]
+    assert "Omitted 1 package and 1 library listed on https://repo.unknown." in stdout
+
+
 def test_generate_channel_filters_removed_and_dropped_libraries(tmp_path):
     registry = {
         "repositories": [
