@@ -567,6 +567,7 @@ export default async function (eleventyConfig) {
     prodOrigin,
     devOrigin,
     disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
+    disablePrefetchLinks: Boolean(process.env.DISABLE_PREFETCH_LINKS),
   })
 
   // Send the full tag history so the browser can decide what is visible and
