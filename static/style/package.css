@@ -45,7 +45,13 @@ html.page-package {
 }
 
 .download {
-  font-weight: bold;
+  color: var(--foreground-2);
+  vertical-align: -1px;
+  margin-left: 2px;
+
+  &:hover {
+    color: var(--orange-2);
+  }
 }
 
 .download-notes-sep {
@@ -55,13 +61,7 @@ html.page-package {
 }
 
 .release {
-  color: var(--foreground-2);
-  vertical-align: -2px;
-  margin-left: 2px;
-
-  &:hover {
-    color: var(--orange-2);
-  }
+  font-weight: bold;
 }
 
 .requirement {
