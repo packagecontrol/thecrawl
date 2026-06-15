@@ -379,7 +379,9 @@ def map_name_to_range(
 
 def create_aiohttp_session(**kwargs):
     if 'connector' not in kwargs:
-        kwargs['connector'] = aiohttp.TCPConnector(limit=100, limit_per_host=32)
+        limit = os.environ.get('MAX_CONNECTIONS_PER_HOST') or kwargs.pop('limit_per_host', None) or 0
+
+        kwargs['connector'] = aiohttp.TCPConnector(limit=100, limit_per_host=int(limit))
 
     kwargs.setdefault('raise_for_status', True)
     kwargs.setdefault('headers', {'User-Agent': 'thecrawl'})

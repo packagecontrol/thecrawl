@@ -157,7 +157,7 @@ async def fetch_packages(
     now = time.monotonic()
     now_string = now_utc_string()
 
-    async with create_aiohttp_session() as session:
+    async with create_aiohttp_session(limit_per_host=32) as session:
         # Fetch repositories from all channels in parallel
         repos_lists = await asyncio.gather(*[
             get_repositories(channel, session) for channel in channels
