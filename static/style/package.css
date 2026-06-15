@@ -45,8 +45,8 @@ html.page-package {
 }
 
 .download {
+  display: inline-block;
   color: var(--foreground-2);
-  vertical-align: -1px;
   margin-left: 2px;
 
   &:hover {
@@ -84,6 +84,11 @@ ul.stats {
   > * {
     display: flex;
     margin: 0;
+
+    > * {
+      display: flex;
+      align-items: center;
+    }
   }
 
   svg {
@@ -283,11 +288,6 @@ section[name="package"] > ul.stats .platforms {
         }
       }
     }
-  }
-
-  a svg {
-    width: 16px;
-    height: 16px;
   }
 }
 

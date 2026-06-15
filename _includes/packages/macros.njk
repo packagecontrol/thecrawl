@@ -42,7 +42,7 @@
   {% endif %}
 
   <span class="download-notes-sep">·</span>
-  <a class="download" href="{{ version.download_url or version.url }}" title="Download package">
+  <a class="download inline-icon" href="{{ version.download_url or version.url }}" title="Download package">
     {{ util.icon('download') }}
   </a>
 
@@ -127,7 +127,7 @@
 {% macro installs(count, pretty=false) %}
   {% if count > 0 %}
     <li class="installs" title="Installed {{ count }} {{ 'time' if count < 2 else 'times' }}">
-      <span aria-hidden="true">{{ util.icon('download') }}</span>
+      <span class="icon" aria-hidden="true">{{ util.icon('download') }}</span>
       <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
       <span class="screenreader-only">installs</span>
     </li>
@@ -137,7 +137,7 @@
 {% macro stars(count, pretty=false) %}
   {% if count > 0 %}
     <li class="stars" title="{{ count }} {{ 'star' if count < 2 else 'stars' }} on GitHub">
-      <span aria-hidden="true">{{ util.icon('star') }}</span>
+      <span class="icon" aria-hidden="true">{{ util.icon('star') }}</span>
       <span class="counter">{{ (count | compact) if pretty else (count | grouping) }}</span>
       <span class="screenreader-only">stars</span>
     </li>
@@ -184,7 +184,7 @@
             {% set icon_id = (label | label_icon_id) if with_icons else '' %}
             {% if icon_id %}
               {% set tint = (label | label_icon_tint) if with_icons else '' %}
-              <svg class="label-icon{{ (' label-icon--' ~ tint) if tint }}" aria-hidden="true">
+              <svg class="inline-icon{{ (' label-icon--' ~ tint) if tint }}" aria-hidden="true">
                 <use href="/{{ 'static/label-icons.svg' | bust }}#{{ icon_id }}"></use>
               </svg>
             {% endif %}

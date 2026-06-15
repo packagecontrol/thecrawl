@@ -107,14 +107,20 @@ summary {
   cursor: pointer;
 }
 
+.icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inline-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
 svg {
   fill: currentColor;
-  p > &,
-  span > &,
-  a > & {
-    /* alignment of icons in text is just slightly off */
-    vertical-align: -1px;
-  }
 }
 
 code {
