@@ -17,7 +17,7 @@ from ._utils import flatten, pick, resolve_urls, update_url, write_json, pl
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
 DEFAULT_CHANNEL = (
-    "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/channel.json"
+    "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/channel.json"
 )
 MAX_CONCURRENCY = 32
 GLOBAL_TIMEOUT = 60  # seconds
@@ -88,7 +88,7 @@ def parse_args() -> argparse.Namespace:
         action="append",
         help=(
             "URL to a Channel or Repository to pull from (can be used multiple times). "
-            "If not given, uses the official channel from wbond/package_control_channel."
+            "If not given, uses the official channel from sublimehq/package_control_channel."
         ),
     )
     parser.add_argument(

@@ -1,13 +1,19 @@
 import pytest
 
-from scripts.crawl import crawl, main_
+from scripts.crawl import (
+    MAIN_REPOSITORY_SOURCE,
+    OLD_MAIN_REPOSITORY_SOURCE,
+    TRUSTED_SOURCES,
+    crawl,
+    main_,
+)
 
 
 @pytest.mark.asyncio
 async def test_repo_id_mismatch_same_url_is_fatal(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -19,7 +25,7 @@ async def test_repo_id_mismatch_same_url_is_fatal(set_now, set_github_info):
                         "branch": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -74,7 +80,7 @@ async def test_repo_id_mismatch_same_url_is_fatal(set_now, set_github_info):
 async def test_repo_transfer_same_id_is_allowed(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -86,7 +92,7 @@ async def test_repo_transfer_same_id_is_allowed(set_now, set_github_info):
                         "branch": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -143,7 +149,7 @@ async def test_repo_transfer_same_id_is_allowed(set_now, set_github_info):
 async def test_registry_move_new_id_is_allowed(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -155,7 +161,7 @@ async def test_registry_move_new_id_is_allowed(set_now, set_github_info):
                         "branch": True
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0"
             }
         ]
@@ -226,7 +232,7 @@ async def test_move_to_untrusted_source_is_denied(set_now, set_github_info):
     existing = {
         "name": "SourceMoved",
         "details": "https://github.com/example/source-moved",
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "id": "SAME_ID"
     }
 
@@ -366,10 +372,67 @@ async def test_removed_without_source_defaults_to_trusted_for_security(set_now, 
 
 
 @pytest.mark.asyncio
+async def test_main_repository_move_does_not_require_trusting_old_source(
+    set_now,
+    set_github_info,
+):
+    assert OLD_MAIN_REPOSITORY_SOURCE not in TRUSTED_SOURCES
+
+    entry = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "releases": [
+            {
+                "sublime_text": "*",
+                "branch": True
+            }
+        ],
+        "source": MAIN_REPOSITORY_SOURCE,
+        "schema_version": "3.0.0"
+    }
+
+    existing = {
+        "name": "SourceMoved",
+        "details": "https://github.com/example/source-moved",
+        "source": OLD_MAIN_REPOSITORY_SOURCE,
+        "id": "SAME_ID"
+    }
+
+    github_info = {
+        "metadata": {
+            "id": "SAME_ID",
+            "name": "SourceMoved",
+            "description": "Fixture package with source move to new main repo",
+            "homepage": "https://github.com/example/source-moved",
+            "author": "example",
+            "readme": "https://raw.githubusercontent.com/example/source-moved/main/README.md",
+            "default_branch": "main",
+            "stars": 0,
+            "created_at": "2024-01-01T00:00:00Z"
+        },
+        "tags": [],
+        "branches": [
+            {
+                "name": "main",
+                "date": "2024-05-10T12:00:00Z",
+                "url": "https://codeload.github.com/example/source-moved/zip/main"
+            }
+        ]
+    }
+
+    set_now("2024-05-11T00:00:00Z")
+    set_github_info(github_info)
+
+    result = await crawl(object(), entry, existing)
+    assert result.get("fail_reason") is None
+    assert result.get("source") == MAIN_REPOSITORY_SOURCE
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "trusted_source",
     [
-        "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
         "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
     ],

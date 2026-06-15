@@ -13,7 +13,7 @@ async def test_details_metadata_fetched_when_releases_use_other_base(
 ):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -26,7 +26,7 @@ async def test_details_metadata_fetched_when_releases_use_other_base(
                         "base": "https://github.com/example/release-repo",
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],

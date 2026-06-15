@@ -7,7 +7,7 @@ from scripts.crawl import main_
 async def test_github_release_asset_exact_name(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -18,7 +18,7 @@ async def test_github_release_asset_exact_name(set_now, set_github_info):
                         "asset": "A File Icon.sublime-package"
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],
@@ -86,7 +86,7 @@ async def test_github_release_asset_exact_name(set_now, set_github_info):
 async def test_github_release_asset_glob(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -97,7 +97,7 @@ async def test_github_release_asset_glob(set_now, set_github_info):
                         "asset": "*.sublime-package"
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],
@@ -140,7 +140,7 @@ async def test_github_release_asset_glob(set_now, set_github_info):
 async def test_github_release_assets_by_sublime_text(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -152,7 +152,7 @@ async def test_github_release_assets_by_sublime_text(set_now, set_github_info):
                         "sublime_text": ["4107 - 4148", ">=4149"],
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],
@@ -201,7 +201,7 @@ async def test_github_release_assets_by_sublime_text(set_now, set_github_info):
 async def test_github_release_assets_by_platform(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -213,7 +213,7 @@ async def test_github_release_assets_by_platform(set_now, set_github_info):
                         "platforms": ["linux-x64", "osx-x64"],
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],
@@ -276,7 +276,7 @@ async def test_github_release_assets_by_platform(set_now, set_github_info):
 async def test_github_release_assets_tag_prefix(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -288,7 +288,7 @@ async def test_github_release_assets_tag_prefix(set_now, set_github_info):
                         "tags": "st4107-",
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],
@@ -342,7 +342,7 @@ async def test_github_release_assets_tag_prefix(set_now, set_github_info):
 async def test_github_release_assets_tag_prefix_with_version_spec(set_now, set_github_info):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -355,7 +355,7 @@ async def test_github_release_assets_tag_prefix_with_version_spec(set_now, set_g
                         "version": ">=2,<3",
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],
@@ -409,7 +409,7 @@ async def test_github_release_assets_tag_prefix_with_version_spec(set_now, set_g
 async def test_github_release_assets_missing_platform_logs_error(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -421,7 +421,7 @@ async def test_github_release_assets_missing_platform_logs_error(set_now, set_gi
                         "platforms": ["linux-x64", "osx-x64"],
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],
@@ -464,7 +464,7 @@ async def test_github_release_assets_missing_platform_logs_error(set_now, set_gi
 async def test_github_release_assets_no_match_logs_error(set_now, set_github_info, capsys):
     registry = {
         "repositories": [
-            "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+            "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
         ],
         "packages": [
             {
@@ -476,7 +476,7 @@ async def test_github_release_assets_no_match_logs_error(set_now, set_github_inf
                         "platforms": ["linux-x64"],
                     }
                 ],
-                "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+                "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
                 "schema_version": "3.0.0",
             }
         ],

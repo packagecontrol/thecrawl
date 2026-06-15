@@ -245,7 +245,7 @@ def pkg(
 ) -> dict[str, object]:
     entry: dict[str, object] = {
         "name": name,
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "3.0.0",
         "releases": [{"url": f"https://example.com/{name}.zip", "date": "2026-01-01T00:00:00Z"}],
     }
@@ -259,7 +259,7 @@ def pkg(
 def lib(name: str, *, removed: str | None = None) -> dict[str, object]:
     entry: dict[str, object] = {
         "name": name,
-        "source": "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json",
+        "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
         "schema_version": "4.0.0",
         "releases": [{"version": "1.0.0"}],
     }

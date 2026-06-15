@@ -48,8 +48,11 @@ DEFAULT_WORKSPACE = "./workspace.json"
 EXPLAIN_EFFECTIVE_ENV = "EFFECTIVE"
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 STYLIZED_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-MAIN_REPOSITORY_SOURCE = (
+OLD_MAIN_REPOSITORY_SOURCE = (
     "https://raw.githubusercontent.com/wbond/package_control_channel/refs/heads/master/repository.json"
+)
+MAIN_REPOSITORY_SOURCE = (
+    "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json"
 )
 TRUSTED_SOURCES = {
     MAIN_REPOSITORY_SOURCE,
@@ -315,6 +318,14 @@ def maintenance(registry: Registry, workspace: Workspace) -> None:
         if "removed" in entry:
             packages[entry["name"]] = {**entry}  # type: ignore[typeddict-item]
 
+    # Temporary migration for the package_control_channel repository transfer.
+    # Remove after one successful production crawl.
+    migrated_count = 0
+    for entry in registry["packages"]:
+        if migrate_main_repository_source(entry, packages.get(entry["name"])):
+            migrated_count += 1
+    print(f"Migrated {pl(migrated_count, 'packages')} to the new main channel.")
+
     # Legacy;
     # lookup all packages in workspace and mark them as `removed`
     # if they have been removed from the registry
@@ -323,6 +334,21 @@ def maintenance(registry: Registry, workspace: Workspace) -> None:
     current_package_names = {entry["name"] for entry in registry["packages"]}
     for name in packages.keys() - current_package_names:
         packages[name].setdefault("removed", now_string)
+
+
+def migrate_main_repository_source(
+    entry: RegistryEntry,
+    existing: WorkspaceEntry | None,
+) -> bool:
+    if (
+        existing
+        and "removed" not in entry
+        and entry.get("source") == MAIN_REPOSITORY_SOURCE
+        and existing.get("source") == OLD_MAIN_REPOSITORY_SOURCE
+    ):
+        existing["source"] = MAIN_REPOSITORY_SOURCE
+        return True
+    return False
 
 
 async def crawl(
