@@ -133,6 +133,9 @@ def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool
         err(f"FATAL: Could not read workspace file '{workspace_path}': {e}")
         sys.exit(1)
 
+    registry_repositories = registry.get("repositories", [])
+    registry_sources = set(registry_repositories)
+
     # Prepare channel structure
     channel: Channel = {
         "schema_version": "4.0.0",
@@ -143,6 +146,8 @@ def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool
 
     # Group packages by source
     packages_by_source: defaultdict[RepositoryUrl, list[Package]] = defaultdict(list)
+    omitted_by_source: defaultdict[RepositoryUrl, dict[str, int]] = \
+        defaultdict(lambda: {"packages": 0, "libraries": 0})
     drop_count_pkg = 0
     removed_count_pkg = 0
     for pkg in workspace.get("packages", {}).values():
@@ -157,6 +162,9 @@ def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool
             drop_count_pkg += 1
             continue
         source: Url = pkg["source"]
+        if source not in registry_sources:
+            omitted_by_source[source]["packages"] += 1
+            continue
         packages_by_source[source].append(norm_pkg)
 
     libraries_by_source: defaultdict[RepositoryUrl, list[Library]] = defaultdict(list)
@@ -171,6 +179,9 @@ def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool
             drop_count_lib += 1
             continue
         source = lib["source"]
+        if source not in registry_sources:
+            omitted_by_source[source]["libraries"] += 1
+            continue
         libraries_by_source[source].append(norm_lib)
 
     # Sort packages in each source by name
@@ -184,7 +195,7 @@ def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool
     # Add repositories to channel in order of appearance in the registry
     channel["repositories"] = [
         r
-        for r in registry.get("repositories", [])
+        for r in registry_repositories
         if r in packages_by_source or r in libraries_by_source
     ]
 
@@ -200,6 +211,13 @@ def main(registry_path, workspace_path, channel_path, berlin: bool, pretty: bool
         f"{pl(package_count, 'packages')} and "
         f"{pl(library_count, 'libraries')}."
     )
+    for source, omitted_counts in omitted_by_source.items():
+        omitted = [
+            pl(omitted_counts[k], k)
+            for k in ("packages", "libraries")
+            if omitted_counts[k]
+        ]
+        print(f"Omitted {' and '.join(omitted)} listed on {source}.")
     print(
         f"Dropped {pl(drop_count_pkg, 'incomplete packages')}.  "
         f"{pl(removed_count_pkg, 'are')} currently tombstoned."
