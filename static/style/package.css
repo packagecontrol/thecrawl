@@ -99,6 +99,59 @@ section[name="package"] > ul.stats .platforms {
   max-width: 60%;
 }
 
+.package-labels {
+  @media (width < 80rem) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem 2.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+
+    > .button-group.labels {
+      margin-bottom: 0;
+    }
+
+    > .label-normalization-note {
+      flex: 1 1 20rem;
+      margin-top: 3px;
+    }
+  }
+}
+
+.label-normalization-note {
+  color: var(--foreground-2);
+  font-size: 14px;
+  line-height: 22px;
+  margin-top: -12px;
+
+  p,
+  ul {
+    font-size: inherit;
+    line-height: inherit;
+    padding-top: 0;
+  }
+
+  p {
+    margin-bottom: 0;
+  }
+
+  ul {
+    list-style: none;
+    margin-bottom: 0;
+    padding-left: 0;
+    margin-left: 2px;
+  }
+
+  code {
+    background: color(srgb 0.75 0.75 0.76 / 0.3);
+    white-space: nowrap;
+
+    :root[data-theme='dark'] & {
+      background: color(srgb 0.33 0.33 0.39 / 0.3);
+    }
+  }
+}
+
 .other-releases {
 
   summary {

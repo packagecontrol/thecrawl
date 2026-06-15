@@ -95,7 +95,17 @@ page_type: package
     </ul>
   {% endif %}
 
-  {{ pack.labels(pkg, true) }}
+  {% if (pkg.labels and pkg.labels | length) or (pkg.normalized_labels and pkg.normalized_labels | length) %}
+    <div class="package-labels">
+      {{ pack.labels(pkg, true) }}
+
+      {% if pkg.normalized_labels and pkg.normalized_labels | length %}
+        <aside class="label-normalization-note">
+          {{ pkg.normalized_labels | label_normalization_note | safe }}
+        </aside>
+      {% endif %}
+    </div>
+  {% endif %}
 
   {% if not pkg.removed %}
     {# once a package is removed none of the links or the readme are still reliable #}
