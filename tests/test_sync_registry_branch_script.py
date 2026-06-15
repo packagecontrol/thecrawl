@@ -11,6 +11,9 @@ from pathlib import Path
 import pytest
 
 
+pytestmark = pytest.mark.slow
+
+
 def test_sync_registry_branch_happy_path() -> None:
     require_shell_tools()
 
