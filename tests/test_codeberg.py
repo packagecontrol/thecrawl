@@ -60,7 +60,12 @@ async def test_fetch_codeberg_info_normalizes_datetimes(monkeypatch):
             return branches if branch_calls == 1 else []
         raise AssertionError(f"Unexpected URL: {url}")
 
+    async def mock_fetch_text(_session, url):
+        assert url == "https://codeberg.org/ISSOtm/sublime-Bison/raw/branch/master/README.md"
+        return "# Bison\n\nA syntax definition.\n"
+
     monkeypatch.setattr("scripts.codeberg.fetch_json", mock_fetch_json)
+    monkeypatch.setattr("scripts.codeberg.fetch_text", mock_fetch_text)
 
     info = await fetch_codeberg_info(
         object(),
@@ -72,6 +77,7 @@ async def test_fetch_codeberg_info_normalizes_datetimes(monkeypatch):
     assert info["metadata"]["readme"] == (
         "https://codeberg.org/ISSOtm/sublime-Bison/raw/branch/master/README.md"
     )
+    assert info["metadata"]["readme_content"] == "# Bison\n\nA syntax definition.\n"
 
     tags_out = []
     async for tag in info["tags"]:

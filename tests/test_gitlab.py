@@ -56,8 +56,16 @@ async def test_fetch_gitlab_info_formats_datetimes(monkeypatch):
             return branches, {"X-Next-Page": ""}
         raise AssertionError(f"Unexpected URL: {url}")
 
+    async def mock_fetch_text(_session, url):
+        assert url == (
+            "https://gitlab.com/api/v4/projects/jiehong%2Fsublime_jq/"
+            "repository/files/README.md/raw?ref=master"
+        )
+        return "# sublime_jq\n\nA jq wrapper.\n"
+
     monkeypatch.setattr("scripts.gitlab.fetch_json", mock_fetch_json)
     monkeypatch.setattr("scripts.gitlab.fetch_", mock_fetch_)
+    monkeypatch.setattr("scripts.gitlab.fetch_text", mock_fetch_text)
 
     info = await fetch_gitlab_info(
         object(),
@@ -70,6 +78,7 @@ async def test_fetch_gitlab_info_formats_datetimes(monkeypatch):
     assert info["metadata"]["readme"] == (
         "https://gitlab.com/jiehong/sublime_jq/-/raw/master/README.md"
     )
+    assert info["metadata"]["readme_content"] == "# sublime_jq\n\nA jq wrapper.\n"
     assert info["metadata"]["stars"] == 2
 
     tags_out = []

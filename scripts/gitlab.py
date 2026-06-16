@@ -21,6 +21,7 @@ class RepoMetadata(TypedDict, total=False):
     homepage: Url
     author: str
     readme: Url
+    readme_content: str
     issues: Url
     donate: Url
     default_branch: str
@@ -68,19 +69,30 @@ def parse_owner_repo(url: str):
     return path_parts[0], path_parts[1]
 
 
-async def fetch_(session: aiohttp.ClientSession, url: str):
-    headers = {}
+def _auth_headers() -> dict[str, str]:
+    headers: dict[str, str] = {}
     if token := os.getenv("GITLAB_TOKEN"):
         headers["PRIVATE-TOKEN"] = token
-    async with session.get(url, headers=headers) as resp:
-        resp.raise_for_status()
-        data = await resp.json()
-        return data, dict(resp.headers)
+    return headers
 
 
 async def fetch_json(session: aiohttp.ClientSession, url: str):
-    data, _ = await fetch_(session, url)
-    return data
+    async with session.get(url, headers=_auth_headers()) as resp:
+        resp.raise_for_status()
+        return await resp.json()
+
+
+async def fetch_text(session: aiohttp.ClientSession, url: str) -> str:
+    async with session.get(url, headers=_auth_headers()) as resp:
+        resp.raise_for_status()
+        return await resp.text()
+
+
+async def fetch_(session: aiohttp.ClientSession, url: str):
+    async with session.get(url, headers=_auth_headers()) as resp:
+        resp.raise_for_status()
+        data = await resp.json()
+        return data, dict(resp.headers)
 
 
 async def fetch_repo_metadata(
@@ -92,7 +104,7 @@ async def fetch_repo_metadata(
     url = f"{GITLAB_API_URL}/projects/{encoded_path}"
     data = await fetch_json(session, url)
     default_branch = data.get("default_branch", "master")
-    readme_url = await find_readme_url(session, owner, repo, default_branch)
+    readme_url, readme_content = await find_readme(session, owner, repo, default_branch)
     meta = drop_falsy({
         "id": str(data.get("id")),
         "name": data.get("name"),
@@ -100,6 +112,7 @@ async def fetch_repo_metadata(
         "homepage": data.get("web_url"),
         "author": data.get("namespace", {}).get("path"),
         "readme": readme_url,
+        "readme_content": readme_content,
         "issues": data.get("web_url") + "/-/issues" if data.get("web_url") else None,
         "donate": None,  # Not available
         "default_branch": default_branch,
@@ -110,14 +123,26 @@ async def fetch_repo_metadata(
     return meta
 
 
-async def find_readme_url(session, owner, repo, branch) -> Url | None:
+async def find_readme(session, owner, repo, branch) -> tuple[Url | None, str | None]:
     encoded_path = quote(f"{owner}/{repo}", safe="")
     url = f"{GITLAB_API_URL}/projects/{encoded_path}/repository/tree?ref={branch}&per_page=100"
     data = await fetch_json(session, url)
     for entry in data:
         if entry.get("type") == "blob" and entry["name"].lower() in _readme_filenames:
-            return f"https://gitlab.com/{owner}/{repo}/-/raw/{branch}/{entry['name']}"
-    return None
+            readme_url = f"https://gitlab.com/{owner}/{repo}/-/raw/{branch}/{entry['name']}"
+            content_url = (
+                f"{GITLAB_API_URL}/projects/{encoded_path}/repository/files/"
+                f"{quote(entry['name'], safe='')}/raw?ref={quote(branch, safe='')}"
+            )
+            return readme_url, await fetch_readme_content(session, content_url)
+    return None, None
+
+
+async def fetch_readme_content(session, content_url: str) -> str | None:
+    try:
+        return await fetch_text(session, content_url)
+    except aiohttp.ClientResponseError:
+        return None
 
 
 class _Pager:
@@ -283,7 +308,16 @@ if __name__ == "__main__":
         print(f"Fetching GitLab info for: {url}")
         async with aiohttp.ClientSession() as session:
             info = await fetch_gitlab_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
-            print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
+            metadata_for_display = {
+                key: value
+                for key, value in info["metadata"].items()
+                if key != "readme_content"
+            }
+            print("Metadata", json.dumps(metadata_for_display, indent=2, ensure_ascii=False))
+            if readme_content := info["metadata"].get("readme_content"):
+                print("README preview:")
+                for line in readme_content.splitlines()[:3]:
+                    print(line)
             print("Tags:")
             async for tag in info["tags"]:
                 print(tag)

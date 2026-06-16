@@ -22,6 +22,7 @@ class RepoMetadata(TypedDict, total=False):
     homepage: Url
     author: str
     readme: Url
+    readme_content: str
     issues: Url
     donate: Url
     default_branch: str
@@ -83,10 +84,10 @@ async def fetch_json(session: aiohttp.ClientSession, url: str) -> dict:
         return await resp.json()
 
 
-async def fetch_(session: aiohttp.ClientSession, url: str):
+async def fetch_text(session: aiohttp.ClientSession, url: str) -> str:
     async with session.get(url, headers=_auth_headers()) as resp:
         resp.raise_for_status()
-        return await resp.json(), dict(resp.headers)
+        return await resp.text()
 
 
 async def fetch_repo_metadata(
@@ -97,7 +98,12 @@ async def fetch_repo_metadata(
     url = f"{CODEBERG_API_URL}/repos/{owner}/{repo}"
     data = await fetch_json(session, url)
     default_branch = data.get("default_branch", "master")
-    readme_url = await find_readme_url(session, owner, repo, default_branch)
+    readme_url, readme_content = await find_readme(
+        session,
+        owner,
+        repo,
+        default_branch,
+    )
     return drop_falsy({
         "id": str(data.get("id")) if data.get("id") is not None else None,
         "name": data.get("name") or repo,
@@ -113,6 +119,7 @@ async def fetch_repo_metadata(
             or owner
         ,
         "readme": readme_url,
+        "readme_content": readme_content,
         "issues": f"https://codeberg.org/{owner}/{repo}/issues",
         "donate": None,  # Not available via API
         "default_branch": default_branch,
@@ -135,9 +142,9 @@ async def fetch_repo_metadata(
     })
 
 
-async def find_readme_url(session, owner, repo, branch) -> Url | None:
+async def find_readme(session, owner, repo, branch) -> tuple[Url | None, str | None]:
     """
-    Fetch the root directory listing and return the raw URL of README if found.
+    Fetch the root directory listing and return the raw README URL and text.
     """
     # Forgejo/Gitea contents API
     params = urlencode({"ref": branch})
@@ -145,14 +152,22 @@ async def find_readme_url(session, owner, repo, branch) -> Url | None:
     try:
         entries = await fetch_json(session, files_url)
     except aiohttp.ClientResponseError:
-        return None
+        return None, None
     for entry in entries or []:
         name = (entry.get("name") or "").lower()
         entry_type = entry.get("type")
         if entry_type == "file" and name in _readme_filenames:
             # Raw URL format on Codeberg/Forgejo
-            return f"https://codeberg.org/{owner}/{repo}/raw/branch/{branch}/{entry['name']}"
-    return None
+            readme_url = f"https://codeberg.org/{owner}/{repo}/raw/branch/{branch}/{entry['name']}"
+            return readme_url, await fetch_readme_content(session, readme_url)
+    return None, None
+
+
+async def fetch_readme_content(session, readme_url: str) -> str | None:
+    try:
+        return await fetch_text(session, readme_url)
+    except aiohttp.ClientResponseError:
+        return None
 
 
 class TagPager:
@@ -312,7 +327,16 @@ if __name__ == "__main__":
         print(f"Fetching Codeberg info for: {url}")
         async with aiohttp.ClientSession() as session:
             info = await fetch_codeberg_info(session, url, ("METADATA", "TAGS", "BRANCHES"))
-            print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
+            metadata_for_display = {
+                key: value
+                for key, value in info["metadata"].items()
+                if key != "readme_content"
+            }
+            print("Metadata", json.dumps(metadata_for_display, indent=2, ensure_ascii=False))
+            if readme_content := info["metadata"].get("readme_content"):
+                print("README preview:")
+                for line in readme_content.splitlines()[:3]:
+                    print(line)
             print("Tags:")
             async for tag in info["tags"]:
                 print(tag)

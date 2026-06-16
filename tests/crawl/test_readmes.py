@@ -1,7 +1,59 @@
 import pytest
 
-from scripts.crawl import main_
+from scripts.crawl import main_, maintain_readmes
 from tests.crawl.conftest import AsyncList
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("readmes", "expected"),
+    [
+        (
+            {"https://example.test/orphan.md": "# Orphan\n"},
+            "Removed 1 stale README entry from readmes.json.",
+        ),
+        (
+            {
+                "https://example.test/orphan-a.md": "# Orphan A\n",
+                "https://example.test/orphan-b.md": "# Orphan B\n",
+            },
+            "Removed 2 stale README entries from readmes.json.",
+        ),
+    ],
+)
+async def test_readme_maintenance_message_uses_plural_helper(readmes, expected, capsys):
+    await main_({"packages": []}, {"packages": {}}, None, 100, readmes=readmes)
+
+    assert expected in capsys.readouterr().out
+
+
+def test_maintain_readmes_prunes_urls_without_live_workspace_package():
+    workspace = {
+        "packages": {
+            "Live": {
+                "name": "Live",
+                "readme": "https://example.test/live.md",
+            },
+            "Removed": {
+                "name": "Removed",
+                "readme": "https://example.test/removed.md",
+                "removed": "2025-01-01T00:00:00Z",
+            },
+            "NoReadme": {
+                "name": "NoReadme",
+            },
+        },
+    }
+    readmes = {
+        "https://example.test/live.md": "# Live\n",
+        "https://example.test/removed.md": "# Removed\n",
+        "https://example.test/orphan.md": "# Orphan\n",
+    }
+
+    assert maintain_readmes(readmes, workspace) == 2
+    assert readmes == {
+        "https://example.test/live.md": "# Live\n",
+    }
 
 
 @pytest.mark.asyncio
