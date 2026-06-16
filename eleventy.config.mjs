@@ -400,6 +400,9 @@ export default async function (eleventyConfig) {
 
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
   const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
+  const renderedReadmes = fs.existsSync('readmes_rendered.json')
+    ? JSON.parse(fs.readFileSync('readmes_rendered.json', 'utf8'))
+    : {}
   // eslint-disable-next-line no-unused-vars
   let all_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg)
 
@@ -497,6 +500,7 @@ export default async function (eleventyConfig) {
         description: translateEmojiCodes(pkg.description ?? ''),
         ...basePackage(pkg, stats[pkg.name]),
         ...(readme_url !== pkg.readme ? { readme_url } : {}),
+        ...(renderedReadmes[pkg.readme] ? { rendered_readme: renderedReadmes[pkg.readme] } : {}),
         ...(source_url !== pkg.source ? { source_url } : {}),
       }
     })

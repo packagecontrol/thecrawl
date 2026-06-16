@@ -4,6 +4,7 @@ PACKAGE_CONTROL_CHANNEL_REPO := https://github.com/sublimehq/package_control_cha
 build:
 	npm install
 	$(MAKE) up
+	$(MAKE) render-readmes
 	# compile eleventy (production)
 	ELEVENTY_ENV=production NODE_ENV=production npx @11ty/eleventy --quiet
 	# add compiled channels for public consumption
@@ -17,6 +18,12 @@ update-data:
 		-o workspace.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/workspace.json" \
 		-o stats.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/stats.json" \
 		-o static/logs.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/logs.json"
+	curl -L --fail \
+		-o readmes.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/readmes.json" \
+		|| printf '{}\n' > readmes.json
+
+render-readmes:
+	node render_readmes.mjs -i readmes.json -o readmes_rendered.json
 
 up:
 	# Package Control Channel is needed to link each package to its exact

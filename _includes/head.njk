@@ -8,7 +8,7 @@
   <meta name="description" content="{{ descr }}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  {% if isPackagePage and pkg.readme and not pkg.removed %}
+  {% if isPackagePage and pkg.readme and not pkg.removed and not pkg.rendered_readme %}
     <script data-readme-url="{{ pkg.readme }}">
       (() => {
         const script = document.currentScript
