@@ -53037,6 +53037,28 @@
       "removed": "2020-01-01T18:01:26Z"
     },
     {
+      "name": "Paste Markdown",
+      "details": "https://github.com/Wuvist/subl_paste_md",
+      "labels": [
+        "text manipulation",
+        "clipboard",
+        "paste",
+        "markdown"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "platforms": [
+            "osx"
+          ],
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-06-16T17:54:31Z"
+    },
+    {
       "name": "Paste PDF Text Block",
       "details": "https://github.com/compleatang/sublimetext-pastepdf",
       "releases": [
