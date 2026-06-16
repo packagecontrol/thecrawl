@@ -11,7 +11,10 @@
     "build:label-icons": "node util/build-label-icons.mjs"
   },
   "dependencies": {
-    "@11ty/eleventy": "^3.1.6"
+    "@11ty/eleventy": "^3.1.6",
+    "dompurify": "^3.4.10",
+    "jsdom": "^29.1.1",
+    "marked": "^18.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",

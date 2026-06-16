@@ -142,31 +142,45 @@ page_type: package
 {% endif %}
 
 {% if pkg.readme and not pkg.removed %}
-  <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="main-content"></section>
-  <script>
-    (() => {
-      const target = document.getElementById('md')
-      if (!target) return
+  <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="main-content">{{ pkg.rendered_readme | default('') | safe }}</section>
+  {% if pkg.rendered_readme %}
+    <script>
+      (() => {
+        const url = new URL(window.location.href)
+        if (!url.searchParams.has('readme')) return
 
-      const source = target.dataset.readmeUrl
-      if (!source) return
+        const slug = url.hash.replace(/^#/, '')
+        if (!slug) return
 
-      const cacheKey = 'md:' + source
-      try {
-        const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')
-        if (!cached) return
+        document.getElementById(`readme-${slug}`)?.scrollIntoView({ block: 'start' })
+      })()
+    </script>
+  {% else %}
+    <script>
+      (() => {
+        const target = document.getElementById('md')
+        if (!target) return
 
-        const now = Math.floor(Date.now() / 1000)
-        const ttl = 60 * 60
-        if ((now - cached.time) < ttl) {
-          target.innerHTML = cached.html
+        const source = target.dataset.readmeUrl
+        if (!source) return
+
+        const cacheKey = 'md:' + source
+        try {
+          const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')
+          if (!cached) return
+
+          const now = Math.floor(Date.now() / 1000)
+          const ttl = 60 * 60
+          if ((now - cached.time) < ttl) {
+            target.innerHTML = cached.html
+          }
+        } catch {
+          // Ignore cache parse failures.
         }
-      } catch {
-        // Ignore cache parse failures.
-      }
-    })()
-  </script>
-  <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
+      })()
+    </script>
+    <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
+  {% endif %}
 {% endif %}
 
 {% include "search_section.njk" %}

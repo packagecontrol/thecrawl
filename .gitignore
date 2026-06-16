@@ -55,6 +55,8 @@ _site/*
 .package_control_channel/
 channel.json
 logs.json
+readmes.json
+readmes_rendered.json
 registry.json
 stats.json
 workspace.json
