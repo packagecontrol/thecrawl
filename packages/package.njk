@@ -146,10 +146,12 @@ page_type: package
   {% if pkg.rendered_readme %}
     <script>
       (() => {
-        const url = new URL(window.location.href)
-        if (!url.searchParams.has('readme')) return
-
-        const slug = url.hash.replace(/^#/, '')
+        let slug
+        try {
+          slug = decodeURIComponent(window.location.hash.replace(/^#/, ''))
+        } catch {
+          slug = window.location.hash.replace(/^#/, '')
+        }
         if (!slug) return
 
         document.getElementById(`readme-${slug}`)?.scrollIntoView({ block: 'start' })

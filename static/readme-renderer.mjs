@@ -51,7 +51,7 @@ const readmeHeadingRenderer = {
     const id = `readme-${slug}`
     return `\
 <h${level} id="${id}">${html}\
-<a class="markdown-anchor" href="?readme#${slug}" aria-labelledby="${id}"></a>\
+<a class="markdown-anchor" href="#${slug}" aria-labelledby="${id}"></a>\
 </h${level}>`
   },
 }
