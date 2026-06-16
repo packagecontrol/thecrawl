@@ -74,11 +74,7 @@ if (cached && (now - cached.time) < ttl) {
   scroll_readme_anchor()
 }
 else {
-  fetch(source)
-    .then((res) => {
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`)
-      return res.text()
-    })
+  load_readme_markdown(source)
     .then((md) => {
       if (DOMPurify.isSupported && is_markdown(source)) {
         headingSlugCounts = new Map()
@@ -110,6 +106,18 @@ else {
         target.innerHTML = '😒<br>The readme failed to load.'
       }
     })
+}
+
+function load_readme_markdown(url) {
+  const prefetched = window.__packageReadmeFetches?.get(url)
+  if (prefetched) {
+    return prefetched
+  }
+
+  return fetch(url).then((res) => {
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`)
+    return res.text()
+  })
 }
 
 function is_markdown(url) {
