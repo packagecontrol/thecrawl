@@ -98,6 +98,9 @@ class WorkspaceEntry(TypedDict, total=False):
     # 'hints' are meant as a storage for additional 'hub' info
     hints: NotRequired[list[str]]
 
+    # Transient metadata exported to a sidecar when --fetch-readmes is set.
+    readme_content: NotRequired[str]
+
 
 class Workspace(TypedDict):
     packages: dict[PackageName, WorkspaceEntry]
@@ -161,7 +164,8 @@ async def main(
     workspace: str,
     name: str | None,
     limit: int = 200,
-    presto: bool = False
+    presto: bool = False,
+    fetch_readmes: str | None = None,
 ) -> None:
     if not os.path.exists(registry):
         err(f"FATAL: Registry file '{registry}' does not exist.")
@@ -179,10 +183,21 @@ async def main(
     else:
         workspace_data = {"packages": {}}
 
+    readmes = load_readmes(fetch_readmes) if fetch_readmes else None
+
     try:
-        await main_(registry_data, workspace_data, name, limit, presto)
+        await main_(registry_data, workspace_data, name, limit, presto, readmes)
     finally:
         write_json(workspace, workspace_data, pretty=True, ensure_ascii=True)
+        if fetch_readmes and readmes is not None:
+            write_json(fetch_readmes, readmes, pretty=True, ensure_ascii=False)
+
+
+def load_readmes(path: str) -> dict[str, str]:
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r", encoding="utf-8") as handle:
+        return json.load(handle)
 
 
 async def main_(
@@ -190,7 +205,8 @@ async def main_(
     workspace: Workspace,
     name: str | None,
     limit: int,
-    presto: bool = False
+    presto: bool = False,
+    readmes: dict[str, str] | None = None,
 ) -> None:
     name_requested = bool(name)
     if name:
@@ -219,6 +235,14 @@ async def main_(
         ]
         results = await asyncio.gather(*tasks)
         for new_entry in results:
+            readme_url = new_entry.get("readme")
+            readme_content = new_entry.pop("readme_content", None)
+            if (
+                readmes is not None
+                and isinstance(readme_url, str)
+                and isinstance(readme_content, str)
+            ):
+                readmes[readme_url] = readme_content
             workspace["packages"][new_entry["name"]] = new_entry
             if "update_detected" in new_entry:
                 updated_packages.append(new_entry["name"])
@@ -496,7 +520,10 @@ async def crawl_package(
             ):
                 info["metadata"].pop("homepage")
 
-            out = info["metadata"] | out  # type: ignore[assignment]
+            metadata = info["metadata"]
+            out = metadata | out  # type: ignore[assignment]
+            if out.get("readme") != metadata.get("readme"):
+                out.pop("readme_content", None)
             if (
                 existing.get("id")
                 and existing.get("id") != out.get("id")
@@ -1066,6 +1093,13 @@ def parse_args(argv: list[str] | None = None):
         ),
     )
     parser.add_argument(
+        "--fetch-readmes",
+        type=str,
+        default=None,
+        metavar="PATH",
+        help="Append prefetched README markdown to PATH as a url-to-content JSON map.",
+    )
+    parser.add_argument(
         "--wd",
         type=str,
         default=".",
@@ -1120,8 +1154,17 @@ if __name__ == "__main__":
     os.makedirs(wd, exist_ok=True)
     args.registry = os.path.normpath(os.path.join(wd, args.registry))
     args.workspace = os.path.normpath(os.path.join(wd, args.workspace))
+    if args.fetch_readmes:
+        args.fetch_readmes = os.path.normpath(os.path.join(wd, args.fetch_readmes))
 
     if args.explain:
         raise SystemExit(explain_main(args.registry, args.explain))
 
-    asyncio.run(main(args.registry, args.workspace, args.name, args.limit, args.presto))
+    asyncio.run(main(
+        args.registry,
+        args.workspace,
+        args.name,
+        args.limit,
+        args.presto,
+        args.fetch_readmes,
+    ))

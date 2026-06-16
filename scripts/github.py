@@ -42,6 +42,7 @@ class RepoMetadata(TypedDict, total=False):
     homepage: Url
     author: str
     readme: Url
+    readme_content: str
     issues: Url
     donate: Url
     default_branch: str
@@ -130,6 +131,35 @@ FILES = (
     }
     """
 )
+READMES = """
+    readmeUpper: object(expression: "HEAD:README.md") {
+      ... on Blob {
+        oid
+        byteSize
+        isBinary
+        isTruncated
+        text
+      }
+    }
+    readmeLower: object(expression: "HEAD:readme.md") {
+      ... on Blob {
+        oid
+        byteSize
+        isBinary
+        isTruncated
+        text
+      }
+    }
+    readmeTitle: object(expression: "HEAD:Readme.md") {
+      ... on Blob {
+        oid
+        byteSize
+        isBinary
+        isTruncated
+        text
+      }
+    }
+"""
 BRANCHES = (
     "$branches_after: String",
     """
@@ -217,9 +247,17 @@ RELEASES = (
 scope_to_query: dict[str, Query] = {
     "METADATA": METADATA,
     "FILES": FILES,
+    "READMES": READMES,
     "TAGS": TAGS,
     "BRANCHES": BRANCHES,
     "RELEASES": RELEASES,
+}
+
+
+_prefetched_readme_aliases = {
+    "README.md": "readmeUpper",
+    "readme.md": "readmeLower",
+    "Readme.md": "readmeTitle",
 }
 
 
@@ -354,8 +392,11 @@ async def fetch_github_info(
     owner, repo = parse_owner_repo(github_url)
 
     final_scopes: list[str] = list(scopes)
+    fetch_readmes = "METADATA" in final_scopes and "no_readme" not in hints
     if "METADATA" in final_scopes and not {"too_many_files", "no_readme"} & set(hints):
         final_scopes.append("FILES")
+    if fetch_readmes:
+        final_scopes.append("READMES")
     query = build_query(scope_to_query[scope] for scope in final_scopes)
     variables = {
         "owner": owner,
@@ -380,6 +421,7 @@ async def fetch_github_info(
         if "FILES" in final_scopes
         else rest_entries
     )
+    readme = find_readme_url(entries, owner, repo, default_branch)
 
     return {
         "metadata": drop_falsy({  # type: ignore[typeddict-item]
@@ -388,7 +430,14 @@ async def fetch_github_info(
             "description": repo_data.get("description"),
             "homepage": repo_data.get("homepageUrl"),
             "author": repo_data.get("owner", {}).get("login"),
-            "readme": find_readme_url(entries, owner, repo, default_branch),
+            "readme": readme,
+            "readme_content": find_prefetched_readme_content(
+                repo_data,
+                readme,
+                owner,
+                repo,
+                default_branch,
+            ),
             "issues": repo_data.get("issuesUrl"),
             "donate": (repo_data.get("fundingLinks") or [{}])[0].get("url"),
             "default_branch": default_branch,
@@ -481,6 +530,32 @@ def find_readme_url(entries, owner, repo, branch) -> str | None:
         ):
             return f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{entry['name']}"
     return None
+
+
+def find_prefetched_readme_content(
+    repo_data: dict,
+    readme_url: str | None,
+    owner: str,
+    repo: str,
+    branch: str,
+) -> str | None:
+    if not readme_url:
+        return None
+
+    for filename, alias in _prefetched_readme_aliases.items():
+        expected_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{filename}"
+        if readme_url == expected_url:
+            return blob_text(repo_data.get(alias))
+    return None
+
+
+def blob_text(blob: dict | None) -> str | None:
+    if not blob:
+        return None
+    if blob.get("isBinary") or blob.get("isTruncated"):
+        return None
+    text = blob.get("text")
+    return text if isinstance(text, str) else None
 
 
 class TagPager:
@@ -730,7 +805,16 @@ if __name__ == "__main__":
                 scopes,
                 hints=hints,
             )
-            print("Metadata", json.dumps(info["metadata"], indent=2, ensure_ascii=False))
+            metadata_for_display = {
+                key: value
+                for key, value in info["metadata"].items()
+                if key != "readme_content"
+            }
+            print("Metadata", json.dumps(metadata_for_display, indent=2, ensure_ascii=False))
+            if readme_content := info["metadata"].get("readme_content"):
+                print("README preview:")
+                for line in readme_content.splitlines()[:3]:
+                    print(line)
             truncated = False
             show_ellipsis = not explicit_limit
             if want_tags:

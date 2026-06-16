@@ -41,6 +41,12 @@ def test_parse_args_accepts_explain_mode() -> None:
     assert args.explain == "Example"
 
 
+def test_parse_args_accepts_fetch_readmes_path() -> None:
+    args = parse_args(["--fetch-readmes", "raw_readmes.json"])
+
+    assert args.fetch_readmes == "raw_readmes.json"
+
+
 def test_parse_args_rejects_name_and_explain_together() -> None:
     with pytest.raises(SystemExit):
         parse_args(["--name", "Foo", "--explain", "Foo"])
