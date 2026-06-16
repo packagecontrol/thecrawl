@@ -80,6 +80,7 @@ class WorkspaceEntry(TypedDict, total=False):
     id: NotRequired[str]
     name: Required[str]
     details: NotRequired[Url]
+    readme: NotRequired[Url]
     releases: list[Release]
 
     source: Url
@@ -249,6 +250,11 @@ async def main_(
             if name_requested:
                 print(json.dumps(new_entry, indent=2, ensure_ascii=False))
 
+    if readmes is not None:
+        stale_readmes = maintain_readmes(readmes, workspace)
+        if stale_readmes:
+            print(f"Removed {pl(stale_readmes, 'stale README entries')} from readmes.json.")
+
     print("---")
     print(
         f"{pl(len(workspace['packages'].keys()), 'packages')} "
@@ -263,6 +269,19 @@ async def main_(
 
     if len(tocrawl) > 0:
         print("GitHub", rate_limit_info)
+
+
+def maintain_readmes(readmes: dict[str, str], workspace: Workspace) -> int:
+    live_readme_urls = {
+        readme
+        for package in workspace["packages"].values()
+        if "removed" not in package
+        if isinstance(readme := package.get("readme"), str)
+    }
+    stale_readme_urls = readmes.keys() - live_readme_urls
+    for url in stale_readme_urls:
+        del readmes[url]
+    return len(stale_readme_urls)
 
 
 def next_packages_to_crawl(
@@ -586,9 +605,7 @@ def find_registry_package(registry: Registry, name: str) -> RegistryEntry | None
 def normalize_registry_entry(entry: RegistryEntry) -> WorkspaceEntry:
     out: WorkspaceEntry = {**entry}  # type: ignore[typeddict-item]
     if "readme" in out:
-        out["readme"] = update_url(  # type: ignore[typeddict-unknown-key]
-            resolve_url(out["source"], out["readme"])  # type: ignore[typeddict-item]
-        )
+        out["readme"] = update_url(resolve_url(out["source"], out["readme"]))
 
     details = out.get("details")
     release_definitions: list[ReleaseDescription] = \
