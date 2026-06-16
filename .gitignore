@@ -18,6 +18,7 @@ wrk/
 /logs.json
 /prev_totals.json
 /stats.json
+/readmes.json
 /registry.json
 /repository.json
 /workspace.json

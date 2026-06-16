@@ -99,6 +99,7 @@ jobs:
           PYTHONUNBUFFERED=1 uv run -m scripts.crawl --limit 1500 \
             --registry ./wrk/registry.json \
             --workspace ./wrk/workspace.json \
+            --fetch-readmes ./wrk/readmes.json \
             2>&1 | tee crawl.log
 
       - name: Check if we should resolve the libraries
@@ -165,6 +166,7 @@ jobs:
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/channel.json --clobber
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/registry.json --clobber
           gh release upload ${{ env.RELEASE_TAG }} ./wrk/workspace.json --clobber
+          gh release upload ${{ env.RELEASE_TAG }} ./wrk/readmes.json --clobber
 
           DATE=$(TZ=Europe/Berlin date -d "@$NOW_TS" +"%B %d, %Y, %H:%M GMT%:::z" | sed -E 's/([+-])0/\1/')
           REPO_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

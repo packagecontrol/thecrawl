@@ -1,4 +1,4 @@
-from scripts.github import grab_tags
+from scripts.github import find_prefetched_readme_content, grab_tags
 
 
 def test_grab_tags_prefers_tagger_date_when_available():
@@ -51,3 +51,44 @@ def test_grab_tags_falls_back_to_commit_date_without_tagger():
             "url": "https://codeload.github.com/owner/repo/zip/4.28.2",
         }
     ]
+
+
+def test_find_prefetched_readme_content_matches_selected_readme():
+    repo_data = {
+        "readmeUpper": {
+            "isBinary": False,
+            "isTruncated": False,
+            "text": "# Upper\n",
+        },
+        "readmeLower": {
+            "isBinary": False,
+            "isTruncated": False,
+            "text": "# Lower\n",
+        },
+    }
+
+    assert find_prefetched_readme_content(
+        repo_data,
+        "https://raw.githubusercontent.com/owner/repo/main/readme.md",
+        "owner",
+        "repo",
+        "main",
+    ) == "# Lower\n"
+
+
+def test_find_prefetched_readme_content_skips_truncated_blob():
+    repo_data = {
+        "readmeUpper": {
+            "isBinary": False,
+            "isTruncated": True,
+            "text": "# Truncated\n",
+        },
+    }
+
+    assert find_prefetched_readme_content(
+        repo_data,
+        "https://raw.githubusercontent.com/owner/repo/main/README.md",
+        "owner",
+        "repo",
+        "main",
+    ) is None
