@@ -83,12 +83,6 @@ async def fetch_json(session: aiohttp.ClientSession, url: str) -> dict:
         return await resp.json()
 
 
-async def fetch_(session: aiohttp.ClientSession, url: str):
-    async with session.get(url, headers=_auth_headers()) as resp:
-        resp.raise_for_status()
-        return await resp.json(), dict(resp.headers)
-
-
 async def fetch_repo_metadata(
     session: aiohttp.ClientSession,
     owner: str,
