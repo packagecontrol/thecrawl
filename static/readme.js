@@ -13,6 +13,8 @@ const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')
 const now = Math.floor(Date.now() / 1000)
 const ttl = 60 * 60 // 1 hour in seconds
 
+window.addEventListener('hashchange', scroll_readme_anchor)
+
 if (cached && (now - cached.time) < ttl) {
   target.innerHTML = cached.html
   scroll_readme_anchor()
@@ -64,12 +66,7 @@ function load_readme_markdown(url) {
 }
 
 function scroll_readme_anchor() {
-  const url = new URL(window.location.href)
-  if (!url.searchParams.has('readme')) {
-    return
-  }
-
-  const slug = url.hash.replace(/^#/, '')
+  const slug = readme_hash_slug()
   if (!slug) {
     return
   }
@@ -77,5 +74,13 @@ function scroll_readme_anchor() {
   const anchor = document.getElementById(`readme-${slug}`)
   if (anchor) {
     anchor.scrollIntoView({ block: 'start' })
+  }
+}
+
+function readme_hash_slug() {
+  try {
+    return decodeURIComponent(window.location.hash.replace(/^#/, ''))
+  } catch {
+    return window.location.hash.replace(/^#/, '')
   }
 }
