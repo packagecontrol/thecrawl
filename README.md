@@ -195,11 +195,13 @@ matrix. Use `--explain` to print each release definition side-by-side with the
 concretized variations the crawler will use, including inferred defaults.
 
 These modes are dry by default. For `--name`, add `--write` to write the
-resolved entry to the workspace.
+resolved entry to the workspace. Add `--json` to print pretty JSON.
 
 ```bash
 $ uv run -m scripts.crawl_libraries --name lxml
+$ uv run -m scripts.crawl_libraries --name lxml --json
 $ uv run -m scripts.crawl_libraries --explain lxml
+$ uv run -m scripts.crawl_libraries --explain lxml --json
 ```
 
 #### Trying release definitions
@@ -208,12 +210,24 @@ Add `--try` with `--name` or `--explain` to test release definitions without
 editing `registry.json`. If the library exists in the registry, its metadata is
 reused and only the `releases` section is replaced in memory.
 
-`--try` accepts JSON or a small YAML-ish `key: value` shorthand. Omit the value,
-or pass `-`, to read the definition from stdin.
+`--try` accepts JSON or a small YAML-ish `key: value` shorthand. Inline
+shorthand definitions may use `;` separators for quick checks. If the name is
+omitted, the crawler tries to infer it.
 
 ```bash
-$ uv run -m scripts.crawl_libraries --name lxml --try "base: pypi:lxml"
-$ uv run -m scripts.crawl_libraries --explain lxml --try "base: pypi:lxml"
+$ uv run -m scripts.crawl_libraries --try "base: pypi:lxml"
+$ uv run -m scripts.crawl_libraries --try "base: pypi:lxml" --explain
+$ uv run -m scripts.crawl_libraries --try "base: pypi:pyobjc-framework-Cocoa; platform: osx; python: 3.8"
+```
+
+Inline shorthand also accepts a few convenience aliases: `platform` for
+`platforms`, `python` for `python_versions`, and broad platform values
+`windows`, `osx`, or `linux` for their supported architecture variants.
+
+For multiline or more complex definitions, omit the value or pass `-` to read
+from stdin. Stdin definitions use normal newlines, not `;` separators.
+
+```bash
 $ uv run -m scripts.crawl_libraries --name lxml --try <<'DEF'
 base: pypi:lxml
 platforms: windows-x32

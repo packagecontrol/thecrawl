@@ -22,9 +22,11 @@ def make_args(
     name=None,
     explain=None,
     try_definition=None,
+    allow_try_shortcuts=False,
     limit=10,
     allowed_source=None,
     write=False,
+    json_output=False,
     verbose=False,
 ):
     if allowed_source is None:
@@ -35,7 +37,9 @@ def make_args(
         name=name,
         explain=explain,
         try_definition=try_definition,
+        allow_try_shortcuts=allow_try_shortcuts,
         write=write,
+        json_output=json_output,
         verbose=verbose,
         limit=limit,
         workspace=output_path,
@@ -731,6 +735,35 @@ async def test_parse_args_write_implies_verbose(monkeypatch, tmp_path):
     assert args.verbose is True
 
 
+def test_parse_args_json(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--name", "example", "--json"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.json_output is True
+
+
+def test_parse_args_json_accepts_inline_try(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--try", "base: pypi:lxml", "--json"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.json_output is True
+    assert args.allow_try_shortcuts is True
+
+
 def test_parse_args_try_heredoc_reads_stdin(monkeypatch, tmp_path):
     repo_path = tmp_path / "registry.json"
     write_json(repo_path, {"libraries": []})
@@ -745,6 +778,7 @@ def test_parse_args_try_heredoc_reads_stdin(monkeypatch, tmp_path):
 
     assert args.name == "lxml"
     assert args.try_definition == "base: pypi:lxml\n"
+    assert args.allow_try_shortcuts is False
 
 
 def test_parse_args_try_accepts_explain(monkeypatch, tmp_path):
@@ -760,6 +794,99 @@ def test_parse_args_try_accepts_explain(monkeypatch, tmp_path):
 
     assert args.explain == "lxml"
     assert args.try_definition == "base: pypi:lxml"
+    assert args.allow_try_shortcuts is True
+
+
+def test_parse_args_try_accepts_inline_without_name(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--try", "base: pypi:lxml"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.name is None
+    assert args.try_definition == "base: pypi:lxml"
+    assert args.allow_try_shortcuts is True
+
+
+def test_parse_args_try_accepts_bare_explain(monkeypatch, tmp_path):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr(
+        "sys.argv",
+        ["crawl_libraries", "--try", "base: pypi:lxml", "--explain"],
+    )
+
+    args = crawl_libraries.parse_args()
+
+    assert args.explain == ""
+    assert args.try_definition == "base: pypi:lxml"
+    assert args.allow_try_shortcuts is True
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["crawl_libraries", "--try"],
+        ["crawl_libraries", "--try", "--json"],
+    ],
+)
+def test_parse_args_try_stdin_requires_name(monkeypatch, tmp_path, capsys, argv):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": []})
+    monkeypatch.setattr(crawl_libraries, "DEFAULT_REGISTRY", str(repo_path))
+    monkeypatch.setattr("sys.argv", argv)
+
+    with pytest.raises(SystemExit):
+        crawl_libraries.parse_args()
+
+    assert "--try from stdin requires --name or --explain." in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("definition", "split_semicolon", "expected"),
+    [
+        ("base: pypi:lxml", False, ["base: pypi:lxml"]),
+        (
+            "base: pypi:lxml\nplatforms: windows-x32",
+            False,
+            ["base: pypi:lxml", "platforms: windows-x32"],
+        ),
+        (
+            "base: pypi:lxml; platforms: windows-x32",
+            True,
+            ["base: pypi:lxml", " platforms: windows-x32"],
+        ),
+        (
+            "asset: \"foo;bar\"; platforms: windows-x32",
+            True,
+            ['asset: "foo;bar"', " platforms: windows-x32"],
+        ),
+        (
+            'asset: ["foo;bar", "*.zip"]; platforms: windows-x32',
+            True,
+            ['asset: ["foo;bar", "*.zip"]', " platforms: windows-x32"],
+        ),
+        (
+            "- base: pypi:lxml; platforms: windows-x32\n- base: pypi:numpy",
+            True,
+            ["- base: pypi:lxml", " platforms: windows-x32", "- base: pypi:numpy"],
+        ),
+    ],
+)
+def test_split_try_definition_lines(definition, split_semicolon, expected):
+    assert (
+        crawl_libraries.split_try_definition_lines(
+            definition,
+            split_semicolon=split_semicolon,
+        )
+        == expected
+    )
 
 
 @pytest.mark.parametrize(
@@ -798,6 +925,75 @@ def test_parse_try_key_value_definition_supported(definition, expected):
     assert crawl_libraries.parse_try_key_value_definition(definition) == expected
 
 
+def test_parse_try_key_value_definition_supports_inline_separator():
+    assert crawl_libraries.parse_try_key_value_definition(
+        "base: pypi:lxml; platforms: windows-x32",
+        split_semicolon=True,
+    ) == {"base": "pypi:lxml", "platforms": "windows-x32"}
+
+
+def test_parse_try_key_value_definition_keeps_stdin_semicolon_literal():
+    assert crawl_libraries.parse_try_key_value_definition(
+        "base: pypi:lxml; platforms: windows-x32"
+    ) == {"base": "pypi:lxml; platforms: windows-x32"}
+
+
+@pytest.mark.parametrize(
+    ("platform_key", "platform_alias", "expected"),
+    [
+        ("platforms", "windows", ["windows-x64", "windows-x32"]),
+        ("platforms", "osx", ["osx-x64", "osx-arm64"]),
+        ("platforms", "linux", ["linux-x64", "linux-arm64"]),
+        ("platform", "osx", ["osx-x64", "osx-arm64"]),
+    ],
+)
+def test_parse_try_definition_expands_inline_platform_alias(
+    platform_key,
+    platform_alias,
+    expected,
+):
+    assert crawl_libraries.parse_try_definition(
+        f"base: pypi:lxml; {platform_key}: {platform_alias}",
+        allow_try_shortcuts=True,
+    ) == [
+        {"base": "pypi:lxml", "platforms": expected},
+    ]
+
+
+def test_parse_try_definition_keeps_stdin_osx_platform_literal():
+    assert crawl_libraries.parse_try_definition(
+        "base: pypi:lxml\nplatforms: osx",
+    ) == [{"base": "pypi:lxml", "platforms": "osx"}]
+
+
+def test_parse_try_definition_accepts_inline_python_alias():
+    assert crawl_libraries.parse_try_definition(
+        "base: pypi:lxml; python: 3.3",
+        allow_try_shortcuts=True,
+    ) == [{"base": "pypi:lxml", "python_versions": "3.3"}]
+
+
+def test_parse_try_definition_keeps_json_alias_literals():
+    assert crawl_libraries.parse_try_definition(
+        '{"base": "pypi:lxml", "platform": "osx", "python": "3.3"}',
+        allow_try_shortcuts=True,
+    ) == [{"base": "pypi:lxml", "platform": "osx", "python": "3.3"}]
+
+
+@pytest.mark.parametrize(
+    ("definition", "expected"),
+    [
+        ("base: pypi:lxml", "lxml"),
+        ("base: github:owner/repo", "repo"),
+    ],
+)
+def test_infer_try_library_name(definition, expected):
+    assert crawl_libraries.infer_try_library_name(
+        definition,
+        allow_try_shortcuts=True,
+    ) == expected
+
+
 @pytest.mark.parametrize(
     "definition",
     [
@@ -834,7 +1030,8 @@ async def test_handle_try_crawls_inline_release_definition(monkeypatch, tmp_path
         repo_path,
         output_path,
         name="example",
-        try_definition="base: pypi:example\nplatforms: windows-x32",
+        try_definition="base: pypi:example; platforms: windows-x32",
+        allow_try_shortcuts=True,
     )
     calls = []
 
@@ -917,6 +1114,95 @@ async def test_handle_try_crawls_without_registry_file(monkeypatch, tmp_path):
 
     assert result == 0
     assert calls == [{"name": "example", "releases": [{"base": "pypi:example"}]}]
+
+
+@pytest.mark.asyncio
+async def test_handle_try_infers_name_from_inline_base(monkeypatch, tmp_path):
+    repo_path = tmp_path / "missing-registry.json"
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        try_definition=(
+            "base: pypi:pyobjc-framework-Cocoa; platforms: osx; "
+            "python_versions:3.8"
+        ),
+        allow_try_shortcuts=True,
+    )
+    calls = []
+
+    async def resolver(library, cache_dir, session):
+        calls.append(library)
+        return (
+            make_info(library["name"])
+            | {
+                "releases": [
+                    {
+                        "url": "https://example.com/example-1.0.0.whl",
+                        "version": "1.0.0",
+                        "date": "2026-01-01T00:00:00Z",
+                        "platforms": ["osx-x64"],
+                        "python_versions": ["3.8"],
+                        "sublime_text": "*",
+                    }
+                ]
+            },
+            ["stub"],
+        )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", resolver)
+
+    result = await crawl_libraries.run(args)
+
+    assert result == 0
+    assert calls == [
+        {
+            "name": "pyobjc-framework-Cocoa",
+            "releases": [
+                {
+                    "base": "pypi:pyobjc-framework-Cocoa",
+                    "platforms": ["osx-x64", "osx-arm64"],
+                    "python_versions": "3.8",
+                }
+            ],
+        }
+    ]
+
+
+@pytest.mark.asyncio
+async def test_handle_name_json_reports_entry_only(monkeypatch, tmp_path, capsys):
+    repo_path = tmp_path / "registry.json"
+    write_json(repo_path, {"libraries": [{"name": "example"}]})
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        name="example",
+        json_output=True,
+    )
+
+    monkeypatch.setattr(crawl_libraries, "resolve_library", make_resolver([]))
+    monkeypatch.setattr(
+        crawl_libraries, "now_timestamp", lambda: "2026-01-01T00:00:00Z"
+    )
+
+    await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert json.loads(captured.out) == {
+        "name": "example",
+        "description": "example desc",
+        "author": "example author",
+        "issues": "https://example.com/example/issues",
+        "releases": [{"version": "1.0.0", "date": "2026-01-01T00:00:00Z"}],
+        "added": "2026-01-01T00:00:00Z",
+        "last_crawl": "2026-01-01T00:00:00Z",
+        "latest_version": "1.0.0",
+    }
+    assert "release matrix" not in captured.out
+    assert "Resolved example" not in captured.out
 
 
 @pytest.mark.asyncio
@@ -1017,6 +1303,81 @@ async def test_handle_explain_renders_release_variation_rows(monkeypatch, tmp_pa
 
 
 @pytest.mark.asyncio
+async def test_handle_explain_json_reports_normalized_library(monkeypatch, tmp_path, capsys):
+    repo_path = tmp_path / "registry.json"
+    write_json(
+        repo_path,
+        {
+            "libraries": [
+                {
+                    "name": "alpha",
+                    "description": "registry description",
+                    "releases": [{"base": "pypi:old"}],
+                }
+            ]
+        },
+    )
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        explain="alpha",
+        try_definition="base: pypi:alpha; platform: osx",
+        allow_try_shortcuts=True,
+        json_output=True,
+    )
+
+    def fake_explain_library(library):
+        return [
+            (
+                library["releases"][0],
+                [
+                    {
+                        "base": "https://pypi.org/project/alpha",
+                        "asset": ["*.whl"],
+                        "platform": "osx-x64",
+                        "python_version": "3.8",
+                        "sublime_text": "*",
+                        "version": "*",
+                        "tag_prefix": "v?",
+                    }
+                ],
+            )
+        ]
+
+    def fail_print_library_explain(name, rows, metadata=None):
+        raise AssertionError("explain table should not be rendered")
+
+    monkeypatch.setattr(crawl_libraries, "explain_library", fake_explain_library)
+    monkeypatch.setattr(
+        crawl_libraries,
+        "print_library_explain",
+        fail_print_library_explain,
+    )
+
+    result = await crawl_libraries.run(args)
+
+    captured = capsys.readouterr()
+    assert result == 0
+    assert json.loads(captured.out) == {
+        "name": "alpha",
+        "description": "registry description",
+        "releases": [
+            {
+                "base": "https://pypi.org/project/alpha",
+                "asset": ["*.whl"],
+                "platform": "osx-x64",
+                "python_version": "3.8",
+                "sublime_text": "*",
+                "version": "*",
+                "tag_prefix": "v?",
+            }
+        ],
+    }
+
+
+@pytest.mark.asyncio
 async def test_handle_explain_uses_try_definition(monkeypatch, tmp_path):
     repo_path = tmp_path / "registry.json"
     write_json(
@@ -1077,6 +1438,53 @@ async def test_handle_explain_uses_try_definition(monkeypatch, tmp_path):
         "author": "registry author",
         "issues": "https://example.com/issues",
     }
+
+
+@pytest.mark.asyncio
+async def test_handle_explain_infers_name_from_inline_try(monkeypatch, tmp_path):
+    repo_path = tmp_path / "missing-registry.json"
+    output_path = tmp_path / "libraries.json"
+    args = make_args(
+        tmp_path,
+        repo_path,
+        output_path,
+        explain="",
+        try_definition="base: pypi:pyobjc-framework-Cocoa; platform: osx",
+        allow_try_shortcuts=True,
+    )
+    captured = {}
+
+    def fake_explain_library(library):
+        captured["library"] = library
+        return []
+
+    def fake_print_library_explain(name, rows, metadata=None):
+        captured["name"] = name
+        captured["rows"] = rows
+        captured["metadata"] = metadata
+
+    monkeypatch.setattr(crawl_libraries, "explain_library", fake_explain_library)
+    monkeypatch.setattr(
+        crawl_libraries,
+        "print_library_explain",
+        fake_print_library_explain,
+    )
+
+    result = await crawl_libraries.run(args)
+
+    assert result == 0
+    assert captured["library"] == {
+        "name": "pyobjc-framework-Cocoa",
+        "releases": [
+            {
+                "base": "pypi:pyobjc-framework-Cocoa",
+                "platforms": ["osx-x64", "osx-arm64"],
+            }
+        ],
+    }
+    assert captured["name"] == "pyobjc-framework-Cocoa"
+    assert captured["rows"] == []
+    assert captured["metadata"] == {"name": "pyobjc-framework-Cocoa"}
 
 
 @pytest.mark.parametrize(

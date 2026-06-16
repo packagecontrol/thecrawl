@@ -25,6 +25,7 @@ from ._lib_matrix_printer import format_library_matrix
 from ._resolve_lib import (
     Release,
     ReleaseEntry,
+    SUPPORTED_PLATFORMS,
     explain_library,
     load_json,
     resolve_library,
@@ -35,6 +36,14 @@ from ._explain_package import print_library_explain
 
 DEFAULT_REGISTRY = "./registry.json"
 DEFAULT_WORKSPACE = "./workspace.json"
+TRY_PLATFORM_ALIASES = {
+    os_name: [
+        platform
+        for platform in SUPPORTED_PLATFORMS
+        if platform.startswith(f"{os_name}-")
+    ]
+    for os_name in ("windows", "osx", "linux")
+}
 
 
 type Url = str
@@ -94,7 +103,9 @@ class Args:
     name: str | None
     explain: str | None
     try_definition: str | None
+    allow_try_shortcuts: bool
     write: bool
+    json_output: bool
     verbose: bool
     limit: int
     workspace: Path
@@ -121,6 +132,9 @@ def parse_args() -> Args:
     parser.add_argument("--name", help="Library name from registry to crawl")
     parser.add_argument(
         "--explain",
+        nargs="?",
+        const="",
+        metavar="NAME",
         help="Library name to print resolved release definitions for",
     )
     parser.add_argument(
@@ -131,13 +145,19 @@ def parse_args() -> Args:
         metavar="DEF",
         help=(
             "Use an in-memory release definition with --name or --explain. "
-            "Use '-' or omit DEF to read from stdin."
+            "Inline DEF accepts JSON or key: value shorthand with ';' "
+            "separators. Use '-' or omit DEF to read from stdin."
         ),
     )
     parser.add_argument(
         "--write",
         action="store_true",
         help="Write the resolved library entry to the workspace when using --name.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the selected library entry as pretty JSON.",
     )
     parser.add_argument(
         "--verbose",
@@ -164,14 +184,21 @@ def parse_args() -> Args:
     )
     ns = parser.parse_args()
 
-    if ns.explain and ns.name:
+    if ns.explain is not None and ns.name:
         parser.error("Use either --name or --explain, not both.")
-    if ns.try_definition is not None and not (ns.name or ns.explain):
-        parser.error("--try requires --name or --explain.")
+    allow_try_shortcuts = ns.try_definition not in (None, "-")
+    if (
+        ns.try_definition is not None
+        and not (ns.name or ns.explain is not None)
+        and not allow_try_shortcuts
+    ):
+        parser.error("--try from stdin requires --name or --explain.")
     if ns.write and not ns.name:
         parser.error("--write requires --name.")
     if ns.write and ns.try_definition is not None:
         parser.error("--write cannot be used with --try.")
+    if ns.json and not (ns.name or ns.explain is not None or allow_try_shortcuts):
+        parser.error("--json requires --name, --explain, or inline --try.")
     if ns.limit < 1:
         parser.error("--limit must be a positive integer.")
 
@@ -188,7 +215,9 @@ def parse_args() -> Args:
         name=ns.name,
         explain=ns.explain,
         try_definition=ns.try_definition,
+        allow_try_shortcuts=allow_try_shortcuts,
         write=ns.write,
+        json_output=ns.json,
         verbose=ns.verbose or ns.write,
         limit=ns.limit,
         workspace=Path(os.path.abspath(ns.workspace)),
@@ -211,8 +240,17 @@ async def run(args: Args) -> int:
     if args.name:
         return await handle_name(args.name, args)
 
-    if args.explain:
-        return await handle_explain(args.explain, args)
+    if args.explain is not None:
+        name = args.explain or infer_try_name_or_report_error(args)
+        if not name:
+            return 1
+        return await handle_explain(name, args)
+
+    if args.try_definition is not None:
+        name = infer_try_name_or_report_error(args)
+        if not name:
+            return 1
+        return await handle_name(name, args)
 
     registry: Registry = load_json(args.registry)  # type: ignore[assignment]
 
@@ -321,6 +359,55 @@ async def run(args: Args) -> int:
     return 0
 
 
+def infer_try_name_or_report_error(args: Args) -> str | None:
+    if args.try_definition is None:
+        print("Could not infer library name without --try definition.")
+        return None
+    try:
+        name = infer_try_library_name(
+            args.try_definition,
+            allow_try_shortcuts=args.allow_try_shortcuts,
+        )
+    except ValueError as exc:
+        print(f"Invalid --try definition: {exc}")
+        return None
+    if not name:
+        print("Could not infer library name from --try definition.")
+        return None
+    return name
+
+
+def infer_try_library_name(
+    definition: str,
+    *,
+    allow_try_shortcuts: bool,
+) -> str | None:
+    releases = parse_try_definition(
+        definition,
+        allow_try_shortcuts=allow_try_shortcuts,
+    )
+    for release in releases:
+        name = infer_try_library_name_from_release(release)
+        if name:
+            return name
+    return None
+
+
+def infer_try_library_name_from_release(release: ReleaseEntry) -> str | None:
+    base = release.get("base")
+    if not isinstance(base, str):
+        return None
+    if base.startswith("pypi:"):
+        return base.split(":", 1)[1] or None
+    if base.startswith("github:"):
+        return base.rstrip("/").rsplit("/", 1)[-1] or None
+    if "pypi.org/project/" in base:
+        return base.rstrip("/").rsplit("/", 1)[-1] or None
+    if "github.com/" in base:
+        return base.rstrip("/").rsplit("/", 1)[-1] or None
+    return None
+
+
 async def handle_name(name: str, args: Args) -> int:
     library = find_or_build_library(name, args)
     if not library:
@@ -342,6 +429,12 @@ async def handle_explain(name: str, args: Args) -> int:
         return 1
 
     explain_rows = explain_library(library)
+    if args.json_output:
+        metadata = {key: value for key, value in library.items() if key != "releases"}
+        releases = [release for _, normalized in explain_rows for release in normalized]
+        print(json.dumps(metadata | {"releases": releases}, indent=2, ensure_ascii=False))
+        return 0
+
     metadata = {key: value for key, value in library.items() if key != "releases"}
     print_library_explain(name, explain_rows, metadata=metadata)
     return 0
@@ -359,6 +452,7 @@ def find_or_build_library(name: str, args: Args) -> RegistryEntry | None:
                 name,
                 find_library(registry, name),
                 args.try_definition,
+                allow_try_shortcuts=args.allow_try_shortcuts,
             )
         except ValueError as exc:
             print(f"Invalid --try definition: {exc}")
@@ -404,6 +498,10 @@ async def crawl_single_library(
             workspace_entries[name] = entry
             write_json(args.workspace, workspace, pretty=True, ensure_ascii=True)
 
+        if args.json_output:
+            print(json.dumps(entry, indent=2, ensure_ascii=False))
+            return 0
+
         if args.verbose:
             source_label = ", ".join(sources) if sources else "cache"
             version_label = f" {latest_version}" if latest_version else ""
@@ -437,23 +535,37 @@ def synthesize_library_entry(
     name: str,
     registry_entry: RegistryEntry | None,
     definition: str,
+    *,
+    allow_try_shortcuts: bool = False,
 ) -> RegistryEntry:
-    releases = parse_try_definition(definition)
+    releases = parse_try_definition(
+        definition,
+        allow_try_shortcuts=allow_try_shortcuts,
+    )
     library: RegistryEntry = {"name": name, "releases": releases}
     if registry_entry:
         return registry_entry.copy() | library
     return library
 
 
-def parse_try_definition(definition: str) -> list[ReleaseEntry]:
+def parse_try_definition(
+    definition: str,
+    *,
+    allow_try_shortcuts: bool = False,
+) -> list[ReleaseEntry]:
     definition = definition.strip()
     if not definition:
         raise ValueError("empty release definition")
 
+    parsed_from_shorthand = False
     try:
         parsed = json.loads(definition)
     except json.JSONDecodeError:
-        parsed = parse_try_key_value_definition(definition)
+        parsed = parse_try_key_value_definition(
+            definition,
+            split_semicolon=allow_try_shortcuts,
+        )
+        parsed_from_shorthand = True
 
     if isinstance(parsed, dict) and "releases" in parsed:
         parsed = parsed["releases"]
@@ -464,20 +576,56 @@ def parse_try_definition(definition: str) -> list[ReleaseEntry]:
         raise ValueError("expected a release object or a non-empty release list")
     if not all(isinstance(item, dict) for item in parsed):
         raise ValueError("release entries must be objects")
+    if allow_try_shortcuts and parsed_from_shorthand:
+        normalize_try_shorthand_aliases(parsed)
     return parsed
 
 
-def parse_try_key_value_definition(definition: str) -> dict | list[dict]:
+def normalize_try_shorthand_aliases(releases: list[dict]) -> None:
+    for release in releases:
+        if "platform" in release and "platforms" not in release:
+            release["platforms"] = release.pop("platform")
+        if "platforms" in release:
+            release["platforms"] = expand_try_platform_alias(release["platforms"])
+        if "python" in release and "python_versions" not in release:
+            release["python_versions"] = release.pop("python")
+
+
+def expand_try_platform_alias(platforms: object) -> object:
+    if isinstance(platforms, str):
+        return TRY_PLATFORM_ALIASES.get(platforms, platforms)
+    if isinstance(platforms, list):
+        expanded: list[object] = []
+        for platform in platforms:
+            replacement = (
+                TRY_PLATFORM_ALIASES.get(platform)
+                if isinstance(platform, str) else
+                None
+            )
+            if replacement:
+                expanded.extend(replacement)
+            else:
+                expanded.append(platform)
+        return expanded
+    return platforms
+
+
+def parse_try_key_value_definition(
+    definition: str,
+    *,
+    split_semicolon: bool = False,
+) -> dict | list[dict]:
     """
     Parse the lightweight ``--try`` shorthand.
 
     This intentionally supports only the small subset that is useful at the
-    command line: ``key: value`` pairs, blank lines, comments, and top-level
-    list items introduced with ``-``. It is YAML-ish for convenience, but it is
-    not a YAML parser: there are no nested mappings, continuation lines, escape
-    handling for single-quoted strings, or indentation semantics. Values stay as
-    strings except for booleans/null, JSON double-quoted strings, and simple
-    bracketed lists.
+    command line: ``key: value`` pairs, blank lines, comments, optional
+    semicolon separators, and top-level list items introduced with ``-``. It is
+    YAML-ish for convenience, but it is not a YAML parser:
+    there are no nested mappings, continuation lines, escape handling for
+    single-quoted strings, or indentation semantics. Values stay as strings
+    except for booleans/null, JSON double-quoted strings, and simple bracketed
+    lists.
 
     Use JSON for anything more structured or ambiguous.
     """
@@ -485,7 +633,10 @@ def parse_try_key_value_definition(definition: str) -> dict | list[dict]:
     current: dict | None = None
     saw_list_marker = False
 
-    for raw_line in definition.splitlines():
+    for raw_line in split_try_definition_lines(
+        definition,
+        split_semicolon=split_semicolon,
+    ):
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
@@ -513,6 +664,53 @@ def parse_try_key_value_definition(definition: str) -> dict | list[dict]:
     if not entries:
         raise ValueError("empty release definition")
     return entries if saw_list_marker else entries[0]
+
+
+def split_try_definition_lines(
+    definition: str,
+    *,
+    split_semicolon: bool = False,
+) -> list[str]:
+    lines: list[str] = []
+    for raw_line in definition.splitlines():
+        if split_semicolon:
+            lines.extend(split_try_definition_line(raw_line))
+        else:
+            lines.append(raw_line)
+    return lines
+
+
+def split_try_definition_line(raw_line: str) -> list[str]:
+    parts: list[str] = []
+    start = 0
+    quote = ""
+    escaped = False
+    bracket_depth = 0
+
+    for index, char in enumerate(raw_line):
+        if quote:
+            if quote == '"' and char == "\\" and not escaped:
+                escaped = True
+                continue
+            if char == quote and not escaped:
+                quote = ""
+            escaped = False
+            continue
+        if char in ('"', "'"):
+            quote = char
+            continue
+        if char in "[{(":
+            bracket_depth += 1
+            continue
+        if char in "]})" and bracket_depth:
+            bracket_depth -= 1
+            continue
+        if char == ";" and bracket_depth == 0:
+            parts.append(raw_line[start:index])
+            start = index + 1
+
+    parts.append(raw_line[start:])
+    return parts
 
 
 def is_try_key(key: str) -> bool:
