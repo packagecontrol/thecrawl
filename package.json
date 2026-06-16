@@ -11,7 +11,7 @@
     "build:label-icons": "node util/build-label-icons.mjs"
   },
   "dependencies": {
-    "@11ty/eleventy": "^3.1.1"
+    "@11ty/eleventy": "^3.1.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
@@ -22,6 +22,6 @@
     "minisearch": "^7.1.2",
     "npm-run-all": "^4.1.5",
     "terser": "^5.43.1",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.6"
   }
 }
