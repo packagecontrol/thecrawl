@@ -146,15 +146,34 @@ page_type: package
   {% if pkg.rendered_readme %}
     <script>
       (() => {
-        let slug
-        try {
-          slug = decodeURIComponent(window.location.hash.replace(/^#/, ''))
-        } catch {
-          slug = window.location.hash.replace(/^#/, '')
-        }
-        if (!slug) return
+        window.addEventListener('hashchange', scrollReadmeAnchor)
+        scrollReadmeAnchorOnInitialLoad()
 
-        document.getElementById(`readme-${slug}`)?.scrollIntoView({ block: 'start' })
+        function scrollReadmeAnchorOnInitialLoad() {
+          if (!isScrollRestoredNavigation()) {
+            scrollReadmeAnchor()
+          }
+        }
+
+        function scrollReadmeAnchor() {
+          const slug = readmeHashSlug()
+          if (!slug) return
+
+          document.getElementById(`readme-${slug}`)?.scrollIntoView({ block: 'start' })
+        }
+
+        function isScrollRestoredNavigation() {
+          const navigation = performance.getEntriesByType('navigation')[0]
+          return navigation?.type === 'reload' || navigation?.type === 'back_forward'
+        }
+
+        function readmeHashSlug() {
+          try {
+            return decodeURIComponent(window.location.hash.replace(/^#/, ''))
+          } catch {
+            return window.location.hash.replace(/^#/, '')
+          }
+        }
       })()
     </script>
   {% else %}

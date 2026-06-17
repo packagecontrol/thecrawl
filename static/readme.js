@@ -17,7 +17,7 @@ window.addEventListener('hashchange', scroll_readme_anchor)
 
 if (cached && (now - cached.time) < ttl) {
   target.innerHTML = cached.html
-  scroll_readme_anchor()
+  scroll_readme_anchor_on_initial_load()
 }
 else {
   load_readme_markdown(source)
@@ -27,7 +27,7 @@ else {
           sanitize: html => DOMPurify.sanitize(html),
           parseHtml: html => new DOMParser().parseFromString(html, 'text/html'),
         })
-        scroll_readme_anchor()
+        scroll_readme_anchor_on_initial_load()
       }
       else {
         const escaped = md
@@ -65,6 +65,12 @@ function load_readme_markdown(url) {
   })
 }
 
+function scroll_readme_anchor_on_initial_load() {
+  if (!is_scroll_restored_navigation()) {
+    scroll_readme_anchor()
+  }
+}
+
 function scroll_readme_anchor() {
   const slug = readme_hash_slug()
   if (!slug) {
@@ -75,6 +81,11 @@ function scroll_readme_anchor() {
   if (anchor) {
     anchor.scrollIntoView({ block: 'start' })
   }
+}
+
+function is_scroll_restored_navigation() {
+  const navigation = performance.getEntriesByType('navigation')[0]
+  return navigation?.type === 'reload' || navigation?.type === 'back_forward'
 }
 
 function readme_hash_slug() {
