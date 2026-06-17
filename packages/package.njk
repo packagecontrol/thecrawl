@@ -143,38 +143,11 @@ page_type: package
 
 {% if pkg.readme and not pkg.removed %}
   <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="main-content">{{ pkg.rendered_readme | default('') | safe }}</section>
+  {% inline_js 'static/_readme_anchor.js' %}
   {% if pkg.rendered_readme %}
     <script>
-      (() => {
-        window.addEventListener('hashchange', scrollReadmeAnchor)
-        scrollReadmeAnchorOnInitialLoad()
-
-        function scrollReadmeAnchorOnInitialLoad() {
-          if (!isScrollRestoredNavigation()) {
-            scrollReadmeAnchor()
-          }
-        }
-
-        function scrollReadmeAnchor() {
-          const slug = readmeHashSlug()
-          if (!slug) return
-
-          document.getElementById(`readme-${slug}`)?.scrollIntoView({ block: 'start' })
-        }
-
-        function isScrollRestoredNavigation() {
-          const navigation = performance.getEntriesByType('navigation')[0]
-          return navigation?.type === 'reload' || navigation?.type === 'back_forward'
-        }
-
-        function readmeHashSlug() {
-          try {
-            return decodeURIComponent(window.location.hash.replace(/^#/, ''))
-          } catch {
-            return window.location.hash.replace(/^#/, '')
-          }
-        }
-      })()
+      window.__packageReadmeAnchors.install()
+      window.__packageReadmeAnchors.scrollOnInitialLoad()
     </script>
   {% else %}
     <script>
@@ -182,25 +155,32 @@ page_type: package
         const target = document.getElementById('md')
         if (!target) return
 
+        window.__packageReadmeAnchors.install()
+
         const source = target.dataset.readmeUrl
         if (!source) return
 
         const cacheKey = 'md:' + source
         try {
           const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')
-          if (!cached) return
-
           const now = Math.floor(Date.now() / 1000)
           const ttl = 60 * 60
-          if ((now - cached.time) < ttl) {
+          if (cached && (now - cached.time) < ttl) {
             target.innerHTML = cached.html
+            window.__packageReadmeAnchors.scrollOnInitialLoad()
+            return
           }
         } catch {
           // Ignore cache parse failures.
         }
+
+        const script = document.createElement('script')
+        script.src = "{{ '/static/readme.js' | bust }}"
+        script.type = 'module'
+        script.async = true
+        document.head.append(script)
       })()
     </script>
-    <script src="{{ '/static/readme.js' | bust }}" type="module" async></script>
   {% endif %}
 {% endif %}
 
