@@ -338,25 +338,44 @@ function latestReleaseVersion(releases) {
     .find(release => release.version)?.version ?? ''
 }
 
+const vendorModules = [
+  {
+    source: 'node_modules/dompurify/dist/purify.es.mjs',
+    output: 'dompurify/purify.es.mjs',
+  },
+  {
+    source: 'node_modules/marked/lib/marked.esm.js',
+    output: 'marked/marked.esm.js',
+  },
+  {
+    source: 'node_modules/minisearch/dist/es/index.js',
+    output: 'minisearch/index.js',
+  },
+]
+
 export default async function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
   const prodOrigin = 'https://packages.sublimetext.io'
   const devOrigin = process.env.DEV_ORIGIN || 'http://localhost:8080'
   const siteOrigin = isProd ? prodOrigin : devOrigin
+  const staticOutputDir = isProd ? 'static_' + util.gitHash : 'static'
 
   eleventyConfig.addPassthroughCopy('assets')
   eleventyConfig.addPassthroughCopy(
-    { static: isProd ? 'static_' + util.gitHash : 'static' },
+    { static: staticOutputDir },
     { filter: src => !src.endsWith('.test.js') },
   )
   eleventyConfig.addWatchTarget('./eleventy.install-chart.mjs')
 
-  eleventyConfig.on('eleventy.after', () => {
+  eleventyConfig.on('eleventy.after', async ({ directories } = {}) => {
+    const outputDir = directories?.output ?? '_site'
+    await writeVendorModules(path.join(outputDir, staticOutputDir, 'vendor'))
+
     if (!isProd) {
       return
     }
 
-    bundleCss(path.join('_site', `static_${util.gitHash}`, 'styles.css'))
+    bundleCss(path.join(outputDir, `static_${util.gitHash}`, 'styles.css'))
   })
 
   eleventyConfig.ignores.add('.AFileIcon')
@@ -620,5 +639,21 @@ export default async function (eleventyConfig) {
       output: '_site',
     },
     passthroughFileCopy: true,
+  }
+}
+
+async function writeVendorModules(vendorOutputDir) {
+  for (const vendorModule of vendorModules) {
+    const source = fs.readFileSync(vendorModule.source, 'utf8')
+    const minified = await minify(source, {
+      compress: true,
+      mangle: true,
+      ecma: 2022,
+      module: true,
+    })
+
+    const outputPath = path.join(vendorOutputDir, vendorModule.output)
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+    fs.writeFileSync(outputPath, minified.code || source)
   }
 }

@@ -1,4 +1,4 @@
-import minisearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
+import minisearch from './vendor/minisearch/index.js'
 import { SimpleSearch } from './module/simplesearch.js'
 import { customTokenizer } from './module/minisearch.js'
 
