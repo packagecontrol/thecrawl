@@ -7,7 +7,12 @@ import re
 from urllib.parse import urlparse, quote
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from ._utils import drop_falsy, err, normalize_tz_aware_datetime
+from ._utils import (
+    drop_falsy,
+    err,
+    filename_looks_like_markdown,
+    normalize_tz_aware_datetime,
+)
 
 QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 Url = str
@@ -134,7 +139,12 @@ async def find_readme(session, owner, repo, branch) -> tuple[Url | None, str | N
                 f"{GITLAB_API_URL}/projects/{encoded_path}/repository/files/"
                 f"{quote(entry['name'], safe='')}/raw?ref={quote(branch, safe='')}"
             )
-            return readme_url, await fetch_readme_content(session, content_url)
+            readme_content = (
+                await fetch_readme_content(session, content_url)
+                if filename_looks_like_markdown(entry["name"])
+                else None
+            )
+            return readme_url, readme_content
     return None, None
 
 

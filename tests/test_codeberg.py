@@ -106,3 +106,46 @@ async def test_fetch_codeberg_info_normalizes_datetimes(monkeypatch):
             "date": "2024-03-21T23:13:15Z",
         }
     ]
+
+
+@pytest.mark.asyncio
+async def test_fetch_codeberg_info_skips_non_markdown_readme_content(monkeypatch):
+    metadata = {
+        "id": 806593,
+        "owner": {"login": "ISSOtm"},
+        "name": "sublime-Bison",
+        "html_url": "https://codeberg.org/ISSOtm/sublime-Bison",
+        "default_branch": "master",
+        "created_at": "2025-09-24T22:24:31+02:00",
+        "archived": False,
+    }
+    contents = [
+        {
+            "name": "README.rst",
+            "type": "file",
+        }
+    ]
+
+    async def mock_fetch_json(_session, url):
+        if url.endswith("/repos/ISSOtm/sublime-Bison"):
+            return metadata
+        if "/contents?" in url:
+            return contents
+        raise AssertionError(f"Unexpected URL: {url}")
+
+    async def mock_fetch_text(_session, url):
+        raise AssertionError(f"Unexpected README content fetch: {url}")
+
+    monkeypatch.setattr("scripts.codeberg.fetch_json", mock_fetch_json)
+    monkeypatch.setattr("scripts.codeberg.fetch_text", mock_fetch_text)
+
+    info = await fetch_codeberg_info(
+        object(),
+        "https://codeberg.org/ISSOtm/sublime-Bison",
+        ("METADATA",),
+    )
+
+    assert info["metadata"]["readme"] == (
+        "https://codeberg.org/ISSOtm/sublime-Bison/raw/branch/master/README.rst"
+    )
+    assert "readme_content" not in info["metadata"]
