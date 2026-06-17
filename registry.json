@@ -4091,6 +4091,32 @@
       "first_seen": "2015-04-29T11:50:14Z"
     },
     {
+      "name": "AutoAppearance",
+      "details": "https://github.com/platformengineer/autoappearance",
+      "author": [
+        "navisidhu"
+      ],
+      "labels": [
+        "color scheme",
+        "theme",
+        "dark mode",
+        "utilities",
+        "xdg-desktop-portal"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true,
+          "platforms": [
+            "linux"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-06-17T17:25:14Z"
+    },
+    {
       "name": "AutoBackups",
       "details": "https://github.com/akalongman/sublimetext-autobackups",
       "labels": [
