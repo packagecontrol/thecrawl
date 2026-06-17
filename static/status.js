@@ -18,8 +18,8 @@ import {
   normalizeStatusNotes,
 } from './module/status-failing.js'
 import { newestTagBeforeDayWindow } from './module/status-tags.js'
-import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.mjs'
-import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
+import DOMPurify from './vendor/dompurify/purify.es.mjs'
+import { marked } from './vendor/marked/marked.esm.js'
 
 const notesEl = document.getElementById('status-notes')
 const artifactsEl = document.getElementById('status-artifacts')

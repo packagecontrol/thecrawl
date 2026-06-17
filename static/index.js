@@ -1,5 +1,5 @@
 import { List } from './module/list.js'
-import MiniSearch from 'https://cdn.jsdelivr.net/npm/minisearch@7.1.2/+esm'
+import MiniSearch from './vendor/minisearch/index.js'
 import { createMinisearch } from './module/minisearch.js'
 import {
   appendFilterToken,

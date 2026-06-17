@@ -1,5 +1,5 @@
-import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.mjs'
-import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js'
+import DOMPurify from './vendor/dompurify/purify.es.mjs'
+import { marked } from './vendor/marked/marked.esm.js'
 import { configureMarked, isMarkdown, renderReadmeMarkdown } from './readme-renderer.mjs'
 
 configureMarked(marked)
