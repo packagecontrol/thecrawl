@@ -13546,6 +13546,26 @@
       "first_seen": "2022-07-20T12:15:39Z"
     },
     {
+      "details": "https://github.com/xalteropsx/CompareHistory",
+      "labels": [
+        "diff",
+        "compare",
+        "comparison",
+        "version-history",
+        "side-by-side"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3143",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "CompareHistory",
+      "first_seen": "2026-06-18T14:28:47Z"
+    },
+    {
       "name": "Compass",
       "details": "https://github.com/whatwedo/sublime-text-compass",
       "author": "whatwedo",
