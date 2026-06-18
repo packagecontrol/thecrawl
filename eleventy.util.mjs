@@ -5,6 +5,17 @@ import { execSync } from 'child_process'
 const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
 const NBSP = '\u00A0'
 
+const LABEL_ALIAS_TARGETS = JSON.parse(fs.readFileSync(
+  new URL('./label-aliases.json', import.meta.url),
+  'utf8',
+))
+const LABEL_ALIASES = new Map(
+  Object.entries(LABEL_ALIAS_TARGETS).flatMap(([target, aliases]) => {
+    if (target === '_') return []
+    return aliases.map(alias => [alias.trim().toLowerCase(), target])
+  }),
+)
+
 const canonicalizeOs = (platform) => {
   const lower = platform.toLowerCase()
   if (lower === '*') return 'any'
@@ -64,44 +75,147 @@ export function sortFeaturedLabelsFirst(labels = [], rank = new Map()) {
 }
 
 /**
- * Collect package labels for the labels page.
+ * Collect package label counts for the labels page.
  *
- * Labels are deduplicated case-insensitively for counting, while display casing
- * is chosen from the most frequently used variant in the workspace.
+ * Package labels are normalized before this runs, so this only aggregates the
+ * already chosen display labels.
  *
  * @param {Array<{labels?: string[]}>} packages
  * @returns {Array<{key: string, count: number}>}
  */
 export function collectLabels(packages) {
+  const counts = new Map()
+
+  for (const pkg of packages) {
+    const labelsInPackage = new Set(pkg.labels ?? [])
+    for (const label of labelsInPackage) {
+      counts.set(label, (counts.get(label) ?? 0) + 1)
+    }
+  }
+
+  return Array.from(counts, ([key, count]) => ({ key, count }))
+    .sort((a, b) => a.key.localeCompare(b.key))
+}
+
+/**
+ * Normalize package labels once after loading workspace data.
+ *
+ * This gives package cards, package pages, search, and the labels page the same
+ * canonical spellings while retaining a note about visible rewrites for package
+ * maintainers.
+ *
+ * @param {Array<{labels?: string[]}>} packages
+ * @returns {Array<{labels?: string[], normalized_labels?: Array<{from: string, to: string}>}>}
+ */
+export function simplifyPackageLabels(packages) {
+  const resolveLabel = buildLabelResolver(packages)
+  return packages.map(pkg => simplifyPackageLabelSet(pkg, resolveLabel))
+}
+
+/**
+ * Build a package-global label normalizer.
+ *
+ * The first pass groups every observed spelling by identity. Identity folds
+ * configured aliases first, then lowercases, so `autocomplete` and
+ * `auto-complete` land in the same bucket.
+ *
+ * The second pass chooses one display label per bucket. Configured aliases win
+ * (for example `autocomplete` -> `auto-complete`); otherwise we keep the most
+ * frequently observed spelling/casing from the dataset.
+ */
+function buildLabelResolver(packages) {
   const labels = new Map()
 
   for (const pkg of packages) {
     for (const label of pkg.labels ?? []) {
-      const canonical = label.trim().toLowerCase()
+      const configuredTarget = labelAlias(label)
+      // Bucket related spellings together, including configured aliases.
+      const canonical = (configuredTarget ?? label).trim().toLowerCase()
       let entry = labels.get(canonical)
       if (!entry) {
         entry = {
-          count: 0,
+          // Preferred configured target, if any spelling in this bucket has one.
+          aliasTarget: null,
+          // Raw observed spellings and counts, used when there is no alias.
           variants: new Map(),
         }
         labels.set(canonical, entry)
       }
 
-      entry.count += 1
+      if (configuredTarget && !entry.aliasTarget) {
+        entry.aliasTarget = configuredTarget
+      }
       entry.variants.set(label, (entry.variants.get(label) ?? 0) + 1)
     }
   }
 
-  return Array.from(labels.values())
-    .map(labelEntry)
-    .sort((a, b) => a.key.localeCompare(b.key))
+  const displayLabels = new Map()
+  for (const [canonical, entry] of labels) {
+    displayLabels.set(canonical, displayLabelForEntry(entry))
+  }
+
+  return (label) => {
+    const configuredTarget = labelAlias(label)
+    const canonical = (configuredTarget ?? label).trim().toLowerCase()
+    return displayLabels.get(canonical) ?? label
+  }
 }
 
-function labelEntry(entry) {
-  return {
-    key: mostFrequentLabelVariant(entry.variants),
-    count: entry.count,
+function displayLabelForEntry(entry) {
+  // This bucket matched an explicit rule in label-aliases.json, so use the
+  // desired canonical label from the left hand side of that file.
+  if (entry.aliasTarget) {
+    return entry.aliasTarget
   }
+
+  // No explicit alias rule matched. This bucket only contains labels that are
+  // identical after lowercasing, so choose the spelling/casing users already
+  // use most often in the dataset.
+  return mostFrequentLabelVariant(entry.variants)
+}
+
+function simplifyPackageLabelSet(pkg, resolveLabel) {
+  if (!pkg.labels) {
+    return pkg
+  }
+
+  const labels = []
+  const seenLabels = new Set()
+  const changes = []
+  const seenChanges = new Set()
+
+  for (const label of pkg.labels) {
+    const simplified = resolveLabel(label)
+    const canonical = simplified.trim().toLowerCase()
+
+    if (label !== simplified) {
+      const key = `${label}\0${simplified}`
+      if (!seenChanges.has(key)) {
+        seenChanges.add(key)
+        changes.push({ from: label, to: simplified })
+      }
+    }
+
+    if (seenLabels.has(canonical)) {
+      continue
+    }
+    seenLabels.add(canonical)
+    labels.push(simplified)
+  }
+
+  if (changes.length === 0 && labels.length === pkg.labels.length) {
+    return pkg
+  }
+
+  return {
+    ...pkg,
+    labels,
+    normalized_labels: changes,
+  }
+}
+
+function labelAlias(label) {
+  return LABEL_ALIASES.get(label.trim().toLowerCase()) ?? null
 }
 
 function mostFrequentLabelVariant(variants) {
@@ -904,40 +1018,86 @@ if (import.meta.vitest) {
     })
   })
 
+  describe('simplifyPackageLabels', () => {
+    it('normalizes labels to the most frequent casing', () => {
+      const packages = simplifyPackageLabels([
+        { name: 'first', labels: ['c'] },
+        { name: 'second', labels: ['C'] },
+        { name: 'third', labels: ['C'] },
+      ])
+
+      expect(packages).toEqual([
+        {
+          name: 'first',
+          labels: ['C'],
+          normalized_labels: [{ from: 'c', to: 'C' }],
+        },
+        { name: 'second', labels: ['C'] },
+        { name: 'third', labels: ['C'] },
+      ])
+    })
+
+    it('normalizes configured aliases to their preferred spelling', () => {
+      const packages = simplifyPackageLabels([
+        { name: 'first', labels: ['autocomplete', 'colorscheme'] },
+        { name: 'second', labels: ['auto complete', 'color scheme'] },
+      ])
+
+      expect(packages).toEqual([
+        {
+          name: 'first',
+          labels: ['auto-complete', 'color scheme'],
+          normalized_labels: [
+            { from: 'autocomplete', to: 'auto-complete' },
+            { from: 'colorscheme', to: 'color scheme' },
+          ],
+        },
+        {
+          name: 'second',
+          labels: ['auto-complete', 'color scheme'],
+          normalized_labels: [{ from: 'auto complete', to: 'auto-complete' }],
+        },
+      ])
+    })
+
+    it('deduplicates labels within a package after normalization', () => {
+      const packages = simplifyPackageLabels([
+        { name: 'codeium', labels: ['auto-complete', 'autocomplete', 'snippets'] },
+      ])
+
+      expect(packages).toEqual([
+        {
+          name: 'codeium',
+          labels: ['auto-complete', 'snippets'],
+          normalized_labels: [{ from: 'autocomplete', to: 'auto-complete' }],
+        },
+      ])
+    })
+  })
+
   describe('collectLabels', () => {
-    it('deduplicates labels case-insensitively', () => {
+    it('counts normalized labels for the labels page', () => {
       const packages = [
-        { labels: ['c', 'syntax'] },
-        { labels: ['C', 'Syntax'] },
+        { labels: ['c++', 'syntax'] },
+        { labels: ['python', 'syntax'] },
+        { labels: ['syntax'] },
       ]
 
       expect(collectLabels(packages)).toEqual([
-        { key: 'c', count: 2 },
+        { key: 'c++', count: 1 },
+        { key: 'python', count: 1 },
+        { key: 'syntax', count: 3 },
+      ])
+    })
+
+    it('counts each label at most once per package', () => {
+      const packages = [
+        { labels: ['syntax', 'syntax'] },
+        { labels: ['syntax'] },
+      ]
+
+      expect(collectLabels(packages)).toEqual([
         { key: 'syntax', count: 2 },
-      ])
-    })
-
-    it('uses the most frequent casing for display', () => {
-      const packages = [
-        { labels: ['sublimelinter', 'c++'] },
-        { labels: ['SublimeLinter', 'C++'] },
-        { labels: ['SublimeLinter', 'C++'] },
-      ]
-
-      expect(collectLabels(packages)).toEqual([
-        { key: 'C++', count: 3 },
-        { key: 'SublimeLinter', count: 3 },
-      ])
-    })
-
-    it('keeps the first casing when variants are tied', () => {
-      const packages = [
-        { labels: ['REPL'] },
-        { labels: ['repl'] },
-      ]
-
-      expect(collectLabels(packages)).toEqual([
-        { key: 'REPL', count: 2 },
       ])
     })
   })

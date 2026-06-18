@@ -422,8 +422,10 @@ export default async function (eleventyConfig) {
   const renderedReadmes = fs.existsSync('readmes_rendered.json')
     ? JSON.parse(fs.readFileSync('readmes_rendered.json', 'utf8'))
     : {}
-  // eslint-disable-next-line no-unused-vars
-  let all_packages = Object.entries(workspace.packages).map(([id, pkg]) => pkg)
+  let all_packages = util.simplifyPackageLabels(
+    // eslint-disable-next-line no-unused-vars
+    Object.entries(workspace.packages).map(([id, pkg]) => pkg),
+  )
 
   // Optional dataset limiting for faster local dev
   const limitRaw = process.env.LIMIT_DATASET

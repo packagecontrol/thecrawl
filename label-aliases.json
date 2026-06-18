@@ -1,0 +1,29 @@
+{
+  "_": "Left hand desired canonical label, right hand variants/spellings we merge",
+  "auto-complete": [
+    "auto complete",
+    "autocomplete",
+    "autocompletion"
+  ],
+  "c++": [
+    "cpp"
+  ],
+  "color scheme": [
+    "colorscheme"
+  ],
+  "completions": [
+    "completion"
+  ],
+  "inno setup": [
+    "innosetup"
+  ],
+  "javascript": [
+    "js"
+  ],
+  "language syntax": [
+    "langage syntax"
+  ],
+  "syntax highlighting": [
+    "syntax highlight"
+  ]
+}

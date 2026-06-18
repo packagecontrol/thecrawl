@@ -18,6 +18,7 @@ let labelIconTints = {}
 const longDateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })
 const compactNumberFormatter = new Intl.NumberFormat('en', { notation: 'compact' })
 const groupedNumberFormatter = new Intl.NumberFormat('en', { useGrouping: true })
+const labelSortCollator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
 {
   const rawSources = fs.readFileSync(sourcesPath, 'utf8')
   const sourcesData = JSON.parse(rawSources)
@@ -67,6 +68,34 @@ export function label_icon_aliases_json() {
 
 export function label_icon_tints_json() {
   return JSON.stringify(labelIconTints)
+}
+
+export function label_normalization_note(changes) {
+  const sortedChanges = changes
+    .map(change => ({ from: String(change.from), to: String(change.to) }))
+    .sort((a, b) => compareLabels(a.from, b.from) || compareLabels(a.to, b.to))
+
+  const groups = []
+  const groupByTarget = new Map()
+  for (const change of sortedChanges) {
+    let group = groupByTarget.get(change.to)
+    if (!group) {
+      group = { to: change.to, froms: [] }
+      groupByTarget.set(change.to, group)
+      groups.push(group)
+    }
+    group.froms.push(change.from)
+  }
+
+  const heading = sortedChanges.length === 1
+    ? 'One label has been normalized'
+    : 'Some labels have been normalized'
+  const items = groups.map((group) => {
+    const froms = joinAsSentenceList(group.froms.map(formatCode))
+    return `<li>${froms} to ${formatCode(group.to)}</li>`
+  }).join('')
+
+  return `<p>* ${heading}</p><ul>${items}</ul>`
 }
 
 export function search_index_json(packages) {
@@ -130,6 +159,32 @@ const HTML_ESCAPE_MAP = {
 
 function escapeHtml(value) {
   return value.replace(/[&<>"']/g, char => HTML_ESCAPE_MAP[char])
+}
+
+function compareLabels(a, b) {
+  const keyComparison = labelSortCollator.compare(labelSortKey(a), labelSortKey(b))
+  if (keyComparison !== 0) return keyComparison
+
+  const lengthComparison = a.length - b.length
+  if (lengthComparison !== 0) return lengthComparison
+
+  return labelSortCollator.compare(a, b)
+}
+
+function labelSortKey(label) {
+  return String(label).toLowerCase().replace(/[^a-z0-9]+/g, '')
+}
+
+function formatCode(value) {
+  return `<code>${escapeHtml(value)}</code>`
+}
+
+function joinAsSentenceList(parts) {
+  if (parts.length <= 2) {
+    return parts.join(' and ')
+  }
+
+  return `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}`
 }
 
 function canonicalLabel(label) {
@@ -223,6 +278,40 @@ if (import.meta.vitest) {
 
     it('throws on invalid date input', () => {
       expect(() => date_time_format('not-a-date')).toThrow()
+    })
+  })
+
+  describe('label_normalization_note', () => {
+    it('formats a single rewrite with singular text', () => {
+      expect(label_normalization_note([
+        { from: 'autocomplete', to: 'auto-complete' },
+      ])).toBe(
+        '<p>* One label has been normalized</p>'
+        + '<ul><li><code>autocomplete</code> to <code>auto-complete</code></li></ul>',
+      )
+    })
+
+    it('groups and sorts rewrites', () => {
+      expect(label_normalization_note([
+        { from: 'completion', to: 'completions' },
+        { from: 'auto complete', to: 'auto-complete' },
+        { from: 'autocomplete', to: 'auto-complete' },
+      ])).toBe(
+        '<p>* Some labels have been normalized</p>'
+        + '<ul>'
+        + '<li><code>autocomplete</code> and <code>auto complete</code> to <code>auto-complete</code></li>'
+        + '<li><code>completion</code> to <code>completions</code></li>'
+        + '</ul>',
+      )
+    })
+
+    it('escapes label HTML', () => {
+      expect(label_normalization_note([
+        { from: '<bad&label>', to: 'safe' },
+      ])).toBe(
+        '<p>* One label has been normalized</p>'
+        + '<ul><li><code>&lt;bad&amp;label&gt;</code> to <code>safe</code></li></ul>',
+      )
     })
   })
 
