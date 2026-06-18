@@ -131,7 +131,7 @@
 
 @keyframes sun-glow {
   to {
-    box-shadow: inset 1px 1px 10px -1px hsl(52.08deg 100% 52.21%), 0px 0px 12px #fde100;
+    box-shadow: inset 1px 1px 10px -1px hsl(52.08deg 100% 52.21%), 0px 0px 32px #fde100;
     outline: 1px solid rgba(255, 190, 16, 0);
     --sun-grad-start: rgba(255, 217, 136, 1);
     --sun-grad-end: rgba(244, 210, 23, 0.9);
