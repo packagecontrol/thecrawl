@@ -23,7 +23,17 @@
   "language syntax": [
     "langage syntax"
   ],
+  "openstreetmap": [
+    "osm"
+  ],
   "syntax highlighting": [
     "syntax highlight"
+  ],
+  "testing": [
+    "auto-testing",
+    "django-test",
+    "python-test",
+    "test",
+    "unittest"
   ]
 }
