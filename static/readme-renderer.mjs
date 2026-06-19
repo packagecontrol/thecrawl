@@ -73,7 +73,7 @@ export function renderReadmeMarkdown(marked, markdown, baseUrl, { sanitize, pars
 }
 
 export function isMarkdown(url) {
-  return /(readme|\.md|\.mkd|\.mdown|\.markdown|\.txt)$/i.test(url)
+  return /(?:^|\/)readme(?:$|[?#])|\.(?:md|mkd|mdown|markdown|txt)(?:$|[?#])/i.test(String(url ?? ''))
 }
 
 function postProcessHtml(html, baseUrl, parseHtml) {
