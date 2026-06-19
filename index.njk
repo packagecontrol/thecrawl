@@ -42,6 +42,31 @@ page_type: home
     {% endfor %}
   </ul>
 </section>
+
+<section name="remarkable" data-list-target="main-content">
+  <h2>Remarkable</h2>
+  <ul class="remarkable-list">
+    {% for pkg in collections.remarkable_packages %}
+      <li>
+        <span class="remarkable-identity">
+          <a class="remarkable-package-name" href="/packages/{{ pkg.name | urlencode }}">{{ pkg.name }}</a>
+          {% if pkg.remarkable_label %}
+            {% set q = pack.searchQueryFor('label', pkg.remarkable_label) %}
+            <span class="remarkable-separator" aria-hidden="true">/</span>
+            <a class="remarkable-label" href="/?q={{ q }}">{{ pkg.remarkable_label }}</a>
+          {% endif %}
+        </span>
+        {% if pkg.stars > 0 %}
+          <span class="remarkable-stars" title="{{ pkg.stars }} {{ 'star' if pkg.stars == 1 else 'stars' }} on GitHub">
+            <span aria-hidden="true">{{ util.icon('star') }}</span>
+            <span class="counter">{{ pkg.stars | compact }}</span>
+            <span class="screenreader-only">stars</span>
+          </span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</section>
 {% inline_js 'static/_recent_waiter.js' %}
 <script src="{{ '/static/module/recent-pager.js' | bust }}" type="module" async></script>
 

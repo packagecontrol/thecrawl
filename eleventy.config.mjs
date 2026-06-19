@@ -36,6 +36,10 @@ const MAGIC_WEIGHTS = {
 }
 const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
 const STATUS_TAG_WINDOW_DAYS = 30
+const HOME_SECTION_PACKAGE_LIMIT = 9
+const REMARKABLE_PACKAGE_LIMIT = 20
+const REMARKABLE_EXCLUDED_PACKAGE_NAMES = new Set(['Package Control'])
+const REMARKABLE_EXCLUDED_PACKAGE_PREFIXES = ['LSP-', 'SublimeLinter-']
 
 const clamp01 = value => Math.max(0, Math.min(1, value))
 // GitHub-style emoji shortcode mapping, loaded from JSON.
@@ -338,6 +342,25 @@ function latestReleaseVersion(releases) {
     .find(release => release.version)?.version ?? ''
 }
 
+function isRemarkablePackage(name, alreadyFeatured) {
+  return !alreadyFeatured.has(name)
+    && !REMARKABLE_EXCLUDED_PACKAGE_NAMES.has(name)
+    && !REMARKABLE_EXCLUDED_PACKAGE_PREFIXES.some(prefix => name.startsWith(prefix))
+}
+
+function compareRemarkablePackages(a, b) {
+  const scoreDelta = (b.magic_score ?? 0) - (a.magic_score ?? 0)
+  if (scoreDelta !== 0) {
+    return scoreDelta
+  }
+
+  return a.name.localeCompare(b.name)
+}
+
+function primaryRemarkableLabel(pkg) {
+  return pkg.manual_labels?.[0] ?? ''
+}
+
 const vendorModules = [
   {
     source: 'node_modules/dompurify/dist/purify.es.mjs',
@@ -491,6 +514,47 @@ export default async function (eleventyConfig) {
     console.warn(`[eleventy] Failed to build trusted tracker line index: ${reason}`)
   }
 
+  const homePackage = pkg => ({
+    ...basePackage(pkg, stats[pkg.name]),
+    manual_labels: pkg.labels ?? [],
+  })
+
+  const homePackages = () => all_packages.map(homePackage)
+
+  const livingHomePackages = () => homePackages().filter(pkg => !pkg.removed)
+
+  const packagesByDate = (field) => {
+    return livingHomePackages().sort((a, b) => {
+      return new Date(b[field] ?? '1970-01-01 00:00:00') - new Date(a[field] ?? '1970-01-01 00:00:00')
+    })
+  }
+
+  const newestHomePackages = () => packagesByDate('first_seen').slice(0, HOME_SECTION_PACKAGE_LIMIT)
+  const updatedHomePackages = () => packagesByDate('last_modified').slice(0, HOME_SECTION_PACKAGE_LIMIT)
+
+  const remarkablePackages = () => {
+    const alreadyFeatured = new Set()
+    for (const pkg of newestHomePackages()) {
+      alreadyFeatured.add(pkg.name)
+    }
+    for (const pkg of updatedHomePackages()) {
+      alreadyFeatured.add(pkg.name)
+    }
+
+    const selected = computeMagicMetadata(homePackages().map(pkg => ({
+      installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
+      ...pkg,
+    })))
+      .filter(pkg => !pkg.removed && isRemarkablePackage(pkg.name, alreadyFeatured))
+      .sort(compareRemarkablePackages)
+      .slice(0, REMARKABLE_PACKAGE_LIMIT)
+
+    return selected.map(pkg => ({
+      ...pkg,
+      remarkable_label: primaryRemarkableLabel(pkg),
+    }))
+  }
+
   eleventyConfig.addCollection('packages', () => {
     return all_packages.map((pkg) => {
       const readme_url = util.getReadmeUrl(pkg.readme)
@@ -536,21 +600,11 @@ export default async function (eleventyConfig) {
     return withMagic.sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
 
-  eleventyConfig.addCollection('updated_packages', () => {
-    return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
-      ...basePackage(pkg, stats[pkg.name]),
-    })).sort((a, b) => {
-      return new Date(b.last_modified ?? '1970-01-01 00:00:00') - new Date(a.last_modified ?? '1970-01-01 00:00:00')
-    }).slice(0, 9)
-  })
+  eleventyConfig.addCollection('updated_packages', () => updatedHomePackages())
 
-  eleventyConfig.addCollection('newest_packages', () => {
-    return all_packages.filter(pkg => !pkg.removed).map(pkg => ({
-      ...basePackage(pkg, stats[pkg.name]),
-    })).sort((a, b) => {
-      return new Date(b.first_seen ?? '1970-01-01 00:00:00') - new Date(a.first_seen ?? '1970-01-01 00:00:00')
-    }).slice(0, 9)
-  })
+  eleventyConfig.addCollection('newest_packages', () => newestHomePackages())
+
+  eleventyConfig.addCollection('remarkable_packages', () => remarkablePackages())
 
   eleventyConfig.addCollection('newest_packages_feed', () => {
     return all_packages

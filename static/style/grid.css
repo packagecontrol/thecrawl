@@ -31,6 +31,109 @@ section[name="labels"] {
   margin-right: auto;
 }
 
+.remarkable-list {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0.55rem 12px;
+    background: var(--background-1);
+    border-radius: 3px;
+    outline: 2px solid transparent;
+    transition: outline .1s ease-in-out;
+    white-space: nowrap;
+
+    &:has(.remarkable-package-name:hover),
+    &:has(.remarkable-package-name:focus-visible),
+    &:has(.remarkable-label:focus-visible) {
+      outline: 2px solid var(--orange-1);
+    }
+  }
+
+  .remarkable-identity {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .remarkable-package-name {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--foreground-1);
+    font-weight: 700;
+    text-overflow: ellipsis;
+
+    &:hover,
+    &:focus-visible {
+      flex-shrink: 0;
+      color: var(--orange-1);
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
+  }
+
+  .remarkable-separator,
+  .remarkable-label {
+    flex: 0 0 auto;
+    color: var(--foreground-3);
+    font-size: 0.72em;
+    font-weight: 400;
+  }
+
+  .remarkable-separator {
+    padding-inline: 0.45em;
+  }
+
+  .remarkable-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--orange-1);
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
+  }
+
+  .remarkable-stars {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--foreground-3);
+    font-size: 11px;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+}
+
+@container (width >= 56rem) and (width < 75rem) {
+  .remarkable-list > li:nth-child(n + 16) {
+    display: none;
+  }
+}
+
 section[name="labels"] .grid {
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
   grid-template-columns: repeat(3, 1fr);
