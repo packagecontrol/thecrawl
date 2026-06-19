@@ -1,6 +1,6 @@
 import DOMPurify from './vendor/dompurify/purify.es.mjs'
 import { marked } from './vendor/marked/marked.esm.js'
-import { configureMarked, isMarkdown, renderReadmeMarkdown } from './readme-renderer.mjs'
+import { configureMarked, renderReadme, renderReadmePlainText } from './readme-renderer.mjs'
 
 configureMarked(marked)
 
@@ -13,23 +13,13 @@ window.__packageReadmeAnchors?.install()
 
 load_readme_markdown(source)
   .then((md) => {
-    if (DOMPurify.isSupported && isMarkdown(source)) {
-      target.innerHTML = renderReadmeMarkdown(marked, md, source, {
-        sanitize: html => DOMPurify.sanitize(html),
-        parseHtml: html => new DOMParser().parseFromString(html, 'text/html'),
-      })
-      window.__packageReadmeAnchors?.scrollOnInitialLoad()
-    }
-    else {
-      const escaped = md
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-      const pre = document.createElement('pre')
-      pre.classList.add('fallback')
-      pre.innerHTML = escaped
-      target.appendChild(pre)
-    }
+    target.innerHTML = DOMPurify.isSupported
+      ? renderReadme(marked, md, source, {
+          sanitize: html => DOMPurify.sanitize(html),
+          parseHtml: html => new DOMParser().parseFromString(html, 'text/html'),
+        })
+      : renderReadmePlainText(md)
+    window.__packageReadmeAnchors?.scrollOnInitialLoad()
 
     const now = Math.floor(Date.now() / 1000)
     sessionStorage.setItem(cacheKey, JSON.stringify({ html: target.innerHTML, time: now }))
