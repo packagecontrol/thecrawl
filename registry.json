@@ -37567,6 +37567,26 @@
       "first_seen": "2016-04-04T22:45:25Z"
     },
     {
+      "details": "https://github.com/vwheeler63/KeyBindingReport",
+      "labels": [
+        "key",
+        "binding",
+        "key binding",
+        "utilities"
+      ],
+      "donate": "https://buymeacoffee.com/vwheeler63",
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "KeyBindingReport",
+      "first_seen": "2026-06-19T22:40:19Z"
+    },
+    {
       "name": "KeyboardNavigation",
       "details": "https://github.com/robertcollier4/KeyboardNavigation",
       "releases": [
