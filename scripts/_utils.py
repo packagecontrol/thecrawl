@@ -65,13 +65,6 @@ def format_name_list(names: list[str]) -> str:
     return f"{', '.join(names[:-1])}, and {names[-1]}"
 
 
-_MARKDOWN_FILENAME_EXTENSIONS = frozenset({'.md', '.mkd', '.mdown', '.markdown'})
-
-
-def filename_looks_like_markdown(filename: str) -> bool:
-    return os.path.splitext(filename)[1].lower() in _MARKDOWN_FILENAME_EXTENSIONS
-
-
 def pipe(v, *fns):
     for fn in fns:
         v = fn(v)
