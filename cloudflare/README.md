@@ -20,8 +20,6 @@ The cache rules are ordered:
 2. Cache URL-busted static assets (`/static_*`) for one year at the edge and in
    browsers.
 3. Cache site HTML for one day at the Cloudflare edge, with a short browser TTL.
-4. Cache unversioned `/assets/*` at the edge while respecting the origin browser
-   TTL.
 
 The response-header transform rules currently set short browser caching for
 HTML-like pages and the RSS feed content type:
