@@ -14,19 +14,16 @@
   </p>
 
   <nav>
-    <a id="footer-links" href="https://docs.sublimetext.io/guide/package-control/submitting.html">Submit your package</a>
-    <a href="https://docs.sublimetext.io/guide/package-control/usage.html">Using package control</a>
-    {% if page.url == "/libraries" %}
-      <a href="/">Packages</a>
-    {% endif %}
-    <a href="/about">About</a>
+    <a id="footer-links" href="https://github.com/sublimehq/package_control_channel">Submit your own package</a>
     <a class="github-link" href="https://github.com/packagecontrol/thecrawl/tree/gh-pages">
       {{ util.icon('octocat') }}
       <span class="screenreader-only">This website on GitHub</span>
     </a>
     <a href="/status">Status</a>
+    <a href="/about">About</a>
     {% if site.origin != site.prodOrigin and not site.disableLiveLink %}
       {% set liveHref = site.prodOrigin + (page.url or '/') %}
+      &nbsp;&nbsp;·
       <a href="{{ liveHref }}" aria-label="View this page on the live site" data-live-site-link target="_blank" rel="noopener noreferrer">L</a>
       {# The search and possible hash state in the URL must be inspected live using JS: #}
       <script>
