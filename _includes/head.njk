@@ -48,6 +48,8 @@
     window.STATIC_BASE = '/{{ "static/" | bust }}';
   </script>
 
+  <link rel="preload" href="{{ '/static/fonts/lato-v25-latin-400-normal.woff2' | bust }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ '/static/fonts/lato-v25-latin-700-normal.woff2' | bust }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ '/static/styles.css' | bust}}">
   <link rel="icon" href="{{ '/static/assets/favicon.ico' | bust }}">
   <link rel="alternate" type="application/rss+xml" href="{{ site.origin }}/browse/new/rss" title="Newest Sublime Text Packages">
