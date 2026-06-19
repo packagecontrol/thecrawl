@@ -7,12 +7,7 @@ from urllib.parse import urlparse, urlencode, quote
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from ._utils import (
-    drop_falsy,
-    err,
-    filename_looks_like_markdown,
-    normalize_tz_aware_datetime,
-)
+from ._utils import drop_falsy, err, normalize_tz_aware_datetime
 
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
@@ -164,12 +159,7 @@ async def find_readme(session, owner, repo, branch) -> tuple[Url | None, str | N
         if entry_type == "file" and name in _readme_filenames:
             # Raw URL format on Codeberg/Forgejo
             readme_url = f"https://codeberg.org/{owner}/{repo}/raw/branch/{branch}/{entry['name']}"
-            readme_content = (
-                await fetch_readme_content(session, readme_url)
-                if filename_looks_like_markdown(entry["name"])
-                else None
-            )
-            return readme_url, readme_content
+            return readme_url, await fetch_readme_content(session, readme_url)
     return None, None
 
 

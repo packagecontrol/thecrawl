@@ -6,7 +6,6 @@ from scripts._utils import (
     normalize_tz_aware_datetime,
     unique_values_preserving_order,
     format_name_list,
-    filename_looks_like_markdown,
     pl,
 )
 
@@ -119,22 +118,6 @@ def test_unique_values_preserving_order_iterable():
 )
 def test_format_name_list(names, expected):
     assert format_name_list(names) == expected
-
-
-@pytest.mark.parametrize(
-    ("filename", "expected"),
-    [
-        ("README.md", True),
-        ("README.MKD", True),
-        ("readme.mdown", True),
-        ("Readme.markdown", True),
-        ("README", False),
-        ("README.txt", False),
-        ("README.rst", False),
-    ],
-)
-def test_filename_looks_like_markdown(filename, expected):
-    assert filename_looks_like_markdown(filename) is expected
 
 
 @pytest.mark.parametrize(
