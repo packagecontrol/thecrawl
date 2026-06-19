@@ -3,17 +3,43 @@
   "auto-complete": [
     "auto complete",
     "autocomplete",
-    "autocompletion"
+    "autocompletion",
+    "erlang autocompletion"
+  ],
+  "bookmarks": [
+    "bookmark"
+  ],
+  "c#": [
+    "c-sharp"
   ],
   "c++": [
     "cpp"
   ],
+  "color": [
+    "colors",
+    "colour"
+  ],
   "color scheme": [
-    "colorscheme"
+    "colorscheme",
+    "colour scheme"
+  ],
+  "comparison": [
+    "compare",
+    "directory comparison",
+    "file comparison"
+  ],
+  "competive programming": [
+    "competitive coding",
+    "competitive-programming"
   ],
   "completions": [
-    "completion"
+    "completion",
+    "javascript completions"
   ],
+  "email": [
+    "e-mail",
+    "eml"
+  ]
   "inno setup": [
     "innosetup"
   ],
@@ -26,6 +52,16 @@
   "openstreetmap": [
     "osm"
   ],
+  "parentheses": [
+    "parenthesis"
+  ],
+  "sorting": [
+    "sort"
+  ],
+  "sync": [
+    "synchronization",
+    "synchronize"
+  ],
   "syntax highlighting": [
     "syntax highlight"
   ],
@@ -35,5 +71,15 @@
     "python-test",
     "test",
     "unittest"
+  ],
+  "translate": [
+    "translation",
+    "translator"
+  ],
+  "window management": [
+    "consolidate windows",
+    "join windows",
+    "merge windows",
+    "window manipulation"
   ]
 }
