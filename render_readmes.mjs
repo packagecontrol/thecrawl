@@ -4,7 +4,7 @@ import fs from 'fs'
 import { JSDOM } from 'jsdom'
 import createDOMPurify from 'dompurify'
 import { marked } from 'marked'
-import { configureMarked, isMarkdown, renderReadmeMarkdown } from './static/readme-renderer.mjs'
+import { configureMarked, renderReadme } from './static/readme-renderer.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const rawReadmes = readJson(args.input)
@@ -15,15 +15,12 @@ const renderedReadmes = {}
 
 configureMarked(marked)
 
-for (const [url, markdown] of Object.entries(rawReadmes)) {
-  if (!isMarkdown(url)) {
-    continue
-  }
-
-  renderedReadmes[url] = renderReadmeMarkdown(marked, markdown, url, {
+for (const [url, text] of Object.entries(rawReadmes)) {
+  const html = renderReadme(marked, text, url, {
     sanitize: html => DOMPurify.sanitize(html),
     parseHtml: html => parser.parseFromString(html, 'text/html'),
   })
+  renderedReadmes[url] = html
 }
 
 fs.writeFileSync(args.output, JSON.stringify(renderedReadmes, null, 2) + '\n')

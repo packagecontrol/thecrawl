@@ -65,11 +65,30 @@ export function configureMarked(marked) {
   configuredMarked.add(marked)
 }
 
+export function renderReadme(marked, text, baseUrl, options) {
+  if (isMarkdown(baseUrl)) {
+    return renderReadmeMarkdown(marked, text, baseUrl, options)
+  }
+
+  return renderReadmePlainText(text)
+}
+
 export function renderReadmeMarkdown(marked, markdown, baseUrl, { sanitize, parseHtml }) {
   headingSlugCounts = new Map()
   const html = marked.parse(markdown)
   const html_ = postProcessHtml(html, baseUrl, parseHtml)
   return sanitize(html_)
+}
+
+export function renderReadmePlainText(text) {
+  return `<pre class="fallback">${escapeHtml(text)}</pre>`
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
 }
 
 export function isMarkdown(url) {
