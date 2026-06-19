@@ -35,7 +35,7 @@
     },
     {
       "description": "Cache package site HTML",
-      "expression": "(http.host eq \"packages.sublimetext.io\" and not starts_with(http.request.uri.path, \"/static_\") and not starts_with(http.request.uri.path, \"/assets/\") and http.request.uri.path ne \"/channel.json\" and http.request.uri.path ne \"/channel_st3.json\")",
+      "expression": "(http.host eq \"packages.sublimetext.io\" and not starts_with(http.request.uri.path, \"/static_\") and http.request.uri.path ne \"/channel.json\" and http.request.uri.path ne \"/channel_st3.json\")",
       "action": "set_cache_settings",
       "action_parameters": {
         "cache": true,
@@ -46,27 +46,6 @@
         "browser_ttl": {
           "mode": "override_origin",
           "default": 60
-        },
-        "respect_strong_etags": true,
-        "origin_error_page_passthru": true,
-        "serve_stale": {
-          "disable_stale_while_updating": false
-        }
-      },
-      "enabled": true
-    },
-    {
-      "description": "Cache unversioned assets at edge",
-      "expression": "(http.host eq \"packages.sublimetext.io\" and starts_with(http.request.uri.path, \"/assets/\"))",
-      "action": "set_cache_settings",
-      "action_parameters": {
-        "cache": true,
-        "edge_ttl": {
-          "mode": "override_origin",
-          "default": 86400
-        },
-        "browser_ttl": {
-          "mode": "respect_origin"
         },
         "respect_strong_etags": true,
         "origin_error_page_passthru": true,

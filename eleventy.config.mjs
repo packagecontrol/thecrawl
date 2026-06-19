@@ -360,7 +360,6 @@ export default async function (eleventyConfig) {
   const siteOrigin = isProd ? prodOrigin : devOrigin
   const staticOutputDir = isProd ? 'static_' + util.gitHash : 'static'
 
-  eleventyConfig.addPassthroughCopy('assets')
   eleventyConfig.addPassthroughCopy(
     { static: staticOutputDir },
     { filter: src => !src.endsWith('.test.js') },

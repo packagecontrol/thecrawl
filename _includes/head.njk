@@ -49,13 +49,13 @@
   </script>
 
   <link rel="stylesheet" href="{{ '/static/styles.css' | bust}}">
-  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="icon" href="{{ '/static/assets/favicon.ico' | bust }}">
   <link rel="alternate" type="application/rss+xml" href="{{ site.origin }}/browse/new/rss" title="Newest Sublime Text Packages">
 
   <meta property="og:title" content="{{ title or 'Package Control R' }}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{ site.origin }}{{ page.url }}">
-  <meta property="og:image" content="{{ site.origin }}/assets/og.png">
+  <meta property="og:image" content="{{ site.origin }}{{ '/static/assets/og.png' | bust }}">
   <meta property="og:width" content="1200">
   <meta property="og:height" content="630">
   <meta property="og:description" content="{{ descr }}">
