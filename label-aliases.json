@@ -1,5 +1,14 @@
 {
   "_": "Left hand desired canonical label, right hand variants/spellings we merge",
+  "addon": [
+    "add-on"
+  ],
+  "agent": [
+    "agents"
+  ],
+  "amx mod x": [
+    "amxmodx"
+  ],
   "auto-complete": [
     "auto complete",
     "autocomplete",
@@ -10,10 +19,14 @@
     "bookmark"
   ],
   "c#": [
-    "c-sharp"
+    "c-sharp",
+    "csharp"
   ],
   "c++": [
     "cpp"
+  ],
+  "cheat sheet": [
+    "cheatsheet"
   ],
   "color": [
     "colors",
@@ -23,11 +36,6 @@
     "colorscheme",
     "colour scheme"
   ],
-  "comparison": [
-    "compare",
-    "directory comparison",
-    "file comparison"
-  ],
   "competive programming": [
     "competitive coding",
     "competitive-programming"
@@ -36,10 +44,15 @@
     "completion",
     "javascript completions"
   ],
+  "dark": [
+    "dark colorscheme"
+  ],
+  "distraction free": [
+    "distraction-free"
+  ],
   "email": [
-    "e-mail",
-    "eml"
-  ]
+    "e-mail"
+  ],
   "inno setup": [
     "innosetup"
   ],
@@ -49,11 +62,17 @@
   "language syntax": [
     "langage syntax"
   ],
+  "lorem": [
+    "loremipsum"
+  ],
   "openstreetmap": [
     "osm"
   ],
   "parentheses": [
     "parenthesis"
+  ],
+  "python": [
+    "pyton"
   ],
   "sorting": [
     "sort"
@@ -71,15 +90,5 @@
     "python-test",
     "test",
     "unittest"
-  ],
-  "translate": [
-    "translation",
-    "translator"
-  ],
-  "window management": [
-    "consolidate windows",
-    "join windows",
-    "merge windows",
-    "window manipulation"
   ]
 }
