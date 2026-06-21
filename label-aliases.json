@@ -122,8 +122,6 @@
   ],
   "testing": [
     "auto-testing",
-    "django-test",
-    "python-test",
     "test",
     "unittest"
   ],
