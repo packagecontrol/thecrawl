@@ -3,9 +3,6 @@
   "addon": [
     "add-on"
   ],
-  "agent": [
-    "agents"
-  ],
   "amx mod x": [
     "amxmodx"
   ],
@@ -14,9 +11,6 @@
     "autocomplete",
     "autocompletion",
     "erlang autocompletion"
-  ],
-  "bookmarks": [
-    "bookmark"
   ],
   "c#": [
     "c-sharp",
@@ -29,7 +23,6 @@
     "cheatsheet"
   ],
   "color": [
-    "colors",
     "colour"
   ],
   "color scheme": [
@@ -73,6 +66,9 @@
   ],
   "python": [
     "pyton"
+  ],
+  "snippets": [
+    "snippet"
   ],
   "sorting": [
     "sort"
