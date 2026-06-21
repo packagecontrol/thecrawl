@@ -328,6 +328,43 @@ describe('Search.search', () => {
     })
   })
 
+  describe('Programming language aliases in label filters', () => {
+    const packages = [
+      {
+        name: 'CanonicalScript',
+        description: 'Browser scripting helpers',
+        author: 'Web Team',
+        platforms: ['linux'],
+        labels: ['javascript'],
+      },
+      {
+        name: 'LiteralScript',
+        description: 'Short spelling helpers',
+        author: 'Short Team',
+        platforms: ['linux'],
+        labels: ['js'],
+      },
+    ]
+
+    const createSearchInstance = () => new Search(createMinisearch(MiniSearch, packages))
+
+    it('normalizes unquoted label aliases', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:js')
+      const names = results.map(entry => entry.name)
+      expect(names).toContain('CanonicalScript')
+      expect(names).toContain('LiteralScript')
+    })
+
+    it('keeps quoted label aliases literal', () => {
+      const search = createSearchInstance()
+      const results = search.search('label:"js"')
+      const names = results.map(entry => entry.name)
+      expect(names).not.toContain('CanonicalScript')
+      expect(names).toContain('LiteralScript')
+    })
+  })
+
   describe('Handling dashes (-) in search terms', () => {
     const packages = [
       {

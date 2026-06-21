@@ -1,4 +1,9 @@
 const VARIANT_REPLACEMENTS = [
+  [/^js$/i, 'javascript'],
+  [/^cpp$/i, 'c++'],
+  [/^cxx$/i, 'c++'],
+  [/^csharp$/i, 'c#'],
+
   [/colou/g, 'colo'], // colour => color
   [/localis/g, 'localiz'], // localisation => localization
   [/internationalis/g, 'internationaliz'], // internationalisation => internationalization
