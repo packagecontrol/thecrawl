@@ -44,8 +44,60 @@ describe('MiniSearch.search', () => {
     expect(results.some(entry => entry.name === 'AlpineJS')).toBe(true)
   })
 
+  it('normalizes exact programming language alias tokens', () => {
+    expect(customTokenizer('js JS cpp cxx csharp CSharp')).toEqual(expect.arrayContaining([
+      'javascript',
+      'c++',
+      'c#',
+    ]))
+  })
+
+  it('does not normalize programming language aliases inside larger tokens', () => {
+    const tokens = customTokenizer('p5js js2coffee foojs')
+    expect(tokens).toEqual(expect.arrayContaining([
+      'p5js',
+      'js2coffee',
+      'foojs',
+    ]))
+    expect(tokens).not.toContain('javascript')
+  })
+
+  it.each([
+    { query: 'js', expected: 'Browser Toolkit' },
+    { query: 'cpp', expected: 'Native Toolkit' },
+    { query: 'cxx', expected: 'Native Toolkit' },
+    { query: 'csharp', expected: 'Managed Toolkit' },
+  ])('matches canonical language labels for alias $query', ({ query, expected }) => {
+    const minisrch = createSearch([
+      {
+        name: 'Browser Toolkit',
+        description: 'Browser scripting helpers',
+        author: 'Web Team',
+        platforms: ['linux'],
+        labels: ['javascript'],
+      },
+      {
+        name: 'Native Toolkit',
+        description: 'Native helpers',
+        author: 'Native Team',
+        platforms: ['linux'],
+        labels: ['c++'],
+      },
+      {
+        name: 'Managed Toolkit',
+        description: 'Managed helpers',
+        author: 'Managed Team',
+        platforms: ['linux'],
+        labels: ['c#'],
+      },
+    ])
+    const results = minisrch.search(query)
+    expect(results.some(entry => entry.name === expected)).toBe(true)
+  })
+
   it.each([
     { query: 'colour' },
+    { query: 'Colour' },
     { query: 'color' },
   ])('returns both ColourHelper and ColorHelper for $query', ({ query }) => {
     const minisrch = createSearch([
@@ -72,6 +124,7 @@ describe('MiniSearch.search', () => {
 
   it.each([
     { query: 'localisation' },
+    { query: 'Localisation' },
     { query: 'localization' },
   ])('returns both LocalisationHelper and LocalizationHelper for $query', ({ query }) => {
     const minisrch = createSearch([
@@ -98,6 +151,7 @@ describe('MiniSearch.search', () => {
 
   it.each([
     { query: 'internationalisation' },
+    { query: 'Internationalisation' },
     { query: 'internationalization' },
   ])('returns both InternationalisationSuite and InternationalizationSuite for $query', ({ query }) => {
     const minisrch = createSearch([
