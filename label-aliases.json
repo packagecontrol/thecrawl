@@ -26,6 +26,12 @@
   "cheat sheet": [
     "cheatsheet"
   ],
+  "code generation": [
+    "code-generation"
+  ],
+  "coldfusion": [
+    "Cold Fusion"
+  ],
   "color": [
     "colour"
   ],
@@ -41,6 +47,9 @@
     "completion",
     "javascript completions"
   ],
+  "continuous integration": [
+    "continuous-integration"
+  ],
   "dark": [
     "dark colorscheme"
   ],
@@ -50,11 +59,23 @@
   "email": [
     "e-mail"
   ],
+  "file merge": [
+    "filemerge"
+  ],
+  "frontend": [
+    "front-end"
+  ],
+  "full screen": [
+    "fullscreen"
+  ],
   "inno setup": [
     "innosetup"
   ],
   "javascript": [
     "js"
+  ],
+  "key binding": [
+    "keybinding"
   ],
   "language syntax": [
     "langage syntax"
@@ -62,14 +83,26 @@
   "lorem": [
     "loremipsum"
   ],
+  "mivascript": [
+    "miva script"
+  ],
   "openstreetmap": [
     "osm"
   ],
   "parentheses": [
     "parenthesis"
   ],
+  "plain text": [
+    "plaintext"
+  ],
   "python": [
     "pyton"
+  ],
+  "rpgmaker": [
+    "rpg maker"
+  ],
+  "ruby gems": [
+    "rubygems"
   ],
   "snippets": [
     "snippet"
@@ -84,11 +117,17 @@
   "syntax highlighting": [
     "syntax highlight"
   ],
+  "template toolkit": [
+    "templatetoolkit"
+  ],
   "testing": [
     "auto-testing",
     "django-test",
     "python-test",
     "test",
     "unittest"
+  ],
+  "title bar": [
+    "titlebar"
   ]
 }
