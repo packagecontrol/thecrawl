@@ -6,6 +6,10 @@
   "amx mod x": [
     "amxmodx"
   ],
+  "angular": [
+    "angular2",
+    "angular.js"
+  ],
   "auto-complete": [
     "auto complete",
     "autocomplete",
