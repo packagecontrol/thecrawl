@@ -97,6 +97,7 @@ describe('MiniSearch.search', () => {
 
   it.each([
     { query: 'colour' },
+    { query: 'Colour' },
     { query: 'color' },
   ])('returns both ColourHelper and ColorHelper for $query', ({ query }) => {
     const minisrch = createSearch([
@@ -123,6 +124,7 @@ describe('MiniSearch.search', () => {
 
   it.each([
     { query: 'localisation' },
+    { query: 'Localisation' },
     { query: 'localization' },
   ])('returns both LocalisationHelper and LocalizationHelper for $query', ({ query }) => {
     const minisrch = createSearch([
@@ -149,6 +151,7 @@ describe('MiniSearch.search', () => {
 
   it.each([
     { query: 'internationalisation' },
+    { query: 'Internationalisation' },
     { query: 'internationalization' },
   ])('returns both InternationalisationSuite and InternationalizationSuite for $query', ({ query }) => {
     const minisrch = createSearch([

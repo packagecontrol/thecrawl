@@ -4,9 +4,9 @@ const VARIANT_REPLACEMENTS = [
   [/^cxx$/i, 'c++'],
   [/^csharp$/i, 'c#'],
 
-  [/colou/g, 'colo'], // colour => color
-  [/localis/g, 'localiz'], // localisation => localization
-  [/internationalis/g, 'internationaliz'], // internationalisation => internationalization
+  [/colou/gi, 'colo'], // colour => color
+  [/localis/gi, 'localiz'], // localisation => localization
+  [/internationalis/gi, 'internationaliz'], // internationalisation => internationalization
 ]
 
 let SPLIT_TOKEN_REGEX
