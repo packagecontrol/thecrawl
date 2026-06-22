@@ -7,7 +7,9 @@
     "amxmodx"
   ],
   "angular": [
-    "angular2",
+    "angular2"
+  ],
+  "angularjs": [
     "angular.js"
   ],
   "auto-complete": [
