@@ -1,18 +1,72 @@
 {
   "_": "Left hand desired canonical label, right hand variants/spellings we merge",
+  "addon": [
+    "add-on"
+  ],
+  "amx mod x": [
+    "amxmodx"
+  ],
+  "angular": [
+    "angular2",
+    "angular.js"
+  ],
   "auto-complete": [
     "auto complete",
     "autocomplete",
-    "autocompletion"
+    "autocompletion",
+    "erlang autocompletion"
+  ],
+  "c#": [
+    "c-sharp",
+    "csharp"
   ],
   "c++": [
     "cpp"
   ],
+  "cheat sheet": [
+    "cheatsheet"
+  ],
+  "code generation": [
+    "code-generation"
+  ],
+  "coldfusion": [
+    "Cold Fusion"
+  ],
+  "color": [
+    "colour"
+  ],
   "color scheme": [
-    "colorscheme"
+    "colorscheme",
+    "colour scheme"
+  ],
+  "competitive programming": [
+    "competitive coding",
+    "competitive-programming"
   ],
   "completions": [
-    "completion"
+    "completion",
+    "javascript completions"
+  ],
+  "continuous integration": [
+    "continuous-integration"
+  ],
+  "dark": [
+    "dark colorscheme"
+  ],
+  "distraction free": [
+    "distraction-free"
+  ],
+  "email": [
+    "e-mail"
+  ],
+  "file merge": [
+    "filemerge"
+  ],
+  "frontend": [
+    "front-end"
+  ],
+  "full screen": [
+    "fullscreen"
   ],
   "inno setup": [
     "innosetup"
@@ -20,10 +74,58 @@
   "javascript": [
     "js"
   ],
+  "key binding": [
+    "keybinding"
+  ],
   "language syntax": [
     "langage syntax"
   ],
+  "lorem": [
+    "loremipsum"
+  ],
+  "mivascript": [
+    "miva script"
+  ],
+  "openstreetmap": [
+    "osm"
+  ],
+  "parentheses": [
+    "parenthesis"
+  ],
+  "plain text": [
+    "plaintext"
+  ],
+  "python": [
+    "pyton"
+  ],
+  "rpgmaker": [
+    "rpg maker"
+  ],
+  "ruby gems": [
+    "rubygems"
+  ],
+  "snippets": [
+    "snippet"
+  ],
+  "sorting": [
+    "sort"
+  ],
+  "sync": [
+    "synchronization",
+    "synchronize"
+  ],
   "syntax highlighting": [
     "syntax highlight"
+  ],
+  "template toolkit": [
+    "templatetoolkit"
+  ],
+  "testing": [
+    "auto-testing",
+    "test",
+    "unittest"
+  ],
+  "title bar": [
+    "titlebar"
   ]
 }
