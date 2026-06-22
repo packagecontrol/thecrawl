@@ -1,3 +1,7 @@
+const REMARKABLE_PAGE_PARAM = 'remarkable-page'
+const FIRST_PAGE = '1'
+const SECOND_PAGE = '2'
+
 const section = document.querySelector('section[name="remarkable"]')
 
 if (section) {
@@ -10,6 +14,8 @@ function initRemarkablePager(section) {
     return
   }
 
+  syncFromUrl(section, controls)
+
   for (const control of controls) {
     control.addEventListener('click', () => {
       const page = control.dataset.remarkablePageControl
@@ -17,8 +23,15 @@ function initRemarkablePager(section) {
         return
       }
       showRemarkablePage(section, page, controls)
+      updateHistory(page)
     })
   }
+}
+
+function syncFromUrl(section, controls) {
+  const page = pageFromUrl()
+  showRemarkablePage(section, page, controls)
+  updateHistory(page)
 }
 
 function showRemarkablePage(section, page, controls) {
@@ -31,5 +44,26 @@ function showRemarkablePage(section, page, controls) {
     else {
       control.removeAttribute('aria-current')
     }
+  }
+}
+
+function pageFromUrl() {
+  const url = new URL(window.location.href)
+  return url.searchParams.get(REMARKABLE_PAGE_PARAM) === SECOND_PAGE
+    ? SECOND_PAGE
+    : FIRST_PAGE
+}
+
+function updateHistory(page) {
+  const url = new URL(window.location.href)
+  if (page === SECOND_PAGE) {
+    url.searchParams.set(REMARKABLE_PAGE_PARAM, SECOND_PAGE)
+  }
+  else {
+    url.searchParams.delete(REMARKABLE_PAGE_PARAM)
+  }
+
+  if (url.href !== window.location.href) {
+    window.history.replaceState(window.history.state, '', url)
   }
 }
