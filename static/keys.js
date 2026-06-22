@@ -1,5 +1,9 @@
 // Compatible selector for the labels sub page and homepage remarkable list.
 const CARD_SELECTOR = '.card, section[name="remarkable"] ul li, section[name="labels"] ul li'
+const CARD_FOCUS_RETURN_KEY = 'the-packages-site:card-focus-return'
+const CARD_FOCUS_RESTORE_TIMEOUT = 5000
+
+let cardFocusRestoreQueued = false
 
 // Enable each skip link to focus its target without scrolling.
 document.querySelectorAll('.skip-link').forEach((skipLink) => {
@@ -29,6 +33,25 @@ document.querySelectorAll('.skip-link').forEach((skipLink) => {
     target.focus(withinViewport ? { preventScroll: true } : undefined)
   })
 })
+
+// Remember card-origin keyboard navigations so browser Back can restore focus there.
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter' || hasModifier(event)) {
+    return
+  }
+
+  rememberActivatedCardLink(event.target)
+})
+
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted || isBackForwardNavigation()) {
+    queueActivatedCardFocusRestore()
+  }
+})
+
+if (isBackForwardNavigation()) {
+  queueActivatedCardFocusRestore()
+}
 
 // Handle sequential card navigation via j/k keys.
 document.addEventListener('keydown', (event) => {
@@ -252,17 +275,22 @@ function isVisibleCard(card) {
  * @returns {boolean} True when the heading anchor was focused.
  */
 function focusCardHeading(card) {
-  if (!card) {
-    return false
-  }
-
-  const anchor = card.querySelector('a')
+  const anchor = primaryCardAnchor(card)
   if (!anchor) {
     return false
   }
 
   anchor.focus()
   return document.activeElement === anchor
+}
+
+/**
+ * Find the primary link for a card.
+ * @param {Element|null} card - Card whose primary anchor should be found.
+ * @returns {HTMLAnchorElement|null} Primary card link, if available.
+ */
+function primaryCardAnchor(card) {
+  return card?.querySelector('.card-heading h3 > a, .remarkable-package-name, h3 > a, a') ?? null
 }
 
 /**
@@ -562,6 +590,102 @@ function rememberVerticalReturn(card, direction, targetCard, centerX) {
 
 function clearVerticalReturnPreference() {
   verticalReturnPreferences = new WeakMap()
+}
+
+function rememberActivatedCardLink(target) {
+  if (!(target instanceof Element)) {
+    return
+  }
+
+  const anchor = target.closest('a[href]')
+  const card = anchor ? findNavigableCard(anchor) : null
+  if (!card) {
+    return
+  }
+
+  const section = card.closest('section')
+  try {
+    window.sessionStorage.setItem(CARD_FOCUS_RETURN_KEY, JSON.stringify({
+      sourceUrl: comparableUrl(window.location.href),
+      cardHref: primaryCardHref(card),
+      sectionName: section?.getAttribute('name') ?? '',
+      sectionTarget: section?.dataset.listTarget ?? '',
+    }))
+  }
+  catch {
+    // Ignore storage failures; normal navigation can continue.
+  }
+}
+
+function queueActivatedCardFocusRestore() {
+  if (cardFocusRestoreQueued) {
+    return
+  }
+
+  let state = null
+  try {
+    const raw = window.sessionStorage.getItem(CARD_FOCUS_RETURN_KEY)
+    state = raw ? JSON.parse(raw) : null
+  }
+  catch {
+    return
+  }
+
+  if (!state || state.sourceUrl !== comparableUrl(window.location.href)) {
+    return
+  }
+
+  cardFocusRestoreQueued = true
+  const startedAt = Date.now()
+
+  const tryRestore = () => {
+    const restored = restoreCardFocus(state)
+    if (restored) {
+      window.sessionStorage.removeItem(CARD_FOCUS_RETURN_KEY)
+    }
+
+    if (restored || Date.now() - startedAt >= CARD_FOCUS_RESTORE_TIMEOUT) {
+      cardFocusRestoreQueued = false
+      return
+    }
+
+    window.setTimeout(tryRestore, 50)
+  }
+
+  window.requestAnimationFrame(tryRestore)
+}
+
+function restoreCardFocus(state) {
+  const scope = findStoredCardSection(state)
+  const cards = Array.from(scope.querySelectorAll(CARD_SELECTOR))
+  const card = cards.find(card => primaryCardHref(card) === state.cardHref && isVisibleCard(card))
+  return focusCardHeading(card)
+}
+
+function findStoredCardSection(state) {
+  const matchingSection = Array.from(document.querySelectorAll('section')).find((section) => {
+    return (state.sectionName || state.sectionTarget)
+      && (!state.sectionName || section.getAttribute('name') === state.sectionName)
+      && (!state.sectionTarget || section.dataset.listTarget === state.sectionTarget)
+  })
+
+  return matchingSection ?? document
+}
+
+function primaryCardHref(card) {
+  const anchor = primaryCardAnchor(card)
+  return anchor ? comparableUrl(anchor.href) : ''
+}
+
+function comparableUrl(href) {
+  const url = new URL(href, window.location.href)
+  url.hash = ''
+  return url.href
+}
+
+function isBackForwardNavigation() {
+  const [navigation] = performance.getEntriesByType('navigation')
+  return navigation?.type === 'back_forward'
 }
 
 /**
