@@ -357,10 +357,6 @@ function compareRemarkablePackages(a, b) {
   return a.name.localeCompare(b.name)
 }
 
-function primaryRemarkableLabel(pkg) {
-  return pkg.manual_labels?.[0] ?? ''
-}
-
 const vendorModules = [
   {
     source: 'node_modules/dompurify/dist/purify.es.mjs',
@@ -516,7 +512,7 @@ export default async function (eleventyConfig) {
 
   const homePackage = pkg => ({
     ...basePackage(pkg, stats[pkg.name]),
-    manual_labels: pkg.labels ?? [],
+    declared_primary_label: pkg.labels?.[0] ?? '',
   })
 
   const homePackages = () => all_packages.map(homePackage)
@@ -541,18 +537,13 @@ export default async function (eleventyConfig) {
       alreadyFeatured.add(pkg.name)
     }
 
-    const selected = computeMagicMetadata(homePackages().map(pkg => ({
+    return computeMagicMetadata(homePackages().map(pkg => ({
       installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
       ...pkg,
     })))
       .filter(pkg => !pkg.removed && isRemarkablePackage(pkg.name, alreadyFeatured))
       .sort(compareRemarkablePackages)
       .slice(0, REMARKABLE_PACKAGE_LIMIT)
-
-    return selected.map(pkg => ({
-      ...pkg,
-      remarkable_label: primaryRemarkableLabel(pkg),
-    }))
   }
 
   eleventyConfig.addCollection('packages', () => {

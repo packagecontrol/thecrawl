@@ -50,10 +50,10 @@ page_type: home
       <li>
         <span class="remarkable-identity">
           <a class="remarkable-package-name" href="/packages/{{ pkg.name | urlencode }}">{{ pkg.name }}</a>
-          {% if pkg.remarkable_label %}
-            {% set q = pack.searchQueryFor('label', pkg.remarkable_label) %}
+          {% if pkg.declared_primary_label %}
+            {% set q = pack.searchQueryFor('label', pkg.declared_primary_label) %}
             <span class="remarkable-separator" aria-hidden="true">/</span>
-            <a class="remarkable-label" href="/?q={{ q }}">{{ pkg.remarkable_label }}</a>
+            <a class="remarkable-label" href="/?q={{ q }}">{{ pkg.declared_primary_label }}</a>
           {% endif %}
         </span>
         {% if pkg.stars > 0 %}
