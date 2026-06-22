@@ -543,7 +543,7 @@ export default async function (eleventyConfig) {
       installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
       ...pkg,
     })))
-      .filter(pkg => !pkg.removed && isEligibleForRemarkableSection(pkg.name, alreadyFeatured))
+      .filter(pkg => !pkg.removed && !pkg.archived_at && isEligibleForRemarkableSection(pkg.name, alreadyFeatured))
       .sort(compareRemarkablePackages)
       .slice(0, REMARKABLE_PACKAGE_LIMIT)
   }
