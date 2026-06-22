@@ -510,14 +510,10 @@ export default async function (eleventyConfig) {
     console.warn(`[eleventy] Failed to build trusted tracker line index: ${reason}`)
   }
 
-  const homePackage = pkg => ({
-    ...basePackage(pkg, stats[pkg.name]),
-    declared_primary_label: pkg.labels?.[0] ?? '',
-  })
+  const packages = all_packages.map(packageData)
+  const packagesWithMagic = computeMagicMetadata(packages)
 
-  const homePackages = all_packages.map(homePackage)
-
-  const livingHomePackages = homePackages.filter(pkg => !pkg.removed)
+  const livingHomePackages = packages.filter(pkg => !pkg.removed)
 
   const packagesByDate = (field) => {
     return [...livingHomePackages].sort((a, b) => {
@@ -537,60 +533,19 @@ export default async function (eleventyConfig) {
       alreadyFeatured.add(pkg.name)
     }
 
-    // Compute scores before filtering so popularity/star normalization uses the
-    // full home package set rather than only the remarkable candidate pool.
-    return computeMagicMetadata(homePackages.map(pkg => ({
-      installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
-      ...pkg,
-    })))
-      .filter(pkg => !pkg.removed && !pkg.archived_at && isEligibleForRemarkableSection(pkg.name, alreadyFeatured))
+    return packagesWithMagic
+      .filter(pkg =>
+        !pkg.removed
+        && !pkg.archived_at
+        && isEligibleForRemarkableSection(pkg.name, alreadyFeatured))
       .sort(compareRemarkablePackages)
       .slice(0, REMARKABLE_PACKAGE_LIMIT)
   }
 
-  eleventyConfig.addCollection('packages', () => {
-    return all_packages.map((pkg) => {
-      const readme_url = util.getReadmeUrl(pkg.readme)
-      const source_url = util.buildPackageSourceUrl(pkg, trustedTrackerLineIndex)
-      const stat = stats[pkg.name]
-      const weekly_installs = stat?.installs?.weekly ?? []
-      const weekly_removals = stat?.removals?.weekly ?? []
-      const weekly_upgrades = stat?.upgrades?.weekly ?? []
-      const weekly_dates = stats['__weekly_dates']
-
-      // Trim stats to the package lifetime based on first_seen
-      let end = undefined
-      if (pkg.first_seen && weekly_dates) {
-        const iso = util.isoWeekString(pkg.first_seen)
-        const idx = weekly_dates.indexOf(iso)
-        if (idx >= 0) {
-          end = idx + 1
-        }
-      }
-
-      return {
-        weekly_dates: weekly_dates,
-        weekly_installs: weekly_installs.slice(0, end),
-        weekly_removals: weekly_removals.slice(0, end),
-        weekly_upgrades: weekly_upgrades.slice(0, end),
-        ...pkg,
-        description: translateEmojiCodes(pkg.description ?? ''),
-        ...basePackage(pkg, stats[pkg.name]),
-        ...(readme_url !== pkg.readme ? { readme_url } : {}),
-        ...(renderedReadmes[pkg.readme] ? { rendered_readme: renderedReadmes[pkg.readme] } : {}),
-        ...(source_url !== pkg.source ? { source_url } : {}),
-      }
-    })
-  })
+  eleventyConfig.addCollection('packages', () => packages)
 
   eleventyConfig.addCollection('searchable_packages', () => {
-    const searchable = all_packages.map(pkg => ({
-      description: translateEmojiCodes(pkg.description ?? ''),
-      installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b) ?? 0,
-      ...basePackage(pkg, stats[pkg.name]),
-    }))
-    const withMagic = computeMagicMetadata(searchable)
-    return withMagic.sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
+    return [...packagesWithMagic].sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
 
   eleventyConfig.addCollection('updated_packages', () => updatedHomePackages)
@@ -600,18 +555,49 @@ export default async function (eleventyConfig) {
   eleventyConfig.addCollection('remarkable_packages', () => remarkablePackages())
 
   eleventyConfig.addCollection('newest_packages_feed', () => {
-    return all_packages
+    return packages
       .filter(pkg => !pkg.removed && pkg.first_seen)
-      .map(pkg => ({
-        ...basePackage(pkg, stats[pkg.name]),
-        description: translateEmojiCodes(pkg.description ?? ''),
-        guid: pkg.id ?? pkg.name,
-      }))
       .sort((a, b) => {
         return new Date(b.first_seen ?? '1970-01-01 00:00:00') - new Date(a.first_seen ?? '1970-01-01 00:00:00')
       })
       .slice(0, 25)
   })
+
+  function packageData(pkg) {
+    const readme_url = util.getReadmeUrl(pkg.readme)
+    const source_url = util.buildPackageSourceUrl(pkg, trustedTrackerLineIndex)
+    const stat = stats[pkg.name]
+    const weekly_installs = stat?.installs?.weekly ?? []
+    const weekly_removals = stat?.removals?.weekly ?? []
+    const weekly_upgrades = stat?.upgrades?.weekly ?? []
+    const weekly_dates = stats['__weekly_dates']
+
+    // Trim stats to the package lifetime based on first_seen
+    let end = undefined
+    if (pkg.first_seen && weekly_dates) {
+      const iso = util.isoWeekString(pkg.first_seen)
+      const idx = weekly_dates.indexOf(iso)
+      if (idx >= 0) {
+        end = idx + 1
+      }
+    }
+
+    return {
+      weekly_dates: weekly_dates,
+      weekly_installs: weekly_installs.slice(0, end),
+      weekly_removals: weekly_removals.slice(0, end),
+      weekly_upgrades: weekly_upgrades.slice(0, end),
+      ...pkg,
+      guid: pkg.id ?? pkg.name,
+      description: translateEmojiCodes(pkg.description ?? ''),
+      installs_window: stat?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
+      ...basePackage(pkg, stat),
+      declared_primary_label: pkg.labels?.[0] ?? '',
+      ...(readme_url !== pkg.readme ? { readme_url } : {}),
+      ...(renderedReadmes[pkg.readme] ? { rendered_readme: renderedReadmes[pkg.readme] } : {}),
+      ...(source_url !== pkg.source ? { source_url } : {}),
+    }
+  }
 
   eleventyConfig.addCollection('labels', () => {
     return util.collectLabels(all_packages)
