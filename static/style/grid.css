@@ -39,6 +39,7 @@ section[name="labels"] {
 
   > h2 {
     flex: 0 0 auto;
+    padding-top: 0;
   }
 }
 
