@@ -211,7 +211,7 @@ function computeMagicMetadata(packages) {
   })
 }
 
-function basePackage(pkg, stat) {
+function basePackage(pkg) {
   // Create a new array of releases with cleaned platforms
   const rawReleases = pkg.releases || []
   const releases = rawReleases.map(release => ({
@@ -290,19 +290,14 @@ function basePackage(pkg, stat) {
   const platforms = util.computePlatformLabelsForSearch(rawReleases).sort()
 
   return {
-    name: pkg.name,
     author: util.cleanAuthors(pkg.author) ?? [],
+    description: translateEmojiCodes(pkg.description ?? ''),
     stars: pkg.stars ?? 0,
-    installed: stat?.installs?.totals ?? 0,
-    first_seen: pkg.first_seen,
-    created_at: pkg.created_at,
-    last_modified: pkg.last_modified,
-    archived_at: pkg.archived_at,
-    removed: pkg.removed,
     releases: mainReleases,
     otherReleases,
     allReleases,
     labels: labels,
+    declared_primary_label: pkg.labels?.[0] ?? '',
     // Aggregated platform tokens for search indexing and platform: filtering.
     platforms: platforms,
     // Human-readable label shown on cards and package stats/labels.
@@ -561,6 +556,10 @@ export default async function (eleventyConfig) {
         return new Date(b.first_seen ?? '1970-01-01 00:00:00') - new Date(a.first_seen ?? '1970-01-01 00:00:00')
       })
       .slice(0, 25)
+      .map(pkg => ({
+        ...pkg,
+        guid: pkg.id ?? pkg.name,
+      }))
   })
 
   function packageData(pkg) {
@@ -583,16 +582,14 @@ export default async function (eleventyConfig) {
     }
 
     return {
+      ...pkg,
+      ...basePackage(pkg),
       weekly_dates: weekly_dates,
       weekly_installs: weekly_installs.slice(0, end),
       weekly_removals: weekly_removals.slice(0, end),
       weekly_upgrades: weekly_upgrades.slice(0, end),
-      ...pkg,
-      guid: pkg.id ?? pkg.name,
-      description: translateEmojiCodes(pkg.description ?? ''),
+      installed: stat?.installs?.totals ?? 0,
       installs_window: stat?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
-      ...basePackage(pkg, stat),
-      declared_primary_label: pkg.labels?.[0] ?? '',
       ...(readme_url !== pkg.readme ? { readme_url } : {}),
       ...(renderedReadmes[pkg.readme] ? { rendered_readme: renderedReadmes[pkg.readme] } : {}),
       ...(source_url !== pkg.source ? { source_url } : {}),
