@@ -96,7 +96,7 @@ section[name="labels"] {
     background: var(--background-1);
     border-radius: 3px;
     outline: 2px solid transparent;
-    transition: outline .1s ease-in-out;
+    transition: outline .1s ease-in-out, background .1s;
     white-space: nowrap;
 
     &:has(.remarkable-package-name:hover),
