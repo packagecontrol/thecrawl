@@ -1,5 +1,5 @@
-// Compatible selector for the labels sub page
-const CARD_SELECTOR = '.card, section[name="labels"] ul li'
+// Compatible selector for the labels sub page and homepage remarkable list.
+const CARD_SELECTOR = '.card, section[name="remarkable"] ul li, section[name="labels"] ul li'
 
 // Enable each skip link to focus its target without scrolling.
 document.querySelectorAll('.skip-link').forEach((skipLink) => {
@@ -48,6 +48,7 @@ document.addEventListener('keydown', (event) => {
   }
 
   const direction = lower === 'j' ? 1 : -1
+  clearVerticalReturnPreference()
   if (handleSequentialNavigation(currentCard, direction)) {
     event.preventDefault()
   }
@@ -78,12 +79,14 @@ document.addEventListener('keydown', (event) => {
   const index = Math.max(0, cards.indexOf(currentCard))
 
   const control = isNext ? 'next' : 'prev'
+  clearVerticalReturnPreference()
   if (clickPagerControl(pagerSection, control, index)) {
     event.preventDefault()
   }
 })
 
 let lastGridColumnPreference = 0
+let verticalReturnPreferences = new WeakMap()
 
 // Handle card navigation via arrow keys, paging horizontally when needed.
 document.addEventListener('keydown', (event) => {
@@ -323,6 +326,7 @@ function handleGridNavigation(grid, currentCard, directions) {
   }
 
   else if (directions.isArrowRight) {
+    clearVerticalReturnPreference()
     const rowCards = grid.rows[position.row] ?? []
     // Move right within this row when another card is available...
     if (position.column < rowCards.length - 1) {
@@ -340,6 +344,7 @@ function handleGridNavigation(grid, currentCard, directions) {
   }
 
   else if (directions.isArrowLeft) {
+    clearVerticalReturnPreference()
     const rowCards = grid.rows[position.row] ?? []
     // Move left within this row when a previous card exists...
     if (position.column > 0) {
@@ -357,10 +362,16 @@ function handleGridNavigation(grid, currentCard, directions) {
   }
 
   else if (directions.isArrowDown) {
+    const preferredTarget = preferredTargetForVerticalMove(currentCard, 'down')
+    const preferredCenterX = preferredTarget?.centerX ?? position.centerX
     const nextRow = grid.rows[position.row + 1]
     // If another row exists in the same section, move down within that row.
     if (nextRow?.length) {
-      return focusCardInRow(nextRow, position.column)
+      return focusPreferredCardInRow(nextRow, preferredTarget?.card, preferredCenterX, {
+        direction: 'up',
+        card: currentCard,
+        centerX: position.centerX,
+      })
     }
 
     // No lower row in this section; bail if the card was outside a pager section.
@@ -368,7 +379,7 @@ function handleGridNavigation(grid, currentCard, directions) {
       return false
     }
 
-    // Try to enter the first row of the next section (newest → recent).
+    // Try to enter the first row of the next section.
     const siblingSection = findSiblingSection(grid.pagerSection, 'next')
     if (!siblingSection) {
       return false
@@ -383,16 +394,26 @@ function handleGridNavigation(grid, currentCard, directions) {
     const siblingGrid = buildCardGrid(siblingCards)
     const targetRow = siblingGrid.rows[0]
     if (targetRow?.length) {
-      // Align with the same column index if possible.
-      return focusCardInRow(targetRow, position.column)
+      // Prefer remembered reverse moves, then fall back to nearest card center.
+      return focusPreferredCardInRow(targetRow, preferredTarget?.card, preferredCenterX, {
+        direction: 'up',
+        card: currentCard,
+        centerX: position.centerX,
+      })
     }
   }
 
   else if (directions.isArrowUp) {
+    const preferredTarget = preferredTargetForVerticalMove(currentCard, 'up')
+    const preferredCenterX = preferredTarget?.centerX ?? position.centerX
     const previousRow = grid.rows[position.row - 1]
     // If a row exists above in the same section, move up there.
     if (previousRow?.length) {
-      return focusCardInRow(previousRow, position.column)
+      return focusPreferredCardInRow(previousRow, preferredTarget?.card, preferredCenterX, {
+        direction: 'down',
+        card: currentCard,
+        centerX: position.centerX,
+      })
     }
 
     // No higher row in this section; stop if outside a pager section.
@@ -400,7 +421,7 @@ function handleGridNavigation(grid, currentCard, directions) {
       return false
     }
 
-    // Move into the last row of the previous section (recent → newest).
+    // Move into the last row of the previous section.
     const siblingSection = findSiblingSection(grid.pagerSection, 'prev')
     if (!siblingSection) {
       return false
@@ -415,20 +436,31 @@ function handleGridNavigation(grid, currentCard, directions) {
     const siblingGrid = buildCardGrid(siblingCards)
     const targetRow = siblingGrid.rows[siblingGrid.rows.length - 1]
     if (targetRow?.length) {
-      // Align with the same column index if possible.
-      return focusCardInRow(targetRow, position.column)
+      // Prefer remembered reverse moves, then fall back to nearest card center.
+      return focusPreferredCardInRow(targetRow, preferredTarget?.card, preferredCenterX, {
+        direction: 'down',
+        card: currentCard,
+        centerX: position.centerX,
+      })
     }
   }
 
   return false
 }
 
-const HOMEPAGE_SECTIONS = ['newest', 'recent']
+const HOMEPAGE_SECTIONS = ['newest', 'recent', 'remarkable']
 
 /**
  * @typedef {HTMLElement} Card - Card element within grids.
- * @typedef {{ row: number, column: number }} GridPosition
+ * @typedef {{ row: number, column: number, centerX: number }} GridPosition
  *   - Visual card coordinates.
+ * @typedef {{ card: Card, centerX: number }} VerticalReturnPreference
+ *   - Exact card and fallback x-coordinate for a remembered reverse move.
+ * @typedef {{
+ *   up?: VerticalReturnPreference,
+ *   down?: VerticalReturnPreference,
+ * }} VerticalReturnPreferences
+ *   - Reverse mappings for vertical navigation between uneven grids.
  * @typedef {Map<Card, GridPosition>} CardPositions
  *   - Card-to-position lookup map.
  * @typedef {{
@@ -451,6 +483,85 @@ function focusCardInRow(row, preferredColumn) {
     return true
   }
   return false
+}
+
+/**
+ * @param {Card[]} row - Ordered cards for a single visual row.
+ * @param {Card|undefined} preferredCard - Exact card to focus when available.
+ * @param {number} preferredCenterX - Viewport x-coordinate to align with.
+ * @param {{
+ *   direction: 'up'|'down',
+ *   card: Card,
+ *   centerX: number,
+ * }} [returnPreference] - Exact card and fallback center for reversing.
+ * @returns {boolean} Whether focus was moved to a card in the row.
+ */
+function focusPreferredCardInRow(row, preferredCard, preferredCenterX, returnPreference) {
+  const target = row.includes(preferredCard) && isVisibleCard(preferredCard)
+    ? preferredCard
+    : nearestCardInRow(row, preferredCenterX)
+
+  if (!focusCardHeading(target)) {
+    return false
+  }
+
+  if (returnPreference && target) {
+    rememberVerticalReturn(
+      target,
+      returnPreference.direction,
+      returnPreference.card,
+      returnPreference.centerX,
+    )
+  }
+
+  return true
+}
+
+/**
+ * @param {Element} card
+ * @param {'up'|'down'} direction
+ * @returns {VerticalReturnPreference|undefined}
+ */
+function preferredTargetForVerticalMove(card, direction) {
+  return verticalReturnPreferences.get(card)?.[direction]
+}
+
+/**
+ * @param {Card[]} row - Ordered cards for a single visual row.
+ * @param {number} preferredCenterX - Viewport x-coordinate to align with.
+ * @returns {Card|null}
+ */
+function nearestCardInRow(row, preferredCenterX) {
+  let target = null
+  let closestDistance = Infinity
+
+  for (const card of row) {
+    const rect = card.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const distance = Math.abs(centerX - preferredCenterX)
+    if (distance < closestDistance) {
+      target = card
+      closestDistance = distance
+    }
+  }
+
+  return target
+}
+
+/**
+ * @param {Card} card
+ * @param {'up'|'down'} direction
+ * @param {Card} targetCard
+ * @param {number} centerX
+ */
+function rememberVerticalReturn(card, direction, targetCard, centerX) {
+  const preferences = verticalReturnPreferences.get(card) ?? {}
+  preferences[direction] = { card: targetCard, centerX }
+  verticalReturnPreferences.set(card, preferences)
+}
+
+function clearVerticalReturnPreference() {
+  verticalReturnPreferences = new WeakMap()
 }
 
 /**
@@ -480,7 +591,11 @@ function buildCardGrid(cards) {
     const columnIndex = row.length
 
     row.push(card)
-    positions.set(card, { row: rowIndex, column: columnIndex })
+    positions.set(card, {
+      row: rowIndex,
+      column: columnIndex,
+      centerX: rect.left + rect.width / 2,
+    })
     previousLeft = rect.left
   }
 
@@ -553,7 +668,7 @@ function focusSearchField() {
 /**
  * @param {Element|null} section - Current pager section, if any.
  * @param {'next'|'prev'} direction - Which neighbor to look for.
- * @param {string[]} [sections=['newest', 'recent']] - Pager sections, ordered.
+ * @param {string[]} [sections=['newest', 'recent', 'remarkable']] - Pager sections, ordered.
  * @returns {Element|null} Matching sibling section or null when absent.
  */
 function findSiblingSection(section, direction, sections = HOMEPAGE_SECTIONS) {
@@ -580,7 +695,7 @@ function findSiblingSection(section, direction, sections = HOMEPAGE_SECTIONS) {
  * Find the pager section, the `element` is part of
  *
  * @param {Element|null} element - Starting element for lookup.
- * @param {string[]} [sectionNames=['newest', 'recent']] - Acceptable sections.
+ * @param {string[]} [sectionNames=['newest', 'recent', 'remarkable']] - Acceptable sections.
  * @returns {Element|null} Enclosing pager section, if found.
  */
 function findPagerSection(element, sectionNames = HOMEPAGE_SECTIONS) {
