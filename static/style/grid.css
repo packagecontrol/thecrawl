@@ -31,36 +31,55 @@ section[name="labels"] {
   margin-right: auto;
 }
 
+.remarkable-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+
+  > h2 {
+    flex: 0 0 auto;
+  }
+}
+
+.remarkable-pagination {
+  display: flex;
+  align-items: baseline;
+  color: var(--foreground-3);
+  font-size: 0.72rem;
+}
+
+.remarkable-page-button {
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  outline-color: transparent;
+  transition: outline .1s ease-in-out;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--orange-1);
+  }
+
+  &[aria-current="page"] {
+    color: var(--foreground-1);
+    font-weight: 700;
+  }
+}
+
 .remarkable-list {
   container-type: inline-size;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
   gap: 0.5rem 1rem;
-  /*
-    The home page asks for 20 remarkable packages. That is fine for one and
-    two columns.  For three or four columns we want exactly five rows.
-    For four columns that falls naturally, 4 * 5 = 20 items.
-    Three columns would make an awkward partial seventh row, so in the
-    3-column width range we hide item 16 onward: 15 items = 5 rows.
-
-    The breakpoints are the grid's column-count thresholds:
-      columns * min-card-width + gaps-between-columns * column-gap
-
-    With 16rem cards and a 1rem column gap:
-      3 columns: 3 * 16rem + 2 * 1rem = 50rem
-      4 columns: 4 * 16rem + 3 * 1rem = 67rem
-      hide n + 16 for width >= 50rem and < 67rem
-
-    For a card width of 18rem, the matching range is:
-      3 columns: 3 * 18rem + 2 * 1rem = 56rem
-      4 columns: 4 * 18rem + 3 * 1rem = 75rem
-      @container (width >= 56rem) and (width < 75rem)
-  */
-  @container (width >= 50rem) and (width < 67rem) {
-    > li:nth-child(n + 16) {
-      display: none;
-    }
-  }
   margin: 0;
   padding: 0;
   list-style: none;
@@ -151,6 +170,41 @@ section[name="labels"] {
     }
   }
 
+}
+
+/*
+  Remarkable has two logical pages over 40 ranked packages. The normal
+  20-item page size gives five tidy rows at four columns. In the three-column
+  width range, 20 would make an awkward partial seventh row, so each page uses
+  15 items and page two starts at item 16.
+
+  The breakpoints are the grid's column-count thresholds:
+    columns * min-card-width + gaps-between-columns * column-gap
+
+  With 16rem cards and a 1rem column gap:
+    3 columns: 3 * 16rem + 2 * 1rem = 50rem
+    4 columns: 4 * 16rem + 3 * 1rem = 67rem
+
+  For a card width of 18rem, the matching range would be:
+    3 columns: 3 * 18rem + 2 * 1rem = 56rem
+    4 columns: 4 * 18rem + 3 * 1rem = 75rem
+    @container (width >= 56rem) and (width < 75rem)
+*/
+section[name="remarkable"][data-remarkable-page="1"] .remarkable-list > li:nth-child(n + 21),
+section[name="remarkable"][data-remarkable-page="2"] .remarkable-list > li:nth-child(-n + 20) {
+  display: none;
+}
+
+@container (width >= 50rem) and (width < 67rem) {
+  section[name="remarkable"][data-remarkable-page="1"] .remarkable-list > li:nth-child(n + 16),
+  section[name="remarkable"][data-remarkable-page="2"] .remarkable-list > li:nth-child(-n + 15),
+  section[name="remarkable"][data-remarkable-page="2"] .remarkable-list > li:nth-child(n + 31) {
+    display: none;
+  }
+
+  section[name="remarkable"][data-remarkable-page="2"] .remarkable-list > li:nth-child(n + 16):nth-child(-n + 20) {
+    display: flex;
+  }
 }
 
 section[name="labels"] .grid {
