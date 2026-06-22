@@ -342,7 +342,7 @@ function latestReleaseVersion(releases) {
     .find(release => release.version)?.version ?? ''
 }
 
-function isRemarkablePackage(name, alreadyFeatured) {
+function isEligibleForRemarkableSection(name, alreadyFeatured) {
   return !alreadyFeatured.has(name)
     && !REMARKABLE_EXCLUDED_PACKAGE_NAMES.has(name)
     && !REMARKABLE_EXCLUDED_PACKAGE_PREFIXES.some(prefix => name.startsWith(prefix))
@@ -541,7 +541,7 @@ export default async function (eleventyConfig) {
       installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
       ...pkg,
     })))
-      .filter(pkg => !pkg.removed && isRemarkablePackage(pkg.name, alreadyFeatured))
+      .filter(pkg => !pkg.removed && isEligibleForRemarkableSection(pkg.name, alreadyFeatured))
       .sort(compareRemarkablePackages)
       .slice(0, REMARKABLE_PACKAGE_LIMIT)
   }
