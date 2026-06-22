@@ -537,6 +537,8 @@ export default async function (eleventyConfig) {
       alreadyFeatured.add(pkg.name)
     }
 
+    // Compute scores before filtering so popularity/star normalization uses the
+    // full home package set rather than only the remarkable candidate pool.
     return computeMagicMetadata(homePackages().map(pkg => ({
       installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
       ...pkg,
