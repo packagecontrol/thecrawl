@@ -37,7 +37,7 @@ const MAGIC_WEIGHTS = {
 const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
 const STATUS_TAG_WINDOW_DAYS = 30
 const HOME_SECTION_PACKAGE_LIMIT = 9
-const REMARKABLE_PACKAGE_LIMIT = 20
+const REMARKABLE_PACKAGE_LIMIT = 40
 const REMARKABLE_EXCLUDED_PACKAGE_NAMES = new Set(['Package Control'])
 const REMARKABLE_EXCLUDED_PACKAGE_PREFIXES = ['LSP-', 'SublimeLinter-']
 

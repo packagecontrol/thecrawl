@@ -719,7 +719,7 @@ function clickPagerControl(section, control, desiredIndex) {
     return false
   }
 
-  const button = section.querySelector(`.pager-pagination [data-control="${control}"]`)
+  const button = pagerControlButton(section, control)
   if (!button || button.disabled) {
     return false
   }
@@ -727,6 +727,57 @@ function clickPagerControl(section, control, desiredIndex) {
   button.click()
   focusStoredCardInSection(section, desiredIndex)
   return true
+}
+
+/**
+ * @param {Element} section - Pager container where controls live.
+ * @param {'next'|'prev'} control - Which control button to find.
+ * @returns {HTMLButtonElement|null} Matching control button.
+ */
+function pagerControlButton(section, control) {
+  const standardButton = section.querySelector(`.pager-pagination [data-control="${control}"]`)
+  if (standardButton) {
+    return standardButton
+  }
+
+  return remarkablePageControl(section, control)
+}
+
+/**
+ * @param {Element} section - Candidate remarkable section.
+ * @param {'next'|'prev'} control - Which page direction to find.
+ * @returns {HTMLButtonElement|null} Matching page button.
+ */
+function remarkablePageControl(section, control) {
+  if (section.getAttribute('name') !== 'remarkable') {
+    return null
+  }
+
+  const controls = Array.from(section.querySelectorAll('[data-remarkable-page-control]'))
+  const currentIndex = currentRemarkablePageIndex(section, controls)
+  if (currentIndex === -1) {
+    return null
+  }
+
+  const offset = control === 'next' ? 1 : -1
+  return controls[currentIndex + offset] ?? null
+}
+
+/**
+ * @param {Element} section - Remarkable section.
+ * @param {HTMLButtonElement[]} controls - Page controls in display order.
+ * @returns {number} The active page index, or -1 when unknown.
+ */
+function currentRemarkablePageIndex(section, controls) {
+  const currentPage = section.dataset.remarkablePage
+  const datasetIndex = controls.findIndex(
+    control => control.dataset.remarkablePageControl === currentPage)
+
+  if (datasetIndex !== -1) {
+    return datasetIndex
+  }
+
+  return controls.findIndex(control => control.getAttribute('aria-current') === 'page')
 }
 
 /**
