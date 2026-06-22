@@ -515,31 +515,31 @@ export default async function (eleventyConfig) {
     declared_primary_label: pkg.labels?.[0] ?? '',
   })
 
-  const homePackages = () => all_packages.map(homePackage)
+  const homePackages = all_packages.map(homePackage)
 
-  const livingHomePackages = () => homePackages().filter(pkg => !pkg.removed)
+  const livingHomePackages = homePackages.filter(pkg => !pkg.removed)
 
   const packagesByDate = (field) => {
-    return livingHomePackages().sort((a, b) => {
+    return [...livingHomePackages].sort((a, b) => {
       return new Date(b[field] ?? '1970-01-01 00:00:00') - new Date(a[field] ?? '1970-01-01 00:00:00')
     })
   }
 
-  const newestHomePackages = () => packagesByDate('first_seen').slice(0, HOME_SECTION_PACKAGE_LIMIT)
-  const updatedHomePackages = () => packagesByDate('last_modified').slice(0, HOME_SECTION_PACKAGE_LIMIT)
+  const newestHomePackages = packagesByDate('first_seen').slice(0, HOME_SECTION_PACKAGE_LIMIT)
+  const updatedHomePackages = packagesByDate('last_modified').slice(0, HOME_SECTION_PACKAGE_LIMIT)
 
   const remarkablePackages = () => {
     const alreadyFeatured = new Set()
-    for (const pkg of newestHomePackages()) {
+    for (const pkg of newestHomePackages) {
       alreadyFeatured.add(pkg.name)
     }
-    for (const pkg of updatedHomePackages()) {
+    for (const pkg of updatedHomePackages) {
       alreadyFeatured.add(pkg.name)
     }
 
     // Compute scores before filtering so popularity/star normalization uses the
     // full home package set rather than only the remarkable candidate pool.
-    return computeMagicMetadata(homePackages().map(pkg => ({
+    return computeMagicMetadata(homePackages.map(pkg => ({
       installs_window: stats[pkg.name]?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
       ...pkg,
     })))
@@ -593,9 +593,9 @@ export default async function (eleventyConfig) {
     return withMagic.sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
 
-  eleventyConfig.addCollection('updated_packages', () => updatedHomePackages())
+  eleventyConfig.addCollection('updated_packages', () => updatedHomePackages)
 
-  eleventyConfig.addCollection('newest_packages', () => newestHomePackages())
+  eleventyConfig.addCollection('newest_packages', () => newestHomePackages)
 
   eleventyConfig.addCollection('remarkable_packages', () => remarkablePackages())
 
