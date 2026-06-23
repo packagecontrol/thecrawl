@@ -377,7 +377,7 @@ const jsBundleEntries = [
   'status',
   'theme',
   'keys',
-  'compact_search',
+  'compact-search',
 ]
 
 export default async function (eleventyConfig) {
