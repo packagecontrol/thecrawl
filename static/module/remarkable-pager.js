@@ -9,6 +9,8 @@ if (section) {
 }
 
 function initRemarkablePager(section) {
+  initStickyHeader(section)
+
   const controls = Array.from(section.querySelectorAll('[data-remarkable-page-control]'))
   if (controls.length < 2) {
     return
@@ -36,6 +38,7 @@ function syncFromUrl(section, controls) {
 
 function showRemarkablePage(section, page, controls) {
   section.dataset.remarkablePage = page
+  updateStickyHeader(section)
 
   for (const control of controls) {
     if (control.dataset.remarkablePageControl === page) {
@@ -47,11 +50,47 @@ function showRemarkablePage(section, page, controls) {
   }
 }
 
+function initStickyHeader(section) {
+  const header = section.querySelector('.remarkable-header')
+  if (!header) {
+    return
+  }
+
+  const sentinel = document.createElement('div')
+  sentinel.classList.add('scroll-sentinel')
+  section.insertBefore(sentinel, header)
+
+  const observer = new IntersectionObserver(
+    ([entry]) => header.classList.toggle('shadow', !entry.isIntersecting))
+  observer.observe(sentinel)
+
+  updateStickyHeader(section)
+  window.addEventListener('resize', () => updateStickyHeader(section))
+}
+
+function updateStickyHeader(section) {
+  const header = section.querySelector('.remarkable-header')
+  const list = section.querySelector('.remarkable-list')
+  if (!header || !list) {
+    return
+  }
+
+  const stick = list.getBoundingClientRect().height > viewportHeight()
+  header.classList.toggle('is-sticky', stick)
+  section.style.scrollMarginTop = stick
+    ? `${Math.ceil(header.getBoundingClientRect().height || 0)}px`
+    : ''
+}
+
 function pageFromUrl() {
   const url = new URL(window.location.href)
   return url.searchParams.get(REMARKABLE_PAGE_PARAM) === SECOND_PAGE
     ? SECOND_PAGE
     : FIRST_PAGE
+}
+
+function viewportHeight() {
+  return window.innerHeight || document.documentElement.clientHeight || 0
 }
 
 function updateHistory(page) {
