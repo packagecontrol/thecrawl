@@ -31,6 +31,9 @@ export function initStickySectionHeader(section, options = {}) {
     update() {
       return updateStickyState(state)
     },
+    scrollListStartIntoView() {
+      scrollListStartIntoView(state)
+    },
     disconnect() {
       disconnectStickyHeader(state, handleResize)
     },
@@ -64,6 +67,31 @@ function updateStickyState(state) {
   }
 
   return stick
+}
+
+function scrollListStartIntoView(state) {
+  if (state.section.dataset.shouldStick !== 'true') {
+    return
+  }
+
+  const firstItem = firstVisibleListItem(state.list)
+  if (firstItem) {
+    const headerHeight = Math.ceil(state.header.getBoundingClientRect().height || 0)
+    const rect = firstItem.getBoundingClientRect()
+    if (rect.top < headerHeight) {
+      const scrollTop = window.scrollY
+        ?? window.pageYOffset
+        ?? document.documentElement.scrollTop
+        ?? 0
+      const target = Math.max(0, scrollTop + rect.top - headerHeight)
+      window.scrollTo({ top: target, behavior: 'smooth' })
+    }
+  }
+}
+
+function firstVisibleListItem(list) {
+  return Array.from(list.children)
+    .find(item => getComputedStyle(item).display !== 'none')
 }
 
 function disconnectStickyHeader(state, handleResize) {

@@ -280,22 +280,7 @@ class RecentPager {
       this.updateHistory()
     }
 
-    if (this.stickyHeader?.isSticky) {
-      const firstItem = this.ul.querySelector('li')
-      if (firstItem) {
-        const header = this.section.querySelector('.pager-header')
-        const headerHeight = Math.ceil(header?.getBoundingClientRect()?.height || 0)
-        const rect = firstItem.getBoundingClientRect()
-        if (rect.top < headerHeight) {
-          const scrollTop = window.scrollY
-            ?? window.pageYOffset
-            ?? document.documentElement.scrollTop
-            ?? 0
-          const target = Math.max(0, scrollTop + rect.top - headerHeight)
-          window.scrollTo({ top: target, behavior: 'smooth' })
-        }
-      }
-    }
+    this.stickyHeader?.scrollListStartIntoView()
   }
 
   updateMainContentMarker() {

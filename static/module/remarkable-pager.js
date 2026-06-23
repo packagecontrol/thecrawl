@@ -31,6 +31,7 @@ function initRemarkablePager(section) {
       }
       showRemarkablePage(section, page, controls, stickyHeader)
       updateHistory(page)
+      stickyHeader?.scrollListStartIntoView()
     })
   }
 }
