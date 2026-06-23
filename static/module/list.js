@@ -171,7 +171,7 @@ export class List {
     const completelyBelow = rect.top > window.innerHeight
 
     if (completelyAbove || completelyBelow) {
-      target.scrollIntoView()
+      target.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
