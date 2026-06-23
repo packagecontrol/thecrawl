@@ -1,0 +1,33 @@
+.sticky-section-header {
+  > h2 {
+    padding-top: 0;
+  }
+
+  &.is-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--background-2);
+    margin-left: calc(var(--side-padding) * -1);
+    margin-right: calc(var(--side-padding) * -1);
+    padding-left: var(--side-padding);
+    padding-right: var(--side-padding);
+    margin-bottom: 2px;  /* room for the 2px card outline */
+    transition: background .1s;
+
+    > h2 {
+      padding-top: 5px;
+      margin-bottom: 9px;
+    }
+
+    &.shadow {
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+    }
+  }
+}
+
+.pager-header.is-sticky {
+  & .pager-pagination {
+    top: -11px;
+  }
+}
