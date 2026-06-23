@@ -1,6 +1,7 @@
 const STICKY_HEADER_CLASS = 'sticky-section-header'
 const STICKY_CLASS = 'is-sticky'
 const SHADOW_CLASS = 'shadow'
+const STICKY_HEADER_CLEARANCE = 2
 
 export function initStickySectionHeader(section, options = {}) {
   const header = elementFromOption(section, options.header ?? options.headerSelector)
@@ -83,7 +84,7 @@ function scrollListStartIntoView(state) {
         ?? window.pageYOffset
         ?? document.documentElement.scrollTop
         ?? 0
-      const target = Math.max(0, scrollTop + rect.top - headerHeight)
+      const target = Math.max(0, scrollTop + rect.top - headerHeight - STICKY_HEADER_CLEARANCE)
       window.scrollTo({ top: target, behavior: 'smooth' })
     }
   }
