@@ -78,6 +78,6 @@ page_type: home
   </ul>
 </section>
 {% inline_js 'static/_recent_waiter.js' %}
-<script src="{{ '/static/home.js' | bust }}" type="module" async></script>
+<script src="{{ '/static/home.js' | bundled }}" type="module" async></script>
 
 {% include "search_section.njk" %}

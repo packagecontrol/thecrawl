@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { spawnSync } from 'child_process'
 import { minify } from 'terser'
+import * as esbuild from 'esbuild'
 import * as util from './eleventy.util.mjs'
 import * as filters from './eleventy.filters.mjs'
 import { bundleCss } from './util/bundle-css.mjs'
@@ -367,6 +368,18 @@ const vendorModules = [
   },
 ]
 
+const jsBundleEntries = [
+  'package-search',
+  'home',
+  'package',
+  'labels',
+  'libs',
+  'status',
+  'theme',
+  'keys',
+  'compact_search',
+]
+
 export default async function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
   const prodOrigin = 'https://packages.sublimetext.io'
@@ -388,6 +401,7 @@ export default async function (eleventyConfig) {
       return
     }
 
+    await bundleJs(path.join(outputDir, staticOutputDir), isProd)
     bundleCss(path.join(outputDir, `static_${util.gitHash}`, 'styles.css'))
   })
 
@@ -671,6 +685,28 @@ export default async function (eleventyConfig) {
     },
     passthroughFileCopy: true,
   }
+}
+
+async function bundleJs(staticOutputDir, isProd) {
+  await esbuild.build({
+    entryPoints: jsBundleEntryPoints(staticOutputDir),
+    outdir: path.join(staticOutputDir, 'bundle'),
+    bundle: true,
+    format: 'esm',
+    target: 'es2022',
+    minify: isProd,
+    sourcemap: !isProd,
+    splitting: false,
+  })
+}
+
+function jsBundleEntryPoints(staticOutputDir) {
+  return Object.fromEntries(
+    jsBundleEntries.map(entry => [
+      entry,
+      path.join(staticOutputDir, `${entry}.js`),
+    ]),
+  )
 }
 
 async function writeVendorModules(vendorOutputDir) {

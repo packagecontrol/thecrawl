@@ -148,7 +148,7 @@ page_type: package
 </section>
 
 {% if not pkg.removed %}
-  <script src="{{ '/static/package.js' | bust }}" type="module" async></script>
+  <script src="{{ '/static/package.js' | bundled }}" type="module" async></script>
 {% endif %}
 
 {% if pkg.readme and not pkg.removed %}
