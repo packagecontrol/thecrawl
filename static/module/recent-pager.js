@@ -1,41 +1,7 @@
 import { Card } from './card.js'
+import { initStickySectionHeader } from './sticky-section-header.js'
 
 const DEFAULT_PER_PAGE = 9
-const pagerRegistry = []
-
-const RECENT_PAGER_STYLES = `
-  .pager-header {
-    > h2 {
-      padding-top: 0;
-    }
-
-    &.is-sticky {
-      position: sticky;
-      top: 0;
-      z-index: 3;
-      background: var(--background-2);
-      margin-left: calc(var(--side-padding) * -1);
-      margin-right: calc(var(--side-padding) * -1);
-      padding-left: var(--side-padding);
-      padding-right: var(--side-padding);
-      margin-bottom: 2px;  /* room for the 2px card outline */
-      transition: background .1s;
-
-      > h2 {
-        padding-top: 5px;
-        margin-bottom: 9px;
-      }
-
-      & .pager-pagination {
-        top: -11px;
-      }
-
-      &.shadow {
-        box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
-      }
-    }
-  }
-`
 
 const HEADER_TEMPLATE_HTML = `
   <div class="pager-header">
@@ -57,35 +23,8 @@ const HEADER_TEMPLATE_HTML = `
   </div>
 `
 
-const style = document.createElement('style')
-style.textContent = RECENT_PAGER_STYLES
-document.head.appendChild(style)
-
 const headerTemplate = document.createElement('template')
 headerTemplate.innerHTML = HEADER_TEMPLATE_HTML.trim()
-
-window.addEventListener('resize', recomputeStickinesOfPagers)
-
-function recomputeStickinesOfPagers() {
-  pagerRegistry.forEach(
-    pager => computeShouldStick(pager.section, () => pager.applyMobileHacks()))
-}
-
-function computeShouldStick(section, onChange) {
-  // Compute the "mobile layout" not on screen size but on the height
-  // of the 9 defaults cards compared to the window/client height.
-  const list = section.querySelector('ul.grid')
-  const listHeight = list.getBoundingClientRect().height
-  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0
-  const stick = listHeight > viewportHeight
-
-  const prev = section.dataset.shouldStick === 'true'
-  if (prev != stick) {
-    section.dataset.shouldStick = stick ? 'true' : 'false'
-    if (onChange) onChange()
-  }
-  return stick
-}
 
 // Handles client-side paging for the pre-rendered sections on the home page
 /** @template T */
@@ -114,12 +53,11 @@ class RecentPager {
 
     this.controls = null
     this.monthIndicator = null
+    this.stickyHeader = null
     this.queryParam = queryParam
     /** @type {(item: T | null | undefined) => number} */
     this.timestampValue = item => item ? Number(item[timestampField] || 0) : 0
 
-    pagerRegistry.push(this)
-    section.dataset.shouldStick ?? computeShouldStick(section)
     this.init()
   }
 
@@ -160,20 +98,18 @@ class RecentPager {
     bindControl(prev, () => this.goto(this.page - 1))
     bindControl(next, () => this.goto(this.page + 1))
 
-    const sentinel = document.createElement('div')
-    sentinel.classList.add('scroll-sentinel')
-    this.section.insertBefore(sentinel, header)
-
-    let observer = new IntersectionObserver(
-      ([entry]) => this.updateOverlapShadow(!entry.isIntersecting))
-    observer.observe(sentinel)
+    this.stickyHeader = initStickySectionHeader(this.section, {
+      header,
+      list: this.ul,
+      onChange: () => this.updateHeadingText(),
+    })
 
     this.controls = { first, prev, next }
     this.monthIndicator = month
 
     this.updateButtons()
     this.updateMonthIndicator()
-    this.applyMobileHacks()
+    this.updateHeadingText()
     this.updateMainContentMarker()
   }
 
@@ -305,32 +241,11 @@ class RecentPager {
 
   updateHeadingText() {
     if (!this.headingShortText || !this.headingElement) return
-    const stickActive = this.section?.dataset.shouldStick === 'true'
+    const stickActive = this.stickyHeader?.isSticky ?? this.section?.dataset.shouldStick === 'true'
     const text = this.page > 1 && stickActive ? this.headingShortText : this.headingOriginalText
     if (this.headingElement.textContent !== text) {
       this.headingElement.textContent = text
     }
-  }
-
-  applyMobileHacks() {
-    const header = this.section.querySelector('.pager-header')
-    const stick = this.section.dataset.shouldStick === 'true'
-    if (stick) {
-      header.classList.add('is-sticky')
-      const headerHeight = Math.ceil(header.getBoundingClientRect().height || 0)
-      this.section.style.scrollMarginTop = `${headerHeight}px`
-    }
-    else {
-      header.classList.remove('is-sticky')
-      this.section.style.scrollMarginTop = ''
-    }
-
-    this.updateHeadingText()
-  }
-
-  updateOverlapShadow(enable) {
-    const header = this.section.querySelector('.pager-header')
-    header.classList.toggle('shadow', enable)
   }
 
   goto(page, options = {}) {
@@ -365,22 +280,7 @@ class RecentPager {
       this.updateHistory()
     }
 
-    if (this.section.dataset.shouldStick === 'true') {
-      const firstItem = this.ul.querySelector('li')
-      if (firstItem) {
-        const header = this.section.querySelector('.pager-header')
-        const headerHeight = Math.ceil(header?.getBoundingClientRect()?.height || 0)
-        const rect = firstItem.getBoundingClientRect()
-        if (rect.top < headerHeight) {
-          const scrollTop = window.scrollY
-            ?? window.pageYOffset
-            ?? document.documentElement.scrollTop
-            ?? 0
-          const target = Math.max(0, scrollTop + rect.top - headerHeight)
-          window.scrollTo({ top: target, behavior: 'smooth' })
-        }
-      }
-    }
+    this.stickyHeader?.scrollListStartIntoView()
   }
 
   updateMainContentMarker() {

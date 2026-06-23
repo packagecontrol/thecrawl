@@ -1,3 +1,5 @@
+import { initStickySectionHeader } from './sticky-section-header.js'
+
 const REMARKABLE_PAGE_PARAM = 'remarkable-page'
 const FIRST_PAGE = '1'
 const SECOND_PAGE = '2'
@@ -9,12 +11,17 @@ if (section) {
 }
 
 function initRemarkablePager(section) {
+  const stickyHeader = initStickySectionHeader(section, {
+    headerSelector: '.remarkable-header',
+    listSelector: '.remarkable-list',
+  })
+
   const controls = Array.from(section.querySelectorAll('[data-remarkable-page-control]'))
   if (controls.length < 2) {
     return
   }
 
-  syncFromUrl(section, controls)
+  syncFromUrl(section, controls, stickyHeader)
 
   for (const control of controls) {
     control.addEventListener('click', () => {
@@ -22,20 +29,22 @@ function initRemarkablePager(section) {
       if (!page || section.dataset.remarkablePage === page) {
         return
       }
-      showRemarkablePage(section, page, controls)
+      showRemarkablePage(section, page, controls, stickyHeader)
       updateHistory(page)
+      stickyHeader?.scrollListStartIntoView()
     })
   }
 }
 
-function syncFromUrl(section, controls) {
+function syncFromUrl(section, controls, stickyHeader) {
   const page = pageFromUrl()
-  showRemarkablePage(section, page, controls)
+  showRemarkablePage(section, page, controls, stickyHeader)
   updateHistory(page)
 }
 
-function showRemarkablePage(section, page, controls) {
+function showRemarkablePage(section, page, controls, stickyHeader) {
   section.dataset.remarkablePage = page
+  stickyHeader?.update()
 
   for (const control of controls) {
     if (control.dataset.remarkablePageControl === page) {
