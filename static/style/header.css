@@ -75,8 +75,10 @@ header {
     }
 
     .search-toggle {
-      @media (min-width: calc(50rem + 1px)) {
-        display: none;
+      display: none;
+
+      @media (max-width: 50rem) {
+        display: inline;
       }
     }
   }
