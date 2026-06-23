@@ -147,10 +147,6 @@ page_type: package
   {% endif %}
 </section>
 
-{% if not pkg.removed %}
-  <script src="{{ '/static/package.js' | bundled }}" type="module" async></script>
-{% endif %}
-
 {% if pkg.readme and not pkg.removed %}
   <section id="md" class="readme" data-readme-url="{{ pkg.readme }}" data-list-target="main-content">{{ pkg.rendered_readme | default('') | safe }}</section>
   {% inline_js 'static/_readme_anchor.js' %}
@@ -195,3 +191,4 @@ page_type: package
 {% endif %}
 
 {% include "search_section.njk" %}
+<script src="{{ '/static/package.js' | bundled }}" type="module" async></script>
