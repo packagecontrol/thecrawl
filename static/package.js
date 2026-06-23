@@ -1,3 +1,4 @@
+import './compact-search.js'
 import { Message } from './module/message.js'
 
 const button = document.querySelector('.clipboard-button')
