@@ -57,11 +57,21 @@
   .icon.light {
     color: var(--orange-2);
     transform: rotate(0deg);
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
   }
 
   .icon.dark {
     color: var(--blue-2);
     transform: rotate(180deg);
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
   }
 
   :root[data-theme='dark'] & {
