@@ -373,6 +373,7 @@ form.compact {
       right: 0;
       bottom: 0;
       left: 0;
+      z-index: 1;
       padding: 8px var(--side-padding);
       background: var(--background-2);
       align-items: center;

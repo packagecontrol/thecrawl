@@ -45,8 +45,10 @@
       {% endif %}
 
       <button id="theme-toggle" aria-label="Toggle color scheme">
-        <span class="icon light" aria-label="light">{{ util.icon('sun') }}</span>
-        <span class="icon dark" aria-label="dark">{{ util.icon('moon') }}</span>
+        <span class="theme-toggle-dial" aria-hidden="true">
+          <span class="icon light">{{ util.icon('sun') }}</span>
+          <span class="icon dark">{{ util.icon('moon') }}</span>
+        </span>
       </button>
 
     </nav>
