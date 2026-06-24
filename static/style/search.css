@@ -156,8 +156,8 @@ select {
 
   &:has(input:focus),
   &:has(.clear-btn:focus) {
-    border-color: var(--orange-1);
-    outline: 1px solid var(--orange-1);
+    outline: 2px solid var(--orange-1);
+    outline-offset: -1px;
   }
 
   label {
