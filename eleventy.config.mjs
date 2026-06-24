@@ -694,7 +694,7 @@ async function bundleJs(staticOutputDir, isProd) {
     format: 'esm',
     target: 'es2022',
     minify: isProd,
-    sourcemap: !isProd,
+    sourcemap: true,
     splitting: false,
   })
 }
