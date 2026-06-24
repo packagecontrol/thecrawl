@@ -50,7 +50,7 @@
       .light {
         outline: 1px solid rgba(255, 190, 16, 0);
         box-shadow: inset 1px 1px 10px -1px #ffe73500, 0 0 0 rgba(253, 225, 0, 0);
-        background: radial-gradient(circle, #f5f5f5 10%, #ffb800 80%);
+        background: radial-gradient(circle, #f5f5f5 70%, #ffd463 100%);
         background-position: 2px 60px;
         background-size: 80px;
       }
