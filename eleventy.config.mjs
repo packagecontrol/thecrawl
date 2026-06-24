@@ -27,6 +27,7 @@ const FEATURED_LABELS = [
   'theme',
 ]
 const LABELS_RANK = new Map(FEATURED_LABELS.map((label, index) => [label, index]))
+const LABEL_ICON_MINIMUM_USAGE = 2
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000
 const MAGIC_FRESHNESS_WINDOW_DAYS = 365 * 2 // bonus for packages that had updates
@@ -374,6 +375,7 @@ export default async function (eleventyConfig) {
   const siteOrigin = isProd ? prodOrigin : devOrigin
   const staticOutputDir = isProd ? 'static_' + util.gitHash : 'static'
   const bundledScriptEntries = new Set()
+  let labelIcons = null
 
   eleventyConfig.addPassthroughCopy(
     { static: staticOutputDir },
@@ -388,6 +390,11 @@ export default async function (eleventyConfig) {
   eleventyConfig.on('eleventy.after', async ({ directories } = {}) => {
     const outputDir = directories?.output ?? '_site'
     await writeVendorModules(path.join(outputDir, staticOutputDir, 'vendor'))
+    writePrunedLabelIconSprite(
+      'static/label-icons.svg',
+      path.join(outputDir, staticOutputDir, 'label-icons.svg'),
+      labelIcons?.sources,
+    )
 
     if (!isProd) {
       return
@@ -524,6 +531,8 @@ export default async function (eleventyConfig) {
 
   const packages = all_packages.map(packageData)
   const packagesWithMagic = computeMagicMetadata(packages)
+  const labels = util.collectLabels(all_packages)
+  labelIcons = filters.configureLabelIcons(labels, { minimumUsage: LABEL_ICON_MINIMUM_USAGE })
 
   const livingHomePackages = packages.filter(pkg => !pkg.removed)
 
@@ -613,9 +622,7 @@ export default async function (eleventyConfig) {
     }
   }
 
-  eleventyConfig.addCollection('labels', () => {
-    return util.collectLabels(all_packages)
-  })
+  eleventyConfig.addCollection('labels', () => labels)
 
   eleventyConfig.addCollection('libraries', () => {
     return Object.values(workspace.libraries)
@@ -678,6 +685,7 @@ export default async function (eleventyConfig) {
 
   // Register all named exports from external module as filters
   for (const [name, fn] of Object.entries(filters)) {
+    if (name === 'configureLabelIcons') continue
     eleventyConfig.addFilter(name, fn)
   }
 
@@ -694,6 +702,21 @@ export default async function (eleventyConfig) {
     },
     passthroughFileCopy: true,
   }
+}
+
+function writePrunedLabelIconSprite(sourcePath, outputPath, visibleSources) {
+  if (!(visibleSources instanceof Set) || !fs.existsSync(sourcePath)) {
+    return
+  }
+
+  const source = fs.readFileSync(sourcePath, 'utf8')
+  const pruned = source.replace(
+    /<symbol\b[^>]*\bid="label-icon-([^"]+)"[^>]*>[\s\S]*?<\/symbol>\r?\n?/g,
+    (symbol, iconSource) => visibleSources.has(iconSource) ? symbol : '',
+  )
+
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+  fs.writeFileSync(outputPath, pruned, 'utf8')
 }
 
 async function bundleJs(staticOutputDir, entries, isProd) {

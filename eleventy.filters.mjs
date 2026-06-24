@@ -14,6 +14,8 @@ const configPath = path.join(__dirname, 'label-icons-config.json')
 let labelIconSourceSet = new Set()
 let labelIconAliases = {}
 let labelIconTints = {}
+let labelIconVisibleSourceSet = null
+let labelIconVisibleTints = null
 
 const longDateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })
 const compactNumberFormatter = new Intl.NumberFormat('en', { notation: 'compact' })
@@ -67,7 +69,17 @@ export function label_icon_aliases_json() {
 }
 
 export function label_icon_tints_json() {
-  return JSON.stringify(labelIconTints)
+  return JSON.stringify(activeLabelIconTints())
+}
+
+export function configureLabelIcons(labels, { minimumUsage = 1 } = {}) {
+  labelIconVisibleSourceSet = visibleLabelIconSources(labels, minimumUsage)
+  labelIconVisibleTints = labelIconTintsForSources(labelIconVisibleSourceSet)
+
+  return {
+    sources: labelIconVisibleSourceSet,
+    tints: labelIconVisibleTints,
+  }
 }
 
 export function label_normalization_note(changes) {
@@ -102,7 +114,7 @@ export function search_index_json(packages) {
   return JSON.stringify({
     packages: packages.map(compactSearchPackage),
     label_icon_aliases: labelIconAliases,
-    label_icon_tints: labelIconTints,
+    label_icon_tints: activeLabelIconTints(),
   })
 }
 
@@ -186,7 +198,30 @@ function joinAsSentenceList(parts) {
   return `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}`
 }
 
-function canonicalLabel(label) {
+function visibleLabelIconSources(labels, minimumUsage) {
+  const counts = new Map()
+  const threshold = Math.max(1, Number(minimumUsage) || 1)
+
+  for (const item of labels ?? []) {
+    const key = typeof item?.key === 'string' ? item.key : String(item ?? '')
+    const canonical = sourceLabelFor(key)
+    if (!canonical) continue
+
+    const count = Number(item?.count ?? 1)
+    counts.set(canonical, (counts.get(canonical) ?? 0) + (Number.isFinite(count) ? count : 1))
+  }
+
+  const sources = new Set()
+  for (const source of labelIconSourceSet) {
+    if ((counts.get(source) ?? 0) >= threshold) {
+      sources.add(source)
+    }
+  }
+
+  return sources
+}
+
+function sourceLabelFor(label) {
   if (typeof label !== 'string') return ''
   const normalized = label.trim().toLowerCase()
   if (!normalized) return ''
@@ -203,6 +238,42 @@ function canonicalLabel(label) {
   return ''
 }
 
+function labelIconTintsForSources(sources) {
+  const tints = {}
+  for (const source of sources) {
+    if (Object.prototype.hasOwnProperty.call(labelIconTints, source)) {
+      tints[source] = labelIconTints[source]
+    }
+  }
+  return tints
+}
+
+function activeLabelIconSourceSet() {
+  return labelIconVisibleSourceSet ?? labelIconSourceSet
+}
+
+function activeLabelIconTints() {
+  return labelIconVisibleTints ?? labelIconTints
+}
+
+function canonicalLabel(label) {
+  if (typeof label !== 'string') return ''
+  const normalized = label.trim().toLowerCase()
+  if (!normalized) return ''
+
+  const sourceSet = activeLabelIconSourceSet()
+  const alias = labelIconAliases[normalized]
+  if (alias && sourceSet.has(alias)) {
+    return alias
+  }
+
+  if (sourceSet.has(normalized)) {
+    return normalized
+  }
+
+  return ''
+}
+
 export function label_icon_id(label) {
   const canonical = canonicalLabel(label)
   if (!canonical) return ''
@@ -212,7 +283,7 @@ export function label_icon_id(label) {
 export function label_icon_tint(label) {
   const canonical = canonicalLabel(label)
   if (!canonical) return ''
-  return labelIconTints[canonical] ?? ''
+  return activeLabelIconTints()[canonical] ?? ''
 }
 
 // number formatting with grouping (e.g. 10,000)

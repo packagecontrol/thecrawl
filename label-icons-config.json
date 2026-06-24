@@ -5,7 +5,6 @@
     "javascript": "js",
     "ecmascript": "js",
     "ecmascript6": "js",
-    "cpp": "c++",
-    "mac": "apple"
+    "cpp": "c++"
   }
 }
