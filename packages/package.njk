@@ -97,7 +97,7 @@ page_type: package
 
   {% if (pkg.labels and pkg.labels | length) or (pkg.normalized_labels and pkg.normalized_labels | length) %}
     <div class="package-labels">
-      {{ pack.labels(pkg, true) }}
+      {{ pack.labels(pkg) }}
 
       {% if pkg.normalized_labels and pkg.normalized_labels | length %}
         <aside class="label-normalization-note">

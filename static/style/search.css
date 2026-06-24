@@ -90,14 +90,6 @@ form[name='search'] {
   }
 }
 
-section[name="labels"] a.button.label svg.label-icon {
-  width: 16px;
-  height: 16px;
-  margin-right: -3px;
-  position: relative;
-  top: 3px;
-}
-
 input {
   background: var(--background-1);
   color: var(--foreground-1);

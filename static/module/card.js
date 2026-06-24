@@ -251,20 +251,6 @@ export class Card {
     a.classList.add('button', 'label')
     a.setAttribute('href', searchQueryFor('label', name))
 
-    const iconId = resolveLabelIconId(name)
-    if (iconId) {
-      const svgNS = 'http://www.w3.org/2000/svg'
-      const svg = document.createElementNS(svgNS, 'svg')
-      const canonical = iconId.replace(/^label-icon-/, '')
-      const tint = resolveLabelIconTint(canonical)
-      svg.setAttribute('class', `label-icon${tint ? ' label-icon--' + tint : ''}`)
-      svg.setAttribute('aria-hidden', 'true')
-      const use = document.createElementNS(svgNS, 'use')
-      use.setAttribute('href', `${this.staticBase}label-icons.svg#${iconId}`)
-      svg.appendChild(use)
-      a.appendChild(svg)
-    }
-
     if (['ST2', 'RIP'].includes(name)) {
       a.classList.add('state', 'state-bad')
     }
@@ -299,32 +285,6 @@ const searchQueryFor = (field, rawValue) => {
     ? `${field}:${value}`
     : `${field}:"${value}"`
   return '/?q=' + encodeURIComponent(filter)
-}
-
-const resolveLabelIconId = (label) => {
-  if (typeof label !== 'string') return null
-  const normalized = label.trim().toLowerCase()
-  if (!normalized) return null
-
-  const aliases = window.__LABEL_ICON_ALIASES__ ?? {}
-  const tints = window.__LABEL_ICON_TINTS__ ?? {}
-
-  let canonical = null
-  const alias = aliases[normalized]
-  if (alias && Object.prototype.hasOwnProperty.call(tints, alias)) {
-    canonical = alias
-  }
-  else if (Object.prototype.hasOwnProperty.call(tints, normalized)) {
-    canonical = normalized
-  }
-
-  if (!canonical) return null
-  return `label-icon-${canonical}`
-}
-
-const resolveLabelIconTint = (canonical) => {
-  const tints = window.__LABEL_ICON_TINTS__ ?? {}
-  return tints[canonical]
 }
 
 const toFinite = (value) => {

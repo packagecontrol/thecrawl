@@ -398,7 +398,6 @@ export default async function (eleventyConfig) {
     bundleCss(path.join(outputDir, `static_${util.gitHash}`, 'styles.css'))
   })
 
-  eleventyConfig.ignores.add('.AFileIcon')
   eleventyConfig.ignores.add('util')
   eleventyConfig.ignores.add('README.md')
   eleventyConfig.ignores.add('**/*.test.js')

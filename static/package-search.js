@@ -35,9 +35,6 @@ const allLabelRecords = buildLabelRecords(packages)
 const knownLabels = new Set(
   allLabelRecords.flatMap(record => record.map(entry => entry.normalizedLabel)),
 )
-window.__LABEL_ICON_ALIASES__ = rawIndex.label_icon_aliases ?? {}
-window.__LABEL_ICON_TINTS__ = rawIndex.label_icon_tints ?? {}
-
 const minisrch = createMinisearch(MiniSearch, packages)
 
 function normalizeSearchPackages(rawIndex) {

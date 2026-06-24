@@ -1,42 +1,12 @@
 import * as util from './eleventy.util.mjs'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
 
 // Compute prod mode locally so filters remain self-contained
 const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const sourcesPath = path.join(__dirname, 'label-icons.json')
-const configPath = path.join(__dirname, 'label-icons-config.json')
-
-let labelIconSourceSet = new Set()
-let labelIconAliases = {}
-let labelIconTints = {}
 
 const longDateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })
 const compactNumberFormatter = new Intl.NumberFormat('en', { notation: 'compact' })
 const groupedNumberFormatter = new Intl.NumberFormat('en', { useGrouping: true })
 const labelSortCollator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
-{
-  const rawSources = fs.readFileSync(sourcesPath, 'utf8')
-  const sourcesData = JSON.parse(rawSources)
-  if (!sourcesData || typeof sourcesData !== 'object') {
-    throw new Error(`Unexpected data format in ${sourcesPath}; expected object mapping labels to tints`)
-  }
-  const labelIconSources = Object.keys(sourcesData)
-  labelIconSourceSet = new Set(labelIconSources)
-  labelIconTints = sourcesData
-
-  const rawConfig = fs.readFileSync(configPath, 'utf8')
-  const configData = JSON.parse(rawConfig)
-  if (!configData || typeof configData.aliases !== 'object') {
-    throw new Error(`Missing or invalid "aliases" object in ${configPath}`)
-  }
-
-  labelIconAliases = configData.aliases
-}
 
 // Filters as normal functions
 // simple to date string for some dates without times
@@ -60,14 +30,6 @@ export function timestamp(date) {
 // compact number formatting (e.g. 10k)
 export function compact(count) {
   return compactNumberFormatter.format(count)
-}
-
-export function label_icon_aliases_json() {
-  return JSON.stringify(labelIconAliases)
-}
-
-export function label_icon_tints_json() {
-  return JSON.stringify(labelIconTints)
 }
 
 export function label_normalization_note(changes) {
@@ -101,8 +63,6 @@ export function label_normalization_note(changes) {
 export function search_index_json(packages) {
   return JSON.stringify({
     packages: packages.map(compactSearchPackage),
-    label_icon_aliases: labelIconAliases,
-    label_icon_tints: labelIconTints,
   })
 }
 
@@ -185,35 +145,6 @@ function joinAsSentenceList(parts) {
   }
 
   return `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}`
-}
-
-function canonicalLabel(label) {
-  if (typeof label !== 'string') return ''
-  const normalized = label.trim().toLowerCase()
-  if (!normalized) return ''
-
-  const alias = labelIconAliases[normalized]
-  if (alias && labelIconSourceSet.has(alias)) {
-    return alias
-  }
-
-  if (labelIconSourceSet.has(normalized)) {
-    return normalized
-  }
-
-  return ''
-}
-
-export function label_icon_id(label) {
-  const canonical = canonicalLabel(label)
-  if (!canonical) return ''
-  return `label-icon-${canonical}`
-}
-
-export function label_icon_tint(label) {
-  const canonical = canonicalLabel(label)
-  if (!canonical) return ''
-  return labelIconTints[canonical] ?? ''
 }
 
 // number formatting with grouping (e.g. 10,000)

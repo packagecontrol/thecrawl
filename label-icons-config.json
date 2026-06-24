@@ -1,9 +1,0 @@
-{
-  "_": "Manually maintained set of icons to exclude and an alias map from labels to icon/language ids",
-  "exclude": ["ai"],
-  "aliases": {
-    "javascript": "js",
-    "ecmascript": "js",
-    "ecmascript6": "js"
-  }
-}

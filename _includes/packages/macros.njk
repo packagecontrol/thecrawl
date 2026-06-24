@@ -91,7 +91,7 @@
       </p>
     {% endif %}
 
-    {{ labels(pkg, true) }}
+    {{ labels(pkg) }}
   </div>
 {% endmacro %}
 
@@ -102,7 +102,7 @@
       {% if pkg.platform_statement %}
         <div class="platform-statement">{{ pkg.platform_statement }}</div>
       {% endif %}
-      {{ labels(pkg, true) }}
+      {{ labels(pkg) }}
     </div>
   {% endif %}
 {% endmacro %}
@@ -150,7 +150,7 @@
   {% endif %}
 {% endmacro %}
 
-{% macro labels(pkg, with_icons=false) %}
+{% macro labels(pkg) %}
   {% set label_buttons -%}
     {%- for label in pkg.labels %}
       {% set q = searchQueryFor('label', label) %}
@@ -181,13 +181,6 @@
           </a>
         {% else %}
           <a class="button label" href="/?q={{ q }}">
-            {% set icon_id = (label | label_icon_id) if with_icons else '' %}
-            {% if icon_id %}
-              {% set tint = (label | label_icon_tint) if with_icons else '' %}
-              <svg class="label-icon{{ (' label-icon--' ~ tint) if tint }}" aria-hidden="true">
-                <use href="/{{ 'static/label-icons.svg' | bust }}#{{ icon_id }}"></use>
-              </svg>
-            {% endif %}
             {{ label }}
           </a>
         {% endif %}
