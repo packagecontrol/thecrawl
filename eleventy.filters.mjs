@@ -262,12 +262,6 @@ export function bust(p) {
   return p.replace('static/', 'static_' + util.gitHash + '/')
 }
 
-// opt in to prod JS bundles while keeping source URLs in dev
-export function bundled(p) {
-  if (!isProd) return p
-  return p.replace(/static\/([^/]+\.js)$/, `static_${util.gitHash}/bundle/$1`)
-}
-
 // Inline tests (Vitest)
 if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest

@@ -368,29 +368,23 @@ const vendorModules = [
   },
 ]
 
-const jsBundleEntries = [
-  'package-search',
-  'home',
-  'package',
-  'labels',
-  'libs',
-  'status',
-  'theme',
-  'keys',
-]
-
 export default async function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
   const prodOrigin = 'https://packages.sublimetext.io'
   const devOrigin = process.env.DEV_ORIGIN || 'http://localhost:8080'
   const siteOrigin = isProd ? prodOrigin : devOrigin
   const staticOutputDir = isProd ? 'static_' + util.gitHash : 'static'
+  const bundledScriptEntries = new Set()
 
   eleventyConfig.addPassthroughCopy(
     { static: staticOutputDir },
     { filter: src => !src.endsWith('.test.js') },
   )
   eleventyConfig.addWatchTarget('./eleventy.install-chart.mjs')
+
+  eleventyConfig.on('eleventy.before', () => {
+    bundledScriptEntries.clear()
+  })
 
   eleventyConfig.on('eleventy.after', async ({ directories } = {}) => {
     const outputDir = directories?.output ?? '_site'
@@ -400,7 +394,7 @@ export default async function (eleventyConfig) {
       return
     }
 
-    await bundleJs(path.join(outputDir, staticOutputDir), isProd)
+    await bundleJs(path.join(outputDir, staticOutputDir), bundledScriptEntries, isProd)
     bundleCss(path.join(outputDir, `static_${util.gitHash}`, 'styles.css'))
   })
 
@@ -677,6 +671,12 @@ export default async function (eleventyConfig) {
     eleventyConfig.addFilter(name, fn)
   }
 
+  // `bundled` is both a URL filter and a build manifest collector. During a
+  // render pass, each usage records a JS entry that `eleventy.after` bundles.
+  // Clear the set in `eleventy.before` so watch-mode rebuilds do not keep
+  // entries that were removed from templates.
+  eleventyConfig.addFilter('bundled', p => bundledScriptUrl(p, bundledScriptEntries, isProd))
+
   return {
     dir: {
       input: '.',
@@ -686,9 +686,13 @@ export default async function (eleventyConfig) {
   }
 }
 
-async function bundleJs(staticOutputDir, isProd) {
+async function bundleJs(staticOutputDir, entries, isProd) {
+  if (!entries.size) {
+    return
+  }
+
   await esbuild.build({
-    entryPoints: jsBundleEntryPoints(staticOutputDir),
+    entryPoints: jsBundleEntryPoints(staticOutputDir, entries),
     outdir: path.join(staticOutputDir, 'bundle'),
     bundle: true,
     format: 'esm',
@@ -699,11 +703,27 @@ async function bundleJs(staticOutputDir, isProd) {
   })
 }
 
-function jsBundleEntryPoints(staticOutputDir) {
+function bundledScriptUrl(p, entries, isProd) {
+  const match = String(p).match(/^(\/?)static\/([^/]+\.js)$/)
+  if (!match) {
+    throw new Error(`[bundled] Expected /static/<entry>.js, got ${p}`)
+  }
+
+  const [, leadingSlash, fileName] = match
+  entries.add(fileName)
+
+  if (!isProd) {
+    return p
+  }
+
+  return `${leadingSlash}static_${util.gitHash}/bundle/${fileName}`
+}
+
+function jsBundleEntryPoints(staticOutputDir, entries) {
   return Object.fromEntries(
-    jsBundleEntries.map(entry => [
-      entry,
-      path.join(staticOutputDir, `${entry}.js`),
+    [...entries].sort().map(fileName => [
+      path.basename(fileName, '.js'),
+      path.join(staticOutputDir, fileName),
     ]),
   )
 }
