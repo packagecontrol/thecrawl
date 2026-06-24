@@ -7,7 +7,9 @@ export default class SearchIndex {
     }
   }
 
-  render({ collections }) {
-    return search_index_json(collections.searchable_packages)
+  render({ collections, site }) {
+    return search_index_json(collections.searchable_packages, {
+      includeMagicDetails: site.rankingEasterEgg,
+    })
   }
 }

@@ -370,6 +370,7 @@ const vendorModules = [
 
 export default async function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
+  const rankingEasterEgg = rankingEasterEggEnabled(isProd)
   const prodOrigin = 'https://packages.sublimetext.io'
   const devOrigin = process.env.DEV_ORIGIN || 'http://localhost:8080'
   const siteOrigin = isProd ? prodOrigin : devOrigin
@@ -628,6 +629,7 @@ export default async function (eleventyConfig) {
     prodOrigin,
     devOrigin,
     disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
+    rankingEasterEgg,
   })
 
   // Send the full tag history so the browser can decide what is visible and
@@ -684,6 +686,15 @@ export default async function (eleventyConfig) {
     },
     passthroughFileCopy: true,
   }
+}
+
+function rankingEasterEggEnabled(isProd) {
+  const override = process.env.RANKING_EASTER_EGG
+  if (typeof override === 'string') {
+    return override.trim().toLowerCase() === 'true'
+  }
+
+  return !isProd
 }
 
 async function bundleJs(staticOutputDir, entries, isProd) {
