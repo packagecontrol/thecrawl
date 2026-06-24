@@ -78,7 +78,11 @@ header {
       display: none;
 
       @media (max-width: 50rem) {
-        display: inline;
+        display: inline-grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        vertical-align: middle;
       }
     }
   }

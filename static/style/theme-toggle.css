@@ -35,7 +35,6 @@
 
   .theme-toggle-dial {
     position: relative;
-    z-index: 1;
     display: block;
     width: 20px;
     height: 20px;
