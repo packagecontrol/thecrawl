@@ -69777,6 +69777,19 @@
       "first_seen": "2013-05-20T02:53:41Z"
     },
     {
+      "details": "https://github.com/leoshome/StyleTokenHighlighter",
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "StyleTokenHighlighter",
+      "first_seen": "2026-06-24T20:50:10Z"
+    },
+    {
       "name": "StylishHaskell",
       "details": "https://github.com/hairyhum/SublimeStylishHaskell",
       "releases": [
