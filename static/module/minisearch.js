@@ -4,6 +4,9 @@ const VARIANT_REPLACEMENTS = [
   [/^cxx$/i, 'c++'],
   [/^csharp$/i, 'c#'],
 
+  [/^l10n/i, 'localization'],
+  [/^i18n$/i, 'internationalization'],
+
   [/colou/gi, 'colo'], // colour => color
   [/localis/gi, 'localiz'], // localisation => localization
   [/internationalis/gi, 'internationaliz'], // internationalisation => internationalization
