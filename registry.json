@@ -26905,7 +26905,7 @@
     },
     {
       "name": "Gettext",
-      "details": "https://github.com/idleberg/sublime-gettext",
+      "details": "https://github.com/michaelblyons/SublimeSyntax-gettext",
       "labels": [
         "language syntax",
         "snippets",
@@ -30627,6 +30627,23 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2013-08-15T20:55:12Z"
+    },
+    {
+      "name": "Harpoon",
+      "details": "https://github.com/huyhoang8398/Harpoon",
+      "labels": [
+        "file navigation",
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-06-28T20:42:41Z"
     },
     {
       "name": "Harvey",
