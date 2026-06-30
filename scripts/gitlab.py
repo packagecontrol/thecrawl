@@ -7,7 +7,7 @@ import re
 from urllib.parse import urlparse, quote
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from ._utils import drop_falsy, err, normalize_tz_aware_datetime
+from ._utils import drop_falsy, err, normalize_tz_aware_datetime, USER_AGENT
 
 QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
 Url = str
@@ -70,7 +70,7 @@ def parse_owner_repo(url: str):
 
 
 def _auth_headers() -> dict[str, str]:
-    headers: dict[str, str] = {}
+    headers: dict[str, str] = {'User-Agent': USER_AGENT}
     if token := os.getenv("GITLAB_TOKEN"):
         headers["PRIVATE-TOKEN"] = token
     return headers

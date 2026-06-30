@@ -12,7 +12,7 @@ import time
 from urllib.parse import urlparse
 from typing import Any, Callable, Iterable, Mapping, NotRequired, TypedDict, TypeGuard
 
-from ._utils import flatten, pick, resolve_urls, update_url, write_json, pl
+from ._utils import flatten, pick, resolve_urls, update_url, write_json, pl, USER_AGENT
 
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
@@ -337,7 +337,7 @@ async def http_get_json(location: str, session: aiohttp.ClientSession) -> dict:
 
 
 async def http_get(location: str, session: aiohttp.ClientSession) -> str:
-    headers = {'User-Agent': 'Mozilla/5.0'}
+    headers = {'User-Agent': USER_AGENT}
     async with session.get(location, headers=headers, raise_for_status=True) as resp:
         return await resp.text()
 

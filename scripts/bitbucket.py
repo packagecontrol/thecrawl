@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from ._utils import drop_falsy, err, normalize_tz_aware_datetime
+from ._utils import drop_falsy, err, normalize_tz_aware_datetime, USER_AGENT
 
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
@@ -62,7 +62,7 @@ if not os.getenv("BITBUCKET_TOKEN"):
 
 
 async def fetch_json(session: aiohttp.ClientSession, url: str) -> dict:
-    headers = {}
+    headers = {'User-Agent': USER_AGENT}
     if token := os.getenv("BITBUCKET_TOKEN"):
         headers["Authorization"] = f"Bearer {token}"
     async with session.get(url, headers=headers) as resp:

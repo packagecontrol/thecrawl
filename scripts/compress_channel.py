@@ -8,7 +8,7 @@ import json
 import os
 import sys
 
-from ._utils import pl, write_json
+from ._utils import pl, write_json, USER_AGENT
 
 
 NEW_CHANNEL = (
@@ -153,7 +153,7 @@ async def http_get_json(location: str, session: aiohttp.ClientSession) -> dict:
 
 async def http_get(location: str, session: aiohttp.ClientSession) -> str:
     headers = {
-        'User-Agent': 'Mozilla/5.0',
+        'User-Agent': USER_AGENT,
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache'
     }
