@@ -44827,8 +44827,7 @@
       "name": "Material Theme - Appbar",
       "labels": [
         "theme",
-        "material design",
-        "material theme"
+        "material"
       ],
       "first_seen": "2016-01-07T23:56:43Z",
       "removed": "2021-12-19T18:07:48Z"
@@ -44838,7 +44837,7 @@
       "labels": [
         "theme",
         "color scheme",
-        "material design"
+        "material"
       ],
       "first_seen": "2015-06-25T19:00:09Z",
       "removed": "2021-12-19T18:07:50Z"
