@@ -30147,7 +30147,6 @@
       "author": "Salvatore Gentile",
       "labels": [
         "gutter",
-        "themes",
         "sl",
         "theme",
         "sublimelinter"
@@ -30320,9 +30319,7 @@
       "labels": [
         "theme",
         "color scheme",
-        "dark",
-        "hadar",
-        "hadar theme"
+        "dark"
       ],
       "releases": [
         {
@@ -44769,7 +44766,7 @@
       "details": "https://github.com/hlrossato/material-monokai",
       "labels": [
         "color scheme",
-        "material design",
+        "material",
         "monokai"
       ],
       "releases": [
@@ -45223,20 +45220,13 @@
     },
     {
       "name": "MCP Commander",
-      "details": "https://github.com/dpc00/sublime-mcp",
       "labels": [
         "ai",
         "mcp"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=4000",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2026-06-16T19:52:33Z"
+      "first_seen": "2026-06-16T19:52:33Z",
+      "removed": "2026-07-01T19:18:43Z"
     },
     {
       "name": "MCPHelper",
@@ -66654,7 +66644,7 @@
       "name": "Skins",
       "details": "https://github.com/deathaxe/sublime-skins",
       "labels": [
-        "themes",
+        "theme",
         "utilities"
       ],
       "releases": [
