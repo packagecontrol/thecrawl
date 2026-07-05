@@ -90636,6 +90636,26 @@
       "schema_version": "4.0.0"
     },
     {
+      "name": "cron-descriptor",
+      "description": "A Python library that converts cron expressions into human readable strings",
+      "author": "Adam Schubert",
+      "issues": "https://github.com/Salamek/cron-descriptor/issues",
+      "releases": [
+        {
+          "base": "https://pypi.org/project/cron-descriptor",
+          "asset": "cron_descriptor-*-py3-none-any.whl",
+          "python_versions": [
+            "3.3",
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+      "schema_version": "4.0.0"
+    },
+    {
       "name": "crypt",
       "description": "Python crypt module",
       "author": "adnanyaqoobvirk",
