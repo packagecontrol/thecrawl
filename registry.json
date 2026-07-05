@@ -89839,6 +89839,13 @@
       "issues": "https://github.com/sonic182/aiosonic",
       "releases": [
         {
+          "base": "https://github.com/packagecontrol/aiosonic",
+          "asset": "aiosonic-*-py3-none-any.whl",
+          "python_versions": [
+            "3.8"
+          ]
+        },
+        {
           "base": "https://pypi.org/project/aiosonic",
           "asset": "aiosonic-*-py3-none-any.whl",
           "python_versions": [
