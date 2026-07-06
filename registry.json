@@ -604,21 +604,14 @@
     },
     {
       "name": "Acme",
-      "details": "https://github.com/multiversecoder/Acme",
       "labels": [
         "color scheme",
         "theme",
         "acme"
       ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2021-06-28T18:39:03Z"
+      "first_seen": "2021-06-28T18:39:03Z",
+      "removed": "2026-07-06T20:25:57Z"
     },
     {
       "name": "Acme Color Scheme",
@@ -36401,16 +36394,9 @@
     },
     {
       "name": "JS2Coffee",
-      "details": "https://github.com/aziz/sublime-js2coffee",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2012-08-29T23:16:22Z"
+      "first_seen": "2012-08-29T23:16:22Z",
+      "removed": "2026-07-06T20:25:57Z"
     },
     {
       "details": "https://github.com/junosuarez/JsBDD",
@@ -48307,20 +48293,13 @@
     },
     {
       "name": "NaNoWriMo Word Count Updater",
-      "details": "https://github.com/Nanofus/nanowrimo_word_count_updater",
       "labels": [
         "workflow",
         "sync"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=3000",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2017-11-11T23:06:24Z"
+      "first_seen": "2017-11-11T23:06:24Z",
+      "removed": "2026-07-06T20:25:57Z"
     },
     {
       "name": "Naomi",
@@ -58946,19 +58925,12 @@
     },
     {
       "name": "Ra Spring",
-      "details": "https://github.com/vbasky/RaSpring",
       "labels": [
         "color scheme"
       ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2020-09-30T15:07:09Z"
+      "first_seen": "2020-09-30T15:07:09Z",
+      "removed": "2026-07-06T20:25:57Z"
     },
     {
       "name": "RabbitVCS",
