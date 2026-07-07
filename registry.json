@@ -27118,6 +27118,10 @@
     {
       "name": "Git badges like VS Code",
       "details": "https://github.com/arxeiss/Sublime-GitBadgesLikeVSCode",
+      "labels": [
+        "git",
+        "sidebar"
+      ],
       "releases": [
         {
           "sublime_text": ">=3200",
@@ -27153,7 +27157,7 @@
       "description": "Auto-complete a git commit co-authorship",
       "labels": [
         "git",
-        "git commit",
+        "commit",
         "co-author"
       ],
       "details": "https://github.com/TomasBarry/Sublime-git-co-author",
@@ -27171,10 +27175,8 @@
       "name": "Git Commit Message Syntax",
       "details": "https://github.com/adambullmer/sublime_git_commit_syntax",
       "labels": [
-        "git",
-        "language",
-        "syntax",
         "language syntax",
+        "git",
         "commit"
       ],
       "author": "adambullmer",
@@ -27192,7 +27194,8 @@
       "name": "Git Config",
       "details": "https://github.com/robballou/gitconfig-sublimetext",
       "labels": [
-        "language syntax"
+        "language syntax",
+        "git"
       ],
       "releases": [
         {
@@ -27207,6 +27210,10 @@
     {
       "name": "Git Conflict Resolver",
       "details": "https://github.com/sascha-wolf/sublime-GitConflictResolver",
+      "labels": [
+        "git",
+        "gutter"
+      ],
       "releases": [
         {
           "sublime_text": "*",
