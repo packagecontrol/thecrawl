@@ -86602,7 +86602,6 @@
       "first_seen": "2012-03-06T15:23:42Z"
     },
     {
-      "fetching_source_failed": "2026-07-08T01:00:58Z",
       "name": "Web Inspector",
       "details": "https://github.com/sokolovstas/SublimeWebInspector",
       "labels": [
