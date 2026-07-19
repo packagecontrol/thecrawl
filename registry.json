@@ -3010,6 +3010,10 @@
     },
     {
       "details": "https://github.com/facelessuser/ApplySyntax",
+      "labels": [
+        "syntax",
+        "utilities"
+      ],
       "releases": [
         {
           "sublime_text": "3000 - 4200",
@@ -28587,6 +28591,23 @@
       "first_seen": "2016-04-06T13:19:13Z"
     },
     {
+      "name": "Gold Rose",
+      "details": "https://github.com/zacharytruong/gold-rose",
+      "labels": [
+        "color scheme",
+        "theme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-19T11:42:47Z"
+    },
+    {
       "name": "Golden Dragon Color Scheme",
       "details": "https://github.com/zaynali53/golden-dragon",
       "labels": [
@@ -52527,11 +52548,11 @@
     {
       "name": "PackageDev",
       "details": "https://github.com/SublimeText/PackageDev",
-      "author": [
-        "FichteFoll"
-      ],
+      "author": "FichteFoll",
       "labels": [
-        "language syntax"
+        "language syntax",
+        "package development",
+        "snippets"
       ],
       "releases": [
         {
@@ -52545,6 +52566,10 @@
         {
           "sublime_text": ">=4094",
           "tags": true
+        },
+        {
+          "sublime_text": ">=4135",
+          "tags": "st-4135/"
         }
       ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
@@ -60605,6 +60630,7 @@
       "name": "RememberSyntax",
       "details": "https://github.com/Suor/RememberSyntax",
       "labels": [
+        "syntax",
         "utilities"
       ],
       "releases": [
@@ -77084,7 +77110,7 @@
       "details": "https://github.com/malexer/SyntaxHistory",
       "labels": [
         "syntax",
-        "syntax highlight"
+        "utilities"
       ],
       "releases": [
         {
@@ -77595,6 +77621,23 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2013-12-27T17:55:55Z"
+    },
+    {
+      "details": "https://github.com/SublimeText/TabStack",
+      "author": "FichteFoll",
+      "labels": [
+        "tab navigation"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4100",
+          "tags": "st-4100/"
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "TabStack",
+      "first_seen": "2026-07-19T11:42:47Z"
     },
     {
       "details": "https://github.com/jbrooksuk/TabsToTable",
@@ -85503,6 +85546,22 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2024-11-10T10:32:15Z"
+    },
+    {
+      "name": "Vibescript",
+      "details": "https://github.com/mgomes/sublime-vibescript",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-19T11:42:47Z"
     },
     {
       "name": "View Bookmarks",
