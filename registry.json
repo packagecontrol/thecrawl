@@ -68392,6 +68392,22 @@
       "first_seen": "2014-11-20T19:41:50Z"
     },
     {
+      "name": "Spintax",
+      "details": "https://github.com/investblog/sublime-spintax",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3092",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-19T19:55:19Z"
+    },
+    {
       "name": "SPIP",
       "details": "https://github.com/phenix-factory/Sublime-SPIP",
       "labels": [
