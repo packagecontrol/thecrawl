@@ -52560,11 +52560,11 @@
           "tags": "st2-"
         },
         {
-          "sublime_text": "<4094",
+          "sublime_text": "3154 - 4093",
           "tags": "st3-v"
         },
         {
-          "sublime_text": ">=4094",
+          "sublime_text": "4094 - 4134",
           "tags": true
         },
         {
