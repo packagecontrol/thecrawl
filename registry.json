@@ -45611,9 +45611,13 @@
     {
       "name": "Mercurial Color Scheme",
       "details": "https://github.com/renzojohnson/mercurial-color-scheme",
-      "donate": "https://github.com/sponsors/renzojohnson",
+      "homepage": "https://renzojohnson.com",
+      "issues": "https://renzojohnson.com/contact",
+      "donate": "https://www.paypal.com/paypalme/renzojohnson",
       "labels": [
-        "color scheme"
+        "color scheme",
+        "dark",
+        "light"
       ],
       "releases": [
         {
@@ -50843,6 +50847,25 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2017-05-30T13:56:06Z"
+    },
+    {
+      "name": "Odoo",
+      "details": "https://github.com/Mr7F/sublime-odoo",
+      "labels": [
+        "odoo",
+        "language syntax",
+        "snippets",
+        "auto-complete"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-19T15:17:38Z"
     },
     {
       "name": "Odoo Snippets",
@@ -68193,9 +68216,13 @@
     {
       "name": "Spartan Color Scheme",
       "details": "https://github.com/renzojohnson/spartan-color-scheme",
+      "homepage": "https://renzojohnson.com",
+      "issues": "https://renzojohnson.com/contact",
+      "donate": "https://www.paypal.com/paypalme/renzojohnson",
       "labels": [
         "color scheme",
-        "dark"
+        "dark",
+        "light"
       ],
       "releases": [
         {
