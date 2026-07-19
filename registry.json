@@ -7361,6 +7361,9 @@
     },
     {
       "details": "https://github.com/facelessuser/BracketHighlighter",
+      "labels": [
+        "brackets"
+      ],
       "releases": [
         {
           "sublime_text": "3000 - 4200",
@@ -8842,7 +8845,9 @@
         "Catppuccin"
       ],
       "labels": [
-        "color scheme"
+        "color scheme",
+        "dark",
+        "light"
       ],
       "releases": [
         {
@@ -12958,6 +12963,11 @@
     },
     {
       "details": "https://github.com/facelessuser/ColorHelper",
+      "labels": [
+        "color",
+        "preview",
+        "utilities"
+      ],
       "releases": [
         {
           "sublime_text": "3170 - 3999",
@@ -19250,7 +19260,8 @@
       "name": "Dracula Color Scheme",
       "details": "https://github.com/dracula/sublime",
       "labels": [
-        "color scheme"
+        "color scheme",
+        "dark"
       ],
       "releases": [
         {
@@ -27383,6 +27394,11 @@
     },
     {
       "details": "https://github.com/jisaacks/GitGutter",
+      "labels": [
+        "git",
+        "diff",
+        "gutter"
+      ],
       "releases": [
         {
           "sublime_text": "<3176",
@@ -30115,6 +30131,7 @@
       "labels": [
         "theme",
         "color scheme",
+        "dark",
         "clock",
         "weather"
       ],
@@ -30966,7 +30983,8 @@
     {
       "details": "https://github.com/facelessuser/HexViewer",
       "labels": [
-        "language syntax"
+        "language syntax",
+        "binary"
       ],
       "releases": [
         {
@@ -39253,6 +39271,15 @@
     },
     {
       "details": "https://github.com/SublimeText/LaTeXTools",
+      "labels": [
+        "build system",
+        "snippets",
+        "completions",
+        "file navigation",
+        "citations",
+        "latex",
+        "bibtex"
+      ],
       "releases": [
         {
           "sublime_text": "<3000",
@@ -40850,7 +40877,9 @@
       "labels": [
         "localize",
         "tool",
-        "menu"
+        "menu",
+        "l10n",
+        "i18n"
       ],
       "releases": [
         {
@@ -54513,7 +54542,6 @@
       "details": "https://github.com/driade/phpfmt8",
       "labels": [
         "formatting",
-        "language syntax",
         "php"
       ],
       "releases": [
@@ -62768,7 +62796,8 @@
       "name": "Rust Enhanced",
       "details": "https://github.com/rust-lang/rust-enhanced",
       "labels": [
-        "language syntax"
+        "language syntax",
+        "rust"
       ],
       "releases": [
         {
@@ -76888,6 +76917,10 @@
     {
       "name": "SyncedSideBar",
       "details": "https://github.com/TheSpyder/SyncedSideBar",
+      "labels": [
+        "sidebar",
+        "file navigation"
+      ],
       "releases": [
         {
           "sublime_text": "<4050",
@@ -80951,7 +80984,9 @@
       "details": "https://github.com/SublimeText/Spacegray",
       "labels": [
         "theme",
-        "color scheme"
+        "color scheme",
+        "dark",
+        "light"
       ],
       "releases": [
         {
@@ -85871,7 +85906,9 @@
       "details": "https://github.com/vbasky/sublime-vscode-plus",
       "issues": "https://github.com/vbasky/sublime-vscode-plus/issues",
       "labels": [
-        "color scheme"
+        "color scheme",
+        "dark",
+        "light"
       ],
       "releases": [
         {
@@ -85887,7 +85924,8 @@
       "name": "Visual Studio Dark",
       "details": "https://github.com/nikeee/visual-studio-dark",
       "labels": [
-        "color scheme"
+        "color scheme",
+        "dark"
       ],
       "releases": [
         {
