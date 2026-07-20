@@ -8772,6 +8772,25 @@
       "first_seen": "2014-11-27T23:45:08Z"
     },
     {
+      "name": "Carve",
+      "details": "https://github.com/markup-carve/sublime-carve",
+      "labels": [
+        "language syntax",
+        "carve",
+        "markup",
+        "djot"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3092",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-20T10:27:39Z"
+    },
+    {
       "name": "Case Conversion",
       "details": "https://github.com/jdavisclark/CaseConversion",
       "releases": [
