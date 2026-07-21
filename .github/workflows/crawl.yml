@@ -106,28 +106,35 @@ jobs:
           # ensure the file is there in case we actually don't run
           touch lib.log
 
+          DATE=$(TZ=Europe/Berlin date +%Y-%m-%d)
+          HOUR=$(TZ=Europe/Berlin date +%H)
+          if [ "$HOUR" -ge 7 ] && [ "$HOUR" -lt 18 ]; then
+            RUN_STAMP="$DATE morning"
+          elif [ "$HOUR" -ge 18 ]; then
+            RUN_STAMP="$DATE evening"
+          else
+            RUN_STAMP="$DATE initial"
+            OUTSIDE_LIBRARY_WINDOW=true
+          fi
+
           # ensure we run initially
           if [ ! -f ./wrk/last-lib-run.txt ]; then
             echo "run=true" >> $GITHUB_OUTPUT
+            echo "stamp=$RUN_STAMP" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          # otherwise, run around 07:00 or 18:00 CET
-          DATE=$(TZ=Europe/Berlin date +%Y-%m-%d)
-          HOUR=$(TZ=Europe/Berlin date +%H)
-          case "$HOUR" in
-            07|18) ;; 
-            *)
-              echo "run=false" >> $GITHUB_OUTPUT
-              exit 0
-              ;;
-          esac
-          RUN_STAMP="$DATE $HOUR"
-          if [ -f ./wrk/last-lib-run.txt ] && grep -q "$RUN_STAMP" ./wrk/last-lib-run.txt; then
+          # otherwise, run once per Berlin-time library window
+          if [ "${OUTSIDE_LIBRARY_WINDOW:-false}" = true ]; then
+            echo "run=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          if grep -Fxq "$RUN_STAMP" ./wrk/last-lib-run.txt; then
             echo "run=false" >> $GITHUB_OUTPUT
             exit 0
           fi
           echo "run=true" >> $GITHUB_OUTPUT
+          echo "stamp=$RUN_STAMP" >> $GITHUB_OUTPUT
 
       - name: Resolve libraries
         if: steps.resolve_window.outputs.run == 'true'
@@ -139,7 +146,7 @@ jobs:
             --allowed-source https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json \
             --limit 150 \
             1> >(tee lib.log)
-          TZ=Europe/Berlin date +"%Y-%m-%d %H" > ./wrk/last-lib-run.txt
+          echo "${{ steps.resolve_window.outputs.stamp }}" > ./wrk/last-lib-run.txt
 
       - name: Generate channel
         run: |
