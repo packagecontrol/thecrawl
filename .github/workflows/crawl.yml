@@ -85,8 +85,6 @@ jobs:
           set -o pipefail
           PYTHONUNBUFFERED=1 uv run -m scripts.generate_registry \
             --seed ./.the-registry/registry.json \
-            --channel https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json \
-            --channel https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/channel.json \
             -o ./wrk/registry.json \
             2> >(tee registry.log >&2)
 
