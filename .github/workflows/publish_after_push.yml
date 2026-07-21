@@ -27,6 +27,14 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Restore rendered README cache
+        uses: actions/cache@v4
+        with:
+          path: readmes_rendered.json
+          key: readmes-rendered-${{ github.run_id }}
+          restore-keys: |
+            readmes-rendered-
+
       - name: Build
         run: make build
 
