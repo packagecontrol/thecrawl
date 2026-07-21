@@ -304,7 +304,6 @@ export function basePackage(pkg) {
     platform_statement: util.computePlatformStatement(platforms),
     compatibility,
     outdated: compatibility === 'st2',
-    st3_only: compatibility === 'st3',
   }
 }
 

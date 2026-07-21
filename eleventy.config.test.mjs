@@ -13,7 +13,6 @@ describe('basePackage compatibility labels', () => {
     expect(pkg.labels).toEqual(['RIP', 'auto-complete', 'ai', 'assistant'])
     expect(pkg.compatibility).toBeNull()
     expect(pkg.outdated).toBe(false)
-    expect(pkg.st3_only).toBe(false)
   })
 
   it('derives ST2 labels and flags from compatibility', () => {
@@ -27,7 +26,6 @@ describe('basePackage compatibility labels', () => {
     expect(pkg.labels).toEqual(['ST2'])
     expect(pkg.compatibility).toBe('st2')
     expect(pkg.outdated).toBe(true)
-    expect(pkg.st3_only).toBe(false)
   })
 
   it('derives ST3 labels and flags from compatibility', () => {
@@ -41,6 +39,5 @@ describe('basePackage compatibility labels', () => {
     expect(pkg.labels).toEqual(['ST3'])
     expect(pkg.compatibility).toBe('st3')
     expect(pkg.outdated).toBe(false)
-    expect(pkg.st3_only).toBe(true)
   })
 })

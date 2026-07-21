@@ -61,7 +61,6 @@ function createMinisearchInstance(MiniSearch) {
       'magic_score',
       'magic',
       'outdated',
-      'st3_only',
     ],
     searchOptions: {
       boost: { author: 2, name: 2 },
