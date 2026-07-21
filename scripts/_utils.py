@@ -13,6 +13,9 @@ from typing import Callable, Iterable, Iterator, Mapping, NamedTuple, Optional, 
 import inflect
 
 
+USER_AGENT = "Mozilla/5.0 (thecrawl 1.0; +https://packages.sublimetext.io)"
+
+
 def err(*args, **kwargs):
     print(*args, **kwargs, file=sys.stderr)
 

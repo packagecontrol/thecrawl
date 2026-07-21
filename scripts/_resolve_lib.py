@@ -22,7 +22,14 @@ from .github import (
     RepoInfo,
     RepoMetadata,
 )
-from ._utils import drop_falsy, flatten, pipe, unique_values_preserving_order, write_json
+from ._utils import (
+    drop_falsy,
+    flatten,
+    pipe,
+    unique_values_preserving_order,
+    write_json,
+    USER_AGENT,
+)
 
 
 PYPI_BASE = "https://pypi.org/pypi/{}/json"
@@ -619,7 +626,7 @@ async def _fetch_pypi_json(
             if fetched_at and now - fetched_at < ttl_seconds:
                 return load_json(cache_path), "cache"
 
-    headers = {}
+    headers = {'User-Agent': USER_AGENT}
     if has_cache:
         if entry.get("etag"):
             headers["If-None-Match"] = entry["etag"]

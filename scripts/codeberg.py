@@ -7,7 +7,7 @@ from urllib.parse import urlparse, urlencode, quote
 
 from typing import AsyncIterable, TypedDict, Literal, Iterable
 
-from ._utils import drop_falsy, err, normalize_tz_aware_datetime
+from ._utils import drop_falsy, err, normalize_tz_aware_datetime, USER_AGENT
 
 
 type QueryScope = Literal["METADATA", "TAGS", "BRANCHES"]
@@ -71,7 +71,7 @@ def parse_owner_repo(url: str):
 
 
 def _auth_headers() -> dict[str, str]:
-    headers: dict[str, str] = {}
+    headers: dict[str, str] = {'User-Agent': USER_AGENT}
     # Codeberg (Forgejo/Gitea) supports Authorization: token <TOKEN>
     if token := os.getenv("CODEBERG_TOKEN"):
         headers["Authorization"] = f"token {token}"

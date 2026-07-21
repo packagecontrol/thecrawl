@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from itertools import count, takewhile
 from urllib.request import Request, urlopen
 
-from ._utils import write_json
+from ._utils import write_json, USER_AGENT
 
 DEFAULT_OUTPUT_FILE = "stats.json"
 DEFAULT_URL = "https://stats.sublimetext.io/all-totals"
@@ -121,7 +121,7 @@ def accumulate(value: int, container: dict, key: str, wanted_length: int, rollov
 
 
 def fetch_totals(url: str) -> dict:
-    request = Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    request = Request(url, headers={"User-Agent": USER_AGENT})
     with urlopen(request) as resp:
         return json.load(resp)
 

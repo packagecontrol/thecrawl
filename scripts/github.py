@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 from typing import AsyncIterable, Iterable, TypedDict
 
-from ._utils import drop_falsy, normalize_tz_aware_datetime
+from ._utils import drop_falsy, normalize_tz_aware_datetime, USER_AGENT
 
 # This module exposes a single entrypoint
 # fetch_repo_info(Url, Iterable[QueryScope]) -> RepoInfo
@@ -292,6 +292,7 @@ def github_headers(accept: str) -> dict[str, str]:
     if not token:
         raise RuntimeError("GITHUB_TOKEN env var is not set")
     return {
+        "User-Agent": USER_AGENT,
         "Authorization": f"Bearer {token}",
         "Accept": accept,
     }

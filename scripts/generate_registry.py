@@ -12,7 +12,7 @@ import time
 from urllib.parse import urlparse
 from typing import Any, Callable, Iterable, Mapping, NotRequired, TypedDict, TypeGuard
 
-from ._utils import flatten, pick, resolve_urls, update_url, write_json, pl
+from ._utils import flatten, pick, resolve_urls, update_url, write_json, pl, USER_AGENT
 
 
 DEFAULT_OUTPUT_FILE = "./registry.json"
@@ -159,16 +159,16 @@ async def fetch_packages(
     now = time.monotonic()
     now_string = now_utc_string()
 
-    async with aiohttp.ClientSession() as session:
+    connector = aiohttp.TCPConnector(limit=MAX_CONCURRENCY)
+    async with aiohttp.ClientSession(connector=connector) as session:
         # Fetch repositories from all channels in parallel
         repos_lists = await asyncio.gather(*[
             get_repositories(channel, session) for channel in channels
         ])
         repos: list[str] = list(flatten(repos_lists))
         unseen = Unseen(repos)
-        sem = asyncio.Semaphore(MAX_CONCURRENCY)
         repo_results = await asyncio.gather(*[
-            asyncio.create_task(fetch_repository(url, unseen, sem, session))
+            asyncio.create_task(fetch_repository(url, unseen, session))
             for url in repos
         ], return_exceptions=True)
 
@@ -292,10 +292,9 @@ def parse_owner_repo(url: str) -> tuple[str, str]:
 async def fetch_repository(
     location: Url,
     unseen: Unseen[Url],
-    sem: asyncio.Semaphore,
     session: aiohttp.ClientSession,
 ) -> RepositorySchema:
-    result = await __fetch_repo(location, sem, session)
+    result = await http_get_json(location, session)
 
     repository: RepositorySchema = {
         "self": location,
@@ -305,19 +304,12 @@ async def fetch_repository(
     }
     if includes := result.get("includes"):
         for result in await asyncio.gather(*[
-            __fetch_repo(include, sem, session)
+            http_get_json(include, session)
             for include in unseen(resolve_urls(location, includes))
         ]):
             repository["packages"].extend(result.get("packages", []))
             repository["libraries"].extend(result.get("libraries", []))
     return repository
-
-
-async def __fetch_repo(
-    location: str, sem: asyncio.Semaphore, session: aiohttp.ClientSession
-) -> dict:
-    async with sem:
-        return await http_get_json(location, session)
 
 
 async def get_repositories(channel_url: str, session: aiohttp.ClientSession) -> list[str]:
@@ -338,7 +330,7 @@ async def http_get_json(location: str, session: aiohttp.ClientSession) -> dict:
 
 
 async def http_get(location: str, session: aiohttp.ClientSession) -> str:
-    headers = {'User-Agent': 'Mozilla/5.0'}
+    headers = {'User-Agent': USER_AGENT}
     async with session.get(location, headers=headers, raise_for_status=True) as resp:
         return await resp.text()
 
