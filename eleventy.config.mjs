@@ -216,7 +216,7 @@ function computeMagicMetadata(packages) {
   })
 }
 
-function basePackage(pkg) {
+export function basePackage(pkg) {
   // Create a new array of releases with cleaned platforms
   const rawReleases = pkg.releases || []
   const releases = rawReleases.map(release => ({
@@ -225,12 +225,7 @@ function basePackage(pkg) {
     platforms: util.prettifyPlatformLabels(release.platforms),
   }))
 
-  const supportsModernSublime = releases.some((release) => {
-    return util.parseSublimeTextMin(release.sublime_text) >= 3000
-  })
-  const doesNotSupportNewestSublime = releases.every((release) => {
-    return util.parseSublimeTextMax(release.sublime_text) < 4000
-  })
+  const compatibility = util.computeSublimeCompatibility(releases)
 
   // For each release, infer a human web URL under key "web"
   // Rules:
@@ -281,9 +276,9 @@ function basePackage(pkg) {
   if (pkg.failing_since || pkg.fail_reason) {
     labels.unshift('FAILING')
   }
-  if (!supportsModernSublime) {
+  if (compatibility === 'st2') {
     labels.unshift('ST2')
-  } else if (doesNotSupportNewestSublime) {
+  } else if (compatibility === 'st3') {
     labels.unshift('ST3')
   }
   if (pkg.removed) {
@@ -307,8 +302,9 @@ function basePackage(pkg) {
     platforms: platforms,
     // Human-readable label shown on cards and package stats/labels.
     platform_statement: util.computePlatformStatement(platforms),
-    outdated: !supportsModernSublime,
-    st3_only: supportsModernSublime && doesNotSupportNewestSublime,
+    compatibility,
+    outdated: compatibility === 'st2',
+    st3_only: compatibility === 'st3',
   }
 }
 
