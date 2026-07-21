@@ -23055,6 +23055,23 @@
       "first_seen": "2018-01-29T20:34:42Z"
     },
     {
+      "name": "Extractor",
+      "details": "https://github.com/bogdancstrike/sublime_plugin_extractor",
+      "labels": [
+        "text manipulation",
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-21T19:36:47Z"
+    },
+    {
       "name": "eZ Publish Syntax",
       "details": "https://github.com/SirReal/eZ-Publish-Syntax",
       "labels": [
