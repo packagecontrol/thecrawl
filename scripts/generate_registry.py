@@ -89,7 +89,7 @@ def parse_args() -> argparse.Namespace:
         action="append",
         help=(
             "URL to a Channel or Repository to pull from (can be used multiple times). "
-            "If not given, uses the official channel from sublimehq/package_control_channel."
+            "If not given, uses the default package and library channels."
         ),
     )
     parser.add_argument(

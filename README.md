@@ -46,7 +46,8 @@ platforms, so that even the tiny rate limits are enough for our purpose.
 ### 1. `generate_registry.py`
 
 Fetches and generates a registry of all packages and dependencies from one or more package
-control channels.  Defaults to our main channel, collected and maintained at
+control channels.  By default, it uses the Package Control library repository and the
+package channel maintained at
 [sublimehq](https://github.com/sublimehq/package_control_channel).
 
 Supports also Package Control repositories as input, e.g. the highly trusted
