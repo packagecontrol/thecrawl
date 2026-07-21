@@ -10,15 +10,14 @@ const args = parseArgs(process.argv.slice(2))
 const rawReadmes = readJson(args.input)
 const dom = new JSDOM('')
 const DOMPurify = createDOMPurify(dom.window)
-const parser = new dom.window.DOMParser()
 const renderedReadmes = {}
 
 configureMarked(marked)
 
 for (const [url, text] of Object.entries(rawReadmes)) {
   const html = renderReadme(marked, text, url, {
-    sanitize: html => DOMPurify.sanitize(html),
-    parseHtml: html => parser.parseFromString(html, 'text/html'),
+    sanitize: sanitizeHtml,
+    parseHtml,
   })
   renderedReadmes[url] = html
 }
@@ -27,6 +26,23 @@ fs.writeFileSync(args.output, JSON.stringify(renderedReadmes, null, 2) + '\n')
 console.log(`Rendered ${Object.keys(renderedReadmes).length} README files to ${args.output}`)
 
 dom.window.close()
+
+function parseHtml(html) {
+  const template = dom.window.document.createElement('template')
+  template.innerHTML = html
+
+  return {
+    body: template,
+    querySelectorAll: selector => template.content.querySelectorAll(selector),
+  }
+}
+
+function sanitizeHtml(html) {
+  const fragment = DOMPurify.sanitize(html, { RETURN_DOM_FRAGMENT: true })
+  const template = dom.window.document.createElement('template')
+  template.content.append(fragment)
+  return template.innerHTML
+}
 
 function parseArgs(argv) {
   let input = 'readmes.json'
