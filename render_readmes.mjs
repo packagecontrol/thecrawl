@@ -5,21 +5,30 @@ import { JSDOM } from 'jsdom'
 import createDOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { configureMarked, renderReadme } from './static/readme-renderer.mjs'
+import { createHash } from 'crypto'
 
 const args = parseArgs(process.argv.slice(2))
 const rawReadmes = readJson(args.input)
 const dom = new JSDOM('')
 const DOMPurify = createDOMPurify(dom.window)
+
+const oldRenderedReadmes = readJson(args.output)
 const renderedReadmes = {}
 
 configureMarked(marked)
 
 for (const [url, text] of Object.entries(rawReadmes)) {
+  const hash = createHash('sha256').update(text).digest('base64')
+  if (oldRenderedReadmes[url] && oldRenderedReadmes[url][0] === hash) {
+    renderedReadmes[url] = [hash, oldRenderedReadmes[url][1]]
+    continue
+  }
+
   const html = renderReadme(marked, text, url, {
     sanitize: sanitizeHtml,
     parseHtml,
   })
-  renderedReadmes[url] = html
+  renderedReadmes[url] = [hash, html]
 }
 
 fs.writeFileSync(args.output, JSON.stringify(renderedReadmes, null, 2) + '\n')

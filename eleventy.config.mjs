@@ -598,7 +598,7 @@ export default async function (eleventyConfig) {
       installed: stat?.installs?.totals ?? 0,
       installs_window: stat?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
       ...(readme_url !== pkg.readme ? { readme_url } : {}),
-      ...(renderedReadmes[pkg.readme] ? { rendered_readme: renderedReadmes[pkg.readme] } : {}),
+      ...(renderedReadmes[pkg.readme] ? { rendered_readme: renderedReadmes[pkg.readme][1] } : {}),
       ...(source_url !== pkg.source ? { source_url } : {}),
     }
   }
