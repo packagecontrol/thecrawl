@@ -5,20 +5,30 @@ import { JSDOM } from 'jsdom'
 import createDOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { configureMarked, renderReadme } from './static/readme-renderer.mjs'
-import { createHash } from 'crypto'
+import {
+  RENDERED_READMES_ENVIRONMENT_KEY,
+  createReadmeRendererEnvironmentHash,
+  createReadmeSourceHash,
+} from './util/readme-render-cache.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const rawReadmes = readJson(args.input)
 const dom = new JSDOM('')
 const DOMPurify = createDOMPurify(dom.window)
 
-const oldRenderedReadmes = readJson(args.output)
-const renderedReadmes = {}
+let oldRenderedReadmes = readJson(args.output)
+const renderedReadmesEnvironment = createReadmeRendererEnvironmentHash()
+if (oldRenderedReadmes[RENDERED_READMES_ENVIRONMENT_KEY] !== renderedReadmesEnvironment) {
+  oldRenderedReadmes = {}
+}
+const renderedReadmes = {
+  [RENDERED_READMES_ENVIRONMENT_KEY]: renderedReadmesEnvironment,
+}
 
 configureMarked(marked)
 
 for (const [url, text] of Object.entries(rawReadmes)) {
-  const hash = createHash('sha256').update(text).digest('base64')
+  const hash = createReadmeSourceHash(text)
   if (oldRenderedReadmes[url] && oldRenderedReadmes[url][0] === hash) {
     renderedReadmes[url] = [hash, oldRenderedReadmes[url][1]]
     continue
@@ -32,7 +42,7 @@ for (const [url, text] of Object.entries(rawReadmes)) {
 }
 
 fs.writeFileSync(args.output, JSON.stringify(renderedReadmes, null, 2) + '\n')
-console.log(`Rendered ${Object.keys(renderedReadmes).length} README files to ${args.output}`)
+console.log(`Rendered ${Object.keys(rawReadmes).length} README files to ${args.output}`)
 
 dom.window.close()
 
