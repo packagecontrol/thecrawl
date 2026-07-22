@@ -1,8 +1,11 @@
-.sticky-section-header {
-  > h2 {
-    padding-top: 0;
+@media (width < 80rem) {
+  .sticky-section-heading {
+    padding-top: 5px;
+    margin-bottom: 11px; /* 9px heading margin + 2px sticky header margin */
   }
+}
 
+.sticky-section-header {
   &.is-sticky {
     position: sticky;
     top: 0;
