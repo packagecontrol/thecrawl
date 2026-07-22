@@ -160,11 +160,6 @@ hr {
     overflow:hidden
 }
 
-.hot {
-  color: var(--orange-1);
-  font-style: italic;
-}
-
 .warning {
   color: var(--red-1);
 }

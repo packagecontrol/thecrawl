@@ -6,7 +6,7 @@ page_type: about
 
 # About
 
-**Package Control <span class="hot">R</span>** is the community-driven package management solution for Sublime Text. It's a front-to-back, top-to-bottom, rewrite of the original [packagecontrol.io](https://packagecontrol.io), managed entirely by the Sublime Text community.
+**Package Control** is the community-driven package management solution for Sublime Text. It's a front-to-back, top-to-bottom, rewrite of the original [packagecontrol.io](https://packagecontrol.io), managed entirely by the Sublime Text community.
 
 The system consists of several components:
 
