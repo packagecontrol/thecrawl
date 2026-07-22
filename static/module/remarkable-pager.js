@@ -3,6 +3,20 @@ import { initStickySectionHeader } from './sticky-section-header.js'
 const REMARKABLE_PAGE_PARAM = 'remarkable-page'
 const FIRST_PAGE = '1'
 const SECOND_PAGE = '2'
+// Shortcut: responsive CSS also has 15-item pages, but the remarkable
+// collection normally fills the widest layout's two 20-item pages.
+const PAGE_SIZE = 20
+
+const CONTROLS_TEMPLATE_HTML = `
+  <nav class="remarkable-pagination" aria-label="Remarkable pages">
+    <button type="button" class="remarkable-page-button" data-remarkable-page-control="1" aria-current="page" aria-controls="remarkable-list">1</button>
+    <span class="remarkable-page-separator" aria-hidden="true">|</span>
+    <button type="button" class="remarkable-page-button" data-remarkable-page-control="2" aria-controls="remarkable-list">2</button>
+  </nav>
+`
+
+const controlsTemplate = document.createElement('template')
+controlsTemplate.innerHTML = CONTROLS_TEMPLATE_HTML.trim()
 
 const section = document.querySelector('section[name="remarkable"]')
 
@@ -11,12 +25,12 @@ if (section) {
 }
 
 function initRemarkablePager(section) {
+  const controls = renderControls(section)
   const stickyHeader = initStickySectionHeader(section, {
     headerSelector: '.remarkable-header',
     listSelector: '.remarkable-list',
   })
 
-  const controls = Array.from(section.querySelectorAll('[data-remarkable-page-control]'))
   if (controls.length < 2) {
     return
   }
@@ -34,6 +48,17 @@ function initRemarkablePager(section) {
       stickyHeader?.scrollListStartIntoView()
     })
   }
+}
+
+function renderControls(section) {
+  const list = section.querySelector('.remarkable-list')
+  if (list.children.length <= PAGE_SIZE) {
+    return []
+  }
+
+  const controls = controlsTemplate.content.firstElementChild.cloneNode(true)
+  section.querySelector('.remarkable-header').appendChild(controls)
+  return Array.from(controls.querySelectorAll('[data-remarkable-page-control]'))
 }
 
 function syncFromUrl(section, controls, stickyHeader) {

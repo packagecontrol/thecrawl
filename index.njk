@@ -43,17 +43,9 @@ page_type: home
   </ul>
 </section>
 
-{% set hasRemarkableSecondPage = (collections.remarkable_packages | length) > 20 %}
 <section name="remarkable" data-list-target="main-content" data-remarkable-page="1">
   <div class="remarkable-header">
     <h2>Remarkable</h2>
-    {% if hasRemarkableSecondPage %}
-      <nav class="remarkable-pagination" aria-label="Remarkable pages">
-        <button type="button" class="remarkable-page-button" data-remarkable-page-control="1" aria-current="page" aria-controls="remarkable-list">1</button>
-        <span class="remarkable-page-separator" aria-hidden="true">|</span>
-        <button type="button" class="remarkable-page-button" data-remarkable-page-control="2" aria-controls="remarkable-list">2</button>
-      </nav>
-    {% endif %}
   </div>
   <ul id="remarkable-list" class="remarkable-list">
     {% for pkg in collections.remarkable_packages %}
