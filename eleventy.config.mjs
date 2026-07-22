@@ -27,7 +27,7 @@ const FEATURED_LABELS = [
   'theme',
 ]
 const LABELS_RANK = new Map(FEATURED_LABELS.map((label, index) => [label, index]))
-const LABEL_ICON_MINIMUM_USAGE = 2
+const LABEL_ICON_MINIMUM_USAGE = 3
 const LABEL_ICON_RECENT_WINDOW_DAYS = 365
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000

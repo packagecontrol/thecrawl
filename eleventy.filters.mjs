@@ -338,10 +338,10 @@ if (import.meta.vitest) {
   describe('label icon sprites', () => {
     it('keeps common and preferred icons in the primary sprite', () => {
       const sprites = configureLabelIcons([
-        { key: 'python', count: 2 },
+        { key: 'python', count: 3 },
         { key: 'typst', count: 1 },
       ], {
-        minimumUsage: 2,
+        minimumUsage: 3,
         preferredPackages: [{ labels: ['typst'] }],
       })
 
