@@ -1,8 +1,4 @@
 .sticky-section-header {
-  > h2 {
-    padding-top: 0;
-  }
-
   &.is-sticky {
     position: sticky;
     top: 0;

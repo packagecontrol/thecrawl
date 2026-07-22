@@ -257,9 +257,6 @@ section {
 
   &[data-list-target]:not(.readme) {
     padding-top: 14px;
-    > h2:first-child {
-      padding-top: 0;
-    }
   }
 
   &[name="package"] {
