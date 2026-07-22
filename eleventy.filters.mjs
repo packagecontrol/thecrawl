@@ -122,10 +122,9 @@ function compactSearchPackage(pkg) {
     (pkg.labels ?? []).join(','),
   ]
 
-  if (pkg.outdated || pkg.st3_only || pkg.removed || pkg.archived_at) {
+  if (pkg.outdated || pkg.removed || pkg.archived_at) {
     row.push(
       pkg.outdated ? 1 : 0,
-      pkg.st3_only ? 1 : 0,
       timestamp(pkg.removed) || 0,
       timestamp(pkg.archived_at) || 0,
     )

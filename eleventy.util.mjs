@@ -620,6 +620,41 @@ function toLiveFileUrl(url) {
 }
 
 /**
+ * @typedef {'st2' | 'st3' | 'current'} SublimeCompatibility
+ */
+
+/**
+ * Infer Sublime Text compatibility from release selectors.
+ *
+ * Returns null when release data is unavailable, such as for skeleton
+ * tombstones.
+ *
+ * @param {Array<{sublime_text?: string}>} releases
+ * @returns {SublimeCompatibility | null}
+ */
+export function computeSublimeCompatibility(releases) {
+  if (releases.length === 0) {
+    return null
+  }
+
+  const supportsModernSublime = releases.some((release) => {
+    return parseSublimeTextMin(release.sublime_text) >= 3000
+  })
+  if (!supportsModernSublime) {
+    return 'st2'
+  }
+
+  const doesNotSupportNewestSublime = releases.every((release) => {
+    return parseSublimeTextMax(release.sublime_text) < 4000
+  })
+  if (doesNotSupportNewestSublime) {
+    return 'st3'
+  }
+
+  return 'current'
+}
+
+/**
  * Convert a Sublime Text build selector into its starting build number.
  * Rules:
  * - Remove spaces.
@@ -859,6 +894,32 @@ if (import.meta.vitest) {
       ['2016-01-04 00:00:00', '2016-W01'], // Mon of 2016-W01
     ])('isoWeekString(%s) -> %s', (input, expected) => {
       expect(isoWeekString(input)).toBe(expected)
+    })
+  })
+
+  describe('computeSublimeCompatibility', () => {
+    it('returns null when release data is unavailable', () => {
+      expect(computeSublimeCompatibility([])).toBeNull()
+    })
+
+    it('detects ST2-only packages', () => {
+      expect(computeSublimeCompatibility([
+        { sublime_text: '<3000' },
+        { sublime_text: '2000' },
+      ])).toBe('st2')
+    })
+
+    it('detects ST3-only packages', () => {
+      expect(computeSublimeCompatibility([
+        { sublime_text: '3000-3999' },
+        { sublime_text: '3000' },
+      ])).toBe('st3')
+    })
+
+    it('detects packages compatible with current Sublime Text', () => {
+      expect(computeSublimeCompatibility([
+        { sublime_text: '*' },
+      ])).toBe('current')
     })
   })
 

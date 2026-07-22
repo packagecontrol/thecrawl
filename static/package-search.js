@@ -68,7 +68,6 @@ function expandSearchPackage(row) {
     platform_statement,
     labels,
     outdated,
-    st3_only,
     removed,
     archived_at,
   ] = row
@@ -87,7 +86,6 @@ function expandSearchPackage(row) {
     platform_statement,
     labels,
     ...(outdated ? { outdated: true } : {}),
-    ...(st3_only ? { st3_only: true } : {}),
     ...(removed ? { removed } : {}),
     ...(archived_at ? { archived_at } : {}),
   }
