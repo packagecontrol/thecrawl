@@ -18,7 +18,7 @@ page_type: home
 </script>
 
 <section name="newest" data-list-target="main-content">
-  <h2>
+  <h2 class="sticky-section-heading">
     <a href="/?sort=newest" class="section-heading-link">Newest</a>
   </h2>
   <ul class="grid">
@@ -31,7 +31,7 @@ page_type: home
 </section>
 
 <section name="recent" data-list-target="main-content">
-  <h2>
+  <h2 class="sticky-section-heading">
     <a href="/?sort=update" class="section-heading-link">Recently updated</a>
   </h2>
   <ul class="grid">
@@ -45,7 +45,7 @@ page_type: home
 
 <section name="remarkable" data-list-target="main-content" data-remarkable-page="1">
   <div class="remarkable-header">
-    <h2>Remarkable</h2>
+    <h2 class="sticky-section-heading">Remarkable</h2>
   </div>
   <ul id="remarkable-list" class="remarkable-list">
     {% for pkg in collections.remarkable_packages %}
