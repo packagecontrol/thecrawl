@@ -55,7 +55,7 @@ page_type: labels
           {% set icon_id = item.key | label_icon_id %}
           {% if icon_id %}
             {% set tint = item.key | label_icon_tint %}
-            <svg class="label-icon{{ (' label-icon--' ~ tint) if tint }}" aria-hidden="true">
+            <svg class="{{ (' label-icon--' ~ tint) if tint }}" aria-hidden="true">
               <use href="/{{ 'static/label-icons.svg' | bust }}#{{ icon_id }}"></use>
             </svg>
           {% endif %}

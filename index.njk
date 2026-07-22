@@ -68,7 +68,7 @@ page_type: home
         </span>
         {% if pkg.stars > 0 %}
           <span class="remarkable-stars" title="{{ pkg.stars }} {{ 'star' if pkg.stars == 1 else 'stars' }} on GitHub">
-            <span aria-hidden="true">{{ util.icon('star') }}</span>
+            <span class="icon" aria-hidden="true">{{ util.icon('star') }}</span>
             <span class="counter">{{ pkg.stars | compact }}</span>
             <span class="screenreader-only">stars</span>
           </span>
