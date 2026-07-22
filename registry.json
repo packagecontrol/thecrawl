@@ -20417,6 +20417,25 @@
       "first_seen": "2018-03-15T15:55:42Z"
     },
     {
+      "name": "EDIBlime",
+      "details": "https://github.com/encefalopiatto/EDIBlime",
+      "labels": [
+        "language syntax",
+        "utilities",
+        "minify",
+        "convert"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4095",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-22T19:48:07Z"
+    },
+    {
       "name": "EdifactHighlighter",
       "details": "https://github.com/Frogli/sublime-edifact",
       "labels": [
@@ -36878,6 +36897,25 @@
       ],
       "first_seen": "2017-06-05T19:06:16Z",
       "removed": "2019-01-21T10:47:39Z"
+    },
+    {
+      "name": "Json5Formatter",
+      "details": "https://github.com/RAMBOO1990/sublime-json5",
+      "labels": [
+        "formatting",
+        "formatter",
+        "json",
+        "json5"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4200",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-22T19:48:07Z"
     },
     {
       "name": "JSONComma",
