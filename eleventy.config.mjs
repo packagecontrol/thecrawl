@@ -28,6 +28,7 @@ const FEATURED_LABELS = [
 ]
 const LABELS_RANK = new Map(FEATURED_LABELS.map((label, index) => [label, index]))
 const LABEL_ICON_MINIMUM_USAGE = 2
+const LABEL_ICON_RECENT_WINDOW_DAYS = 365
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000
 const MAGIC_FRESHNESS_WINDOW_DAYS = 365 * 2 // bonus for packages that had updates
@@ -390,10 +391,10 @@ export default async function (eleventyConfig) {
   eleventyConfig.on('eleventy.after', async ({ directories } = {}) => {
     const outputDir = directories?.output ?? '_site'
     await writeVendorModules(path.join(outputDir, staticOutputDir, 'vendor'))
-    writePrunedLabelIconSprite(
+    writeLabelIconSprites(
       'static/label-icons.svg',
-      path.join(outputDir, staticOutputDir, 'label-icons.svg'),
-      labelIcons?.sources,
+      path.join(outputDir, staticOutputDir),
+      labelIcons,
     )
 
     if (!isProd) {
@@ -532,7 +533,6 @@ export default async function (eleventyConfig) {
   const packages = all_packages.map(packageData)
   const packagesWithMagic = computeMagicMetadata(packages)
   const labels = util.collectLabels(all_packages)
-  labelIcons = filters.configureLabelIcons(labels, { minimumUsage: LABEL_ICON_MINIMUM_USAGE })
 
   const livingHomePackages = packages.filter(pkg => !pkg.removed)
 
@@ -544,6 +544,21 @@ export default async function (eleventyConfig) {
 
   const newestHomePackages = packagesByDate('first_seen').slice(0, HOME_SECTION_PACKAGE_LIMIT)
   const updatedHomePackages = packagesByDate('last_modified').slice(0, HOME_SECTION_PACKAGE_LIMIT)
+  const latestPackageUpdate = livingHomePackages.reduce(
+    (latest, pkg) => Math.max(latest, new Date(pkg.last_modified ?? 0).getTime() || 0),
+    0,
+  )
+  const recentCutoff = latestPackageUpdate - LABEL_ICON_RECENT_WINDOW_DAYS * MS_IN_DAY
+  const recentlyUpdatedPackages = livingHomePackages.filter(
+    pkg => new Date(pkg.last_modified ?? 0).getTime() >= recentCutoff,
+  )
+  labelIcons = filters.configureLabelIcons(labels, {
+    minimumUsage: LABEL_ICON_MINIMUM_USAGE,
+    preferredPackages: [
+      ...newestHomePackages,
+      ...recentlyUpdatedPackages,
+    ],
+  })
 
   const remarkablePackages = () => {
     const alreadyFeatured = new Set()
@@ -704,19 +719,30 @@ export default async function (eleventyConfig) {
   }
 }
 
-function writePrunedLabelIconSprite(sourcePath, outputPath, visibleSources) {
-  if (!(visibleSources instanceof Set) || !fs.existsSync(sourcePath)) {
+function writeLabelIconSprites(sourcePath, outputDir, labelIcons) {
+  if (!(labelIcons?.primarySources instanceof Set) || !fs.existsSync(sourcePath)) {
     return
   }
 
   const source = fs.readFileSync(sourcePath, 'utf8')
-  const pruned = source.replace(
-    /<symbol\b[^>]*\bid="label-icon-([^"]+)"[^>]*>[\s\S]*?<\/symbol>\r?\n?/g,
-    (symbol, iconSource) => visibleSources.has(iconSource) ? symbol : '',
+  fs.mkdirSync(outputDir, { recursive: true })
+  fs.writeFileSync(
+    path.join(outputDir, 'label-icons.svg'),
+    labelIconSpriteForSources(source, labelIcons.primarySources),
+    'utf8',
   )
+  fs.writeFileSync(
+    path.join(outputDir, 'label-icons-extra.svg'),
+    labelIconSpriteForSources(source, labelIcons.secondarySources),
+    'utf8',
+  )
+}
 
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-  fs.writeFileSync(outputPath, pruned, 'utf8')
+function labelIconSpriteForSources(source, sources) {
+  return source.replace(
+    /<symbol\b[^>]*\bid="label-icon-([^"]+)"[^>]*>[\s\S]*?<\/symbol>\r?\n?/g,
+    (symbol, iconSource) => sources.has(iconSource) ? symbol : '',
+  )
 }
 
 async function bundleJs(staticOutputDir, entries, isProd) {
