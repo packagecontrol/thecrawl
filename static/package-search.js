@@ -63,14 +63,25 @@ function expandSearchPackage(row) {
     first_seen,
     last_modified,
     magic_score,
-    magic,
+  ] = row
+
+  let offset = 8
+  const hasMagicDetails = Array.isArray(row[offset])
+  const magic = hasMagicDetails
+    ? row[offset]
+    : undefined
+  if (hasMagicDetails) {
+    offset += 1
+  }
+
+  const [
     platforms,
     platform_statement,
     labels,
     outdated,
     removed,
     archived_at,
-  ] = row
+  ] = row.slice(offset)
 
   return {
     name,
@@ -91,7 +102,11 @@ function expandSearchPackage(row) {
   }
 }
 
-function expandMagicBreakdown(values = []) {
+function expandMagicBreakdown(values) {
+  if (!Array.isArray(values)) {
+    return null
+  }
+
   const [popularity, stars, freshness, longevity, recency, penalty] = values
   return { popularity, stars, freshness, longevity, recency, penalty }
 }

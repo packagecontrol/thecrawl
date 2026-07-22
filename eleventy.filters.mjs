@@ -98,15 +98,15 @@ export function label_normalization_note(changes) {
   return `<p>* ${heading}</p><ul>${items}</ul>`
 }
 
-export function search_index_json(packages) {
+export function search_index_json(packages, options = {}) {
   return JSON.stringify({
-    packages: packages.map(compactSearchPackage),
+    packages: packages.map(pkg => compactSearchPackage(pkg, options)),
     label_icon_aliases: labelIconAliases,
     label_icon_tints: labelIconTints,
   })
 }
 
-function compactSearchPackage(pkg) {
+function compactSearchPackage(pkg, { includeMagicDetails = true } = {}) {
   const row = [
     pkg.name,
     htmlDescription(pkg.description ?? ''),
@@ -116,11 +116,17 @@ function compactSearchPackage(pkg) {
     timestamp(pkg.first_seen) || 0,
     timestamp(pkg.last_modified) || 0,
     pkg.magic_score ?? 0,
-    compactMagicBreakdown(pkg.magic),
+  ]
+
+  if (includeMagicDetails) {
+    row.push(compactMagicBreakdown(pkg.magic))
+  }
+
+  row.push(
     (pkg.platforms ?? []).join(','),
     pkg.platform_statement ?? '',
     (pkg.labels ?? []).join(','),
-  ]
+  )
 
   if (pkg.outdated || pkg.removed || pkg.archived_at) {
     row.push(
