@@ -29,7 +29,13 @@ async function fetchSearchData() {
   return await res.json()
 }
 
-const rawIndex = await fetchSearchData()
+let rawIndex
+try {
+  rawIndex = await fetchSearchData()
+} catch (error) {
+  window.dispatchEvent(new Event('search:error'))
+  throw error
+}
 const packages = normalizeSearchPackages(rawIndex)
 const allLabelRecords = buildLabelRecords(packages)
 const knownLabels = new Set(
@@ -178,7 +184,8 @@ function updateFilterButtonStates(query) {
 
 const syncFromUrl = ({ initialPageLoad = false }) => {
   const urlParams = new URLSearchParams(window.location.search)
-  const query = urlParams.get('q') || ''
+  const urlQuery = urlParams.get('q')
+  const query = urlQuery ?? (initialPageLoad ? input.value : '')
   const sortBy = urlParams.get('sort')
   const page = parseInt(urlParams.get('page')) || 1
   const effectiveSortBy = sortBy ?? 'relevance'
@@ -311,3 +318,5 @@ document.addEventListener('click', (event) => {
   list.scrollUp()
   list.goSearch(newQuery, newSort, 1)
 })
+
+window.dispatchEvent(new Event('search:ready'))

@@ -8,6 +8,7 @@ page_type: home
 {% import "util/macros.njk" as util %}
 
 {{ util.form(collections.packages | length, true) }}
+{% inline_js 'static/_search_waiter.js' %}
 
 {# Browser massively overscroll anyway but for the search-field we really want
    to show the header and have it more in the middle for the viewport #}
