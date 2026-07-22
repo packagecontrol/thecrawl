@@ -184,8 +184,9 @@
             {% set icon_id = (label | label_icon_id) if with_icons else '' %}
             {% if icon_id %}
               {% set tint = (label | label_icon_tint) if with_icons else '' %}
+              {% set icon_sprite = (label | label_icon_sprite) if with_icons else '' %}
               <svg class="label-icon{{ (' label-icon--' ~ tint) if tint }}" aria-hidden="true">
-                <use href="/{{ 'static/label-icons.svg' | bust }}#{{ icon_id }}"></use>
+                <use href="/{{ icon_sprite | bust }}#{{ icon_id }}"></use>
               </svg>
             {% endif %}
             {{ label }}

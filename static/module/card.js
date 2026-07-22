@@ -260,7 +260,9 @@ export class Card {
       svg.setAttribute('class', `label-icon${tint ? ' label-icon--' + tint : ''}`)
       svg.setAttribute('aria-hidden', 'true')
       const use = document.createElementNS(svgNS, 'use')
-      use.setAttribute('href', `${this.staticBase}label-icons.svg#${iconId}`)
+      const secondary = window.__LABEL_ICON_SECONDARY__?.has(canonical)
+      const sprite = secondary ? 'label-icons-extra.svg' : 'label-icons.svg'
+      use.setAttribute('href', `${this.staticBase}${sprite}#${iconId}`)
       svg.appendChild(use)
       a.appendChild(svg)
     }

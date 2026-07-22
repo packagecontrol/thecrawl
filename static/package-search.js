@@ -37,6 +37,7 @@ const knownLabels = new Set(
 )
 window.__LABEL_ICON_ALIASES__ = rawIndex.label_icon_aliases ?? {}
 window.__LABEL_ICON_TINTS__ = rawIndex.label_icon_tints ?? {}
+window.__LABEL_ICON_SECONDARY__ = new Set(rawIndex.label_icon_secondary ?? [])
 
 const minisrch = createMinisearch(MiniSearch, packages)
 

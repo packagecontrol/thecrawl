@@ -14,6 +14,8 @@ const configPath = path.join(__dirname, 'label-icons-config.json')
 let labelIconSourceSet = new Set()
 let labelIconAliases = {}
 let labelIconTints = {}
+let labelIconPrimarySourceSet = null
+let labelIconSecondarySourceSet = null
 
 const longDateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })
 const compactNumberFormatter = new Intl.NumberFormat('en', { notation: 'compact' })
@@ -70,6 +72,18 @@ export function label_icon_tints_json() {
   return JSON.stringify(labelIconTints)
 }
 
+export function configureLabelIcons(labels, { minimumUsage = 1, preferredPackages = [] } = {}) {
+  labelIconPrimarySourceSet = primaryLabelIconSources(labels, minimumUsage, preferredPackages)
+  labelIconSecondarySourceSet = new Set(
+    Array.from(labelIconSourceSet).filter(source => !labelIconPrimarySourceSet.has(source)),
+  )
+
+  return {
+    primarySources: labelIconPrimarySourceSet,
+    secondarySources: labelIconSecondarySourceSet,
+  }
+}
+
 export function label_normalization_note(changes) {
   const sortedChanges = changes
     .map(change => ({ from: String(change.from), to: String(change.to) }))
@@ -103,6 +117,7 @@ export function search_index_json(packages) {
     packages: packages.map(compactSearchPackage),
     label_icon_aliases: labelIconAliases,
     label_icon_tints: labelIconTints,
+    label_icon_secondary: Array.from(labelIconSecondarySourceSet ?? []),
   })
 }
 
@@ -186,6 +201,53 @@ function joinAsSentenceList(parts) {
   return `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}`
 }
 
+function primaryLabelIconSources(labels, minimumUsage, preferredPackages) {
+  const counts = new Map()
+  const threshold = Math.max(1, Number(minimumUsage) || 1)
+
+  for (const item of labels ?? []) {
+    const key = typeof item?.key === 'string' ? item.key : String(item ?? '')
+    const canonical = sourceLabelFor(key)
+    if (!canonical) continue
+
+    const count = Number(item?.count ?? 1)
+    counts.set(canonical, (counts.get(canonical) ?? 0) + (Number.isFinite(count) ? count : 1))
+  }
+
+  const sources = new Set()
+  for (const source of labelIconSourceSet) {
+    if ((counts.get(source) ?? 0) >= threshold) {
+      sources.add(source)
+    }
+  }
+
+  for (const pkg of preferredPackages) {
+    for (const label of pkg.labels ?? []) {
+      const source = sourceLabelFor(label)
+      if (source) sources.add(source)
+    }
+  }
+
+  return sources
+}
+
+function sourceLabelFor(label) {
+  if (typeof label !== 'string') return ''
+  const normalized = label.trim().toLowerCase()
+  if (!normalized) return ''
+
+  const alias = labelIconAliases[normalized]
+  if (alias && labelIconSourceSet.has(alias)) {
+    return alias
+  }
+
+  if (labelIconSourceSet.has(normalized)) {
+    return normalized
+  }
+
+  return ''
+}
+
 function canonicalLabel(label) {
   if (typeof label !== 'string') return ''
   const normalized = label.trim().toLowerCase()
@@ -213,6 +275,14 @@ export function label_icon_tint(label) {
   const canonical = canonicalLabel(label)
   if (!canonical) return ''
   return labelIconTints[canonical] ?? ''
+}
+
+export function label_icon_sprite(label) {
+  const canonical = canonicalLabel(label)
+  if (!canonical) return ''
+  return labelIconSecondarySourceSet?.has(canonical)
+    ? 'static/label-icons-extra.svg'
+    : 'static/label-icons.svg'
 }
 
 // number formatting with grouping (e.g. 10,000)
@@ -264,6 +334,24 @@ export function bust(p) {
 // Inline tests (Vitest)
 if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest
+
+  describe('label icon sprites', () => {
+    it('keeps common and preferred icons in the primary sprite', () => {
+      const sprites = configureLabelIcons([
+        { key: 'python', count: 3 },
+        { key: 'typst', count: 1 },
+      ], {
+        minimumUsage: 3,
+        preferredPackages: [{ labels: ['typst'] }],
+      })
+
+      expect(sprites.primarySources).toContain('python')
+      expect(sprites.primarySources).toContain('typst')
+      expect(sprites.secondarySources).toContain('audio')
+      expect(label_icon_sprite('typst')).toBe('static/label-icons.svg')
+      expect(label_icon_sprite('audio')).toBe('static/label-icons-extra.svg')
+    })
+  })
 
   describe('date_time_format', () => {
     it.each([
