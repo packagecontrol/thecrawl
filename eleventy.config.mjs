@@ -6,6 +6,10 @@ import * as esbuild from 'esbuild'
 import * as util from './eleventy.util.mjs'
 import * as filters from './eleventy.filters.mjs'
 import { bundleCss } from './util/bundle-css.mjs'
+import {
+  RENDERED_READMES_ENVIRONMENT_KEY,
+  createReadmeRendererEnvironmentHash,
+} from './util/readme-render-cache.mjs'
 
 const repackagerSite = 'https://repackager.sublimetext.io'
 const supportedRepackagerHosts = [
@@ -439,9 +443,20 @@ export default async function (eleventyConfig) {
 
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
   const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
-  const renderedReadmes = fs.existsSync('readmes_rendered.json')
+  let renderedReadmes = fs.existsSync('readmes_rendered.json')
     ? JSON.parse(fs.readFileSync('readmes_rendered.json', 'utf8'))
     : {}
+  if (renderedReadmes[RENDERED_READMES_ENVIRONMENT_KEY] === createReadmeRendererEnvironmentHash()) {
+    console.warn('[eleventy] Using pre-rendered READMEs from readmes_rendered.json')
+  } else {
+    const renderedReadmesStale = Object.keys(renderedReadmes).length > 0
+    console.warn(
+      '[eleventy] All READMEs are fetched and rendered live in the browser. '
+      + 'Tip: run `node render_readmes.mjs -i readmes.json -o readmes_rendered.json` '
+      + `to prerender READMEs${renderedReadmesStale ? ' again' : ''}.`,
+    )
+    renderedReadmes = {}
+  }
   let all_packages = util.simplifyPackageLabels(
     // eslint-disable-next-line no-unused-vars
     Object.entries(workspace.packages).map(([id, pkg]) => pkg),
