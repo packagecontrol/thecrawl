@@ -41689,6 +41689,24 @@
       "first_seen": "2026-03-05T19:42:50Z"
     },
     {
+      "details": "https://github.com/markup-carve/sublime-carve-lsp",
+      "name": "LSP-carve",
+      "labels": [
+        "lsp",
+        "carve",
+        "markup"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-23T20:36:58Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-clangd",
       "name": "LSP-clangd",
       "labels": [
@@ -42925,6 +42943,23 @@
       "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2023-05-16T19:37:40Z"
+    },
+    {
+      "details": "https://github.com/mgomes/LSP-vibescript",
+      "labels": [
+        "lsp",
+        "vibescript"
+      ],
+      "name": "LSP-vibescript",
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-23T20:36:58Z"
     },
     {
       "details": "https://github.com/sublimelsp/LSP-volar",
