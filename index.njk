@@ -70,6 +70,7 @@ page_type: home
     {% endfor %}
   </ul>
 </section>
+{% inline_js 'static/_sticky_section_bootstrap.js' %}
 {% inline_js 'static/_recent_waiter.js' %}
 <script src="{{ '/static/home.js' | bundled }}" type="module" async></script>
 
