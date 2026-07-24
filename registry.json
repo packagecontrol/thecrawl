@@ -60373,6 +60373,25 @@
       "first_seen": "2012-03-31T08:53:07Z"
     },
     {
+      "name": "RecentExplorer",
+      "details": "https://github.com/kushaagr/recent-explorer-sublime",
+      "labels": [
+        "project",
+        "open files",
+        "file navigation",
+        "productivity"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-24T18:46:30Z"
+    },
+    {
       "name": "RecentTabSort",
       "details": "https://github.com/Stuk/sublime-recent-tab-sort",
       "releases": [
@@ -64787,6 +64806,23 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2025-02-03T13:18:45Z"
+    },
+    {
+      "name": "Sema",
+      "details": "https://github.com/sema-lisp/sublime-sema",
+      "labels": [
+        "language syntax",
+        "build system"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-24T18:46:30Z"
     },
     {
       "name": "Semantic Highlighter",
