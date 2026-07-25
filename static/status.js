@@ -1447,7 +1447,7 @@ class StatusChart {
 
   makeDot(entry, x, y, radius, isGlitch = false) {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-    circle.setAttribute('cx', x)
+    circle.setAttribute('cx', crisp(x))
     circle.setAttribute('cy', y)
     circle.setAttribute('r', radius)
     circle.dataset.key = entryKey(entry)
