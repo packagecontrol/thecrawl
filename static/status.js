@@ -734,10 +734,20 @@ class StatusChart {
 
       const isMonthStart = dayDate.getDate() === 1
       const isFiveDayTick = dayDate.getDate() % 5 === 0
+      // This only marks month-end labels that exist (normally day 30), since
+      // the other possible month-end dates are not five-day ticks.
+      const nextDayDate = new Date(dayDate)
+      nextDayDate.setDate(nextDayDate.getDate() + 1)
+      const isNextVisibleDayFirstOfMonth = i > 0 && nextDayDate.getDate() === 1
 
       if (isMonthStart || isFiveDayTick || i === 0) {
         const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-        label.setAttribute('class', isMonthStart ? 'x-label x-label-month' : 'x-label')
+        const labelClasses = [
+          'x-label',
+          isMonthStart ? 'x-label-month' : '',
+          isNextVisibleDayFirstOfMonth ? 'x-label-before-month' : '',
+        ].filter(Boolean)
+        label.setAttribute('class', labelClasses.join(' '))
         label.setAttribute('x', x)
         label.setAttribute('y', this.height)
         label.textContent = isMonthStart
@@ -746,7 +756,10 @@ class StatusChart {
         this.labelLayer.appendChild(label)
 
         const callout = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-        callout.setAttribute('class', 'x-callout')
+        callout.setAttribute(
+          'class',
+          isNextVisibleDayFirstOfMonth ? 'x-callout x-callout-before-month' : 'x-callout',
+        )
         callout.setAttribute('x1', x)
         callout.setAttribute('x2', x)
         // + 1 to not overwrite the x-axis

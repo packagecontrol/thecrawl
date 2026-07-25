@@ -361,6 +361,13 @@ html.page-status main {
     shape-rendering: crispEdges;
   }
 
+  @media (width < 30rem) {
+    .x-label-before-month,
+    .x-callout-before-month {
+      display: none;
+    }
+  }
+
   .x-arrow {
     fill: var(--foreground-2);
     stroke: none;
