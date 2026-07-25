@@ -16396,14 +16396,14 @@
     },
     {
       "name": "Cypher",
-      "details": "https://github.com/kollhof/sublime-cypher",
+      "details": "https://github.com/fulguritude/cypher-sublime-syntax",
       "labels": [
         "language syntax"
       ],
       "releases": [
         {
-          "sublime_text": "<3000",
-          "branch": "master"
+          "sublime_text": ">=3092",
+          "tags": true
         }
       ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
