@@ -389,7 +389,8 @@ async def crawl(
 
         out["failing_since"] = existing.get("failing_since", now_string)
 
-        # We mark errors as fatal if we MUST de-list the package immediately.
+        # A fail_reason starting with "fatal: " soft-tombstones the package,
+        # immediately excluding it from the published channel.
         # - 404s because all release assets we might have collected will also 404.
         # - HeartAttacks because of a vulnerability
         if isinstance(e, aiohttp.ClientResponseError):
@@ -400,7 +401,12 @@ async def crawl(
             fatal = "fatal: " if e.status == 404 else ""
             out["fail_reason"] = f"{fatal}{e.status} {e.message}"
         elif isinstance(e, SkipCrawling):
-            err(f"skip *{package['name']}*: {e}")
+            reason = str(e)
+            if reason.startswith("fatal: 404"):
+                err(f"Skip soft-tombstoned *{package['name']}*: {reason}")
+            else:
+                reason = reason.removeprefix("fatal: ")
+                err(f"Skip fatally blocked *{package['name']}*: {reason}")
         elif isinstance(e, DeniedUpdating):
             err(f"Denied update during crawl for {package['name']}: {e}")
             out["fail_reason"] = f"denied: {e}"

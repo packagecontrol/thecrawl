@@ -30,7 +30,7 @@ async def test_skip_heartattack_keeps_fail_reason(set_now):
 
 
 @pytest.mark.asyncio
-async def test_crawl_keeps_fail_reason_on_heartattack_skip(set_now):
+async def test_crawl_keeps_fail_reason_on_heartattack_skip(set_now, capsys):
     entry = {
         "name": "RepoTakeover",
         "details": "https://github.com/example/repo-takeover",
@@ -54,6 +54,11 @@ async def test_crawl_keeps_fail_reason_on_heartattack_skip(set_now):
 
     assert result.get("fail_reason") == existing["fail_reason"]
     assert result.get("failing_since") == existing["failing_since"]
+    assert (
+        "Skip fatally blocked *RepoTakeover*: Repository ID mismatch for "
+        "https://github.com/example/repo-takeover: OLD != NEW"
+        in capsys.readouterr().err
+    )
 
 
 @pytest.mark.asyncio
@@ -80,7 +85,7 @@ async def test_skip_404_after_month(set_now):
 
 
 @pytest.mark.asyncio
-async def test_crawl_keeps_fail_reason_on_404_skip(set_now):
+async def test_crawl_keeps_fail_reason_on_404_skip(set_now, capsys):
     entry = {
         "name": "MissingRepo",
         "details": "https://github.com/example/missing",
@@ -102,6 +107,10 @@ async def test_crawl_keeps_fail_reason_on_404_skip(set_now):
 
     assert result.get("fail_reason") == existing["fail_reason"]
     assert result.get("failing_since") == existing["failing_since"]
+    assert (
+        "Skip soft-tombstoned *MissingRepo*: fatal: 404 Not Found"
+        in capsys.readouterr().err
+    )
 
 
 @pytest.mark.asyncio
