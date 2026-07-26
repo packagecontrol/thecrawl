@@ -170,6 +170,7 @@ section[name="package"] > ul.stats .platforms {
   ul {
     list-style: none;
     display: flex;
+    align-items: flex-end;
     gap: 1.4rem;
     overflow-x: auto;
     margin: 0;
