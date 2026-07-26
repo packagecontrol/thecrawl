@@ -40,6 +40,10 @@ html.page-status main {
   max-width: var(--max-line);
   margin: -1rem auto 1rem auto;
 
+  &[hidden] {
+    display: none;
+  }
+
   @media (width >= 52rem) {
     margin-top: -2rem;
   }
@@ -359,6 +363,13 @@ html.page-status main {
     stroke-linecap: round;
     transition: stroke 0.1s;
     shape-rendering: crispEdges;
+  }
+
+  @media (width < 30rem) {
+    .x-label-before-month,
+    .x-callout-before-month {
+      display: none;
+    }
   }
 
   .x-arrow {

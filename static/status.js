@@ -27,6 +27,7 @@ const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
 const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
+const chartToolbarEl = document.querySelector('[data-status-chart-toolbar]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
 /** @type {HTMLButtonElement | null} */
 const chartModeButton = document.querySelector('[data-status-mode-toggle]')
@@ -113,7 +114,10 @@ function init() {
       renderEmptyState('No log entries found.')
       return
     }
-    chart?.setData(logs)
+    if (chart) {
+      chart.setData(logs)
+      chartToolbarEl?.removeAttribute('hidden')
+    }
     const resolved = resolveIndexFromUrl()
     if (resolved.hasRunId && !resolved.found) {
       renderEmptyState(missingRunMessage(resolved.runId))
@@ -734,10 +738,20 @@ class StatusChart {
 
       const isMonthStart = dayDate.getDate() === 1
       const isFiveDayTick = dayDate.getDate() % 5 === 0
+      // This only marks month-end labels that exist (normally day 30), since
+      // the other possible month-end dates are not five-day ticks.
+      const nextDayDate = new Date(dayDate)
+      nextDayDate.setDate(nextDayDate.getDate() + 1)
+      const isNextVisibleDayFirstOfMonth = i > 0 && nextDayDate.getDate() === 1
 
       if (isMonthStart || isFiveDayTick || i === 0) {
         const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-        label.setAttribute('class', isMonthStart ? 'x-label x-label-month' : 'x-label')
+        const labelClasses = [
+          'x-label',
+          isMonthStart ? 'x-label-month' : '',
+          isNextVisibleDayFirstOfMonth ? 'x-label-before-month' : '',
+        ].filter(Boolean)
+        label.setAttribute('class', labelClasses.join(' '))
         label.setAttribute('x', x)
         label.setAttribute('y', this.height)
         label.textContent = isMonthStart
@@ -746,7 +760,10 @@ class StatusChart {
         this.labelLayer.appendChild(label)
 
         const callout = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-        callout.setAttribute('class', 'x-callout')
+        callout.setAttribute(
+          'class',
+          isNextVisibleDayFirstOfMonth ? 'x-callout x-callout-before-month' : 'x-callout',
+        )
         callout.setAttribute('x1', x)
         callout.setAttribute('x2', x)
         // + 1 to not overwrite the x-axis
@@ -1447,7 +1464,7 @@ class StatusChart {
 
   makeDot(entry, x, y, radius, isGlitch = false) {
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-    circle.setAttribute('cx', x)
+    circle.setAttribute('cx', crisp(x))
     circle.setAttribute('cy', y)
     circle.setAttribute('r', radius)
     circle.dataset.key = entryKey(entry)
