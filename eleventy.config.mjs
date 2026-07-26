@@ -29,6 +29,8 @@ const FEATURED_LABELS = [
 const LABELS_RANK = new Map(FEATURED_LABELS.map((label, index) => [label, index]))
 const LABEL_ICON_MINIMUM_USAGE = 3
 const LABEL_ICON_RECENT_WINDOW_DAYS = 365
+const INSTALL_CHART_WEEKS = 53
+const INSTALL_WINDOW_WEEKS = 53 * 3
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000
 const MAGIC_FRESHNESS_WINDOW_DAYS = 365 * 2 // bonus for packages that had updates
@@ -480,9 +482,10 @@ export default async function (eleventyConfig) {
       const before = all_packages.length
       const limit = Math.abs(numeric)
       const installsFor = (pkg) => {
-        const yearly = stats[pkg.name]?.installs?.yearly
-        if (!Array.isArray(yearly)) return 0
-        return yearly.reduce((sum, value) => sum + (Number(value) || 0), 0)
+        const weekly = stats[pkg.name]?.installs?.weekly
+        if (!Array.isArray(weekly)) return 0
+        return weekly.slice(0, INSTALL_WINDOW_WEEKS)
+          .reduce((sum, value) => sum + (Number(value) || 0), 0)
       }
       const timestampFor = pkg => toTimestamp(pkg.first_seen) ?? 0
       const byNewest = [...all_packages].sort((a, b) => {
@@ -614,10 +617,10 @@ export default async function (eleventyConfig) {
     const readme_url = util.getReadmeUrl(pkg.readme)
     const source_url = util.buildPackageSourceUrl(pkg, trustedTrackerLineIndex)
     const stat = stats[pkg.name]
-    const weekly_installs = stat?.installs?.weekly ?? []
-    const weekly_removals = stat?.removals?.weekly ?? []
-    const weekly_upgrades = stat?.upgrades?.weekly ?? []
-    const weekly_dates = stats['__weekly_dates']
+    const weekly_installs = (stat?.installs?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
+    const weekly_removals = (stat?.removals?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
+    const weekly_upgrades = (stat?.upgrades?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
+    const weekly_dates = (stats['__weekly_dates'] ?? []).slice(0, INSTALL_CHART_WEEKS)
 
     // Trim stats to the package lifetime based on first_seen
     let end = undefined
@@ -637,7 +640,8 @@ export default async function (eleventyConfig) {
       weekly_removals: weekly_removals.slice(0, end),
       weekly_upgrades: weekly_upgrades.slice(0, end),
       installed: stat?.installs?.totals ?? 0,
-      installs_window: stat?.installs?.yearly?.reduce((a, b) => a + b, 0) ?? 0,
+      installs_window: stat?.installs?.weekly?.slice(0, INSTALL_WINDOW_WEEKS)
+        .reduce((a, b) => a + b, 0) ?? 0,
       ...(readme_url !== pkg.readme ? { readme_url } : {}),
       ...(renderedReadmes[pkg.readme] ? { rendered_readme: renderedReadmes[pkg.readme][1] } : {}),
       ...(source_url !== pkg.source ? { source_url } : {}),
