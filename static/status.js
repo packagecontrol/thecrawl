@@ -27,6 +27,7 @@ const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
 const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
+const chartToolbarEl = document.querySelector('[data-status-chart-toolbar]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
 /** @type {HTMLButtonElement | null} */
 const chartModeButton = document.querySelector('[data-status-mode-toggle]')
@@ -113,7 +114,10 @@ function init() {
       renderEmptyState('No log entries found.')
       return
     }
-    chart?.setData(logs)
+    if (chart) {
+      chart.setData(logs)
+      chartToolbarEl?.removeAttribute('hidden')
+    }
     const resolved = resolveIndexFromUrl()
     if (resolved.hasRunId && !resolved.found) {
       renderEmptyState(missingRunMessage(resolved.runId))

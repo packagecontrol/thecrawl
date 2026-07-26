@@ -40,6 +40,10 @@ html.page-status main {
   max-width: var(--max-line);
   margin: -1rem auto 1rem auto;
 
+  &[hidden] {
+    display: none;
+  }
+
   @media (width >= 52rem) {
     margin-top: -2rem;
   }
