@@ -4,7 +4,7 @@
   "rules": [
     {
       "description": "html-cache-control",
-      "expression": "(http.host eq \"packages.sublimetext.io\" and not starts_with(http.request.uri.path, \"/static_\") and http.request.uri.path ne \"/channel.json\" and http.request.uri.path ne \"/channel_st3.json\" and http.request.uri.path ne \"/browse/new/rss\")",
+      "expression": "(http.host eq \"packages.sublimetext.io\" and not starts_with(http.request.uri.path, \"/static_\") and not starts_with(http.request.uri.path, \"/data_\") and http.request.uri.path ne \"/channel.json\" and http.request.uri.path ne \"/channel_st3.json\" and http.request.uri.path ne \"/browse/new/rss\")",
       "action": "rewrite",
       "action_parameters": {
         "headers": {

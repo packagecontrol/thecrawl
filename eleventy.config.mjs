@@ -375,13 +375,20 @@ export default async function (eleventyConfig) {
   const devOrigin = process.env.DEV_ORIGIN || 'http://localhost:8080'
   const siteOrigin = isProd ? prodOrigin : devOrigin
   const staticOutputDir = isProd ? 'static_' + util.gitHash : 'static'
+  const dataOutputDir = isProd ? 'data_' + util.dataVersion : 'data'
   const bundledScriptEntries = new Set()
   let labelIcons = null
 
   eleventyConfig.addPassthroughCopy(
     { static: staticOutputDir },
-    { filter: src => !src.endsWith('.test.js') },
+    {
+      filter: src => !src.endsWith('.test.js')
+        && !src.endsWith('logs.json')
+        && !src.endsWith('label-icons.svg')
+        && !src.endsWith('label-icons-extra.svg'),
+    },
   )
+  eleventyConfig.addPassthroughCopy({ 'static/logs.json': `${dataOutputDir}/logs.json` })
   eleventyConfig.addWatchTarget('./eleventy.install-chart.mjs')
 
   eleventyConfig.on('eleventy.before', () => {
@@ -393,7 +400,7 @@ export default async function (eleventyConfig) {
     await writeVendorModules(path.join(outputDir, staticOutputDir, 'vendor'))
     writeLabelIconSprites(
       'static/label-icons.svg',
-      path.join(outputDir, staticOutputDir),
+      path.join(outputDir, dataOutputDir),
       labelIcons,
     )
 

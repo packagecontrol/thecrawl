@@ -3,6 +3,7 @@ export class Card {
   clone
   compact = false
   staticBase = window.STATIC_BASE ?? '/static/'
+  dataBase = window.DATA_BASE ?? '/data/'
 
   constructor(data, compact = null) {
     this.pkg = data
@@ -262,7 +263,7 @@ export class Card {
       const use = document.createElementNS(svgNS, 'use')
       const secondary = window.__LABEL_ICON_SECONDARY__?.has(canonical)
       const sprite = secondary ? 'label-icons-extra.svg' : 'label-icons.svg'
-      use.setAttribute('href', `${this.staticBase}${sprite}#${iconId}`)
+      use.setAttribute('href', `${this.dataBase}${sprite}#${iconId}`)
       svg.appendChild(use)
       a.appendChild(svg)
     }

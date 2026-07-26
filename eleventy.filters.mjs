@@ -281,8 +281,8 @@ export function label_icon_sprite(label) {
   const canonical = canonicalLabel(label)
   if (!canonical) return ''
   return labelIconSecondarySourceSet?.has(canonical)
-    ? 'static/label-icons-extra.svg'
-    : 'static/label-icons.svg'
+    ? 'data/label-icons-extra.svg'
+    : 'data/label-icons.svg'
 }
 
 // number formatting with grouping (e.g. 10,000)
@@ -325,10 +325,16 @@ export function format_requirement(spec) {
   return trimmed
 }
 
-// cache bust static files
+// Cache bust source-controlled static files by commit.
 export function bust(p) {
   if (!isProd) return p
   return p.replace('static/', 'static_' + util.gitHash + '/')
+}
+
+// Place crawler-derived files in the directory for this exact build.
+export function data_bust(p) {
+  if (!isProd) return p
+  return p.replace('data/', 'data_' + util.dataVersion + '/')
 }
 
 // Inline tests (Vitest)
@@ -348,8 +354,8 @@ if (import.meta.vitest) {
       expect(sprites.primarySources).toContain('python')
       expect(sprites.primarySources).toContain('typst')
       expect(sprites.secondarySources).toContain('audio')
-      expect(label_icon_sprite('typst')).toBe('static/label-icons.svg')
-      expect(label_icon_sprite('audio')).toBe('static/label-icons-extra.svg')
+      expect(label_icon_sprite('typst')).toBe('data/label-icons.svg')
+      expect(label_icon_sprite('audio')).toBe('data/label-icons-extra.svg')
     })
   })
 
