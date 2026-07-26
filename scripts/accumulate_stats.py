@@ -16,8 +16,8 @@ DEFAULT_RESTORE_DIR = "./restore-stats"
 
 # Retention limits
 HISTORY_DAYS = 30
-HISTORY_WEEKS = 53
-HISTORY_YEARS = 3
+HISTORY_WEEKS = 53 * 3
+HISTORY_YEARS = 15
 
 PREV_TOTALS_FILE = "prev_totals.json"
 
