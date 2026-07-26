@@ -310,6 +310,28 @@ uv run -m scripts.snapshot_test diff snapshot-2026-03-02-1210-abcd123.yml
 - `shoot` explicitly creates/overwrites a target snapshot (default: `snapshot.yml`).
 - Noise is sent to a temporary folder (`tmp--<timestamp>-<hash>`), which is removed on success.
 
+## Compare Registries
+
+To verify two given registries provide same set of packages, call:
+
+```bash
+uv run -m scripts.compare_registries --registry1=registry1.json --registry2=registry2.json
+```
+
+All packages, compatible only with ST builds before 3143 are not included as
+those are not available for anyone using Package Control 4 or higher.
+
+Example:
+
+```bash
+# create registry from sublimehq/package_control_channel/master
+uv run -m scripts.generate_registry --output master/registry.json
+# create registry from deathaxe/package_control_channel/four-point-oh
+uv run -m scripts.generate_registry --output four-point-oh/registry.json --channel https://raw.githubusercontent.com/deathaxe/package_control_channel/refs/heads/four-point-oh/channel.json
+# compare
+uv run -m scripts.compare_registries --registry1=master/registry.json --registry2=four-point-oh/registry.json
+```
+
 ## Tests
 
 We use `pytest`. Execute everything via uv so dependencies come from `pyproject.toml`/`uv.lock`:
