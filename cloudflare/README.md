@@ -17,9 +17,12 @@ The cache rules are ordered:
 1. Bypass Package Control channel files:
    - `/channel.json`
    - `/channel_st3.json`
-2. Cache URL-busted static assets (`/static_*`) for one year at the edge and in
-   browsers.
-3. Cache site HTML for one day at the Cloudflare edge, with a short browser TTL.
+2. Cache commit-busted source assets (`/static_*`) for one year at the edge and
+   in browsers.
+3. Cache build-busted crawler data (`/data_*`) for one year at the edge and in
+   browsers. This includes `search-index.json`, `logs.json`, and generated label
+   icon sprites.
+4. Cache site HTML for one day at the Cloudflare edge, with a short browser TTL.
 
 The response-header transform rules currently set short browser caching for
 HTML-like pages and the RSS feed content type:
@@ -108,7 +111,10 @@ curl -sS -o /dev/null -D - --compressed \
   https://packages.sublimetext.io/packages/Abrase
 
 curl -sS -o /dev/null -D - --compressed \
-  https://packages.sublimetext.io/static_<hash>/styles.css
+  https://packages.sublimetext.io/static_<commit>/styles.css
+
+curl -sS -o /dev/null -D - --compressed \
+  https://packages.sublimetext.io/data_<build>/search-index.json
 
 curl -sS -o /dev/null -D - --compressed \
   https://packages.sublimetext.io/channel.json
@@ -120,7 +126,7 @@ curl -sS -o /dev/null -D - --compressed \
 Expected highlights:
 
 - HTML package pages become `cf-cache-status: HIT` after the first request.
-- `/static_*` assets return long browser cache headers.
+- `/static_*` assets and `/data_*` artifacts return long browser cache headers.
 - Channel files are bypassed (`cf-cache-status: DYNAMIC`).
 - HTML-like pages return `Cache-Control: public, max-age=60, must-revalidate`.
 - The RSS feed returns `Content-Type: application/rss+xml; charset=utf-8`.

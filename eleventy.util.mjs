@@ -743,6 +743,10 @@ export function parseSublimeTextMax(selector) {
  */
 export const gitHash = isProd ? execSync('git rev-parse --short HEAD').toString().trim() : 'deadbead'
 
+// Mutable crawler artifacts need a version for this exact build, independently
+// of the commit-based version used by source assets.
+export const dataVersion = isProd ? Date.now().toString(36) : ''
+
 function utcifyISODateString(dateStr) {
   return dateStr.replace(' ', 'T') + (dateStr.endsWith('Z') ? '' : 'Z')
 }

@@ -23,8 +23,8 @@ const MAX_FEATURED_LABELS = 6
 
 // Fetches and returns the search data from the index
 async function fetchSearchData() {
-  const staticBase = window.STATIC_BASE ?? '/static/'
-  const res = await fetch(`${staticBase}search-index.json`)
+  const dataBase = window.DATA_BASE ?? '/data/'
+  const res = await fetch(`${dataBase}search-index.json`)
   if (!res.ok) throw new Error('Failed to fetch search data')
   return await res.json()
 }

@@ -46,6 +46,7 @@
   {% inline_js 'static/_human_date.js' %}
   <script>
     window.STATIC_BASE = '/{{ "static/" | bust }}';
+    window.DATA_BASE = '/{{ "data/" | data_bust }}';
   </script>
 
   <link rel="preload" href="{{ '/static/fonts/lato-v25-latin-400-normal.woff2' | bust }}" as="font" type="font/woff2" crossorigin>
