@@ -170,14 +170,14 @@ section[name="package"] > ul.stats .platforms {
   ul {
     list-style: none;
     display: flex;
+    align-items: flex-end;
     gap: 1.4rem;
     overflow-x: auto;
     margin: 0;
     padding-left: 0;
-    padding-top: 0;
+    padding-top: 6px;
 
-
-  li {
+    li {
       margin: 0px 0 16px 0;
       min-width: max-content;
       padding: 0px 8px 2px;
@@ -185,8 +185,15 @@ section[name="package"] > ul.stats .platforms {
       margin-left: -6px;
       margin-right: 6px;
 
+      .download svg {
+        width: 14px;
+        height: 14px;
+        vertical-align: baseline;
+      }
+
       .requirement {
         display: block;
+        margin-bottom: -4px;
       }
     }
   }

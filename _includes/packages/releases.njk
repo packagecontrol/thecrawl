@@ -27,8 +27,6 @@
           {% if build and build != last_build %}
             <span class="requirement" title="Required ST build">({{ build }})</span>
             {% set last_build = build %}
-          {% elseif last_build %}
-            <br>
           {% endif %}
           {{ pack.release(version, omit_requirements=true) }}
         </li>

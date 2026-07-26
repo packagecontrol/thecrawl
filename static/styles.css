@@ -114,6 +114,10 @@ svg {
   a > & {
     /* alignment of icons in text is just slightly off */
     vertical-align: -1px;
+
+    .stars & {
+      vertical-align: -2px;
+    }
   }
 }
 
