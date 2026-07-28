@@ -44638,6 +44638,25 @@
       "first_seen": "2012-01-31T09:11:46Z"
     },
     {
+      "details": "https://github.com/CaffeineOddity/MarkdownPreviewEnhanced",
+      "labels": [
+        "markdown",
+        "preview",
+        "mermaid",
+        "live preview"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "MarkdownPreviewEnhanced",
+      "first_seen": "2026-07-28T08:40:15Z"
+    },
+    {
       "details": "https://github.com/naokazuterada/MarkdownTOC",
       "labels": [
         "markdown",
