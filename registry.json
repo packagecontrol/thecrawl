@@ -91188,6 +91188,25 @@
       "schema_version": "4.0.0"
     },
     {
+      "name": "h11",
+      "description": "A pure-Python implementation of a HTTP1.1 protocol stack.",
+      "author": "Cory Benfield",
+      "issues": "https://github.com/python-hyper/h11/issues",
+      "releases": [
+        {
+          "base": "https://pypi.org/project/h11",
+          "asset": "h11-*-py3-none-any.whl",
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+      "schema_version": "4.0.0"
+    },
+    {
       "name": "h2",
       "description": "A pure-Python implementation of a HTTP/2 protocol stack.",
       "author": "Cory Benfield",
@@ -91217,6 +91236,42 @@
           "asset": "hpack-*-py3-none-any.whl",
           "python_versions": [
             "3.8",
+            "3.13",
+            "3.14"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+      "schema_version": "4.0.0"
+    },
+    {
+      "name": "httpcore2",
+      "description": "The HTTP Core package provides a minimal low-level HTTP client, which does one thing only. Sending HTTP requests.",
+      "author": "Tom Christie",
+      "issues": "https://github.com/pydantic/httpcore2",
+      "releases": [
+        {
+          "base": "https://pypi.org/project/httpcore2",
+          "asset": "httpcore2-*-py3-none-any.whl",
+          "python_versions": [
+            "3.13",
+            "3.14"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+      "schema_version": "4.0.0"
+    },
+    {
+      "name": "httpx2",
+      "description": "HTTPX2 is a fully featured HTTP client library for Python",
+      "author": "Tom Christie",
+      "issues": "https://github.com/pydantic/httpx2",
+      "releases": [
+        {
+          "base": "https://pypi.org/project/httpx2",
+          "asset": "httpx2-*-py3-none-any.whl",
+          "python_versions": [
             "3.13",
             "3.14"
           ]
@@ -94229,6 +94284,24 @@
       "schema_version": "4.0.0"
     },
     {
+      "name": "truststore",
+      "description": "Truststore is a library which exposes native system certificate stores",
+      "author": "Seth Michael Larson",
+      "issues": "https://github.com/sethmlarson/truststore/issues",
+      "releases": [
+        {
+          "base": "https://pypi.org/project/truststore",
+          "asset": "truststore-*-py3-none-any.whl",
+          "python_versions": [
+            "3.13",
+            "3.14"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+      "schema_version": "4.0.0"
+    },
+    {
       "name": "typing",
       "description": "Python typing module",
       "author": "FichteFoll",
@@ -94613,6 +94686,24 @@
           ],
           "python_versions": [
             "3.8",
+            "3.13",
+            "3.14"
+          ]
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/packagecontrol/channel/refs/heads/main/repository.json",
+      "schema_version": "4.0.0"
+    },
+    {
+      "name": "wsproto",
+      "description": "A pure-Python implementation of a WebSocket protocol stack.",
+      "author": "Benno Rice",
+      "issues": "https://github.com/python-hyper/wsproto/issues",
+      "releases": [
+        {
+          "base": "https://pypi.org/project/wsproto",
+          "asset": "wsproto-*-py3-none-any.whl",
+          "python_versions": [
             "3.13",
             "3.14"
           ]
