@@ -42227,6 +42227,24 @@
       "first_seen": "2023-06-20T21:21:26Z"
     },
     {
+      "details": "https://github.com/laravel/sublime-extension",
+      "name": "LSP-Laravel",
+      "labels": [
+        "lsp",
+        "php",
+        "laravel"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4132",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-30T19:38:06Z"
+    },
+    {
       "name": "LSP-lean",
       "details": "https://github.com/sublimelsp/LSP-lean",
       "labels": [
@@ -42403,6 +42421,23 @@
       "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2024-04-08T09:06:50Z"
+    },
+    {
+      "details": "https://github.com/idleberg/sublime-lsp-nsis",
+      "name": "LSP-nsis",
+      "labels": [
+        "lsp",
+        "nsis"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4070",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-30T19:38:06Z"
     },
     {
       "details": "https://github.com/sublimelsp/LSP-OmniSharp",
