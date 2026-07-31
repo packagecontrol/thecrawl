@@ -18101,6 +18101,7 @@
       "first_seen": "2016-01-05T03:54:49Z"
     },
     {
+      "fetching_source_failed": "2026-07-31T10:18:07Z",
       "name": "DirectorySettings",
       "previous_names": [
         "SuperSettings"
@@ -59879,8 +59880,12 @@
       ],
       "releases": [
         {
-          "sublime_text": ">=4075",
-          "tags": true
+          "sublime_text": "4075 - 4205",
+          "tags": "4075-"
+        },
+        {
+          "sublime_text": ">=4206",
+          "tags": "4206-"
         }
       ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
@@ -82843,6 +82848,22 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2016-06-13T16:57:36Z"
+    },
+    {
+      "name": "TOON",
+      "details": "https://github.com/mpgirro/sublime-toon-syntax",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-07-31T10:18:13Z"
     },
     {
       "name": "Topas Syntax",
