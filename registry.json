@@ -1778,16 +1778,9 @@
     },
     {
       "name": "AmpersandJS Snippets",
-      "details": "https://github.com/HSH/AmpersandJS-Sublime-Text-Snippets",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2016-09-12T16:30:58Z"
+      "first_seen": "2016-09-12T16:30:58Z",
+      "removed": "2026-08-02T10:50:43Z"
     },
     {
       "name": "AMPL language",
@@ -16204,16 +16197,9 @@
     },
     {
       "name": "Current Scope",
-      "details": "https://github.com/gumuz/currentscope",
-      "releases": [
-        {
-          "sublime_text": "<3000",
-          "branch": "master"
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2012-09-15T13:28:38Z"
+      "first_seen": "2012-09-15T13:28:38Z",
+      "removed": "2026-08-02T10:50:43Z"
     },
     {
       "name": "Curry Syntax Highlighting",
@@ -35680,16 +35666,9 @@
     },
     {
       "name": "JavaScript Refactor",
-      "details": "https://github.com/s-a/sublime-text-refactor",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "branch": "master"
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2013-04-23T04:26:10Z"
+      "first_seen": "2013-04-23T04:26:10Z",
+      "removed": "2026-08-02T10:50:43Z"
     },
     {
       "name": "JavaScript Scratch Pad",
