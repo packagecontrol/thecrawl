@@ -14186,16 +14186,9 @@
     },
     {
       "name": "ConvertChineseCharacters",
-      "details": "https://github.com/leibnizli/ConvertChineseCharacters",
-      "releases": [
-        {
-          "sublime_text": ">3000",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2016-01-05T00:33:04Z"
+      "first_seen": "2016-01-05T00:33:04Z",
+      "removed": "2026-08-02T18:31:58Z"
     },
     {
       "name": "ConvertEpochToDate",
@@ -16988,6 +16981,24 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2018-07-31T16:01:16Z"
+    },
+    {
+      "name": "Datapack Icons",
+      "details": "https://github.com/FuncFusion/mc-dp-icons-sublime",
+      "labels": [
+        "theme",
+        "file",
+        "icons"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3084",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-02T18:31:58Z"
     },
     {
       "name": "Datastar",
@@ -84615,6 +84626,22 @@
       "source": "https://raw.githubusercontent.com/randy3k/sublime_packages/master/packages.json",
       "schema_version": "3.0.0",
       "first_seen": "2016-07-08T02:16:11Z"
+    },
+    {
+      "name": "UnicodeConverter",
+      "previous_names": [
+        "ConvertChineseCharacters"
+      ],
+      "details": "https://github.com/leibnizli/UnicodeConverter",
+      "releases": [
+        {
+          "sublime_text": ">3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-02T18:31:58Z"
     },
     {
       "details": "https://github.com/mvoidex/UnicodeMath",
