@@ -92504,8 +92504,8 @@
     },
     {
       "name": "psutil",
-      "description": "Python psutil module",
-      "author": "randy3k",
+      "description": "A cross-platform library for retrieving information on running processes and system utilization (CPU, memory, disks, network, sensors) in Python.",
+      "author": "giampaolo.rodola",
       "issues": "https://github.com/packagecontrol/psutil/issues",
       "releases": [
         {
