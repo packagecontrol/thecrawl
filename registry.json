@@ -72145,6 +72145,24 @@
       "first_seen": "2014-02-03T12:00:59Z"
     },
     {
+      "name": "SublimeLinter-contrib-GDScriptFormatterLinter",
+      "details": "https://github.com/Taffer/GDScript-formatter-linter",
+      "labels": [
+        "linting",
+        "SublimeLinter",
+        "GDScript"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-08T20:33:54Z"
+    },
+    {
       "name": "SublimeLinter-contrib-ghdl",
       "details": "https://github.com/ringof/SublimeLinter-contrib-ghdl",
       "labels": [
