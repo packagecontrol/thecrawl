@@ -6542,6 +6542,19 @@
       "first_seen": "2012-07-05T23:40:43Z"
     },
     {
+      "details": "https://github.com/RushabhJoshi/BladeFormatter",
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "BladeFormatter",
+      "first_seen": "2026-08-09T12:57:18Z"
+    },
+    {
       "name": "Blame Explorer",
       "details": "https://github.com/gatopeich/sublame",
       "releases": [
