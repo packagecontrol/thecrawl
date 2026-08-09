@@ -42358,6 +42358,25 @@
       "first_seen": "2021-05-21T20:09:26Z"
     },
     {
+      "details": "https://github.com/Windsland52/maa-support-sublime",
+      "name": "LSP-MaaFramework",
+      "labels": [
+        "lsp",
+        "json",
+        "linting",
+        "code navigation"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": "sublime-v"
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-09T09:57:21Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-marksman",
       "name": "LSP-marksman",
       "labels": [
