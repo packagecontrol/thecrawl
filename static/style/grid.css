@@ -161,6 +161,7 @@ section[name="labels"] {
     display: flex;
     flex: 0 0 auto;
     align-items: center;
+    transform: translateY(1px);
     gap: 0.35rem;
     color: var(--foreground-3);
     font-size: 11px;
