@@ -5,7 +5,7 @@
 {% set placeholder_pkg = {
   "name": "placeholder-name",
   "description": "placeholder-description",
-  "author": "placeholder-author",
+  "author": ["placeholder-author"],
   "stars": 666,
   "installed": 999,
   "archived_at": "1970-01-01 00:00:00",
@@ -15,13 +15,11 @@
   "permalink": "placeholder-permalink"
 } %}
 
-<template id="package-card-compact">
-  {{ pack.compact_card(placeholder_pkg) }}
-</template>
+{% if page_type == 'home' %}
+  <template id="package-card-compact">{{ pack.compact_card(placeholder_pkg) }}</template>
+{% endif %}
 
-<template id="package-card-result">
-  {{ pack.search_result_card(placeholder_pkg) }}
-</template>
+<template id="package-card-result">{{ pack.search_result_card(placeholder_pkg) }}</template>
 
 <template id="clipboard-button">
   <button class="button clipboard-button" title="Copy to clipboard" aria-label="Copy to clipboard">
