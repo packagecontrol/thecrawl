@@ -71,9 +71,11 @@ function chartModel(pkg) {
   const rAxis = dim.axis_for(upgrades, 5)
   const averages = averageModel(installs, removals, count, dim, lAxis)
   const releaseWeeks = releaseWeekModel(releases, dates, paddedCount)
+  const firstSeenIndex = isoWeekIndex(dates, pkg.first_seen)
 
   return {
-    installed: pkg.installed ?? 0,
+    installTotal: sum(installs),
+    installTotalIsLifetime: firstSeenIndex !== null && firstSeenIndex < count,
     installs,
     removals,
     upgrades,
@@ -122,7 +124,7 @@ function renderLegend(model) {
       <div class="color color-gross"></div>
       Installations:
       ${model.avg_inst ? `recent average ${grouping(Math.round(model.avg_inst))} per week,` : ''}
-      ${grouping(model.installed)} in total
+      ${grouping(model.installTotal)} ${installTotalPeriod(model)}
       <br>
       <div class="color color-net"></div>
       Installations minus removals
@@ -131,6 +133,14 @@ function renderLegend(model) {
       Upgrades
     </div>
   `
+}
+
+function installTotalPeriod(model) {
+  if (model.installTotalIsLifetime) {
+    return 'in total'
+  }
+
+  return `in the ${model.count} ${model.count === 1 ? 'week' : 'weeks'} shown`
 }
 
 function renderMonthTicks(model) {
