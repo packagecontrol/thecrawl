@@ -87,9 +87,9 @@ page_type: package
 
   {{ pkg | install_chart | safe }}
 
-  {% if not pkg.removed and (pkg.installed > 0 or pkg.stars > 0) %}
+  {% if not pkg.removed and (pkg.installs_total > 0 or pkg.stars > 0) %}
     <ul class="stats">
-      {{ pack.installs(pkg.installed) }}
+      {{ pack.installs(pkg.installs_total) }}
       {{ pack.stars(pkg.stars) }}
       {{ pack.platforms(pkg.platform_statement) }}
     </ul>

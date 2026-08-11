@@ -53,10 +53,10 @@ function normalizeSearchPackages(rawIndex) {
     return packages
   }
 
-  return packages.map(expandSearchPackage)
+  return packages.map(row => expandSearchPackage(row, rawIndex.install_history))
 }
 
-function expandSearchPackage(row) {
+function expandSearchPackage(row, installHistory) {
   if (!Array.isArray(row)) {
     return row
   }
@@ -66,7 +66,8 @@ function expandSearchPackage(row) {
     description,
     author,
     stars,
-    installed,
+    installs_total,
+    installs_recent,
     first_seen,
     last_modified,
     magic_score,
@@ -84,7 +85,9 @@ function expandSearchPackage(row) {
     description,
     author,
     stars,
-    installed,
+    installs_total,
+    installs_recent,
+    installs_recent_period: installPeriod(first_seen, installHistory),
     first_seen,
     last_modified,
     magic_score,
@@ -96,6 +99,14 @@ function expandSearchPackage(row) {
     ...(removed ? { removed } : {}),
     ...(archived_at ? { archived_at } : {}),
   }
+}
+
+function installPeriod(firstSeen, history = {}) {
+  if (history.window_start && firstSeen >= history.window_start) {
+    return 'since added to Package Control'
+  }
+
+  return history.older_period || 'recorded'
 }
 
 function expandMagicBreakdown(values = []) {

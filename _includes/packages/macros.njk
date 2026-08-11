@@ -62,7 +62,7 @@
     </div>
 
     <ul class="stats">
-      {{ installs(pkg.installed, true) }}
+      {{ installs(pkg.installs_total, true) }}
       {{ stars(pkg.stars, true) }}
     </ul>
     {{ compact_card_footer(pkg) }}
@@ -78,7 +78,7 @@
 
       <div class="card-meta">
         <ul class="stats">
-          {{ installs(pkg.installed, true) }}
+          {{ installs(pkg.installs_total, true) }}
           {{ stars(pkg.stars, true) }}
         </ul>
         <div class="platforms">{{ pkg.platform_statement }}</div>

@@ -25,6 +25,21 @@ describe('MiniSearch.search', () => {
     expect(results.some(entry => entry.name === 'GitSavvy')).toBe(true)
   })
 
+  it('stores both installation counts and the recent period for result cards', () => {
+    const minisrch = createSearch([{
+      name: 'GitSavvy',
+      installs_total: 100,
+      installs_recent: 25,
+      installs_recent_period: 'recorded since August 2025 (50 weeks)',
+    }])
+
+    expect(minisrch.search('git')[0]).toMatchObject({
+      installs_total: 100,
+      installs_recent: 25,
+      installs_recent_period: 'recorded since August 2025 (50 weeks)',
+    })
+  })
+
   it.each([
     { query: 'js' },
     { query: 'JS' },

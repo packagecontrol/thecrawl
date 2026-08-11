@@ -30,7 +30,9 @@ const LABELS_RANK = new Map(FEATURED_LABELS.map((label, index) => [label, index]
 const LABEL_ICON_MINIMUM_USAGE = 3
 const LABEL_ICON_RECENT_WINDOW_DAYS = 365
 const INSTALL_CHART_WEEKS = 53
-const INSTALL_WINDOW_WEEKS = 53 * 3
+const INSTALL_WINDOW_YEARS = 3
+const INSTALL_WINDOW_WEEKS = 53 * INSTALL_WINDOW_YEARS
+const INSTALL_THREE_YEAR_THRESHOLD_WEEKS = 52 * INSTALL_WINDOW_YEARS
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000
 const MAGIC_FRESHNESS_WINDOW_DAYS = 365 * 2 // bonus for packages that had updates
@@ -162,10 +164,10 @@ function statusTagsForChartWindow(tags, {
 function computeMagicMetadata(packages) {
   const now = Date.now()
   const maxStars = packages.reduce((max, pkg) => Math.max(max, pkg.stars ?? 0), 0)
-  const maxInstalls = packages.reduce((max, pkg) => Math.max(max, pkg.installs_window ?? 0), 0)
+  const maxInstalls = packages.reduce((max, pkg) => Math.max(max, pkg.installs_recent ?? 0), 0)
 
   return packages.map((pkg) => {
-    const installsScore = normalizeLog(pkg.installs_window ?? 0, maxInstalls)
+    const installsScore = normalizeLog(pkg.installs_recent ?? 0, maxInstalls)
     const starsScore = normalizeLog(pkg.stars ?? 0, maxStars)
 
     const lastModifiedTs = toTimestamp(pkg.last_modified) ?? toTimestamp(pkg.created_at) ?? toTimestamp(pkg.first_seen)
@@ -455,6 +457,10 @@ export default async function (eleventyConfig) {
 
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
   const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
+  const allWeeklyDates = stats['__weekly_dates'] ?? []
+  const installWindowStart = allWeeklyDates.length >= INSTALL_WINDOW_WEEKS ? 1 : 0
+  const installWindowDates = allWeeklyDates.slice(installWindowStart, INSTALL_WINDOW_WEEKS)
+  const installHistory = installHistoryFor(installWindowDates)
   let renderedReadmes = fs.existsSync('readmes_rendered.json')
     ? JSON.parse(fs.readFileSync('readmes_rendered.json', 'utf8'))
     : {}
@@ -484,7 +490,7 @@ export default async function (eleventyConfig) {
       const installsFor = (pkg) => {
         const weekly = stats[pkg.name]?.installs?.weekly
         if (!Array.isArray(weekly)) return 0
-        return weekly.slice(0, INSTALL_WINDOW_WEEKS)
+        return weekly.slice(installWindowStart, INSTALL_WINDOW_WEEKS)
           .reduce((sum, value) => sum + (Number(value) || 0), 0)
       }
       const timestampFor = pkg => toTimestamp(pkg.first_seen) ?? 0
@@ -620,7 +626,7 @@ export default async function (eleventyConfig) {
     const weekly_installs = (stat?.installs?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
     const weekly_removals = (stat?.removals?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
     const weekly_upgrades = (stat?.upgrades?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
-    const weekly_dates = (stats['__weekly_dates'] ?? []).slice(0, INSTALL_CHART_WEEKS)
+    const weekly_dates = allWeeklyDates.slice(0, INSTALL_CHART_WEEKS)
 
     // Trim stats to the package lifetime based on first_seen
     let end = undefined
@@ -639,9 +645,10 @@ export default async function (eleventyConfig) {
       weekly_installs: weekly_installs.slice(0, end),
       weekly_removals: weekly_removals.slice(0, end),
       weekly_upgrades: weekly_upgrades.slice(0, end),
-      installed: stat?.installs?.totals ?? 0,
-      installs_window: stat?.installs?.weekly?.slice(0, INSTALL_WINDOW_WEEKS)
-        .reduce((a, b) => a + b, 0) ?? 0,
+      installs_total: stat?.installs?.totals ?? 0,
+      installs_recent: (stat?.installs?.weekly ?? []).slice(installWindowStart, INSTALL_WINDOW_WEEKS)
+        .reduce((sum, value) => sum + value, 0),
+      installs_recent_period: installPeriod(pkg.first_seen, installWindowDates),
       ...(readme_url !== pkg.readme ? { readme_url } : {}),
       ...(renderedReadmes[pkg.readme] ? { rendered_readme: renderedReadmes[pkg.readme][1] } : {}),
       ...(source_url !== pkg.source ? { source_url } : {}),
@@ -656,6 +663,8 @@ export default async function (eleventyConfig) {
       .map(normalizedLib)
       .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
   })
+
+  eleventyConfig.addGlobalData('install_history', installHistory)
 
   eleventyConfig.addGlobalData('built', () => {
     const now = new Date()
@@ -728,6 +737,47 @@ export default async function (eleventyConfig) {
     },
     passthroughFileCopy: true,
   }
+}
+
+export function installHistoryFor(weeklyDates) {
+  const oldestWeek = weeklyDates.at(-1)
+  return {
+    window_start: oldestWeek ? mondayOfIsoWeek(oldestWeek).getTime() / 1000 : 0,
+    older_period: installPeriod(null, weeklyDates),
+  }
+}
+
+export function installPeriod(firstSeen, weeklyDates) {
+  const oldestWeek = weeklyDates.at(-1)
+  if (!oldestWeek) {
+    return 'recorded'
+  }
+
+  const firstSeenWeek = firstSeen ? util.isoWeekString(firstSeen) : null
+  if (firstSeenWeek && firstSeenWeek >= oldestWeek) {
+    return 'since added to Package Control'
+  }
+
+  if (weeklyDates.length >= INSTALL_THREE_YEAR_THRESHOLD_WEEKS) {
+    return `in the past ${INSTALL_WINDOW_YEARS} years`
+  }
+
+  const oldestMonth = new Intl.DateTimeFormat('en', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(mondayOfIsoWeek(oldestWeek))
+  const weeks = weeklyDates.length
+  return `recorded since ${oldestMonth} (${weeks} ${weeks === 1 ? 'week' : 'weeks'})`
+}
+
+function mondayOfIsoWeek(isoWeek) {
+  const match = /^(\d{4})-W(\d{2})$/.exec(isoWeek)
+  const year = Number(match[1])
+  const week = Number(match[2])
+  const jan4 = new Date(Date.UTC(year, 0, 4))
+  const jan4Day = jan4.getUTCDay() || 7
+  return new Date(Date.UTC(year, 0, 4 - jan4Day + 1 + ((week - 1) * 7)))
 }
 
 function writeLabelIconSprites(sourcePath, outputDir, labelIcons) {

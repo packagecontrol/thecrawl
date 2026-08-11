@@ -18,16 +18,16 @@ describe('renderInstallChart', () => {
     })).toBe('')
   })
 
-  it('labels the visible sum as a lifetime total for new packages', () => {
+  it('includes the running week in the visible lifetime total', () => {
     const output = renderInstallChart({
       first_seen: '2026-04-08T12:00:00Z',
       weekly_dates: ['2026-W17', '2026-W16', '2026-W15'],
-      weekly_installs: [1, 2, 3],
+      weekly_installs: [100, 2, 3],
       weekly_removals: [0, 0, 0],
       weekly_upgrades: [0, 0, 0],
     })
 
-    expect(output).toContain('6 in total')
+    expect(output).toContain('105 in total')
   })
 
   it('labels the visible sum as the weeks shown for older packages', () => {
@@ -37,7 +37,7 @@ describe('renderInstallChart', () => {
       weekly_installs: [1, 2, 3],
       weekly_removals: [0, 0, 0],
       weekly_upgrades: [0, 0, 0],
-      installed: 999,
+      installs_total: 999,
     })
 
     expect(output).toContain('6 in the 3 weeks shown')

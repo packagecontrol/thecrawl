@@ -112,8 +112,9 @@ export function label_normalization_note(changes) {
   return `<p>* ${heading}</p><ul>${items}</ul>`
 }
 
-export function search_index_json(packages) {
+export function search_index_json(packages, installHistory) {
   return JSON.stringify({
+    install_history: installHistory,
     packages: packages.map(compactSearchPackage),
     label_icon_aliases: labelIconAliases,
     label_icon_tints: labelIconTints,
@@ -127,7 +128,8 @@ function compactSearchPackage(pkg) {
     htmlDescription(pkg.description ?? ''),
     (pkg.author ?? []).join(','),
     pkg.stars ?? 0,
-    pkg.installed ?? 0,
+    pkg.installs_total ?? 0,
+    pkg.installs_recent ?? 0,
     timestamp(pkg.first_seen) || 0,
     timestamp(pkg.last_modified) || 0,
     pkg.magic_score ?? 0,

@@ -7,7 +7,7 @@ export default class SearchIndex {
     }
   }
 
-  render({ collections }) {
-    return search_index_json(collections.searchable_packages)
+  render({ collections, install_history }) {
+    return search_index_json(collections.searchable_packages, install_history)
   }
 }

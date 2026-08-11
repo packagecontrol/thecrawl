@@ -2,12 +2,14 @@ export class Card {
   pkg = {}
   clone
   compact = false
+  installMode = 'standard'
   staticBase = window.STATIC_BASE ?? '/static/'
   dataBase = window.DATA_BASE ?? '/data/'
 
-  constructor(data, compact = null) {
+  constructor(data, compact = null, installMode = 'standard') {
     this.pkg = data
     this.compact = compact === 'compact'
+    this.installMode = installMode
 
     const templateId = this.compact ? 'package-card-compact' : 'package-card-result'
     const template = document.querySelector(`template#${templateId}`)
@@ -147,9 +149,12 @@ export class Card {
       star.remove()
     }
 
-    if (this.pkg.installed > 0) {
-      install.setAttribute('title', 'Installed ' + this.pkg.installed + (this.pkg.installed < 2 ? ' time' : ' times'))
-      install.querySelector('.counter').innerText = this.formatter.format(Number(this.pkg.installed))
+    const stats = installStatsFor(this.pkg, this.installMode)
+    if (stats.count > 0) {
+      const tooltip = installTooltipFor(stats)
+      install.setAttribute('title', tooltip.title)
+      install.querySelector('.counter').innerText = this.formatter.format(stats.count)
+      install.querySelector('.screenreader-only').innerText = tooltip.screenreader
     }
     else {
       install.remove()
@@ -291,6 +296,35 @@ export class Card {
   pretty(date) {
     const value = new Date(date)
     return (new Intl.DateTimeFormat('en-US', { dateStyle: 'long' })).format(value)
+  }
+}
+
+export function installStatsFor(pkg, mode = 'standard') {
+  if (mode === 'recent') {
+    return {
+      count: Number(pkg.installs_recent),
+      period: pkg.installs_recent_period || 'recorded',
+    }
+  }
+
+  return {
+    count: Number(pkg.installs_total),
+    period: mode === 'total' ? 'in total' : null,
+  }
+}
+
+export function installTooltipFor({ count, period }) {
+  if (period) {
+    const noun = count === 1 ? 'installation' : 'installations'
+    return {
+      title: `${count.toLocaleString('en')} ${noun}\n${period}`,
+      screenreader: `installations ${period}`,
+    }
+  }
+
+  return {
+    title: `Installed ${count} ${count === 1 ? 'time' : 'times'}`,
+    screenreader: 'installs',
   }
 }
 
