@@ -44,7 +44,8 @@ export class List {
   })
 
   sortTitleMap = {
-    installed: 'Installs',
+    'installed-recent': 'Recent Installs',
+    installed: 'All-time Installs',
     stars: 'Stars',
     newest: 'Newest',
     oldest: 'Oldest',
@@ -139,10 +140,18 @@ export class List {
     this.updateHeading(items.length, timeRangeLabel, page)
 
     let assignedMainContent = false
+    let installMode = 'standard'
+    if (this.activeSortSelection === 'installed-recent') {
+      installMode = 'recent'
+    }
+    else if (this.activeSortSelection === 'installed') {
+      installMode = 'total'
+    }
+
     const renderItems = (targetList, packages) => {
       packages.forEach((pkg) => {
         const li = document.createElement('li')
-        const fragment = (new Card(pkg)).render()
+        const fragment = (new Card(pkg, null, installMode)).render()
         if (!assignedMainContent) {
           this.assignMainContentTarget(fragment)
           assignedMainContent = true

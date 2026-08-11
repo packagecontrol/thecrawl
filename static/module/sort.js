@@ -10,9 +10,14 @@ export class Sort {
       case 'name-desc':
         return sortedPackages.sort((a, b) => b.name.toLowerCase().localeCompare(a.name.toLowerCase()))
 
+      case 'installed-recent':
+        return sortedPackages.sort((a, b) => {
+          return b.installs_recent - a.installs_recent // High to low
+        })
+
       case 'installed':
         return sortedPackages.sort((a, b) => {
-          return b.installed - a.installed // High to low
+          return b.installs_total - a.installs_total // High to low
         })
 
       case 'stars':
@@ -105,7 +110,7 @@ function rankResultsByMagic(results = []) {
     if (rankA === rankB) {
       return (
         getMetadataScore(b) - getMetadataScore(a)
-        || toNumber(b.installed) - toNumber(a.installed)
+        || toNumber(b.installs_total) - toNumber(a.installs_total)
         || toNumber(b.stars) - toNumber(a.stars)
         || a.name.localeCompare(b.name)
       )

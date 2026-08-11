@@ -1,5 +1,31 @@
 import { describe, expect, it } from 'vitest'
-import { basePackage } from './eleventy.config.mjs'
+import { basePackage, installHistoryFor, installPeriod } from './eleventy.config.mjs'
+
+describe('installHistoryFor', () => {
+  it('provides compact metadata for browser-rendered cards', () => {
+    expect(installHistoryFor(['2025-W06', '2025-W05'])).toEqual({
+      window_start: 1_737_936_000,
+      older_period: 'recorded since January 2025 (2 weeks)',
+    })
+  })
+})
+
+describe('installPeriod', () => {
+  it('describes packages added during retained history as lifetime counts', () => {
+    expect(installPeriod('2025-02-03T12:00:00Z', ['2025-W06', '2025-W05']))
+      .toBe('since added to Package Control')
+  })
+
+  it('describes an incomplete global history window', () => {
+    expect(installPeriod('2020-01-01T00:00:00Z', ['2025-W06', '2025-W05']))
+      .toBe('recorded since January 2025 (2 weeks)')
+  })
+
+  it('describes 156 completed weeks as a three-year window', () => {
+    expect(installPeriod('2020-01-01T00:00:00Z', Array(156).fill('2023-W01')))
+      .toBe('in the past 3 years')
+  })
+})
 
 describe('basePackage compatibility labels', () => {
   it('does not infer ST labels for skeleton tombstones', () => {
