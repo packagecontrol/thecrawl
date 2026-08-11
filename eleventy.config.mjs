@@ -29,7 +29,8 @@ const FEATURED_LABELS = [
 const LABELS_RANK = new Map(FEATURED_LABELS.map((label, index) => [label, index]))
 const LABEL_ICON_MINIMUM_USAGE = 3
 const LABEL_ICON_RECENT_WINDOW_DAYS = 365
-const INSTALL_CHART_WEEKS = 53
+// The main chart width is 53 weeks; + 1 for a possible continuation line
+const INSTALL_CHART_WEEKS = 53 + 1
 const INSTALL_WINDOW_YEARS = 3
 const INSTALL_WINDOW_WEEKS = 53 * INSTALL_WINDOW_YEARS
 const INSTALL_THREE_YEAR_THRESHOLD_WEEKS = 52 * INSTALL_WINDOW_YEARS

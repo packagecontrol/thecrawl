@@ -4,6 +4,7 @@ const shortMonthFormatter = new Intl.DateTimeFormat('en', { month: 'short', time
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 const MS_PER_WEEK = MS_PER_DAY * 7
+const VISIBLE_WEEK_COUNT = 53
 
 const BASE_DIMENSIONS = {
   bar_w: 12,
@@ -35,8 +36,8 @@ function shouldRenderInstallChart(pkg) {
   // Hide completely empty charts: no visible install/upgrade stats and no
   // release in the running year window. Removals alone are not drawn when
   // installs are zero, so they should not trigger the chart.
-  const weeklyInstalls = pkg.weekly_installs ?? []
-  const weeklyUpgrades = pkg.weekly_upgrades ?? []
+  const weeklyInstalls = (pkg.weekly_installs ?? []).slice(0, VISIBLE_WEEK_COUNT)
+  const weeklyUpgrades = (pkg.weekly_upgrades ?? []).slice(0, VISIBLE_WEEK_COUNT)
   const statsSum = sum(weeklyInstalls) + sum(weeklyUpgrades)
   const hasInstallStats = statsSum > 0
   if (hasInstallStats) {
@@ -57,15 +58,17 @@ function shouldRenderInstallChart(pkg) {
 }
 
 function chartModel(pkg) {
-  const installs = pkg.weekly_installs ?? []
-  const removals = pkg.weekly_removals ?? []
-  const upgrades = pkg.weekly_upgrades ?? []
-  const dates = pkg.weekly_dates ?? []
+  const installs = (pkg.weekly_installs ?? []).slice(0, VISIBLE_WEEK_COUNT)
+  const removals = (pkg.weekly_removals ?? []).slice(0, VISIBLE_WEEK_COUNT)
+  // Keep one off-chart upgrade so the line continues into the right axis,
+  // where the plot clip cuts it off.
+  const upgrades = (pkg.weekly_upgrades ?? []).slice(0, VISIBLE_WEEK_COUNT + 1)
+  const dates = (pkg.weekly_dates ?? []).slice(0, VISIBLE_WEEK_COUNT)
   const releases = pkg.allReleases ?? []
 
   const count = installs.length
   // Pad chart width to a fixed 53 weeks to avoid width changes.
-  const paddedCount = atLeast(count, 53)
+  const paddedCount = VISIBLE_WEEK_COUNT
   const dim = dimensions(BASE_DIMENSIONS, paddedCount)
   const lAxis = dim.axis_for(installs, 5)
   const rAxis = dim.axis_for(upgrades, 5)
@@ -280,8 +283,9 @@ function renderUpgradesOverlay(model) {
   //   This is a common Catmull–Rom to Bézier conversion that yields a
   //   smooth line passing through all data points.
 
+  const upgradeCount = upgrades.length
   let d = ''
-  if (count > 1) {
+  if (upgradeCount > 1) {
     const val1 = upgrades[1]
     const yStart = rAxis.y_for(val1)
     // Shift one bar to the right: draw solid line from first full week onwards.
@@ -289,11 +293,11 @@ function renderUpgradesOverlay(model) {
     d = `M ${xStart} ${yStart}`
 
     // Build cubic segments, starting at i=1 to skip 0→1.
-    for (let i = 1; i < count - 1; i += 1) {
+    for (let i = 1; i < upgradeCount - 1; i += 1) {
       const i0 = atLeast(i - 1, 1)
       const i1 = i
       const i2 = i + 1
-      const i3 = atMost(i + 2, count - 1)
+      const i3 = atMost(i + 2, upgradeCount - 1)
 
       const v0 = upgrades[i0]
       const v1 = upgrades[i1]
@@ -332,9 +336,14 @@ function renderUpgradesOverlay(model) {
   }
 
   return html`
-    <path d="${d}" class="upgrades-line" />
-    ${count > 1 ? renderRunningWeekUpgradeLine(model) : ''}
-    ${upgrades.map((val, i) => {
+    <clipPath id="clip-upgrades">
+      ${rect(0, 0, dim.chart_w, dim.chart_h)}
+    </clipPath>
+    <g clip-path="url(#clip-upgrades)">
+      <path d="${d}" class="upgrades-line" />
+      ${count > 1 ? renderRunningWeekUpgradeLine(model) : ''}
+    </g>
+    ${upgrades.slice(0, count).map((val, i) => {
       const y2 = rAxis.y_for(val)
       const x2 = i * dim.bar_w_gap + (dim.bar_w / 2)
       return `<circle cx="${x2}" cy="${y2}" r="${dim.upgrade_pt_r}" class="upgrades-point" />`
