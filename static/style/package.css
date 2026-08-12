@@ -12,6 +12,7 @@ html.page-package {
     margin-right: 0.3rem;
     padding-top: 0;
     margin-bottom: 0;
+    overflow-wrap: anywhere;
 
     &::after {
       content: "\00A0"; /* non-breaking space after heading text */

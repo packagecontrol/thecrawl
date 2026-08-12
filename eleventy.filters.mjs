@@ -53,6 +53,12 @@ export function date_time_format(date) {
   return (new Date(date)).toISOString().slice(0, 16).replace('T', ' ')
 }
 
+export function package_name_breaks(name) {
+  return escapeHtml(String(name))
+    .replace(/([a-z\d])([A-Z])/g, '$1<wbr>$2')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1<wbr>$2')
+}
+
 // number of seconds since epoch, to facilitate comparisons in search
 export function timestamp(date) {
   if (typeof date !== 'string') return date
@@ -358,6 +364,21 @@ if (import.meta.vitest) {
       expect(sprites.secondarySources).toContain('audio')
       expect(label_icon_sprite('typst')).toBe('data/label-icons.svg')
       expect(label_icon_sprite('audio')).toBe('data/label-icons-extra.svg')
+    })
+  })
+
+  describe('package_name_breaks', () => {
+    it.each([
+      ['ConvertChineseCharacters', 'Convert<wbr>Chinese<wbr>Characters'],
+      ['XMLParser', 'XML<wbr>Parser'],
+      ['SublimeLinter3Plugin', 'Sublime<wbr>Linter3<wbr>Plugin'],
+      ['Package Control', 'Package Control'],
+    ])('adds meaningful break opportunities to %s', (input, expected) => {
+      expect(package_name_breaks(input)).toBe(expected)
+    })
+
+    it('escapes HTML before adding break opportunities', () => {
+      expect(package_name_breaks('<BadThing>')).toBe('&lt;Bad<wbr>Thing&gt;')
     })
   })
 
