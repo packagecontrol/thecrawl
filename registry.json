@@ -2060,6 +2060,13 @@
       "first_seen": "2012-10-08T01:55:58Z"
     },
     {
+      "name": "AndyJS",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-10-02T01:47:34Z",
+      "removed": "2012-12-16T17:43:24Z",
+      "labels": []
+    },
+    {
       "details": "https://github.com/agibsonsw/AndyJS2",
       "previous_names": [
         "AndyJS"
@@ -3971,6 +3978,17 @@
       "first_seen": "2022-03-31T18:42:07Z"
     },
     {
+      "name": "Auto Dark mode for Linux",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2023-11-25T16:48:03Z",
+      "removed": "2023-12-29T20:00:13Z",
+      "labels": [
+        "color scheme",
+        "theme",
+        "xdg-desktop-portal"
+      ]
+    },
+    {
       "name": "Auto Encoding for Ruby",
       "details": "https://github.com/elomarns/auto-encoding-for-ruby",
       "releases": [
@@ -5431,6 +5449,13 @@
       "first_seen": "2013-12-13T05:50:04Z"
     },
     {
+      "name": "Bats (Bash Automated Testing System)",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2013-12-13T05:50:04Z",
+      "removed": "2018-11-28T23:25:41Z",
+      "labels": []
+    },
+    {
       "name": "BazelSyntax",
       "details": "https://github.com/niosus/BazelSyntax",
       "donate": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2QLY7J4Q944HS",
@@ -5934,6 +5959,19 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2014-05-06T19:30:06Z"
+    },
+    {
+      "name": "Better CoffeeScript",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-12-29T15:52:50Z",
+      "removed": "2024-08-25T21:13:59Z",
+      "labels": [
+        "language syntax",
+        "snippets",
+        "linting",
+        "watch",
+        "coffeescript"
+      ]
     },
     {
       "name": "Better Completion",
@@ -10168,6 +10206,15 @@
       "first_seen": "2025-12-30T19:50:45Z"
     },
     {
+      "name": "Cisco Syntax Highlighter",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2014-05-14T07:30:10Z",
+      "removed": "2025-12-30T19:39:15Z",
+      "labels": [
+        "language syntax"
+      ]
+    },
+    {
       "name": "CiscoCollab",
       "details": "https://github.com/tonynupe/CiscoCollab",
       "labels": [
@@ -12207,6 +12254,13 @@
       "first_seen": "2022-04-01T19:33:45Z"
     },
     {
+      "name": "CodexAI",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2022-04-01T19:33:45Z",
+      "removed": "2025-08-28T17:51:48Z",
+      "labels": []
+    },
+    {
       "name": "codic",
       "details": "https://github.com/airtoxin/codic-sublime",
       "releases": [
@@ -12491,6 +12545,13 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2016-09-12T16:09:29Z"
+    },
+    {
+      "name": "Color Convert",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2018-04-13T00:21:29Z",
+      "removed": "2025-09-13T19:19:00Z",
+      "labels": []
     },
     {
       "name": "Color Highlight",
@@ -12936,6 +12997,16 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2012-08-29T00:28:54Z"
+    },
+    {
+      "name": "color_scheme_unit",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2016-07-18T02:01:58Z",
+      "removed": "2017-09-26T01:01:05Z",
+      "labels": [
+        "color scheme",
+        "testing"
+      ]
     },
     {
       "name": "Colorcoder",
@@ -14583,6 +14654,13 @@
       "removed": "2024-02-05T20:56:07Z"
     },
     {
+      "name": "copy-file-name",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2011-12-15T15:01:06Z",
+      "removed": "2013-08-23T17:57:56Z",
+      "labels": []
+    },
+    {
       "details": "https://github.com/adzenith/CopyEdit",
       "releases": [
         {
@@ -15414,6 +15492,13 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2013-07-01T03:48:49Z"
+    },
+    {
+      "name": "CSS Color Converter",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-12-18T06:16:30Z",
+      "removed": "2025-09-13T19:19:00Z",
+      "labels": []
     },
     {
       "name": "CSS Colors",
@@ -18023,6 +18108,18 @@
       "first_seen": "2015-12-17T10:40:38Z"
     },
     {
+      "name": "Diffy",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2014-05-28T06:55:18Z",
+      "removed": "2023-10-11T20:09:33Z",
+      "labels": [
+        "diff",
+        "compare",
+        "difference",
+        "comparison"
+      ]
+    },
+    {
       "name": "Dilmes Ipsum",
       "details": "https://github.com/thiagoh/sublime-dilmes-ipsum",
       "author": "Thiago Andrade",
@@ -18748,6 +18845,13 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2015-12-17T20:49:17Z"
+    },
+    {
+      "name": "DocBlox",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-02-07T18:29:27Z",
+      "removed": "2012-03-16T22:20:20Z",
+      "labels": []
     },
     {
       "name": "Docker Based Build Systems",
@@ -20673,6 +20777,17 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2012-06-11T00:40:00Z"
+    },
+    {
+      "name": "EJS 2",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2016-05-03T16:24:33Z",
+      "removed": "2025-02-28T15:52:01Z",
+      "labels": [
+        "language syntax",
+        "snippets",
+        "color scheme"
+      ]
     },
     {
       "name": "ElasticsearchClient",
@@ -24616,6 +24731,13 @@
       "first_seen": "2012-08-29T00:29:19Z"
     },
     {
+      "name": "Find Function Definiton",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-08-29T00:29:19Z",
+      "removed": "2013-06-03T11:25:59Z",
+      "labels": []
+    },
+    {
       "name": "Find Non ASCII Characters",
       "details": "https://github.com/madeingnecca/sublime-find-non-ascii",
       "releases": [
@@ -25607,6 +25729,13 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2016-02-01T09:54:06Z"
+    },
+    {
+      "name": "FolderAlias Rename Tool",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2013-10-22T22:35:47Z",
+      "removed": "2024-02-28T05:01:36Z",
+      "labels": []
     },
     {
       "name": "FolderFiles",
@@ -29133,6 +29262,13 @@
       "first_seen": "2012-02-28T16:44:13Z"
     },
     {
+      "name": "Goto Golang Document",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-04-15T02:01:39Z",
+      "removed": "2012-05-13T02:25:08Z",
+      "labels": []
+    },
+    {
       "name": "Goto Related",
       "details": "https://github.com/schreifels/sublime-goto-related",
       "releases": [
@@ -31003,6 +31139,13 @@
       "first_seen": "2023-12-06T20:12:10Z"
     },
     {
+      "name": "Hex to HSL Color Converter",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-02-13T15:34:25Z",
+      "removed": "2025-09-13T19:19:00Z",
+      "labels": []
+    },
+    {
       "name": "Hex to Int Preview",
       "details": "https://github.com/unknownuser88/hex2int",
       "author": "David Bekoyan",
@@ -31018,6 +31161,13 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2017-02-19T16:45:57Z"
+    },
+    {
+      "name": "Hex to RGB Converter",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-09-15T10:59:07Z",
+      "removed": "2025-09-13T19:19:00Z",
+      "labels": []
     },
     {
       "name": "Hex-Bin System",
@@ -31038,6 +31188,13 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2012-07-31T20:58:04Z"
+    },
+    {
+      "name": "Hex-to-RGBA",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-05-29T22:54:49Z",
+      "removed": "2025-09-13T19:19:00Z",
+      "labels": []
     },
     {
       "name": "Hexa",
@@ -35261,6 +35418,24 @@
       "first_seen": "2014-09-05T14:30:46Z"
     },
     {
+      "name": "Jasmine",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2011-12-17T02:06:12Z",
+      "removed": "2014-09-15T14:31:31Z",
+      "labels": []
+    },
+    {
+      "name": "Jasmine BDD",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2014-03-15T03:20:57Z",
+      "removed": "2014-09-15T14:31:31Z",
+      "labels": [
+        "javascript",
+        "jasmine",
+        "snippets"
+      ]
+    },
+    {
       "name": "Jasmine CoffeeScript",
       "details": "https://github.com/integrum/sublime-text-jasmine-coffeescript",
       "labels": [
@@ -36435,6 +36610,13 @@
       "labels": [],
       "first_seen": "2013-10-03T01:45:26Z",
       "removed": "2020-04-30T19:44:20Z"
+    },
+    {
+      "name": "JS Minifier",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-01-30T04:20:23Z",
+      "removed": "2012-03-04T14:09:32Z",
+      "labels": []
     },
     {
       "name": "JS Minify",
@@ -38808,6 +38990,18 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2017-11-14T20:17:26Z"
+    },
+    {
+      "name": "Laravel Blade Highlighter",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2013-05-20T02:17:59Z",
+      "removed": "2025-02-10T10:44:45Z",
+      "labels": [
+        "php",
+        "laravel",
+        "blade",
+        "language syntax"
+      ]
     },
     {
       "name": "Laravel Blade Spacer",
@@ -49706,6 +49900,17 @@
       "first_seen": "2012-10-31T07:22:28Z"
     },
     {
+      "name": "NimLime",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-10-31T07:22:28Z",
+      "removed": "2024-04-21T13:19:20Z",
+      "labels": [
+        "nim",
+        "language syntax",
+        "completions"
+      ]
+    },
+    {
       "name": "NimPlus",
       "details": "https://github.com/vanyle/NimPlus",
       "labels": [
@@ -49740,6 +49945,13 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2020-04-11T14:48:29Z"
+    },
+    {
+      "name": "Nimrod",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-10-31T07:22:28Z",
+      "removed": "2014-04-25T20:09:15Z",
+      "labels": []
     },
     {
       "name": "NinetyFive",
@@ -54679,6 +54891,23 @@
       "first_seen": "2013-01-21T21:54:48Z"
     },
     {
+      "name": "php-snippets",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2015-07-08T20:21:57Z",
+      "removed": "2018-02-19T13:48:48Z",
+      "labels": [
+        "php",
+        "snippets"
+      ]
+    },
+    {
+      "name": "PHP-Twig",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-02-13T15:34:32Z",
+      "removed": "2024-11-15T11:20:34Z",
+      "labels": []
+    },
+    {
       "name": "Phpactor",
       "details": "https://github.com/tkotosz/sublime-phpactor-plugin",
       "releases": [
@@ -57095,6 +57324,15 @@
       "first_seen": "2013-08-17T17:51:16Z"
     },
     {
+      "name": "ProtoBuf Code Formatter",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2013-12-19T14:00:10Z",
+      "removed": "2014-01-28T08:25:32Z",
+      "labels": [
+        "formatting"
+      ]
+    },
+    {
       "name": "Protobuf Syntax Hightlighting",
       "details": "https://github.com/VcamX/protobuf-syntax-highlighting",
       "labels": [
@@ -58697,6 +58935,13 @@
       "removed": "2026-04-14T07:28:14Z"
     },
     {
+      "name": "Quick Rails",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2013-01-22T21:25:35Z",
+      "removed": "2013-07-01T14:13:09Z",
+      "labels": []
+    },
+    {
       "details": "https://github.com/facelessuser/QuickCal",
       "releases": [
         {
@@ -60261,6 +60506,13 @@
       "first_seen": "2014-02-25T13:10:48Z"
     },
     {
+      "name": "ReactJS Snippets",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2014-08-21T17:35:20Z",
+      "removed": "2025-02-18T20:01:15Z",
+      "labels": []
+    },
+    {
       "name": "Read Only Buffer",
       "details": "https://github.com/crazybyte/SublimeReadOnlyBuffer",
       "releases": [
@@ -60771,6 +61023,13 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2022-11-20T16:02:02Z"
+    },
+    {
+      "name": "RegexPortfolio",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2020-09-30T14:23:20Z",
+      "removed": "2025-06-04T08:44:30Z",
+      "labels": []
     },
     {
       "name": "Registers",
@@ -62644,6 +62903,13 @@
       "first_seen": "2019-05-19T15:45:53Z"
     },
     {
+      "name": "Ruby 1.9 Hash Reverter",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2013-03-20T03:59:07Z",
+      "removed": "2013-05-31T02:17:58Z",
+      "labels": []
+    },
+    {
       "name": "Ruby Block Converter",
       "details": "https://github.com/irohiroki/RubyBlockConverter",
       "labels": [
@@ -64409,6 +64675,15 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2023-12-18T16:26:53Z"
+    },
+    {
+      "name": "SCSS",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2011-12-18T15:37:53Z",
+      "removed": "2024-10-28T20:58:25Z",
+      "labels": [
+        "language syntax"
+      ]
     },
     {
       "name": "SCSS Compiler",
@@ -75540,6 +75815,13 @@
       "first_seen": "2012-06-05T12:31:27Z"
     },
     {
+      "name": "sublimemarkpress",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-11-27T04:36:39Z",
+      "removed": "2013-07-06T15:18:53Z",
+      "labels": []
+    },
+    {
       "name": "SublimeNFDToNFCPaste",
       "details": "https://github.com/astronaughts/SublimeNFDToNFCPaste",
       "labels": [
@@ -77416,6 +77698,24 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2014-12-10T14:10:56Z"
+    },
+    {
+      "name": "Syntax Highlighting for PostCSS",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2015-11-01T23:39:16Z",
+      "removed": "2024-10-05T17:25:55Z",
+      "labels": [
+        "language syntax"
+      ]
+    },
+    {
+      "name": "Syntax Highlighting for Sass",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2013-03-23T01:53:19Z",
+      "removed": "2024-10-05T19:22:25Z",
+      "labels": [
+        "language syntax"
+      ]
     },
     {
       "name": "Syntax Highlighting for SSS SugarSS",
@@ -80889,6 +81189,15 @@
       "first_seen": "2017-01-04T02:11:16Z"
     },
     {
+      "name": "Theme - One Dark",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2017-01-04T02:11:16Z",
+      "removed": "2025-05-05T17:39:12Z",
+      "labels": [
+        "theme"
+      ]
+    },
+    {
       "name": "Theme - Onlywsx",
       "labels": [
         "theme"
@@ -81213,6 +81522,13 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2011-12-15T14:14:13Z"
+    },
+    {
+      "name": "Theme - Soda Refined",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-05-27T09:02:06Z",
+      "removed": "2012-06-17T16:38:02Z",
+      "labels": []
     },
     {
       "name": "Theme - Soda SolarizedDark",
@@ -84367,6 +84683,15 @@
       "first_seen": "2018-10-23T15:07:29Z"
     },
     {
+      "name": "UIkit autocomplete",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2014-01-22T21:16:40Z",
+      "removed": "2025-10-16T09:07:39Z",
+      "labels": [
+        "auto-complete"
+      ]
+    },
+    {
       "name": "UIkitCompletions",
       "details": "https://github.com/dlzi/UIkitCompletions",
       "labels": [
@@ -86702,6 +87027,13 @@
       "first_seen": "2014-12-12T18:07:04Z"
     },
     {
+      "name": "Vue Syntax Highlight",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2014-12-12T18:07:04Z",
+      "removed": "2024-12-08T22:50:42Z",
+      "labels": []
+    },
+    {
       "name": "VueFormatter",
       "details": "https://github.com/baixuexiyang/VUEFormatter",
       "author": "keven",
@@ -88351,6 +88683,15 @@
       "first_seen": "2013-02-22T09:23:13Z"
     },
     {
+      "name": "World of Warcraft TOC file Syntax",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2013-02-22T09:23:13Z",
+      "removed": "2024-07-23T12:19:53Z",
+      "labels": [
+        "language syntax"
+      ]
+    },
+    {
       "name": "World of Warcraft XML file Syntax",
       "details": "https://github.com/ascott18/WoWXMLForSublimeText",
       "labels": [
@@ -89127,6 +89468,15 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2012-07-31T20:52:10Z"
+    },
+    {
+      "name": "XSLT Snippets",
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2012-07-31T20:52:10Z",
+      "removed": "2024-12-15T01:46:39Z",
+      "labels": [
+        "snippets"
+      ]
     },
     {
       "name": "XSnippet",
