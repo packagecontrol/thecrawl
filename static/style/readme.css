@@ -3,6 +3,7 @@
   padding: var(--grid-line) calc(var(--side-padding) * 3.5);
   border-radius: 6px;
   background: var(--background-1);
+  overflow-wrap: anywhere;
 
   max-width: var(--max-line);
   margin-left: auto;
