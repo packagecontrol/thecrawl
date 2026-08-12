@@ -48,42 +48,62 @@ page_type: package
     </aside>
   {% endif %}
 
-  <p>
+  <div class="package-metadata">
     {% if pkg.author and pkg.author | length %}
-      By
-      {% for author in pkg.author -%}
-        {% set q = pack.searchQueryFor('author', author) %}
-        <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
-      {%- endfor %}
-      {% if pkg.removed or pkg.created_at or pkg.last_modified %}
-        <br>
+      <p class="package-byline">
+        By
+        {% for author in pkg.author -%}
+          {% set q = pack.searchQueryFor('author', author) %}
+          <a href="/?q={{ q }}">{{ author }}</a>{{ ", " if not loop.last }}
+        {%- endfor %}
+      </p>
+    {% endif %}
+
+    <ul class="package-timeline">
+      {% if pkg.removed %}
+        {% set removed_first_seen = pkg.first_seen or pkg.created_at %}
+        <li class="package-timeline-statement">
+          {% if removed_first_seen -%}
+            First seen <human-date clickable datetime="{{ removed_first_seen }}">{{ removed_first_seen | date_format }}</human-date>,
+            removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
+          {% else %}
+            Removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
+          {%- endif %}
+        </li>
+        {% if pkg.successor_name %}
+          <li class="package-timeline-statement package-timeline-followup">Lives now as <a href="/packages/{{ pkg.successor_name | urlencode }}">{{ pkg.successor_name }}</a>.</li>
+        {% endif %}
+
+      {% elif pkg.created_at %}
+        <li class="package-timeline-statement">
+          Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>
+          {%- if pkg.created_at != pkg.last_modified -%}
+            , last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
+          {%- endif %}{%- if pkg.archived_at -%}
+            , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
+          {%- endif %}.
+        </li>
+
+      {% elif pkg.last_modified %}
+        <li class="package-timeline-statement">
+          Last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
+          {%- if pkg.archived_at -%}
+            , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
+          {%- endif %}.
+        </li>
       {% endif %}
-    {% endif %}
 
-    {% if pkg.removed %}
-      {% set removed_first_seen = pkg.first_seen or pkg.created_at %}
-      {% if removed_first_seen -%}
-        First seen <human-date clickable datetime="{{ removed_first_seen }}">{{ removed_first_seen | date_format }}</human-date>,
-        removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
-      {% else %}
-        Removed <human-date clickable datetime="{{ pkg.removed }}">{{ pkg.removed | date_format }}</human-date>.
-      {%- endif %}
-
-    {% elif pkg.created_at %}
-      Created <human-date clickable datetime="{{ pkg.created_at }}">{{ pkg.created_at | date_format }}</human-date>
-      {%- if pkg.created_at != pkg.last_modified -%}
-        , last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
-      {%- endif %}{%- if pkg.archived_at -%}
-        , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
-      {%- endif %}.
-
-    {% elif pkg.last_modified %}
-      Last updated <human-date clickable datetime="{{ pkg.last_modified }}">{{ pkg.last_modified | date_format }}</human-date>
-      {%- if pkg.archived_at -%}
-        , archived <human-date clickable datetime="{{ pkg.archived_at }}">{{ pkg.archived_at | date_format }}</human-date>
-      {%- endif %}.
-    {% endif %}
-  </p>
+      {%- if pkg.predecessor_names and pkg.predecessor_names | length -%}
+        <li class="package-timeline-statement package-timeline-followup">Successor of
+          {% for predecessor_name in pkg.predecessor_names -%}
+            <a href="/packages/{{ predecessor_name | urlencode }}">{{ predecessor_name }}</a>
+            {%- if not loop.last -%}
+              {%- if loop.length == 2 %} and {% elif loop.revindex == 2 %}, and {% else %}, {% endif -%}
+            {%- endif -%}
+          {%- endfor %}.</li>
+      {% endif %}
+    </ul>
+  </div>
 
   {{ pkg | install_chart | safe }}
 

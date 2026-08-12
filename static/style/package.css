@@ -44,6 +44,25 @@ html.page-package {
   }
 }
 
+.package-metadata {
+  padding-top: 10px;
+  margin-bottom: 18px;
+}
+
+.package-byline {
+  padding: 0;
+  margin: 0;
+}
+
+.package-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.5em;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 .download {
   color: var(--foreground-2);
   vertical-align: -1px;

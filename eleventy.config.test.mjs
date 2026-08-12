@@ -1,5 +1,49 @@
 import { describe, expect, it } from 'vitest'
-import { basePackage, installHistoryFor, installPeriod } from './eleventy.config.mjs'
+import {
+  basePackage,
+  installHistoryFor,
+  installPeriod,
+  packageSuccessionMetadata,
+} from './eleventy.config.mjs'
+
+describe('packageSuccessionMetadata', () => {
+  const packages = [
+    {
+      name: 'Old Name',
+      first_seen: '2016-01-05T00:33:04Z',
+      removed: '2026-08-02T18:31:58Z',
+    },
+    {
+      name: 'New Name',
+      first_seen: '2026-08-02T18:31:51Z',
+      previous_names: ['Old Name'],
+    },
+  ]
+
+  it('links both ends of a recent rename with a matching tombstone', () => {
+    const metadata = packageSuccessionMetadata(packages, Date.parse('2026-08-12T00:00:00Z'))
+
+    expect(metadata.get('Old Name')).toEqual({ successor_name: 'New Name' })
+    expect(metadata.get('New Name')).toEqual({ predecessor_names: ['Old Name'] })
+  })
+
+  it('keeps the tombstone link but expires the successor notice after a year', () => {
+    const metadata = packageSuccessionMetadata(packages, Date.parse('2027-08-12T00:00:00Z'))
+
+    expect(metadata.get('Old Name')).toEqual({ successor_name: 'New Name' })
+    expect(metadata.has('New Name')).toBe(false)
+  })
+
+  it('does not create links without a matching tombstone', () => {
+    const metadata = packageSuccessionMetadata([{
+      name: 'New Name',
+      first_seen: '2026-08-02T18:31:51Z',
+      previous_names: ['Missing Name'],
+    }], Date.parse('2026-08-12T00:00:00Z'))
+
+    expect(metadata.size).toBe(0)
+  })
+})
 
 describe('installHistoryFor', () => {
   it('provides compact metadata for browser-rendered cards', () => {
