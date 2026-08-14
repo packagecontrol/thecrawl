@@ -74225,6 +74225,24 @@
       "first_seen": "2019-07-08T06:04:41Z"
     },
     {
+      "name": "SublimeLinter-contrib-todo",
+      "details": "https://github.com/Taffer/SublimeLinter-contrib-todo",
+      "labels": [
+        "linting",
+        "SublimeLinter",
+        "To-Do"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-14T13:44:17Z"
+    },
+    {
       "name": "SublimeLinter-contrib-ts-standard",
       "details": "https://github.com/sambauers/SublimeLinter-contrib-ts-standard",
       "labels": [
