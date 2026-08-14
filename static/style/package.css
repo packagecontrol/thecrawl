@@ -63,6 +63,11 @@ html.page-package {
   margin: 0;
 }
 
+.package-timeline-unlinked-name {
+  color: inherit;
+  font-style: italic;
+}
+
 .download {
   color: var(--foreground-2);
   vertical-align: -1px;

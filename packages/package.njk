@@ -93,10 +93,17 @@ page_type: package
         </li>
       {% endif %}
 
-      {%- if pkg.predecessor_names and pkg.predecessor_names | length -%}
+      {%- if pkg.predecessors and pkg.predecessors | length -%}
         <li class="package-timeline-statement package-timeline-followup">Successor of
-          {% for predecessor_name in pkg.predecessor_names -%}
-            <a href="/packages/{{ predecessor_name | urlencode }}">{{ predecessor_name }}</a>
+          {% for predecessor in pkg.predecessors -%}
+            {% if predecessor.has_tombstone -%}
+              <a href="/packages/{{ predecessor.name | urlencode }}">{{ predecessor.name }}</a>
+            {%- else -%}
+              <span
+                class="package-timeline-unlinked-name"
+                title="No tombstone record is available in the database for this package."
+              >{{ predecessor.name }}</span>
+            {%- endif -%}
             {%- if not loop.last -%}
               {%- if loop.length == 2 %} and {% elif loop.revindex == 2 %}, and {% else %}, {% endif -%}
             {%- endif -%}

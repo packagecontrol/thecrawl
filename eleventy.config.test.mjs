@@ -24,7 +24,9 @@ describe('packageSuccessionMetadata', () => {
     const metadata = packageSuccessionMetadata(packages, Date.parse('2026-08-12T00:00:00Z'))
 
     expect(metadata.get('Old Name')).toEqual({ successor_name: 'New Name' })
-    expect(metadata.get('New Name')).toEqual({ predecessor_names: ['Old Name'] })
+    expect(metadata.get('New Name')).toEqual({
+      predecessors: [{ name: 'Old Name', has_tombstone: true }],
+    })
   })
 
   it('keeps the tombstone link but expires the successor notice after a year', () => {
@@ -34,14 +36,17 @@ describe('packageSuccessionMetadata', () => {
     expect(metadata.has('New Name')).toBe(false)
   })
 
-  it('does not create links without a matching tombstone', () => {
+  it('shows an unlinked predecessor without a matching tombstone', () => {
     const metadata = packageSuccessionMetadata([{
       name: 'New Name',
       first_seen: '2026-08-02T18:31:51Z',
       previous_names: ['Missing Name'],
     }], Date.parse('2026-08-12T00:00:00Z'))
 
-    expect(metadata.size).toBe(0)
+    expect(metadata.get('Missing Name')).toEqual({ successor_name: 'New Name' })
+    expect(metadata.get('New Name')).toEqual({
+      predecessors: [{ name: 'Missing Name', has_tombstone: false }],
+    })
   })
 })
 

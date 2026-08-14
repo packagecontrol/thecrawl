@@ -750,18 +750,20 @@ export function packageSuccessionMetadata(packages, nowTimestamp = Date.now()) {
   for (const successor of packages) {
     if (successor.removed) continue
 
-    const predecessorNames = (successor.previous_names ?? [])
-      .filter(name => packagesByName.get(name)?.removed)
-    if (predecessorNames.length === 0) continue
+    const predecessors = (successor.previous_names ?? []).map(name => ({
+      name,
+      has_tombstone: Boolean(packagesByName.get(name)?.removed),
+    }))
+    if (predecessors.length === 0) continue
 
-    for (const predecessorName of predecessorNames) {
-      metadata.set(predecessorName, { successor_name: successor.name })
+    for (const predecessor of predecessors) {
+      metadata.set(predecessor.name, { successor_name: successor.name })
     }
 
     const firstSeen = toTimestamp(successor.first_seen)
     const noticeExpires = firstSeen + SUCCESSOR_NOTICE_WINDOW_DAYS * MS_IN_DAY
     if (firstSeen !== null && nowTimestamp < noticeExpires) {
-      metadata.set(successor.name, { predecessor_names: predecessorNames })
+      metadata.set(successor.name, { predecessors })
     }
   }
 
