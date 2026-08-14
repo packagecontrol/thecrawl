@@ -473,7 +473,7 @@ export default async function (eleventyConfig) {
     const renderedReadmesStale = Object.keys(renderedReadmes).length > 0
     console.warn(
       '[eleventy] All READMEs are fetched and rendered live in the browser. '
-      + 'Tip: run `node render_readmes.mjs -i readmes.json -o readmes_rendered.json` '
+      + 'Tip: run `node util/render-readmes.mjs -i readmes.json -o readmes_rendered.json` '
       + `to prerender READMEs${renderedReadmesStale ? ' again' : ''}.`,
     )
     renderedReadmes = {}

@@ -24,7 +24,7 @@ update-data:
 		|| printf '{}\n' > readmes.json
 
 render-readmes:
-	node render_readmes.mjs -i readmes.json -o readmes_rendered.json
+	node util/render-readmes.mjs -i readmes.json -o readmes_rendered.json
 
 build-source-map:
 	node util/build-source-map.mjs workspace.json $(SOURCE_REPOSITORIES_DIR) \

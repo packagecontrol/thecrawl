@@ -6,7 +6,7 @@ export const RENDERED_READMES_ENVIRONMENT_KEY = '__environment'
 export function createReadmeRendererEnvironmentHash() {
   const hash = createHash('sha256')
   const files = [
-    ['render_readmes.mjs', new URL('../render_readmes.mjs', import.meta.url)],
+    ['util/render-readmes.mjs', new URL('./render-readmes.mjs', import.meta.url)],
     ['static/readme-renderer.mjs', new URL('../static/readme-renderer.mjs', import.meta.url)],
     ['util/readme-render-cache.mjs', new URL(import.meta.url)],
     ['package-lock.json', new URL('../package-lock.json', import.meta.url)],
