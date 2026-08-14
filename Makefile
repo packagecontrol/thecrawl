@@ -1,5 +1,6 @@
-PACKAGE_CONTROL_CHANNEL_DIR := .package_control_channel
-PACKAGE_CONTROL_CHANNEL_REPO := https://github.com/sublimehq/package_control_channel.git
+SOURCE_REPOSITORIES_DIR := .source_repositories
+SOURCE_MODEL := source-model.json
+SOURCE_THRESHOLD := 5
 
 build:
 	npm install
@@ -25,12 +26,13 @@ update-data:
 render-readmes:
 	node render_readmes.mjs -i readmes.json -o readmes_rendered.json
 
+build-source-map:
+	node util/build-source-map.mjs workspace.json $(SOURCE_REPOSITORIES_DIR) \
+		-o $(SOURCE_MODEL) -t $(SOURCE_THRESHOLD)
+
 up:
-	# Package Control Channel is needed to link each package to its exact
-	# registry source file and line number.
-	rm -rf $(PACKAGE_CONTROL_CHANNEL_DIR)
-	git clone --depth 1 $(PACKAGE_CONTROL_CHANNEL_REPO) $(PACKAGE_CONTROL_CHANNEL_DIR)
 	$(MAKE) update-data
+	$(MAKE) build-source-map
 
 build-emoji:
 	# Build emoji.json from gemoji source

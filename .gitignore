@@ -53,6 +53,8 @@ _site/*
 ######################
 .AFileIcon/
 .package_control_channel/
+.source_repositories/
+source-model.json
 channel.json
 logs.json
 readmes.json

@@ -463,6 +463,7 @@ export default async function (eleventyConfig) {
   const installWindowStart = allWeeklyDates.length >= INSTALL_WINDOW_WEEKS ? 1 : 0
   const installWindowDates = allWeeklyDates.slice(installWindowStart, INSTALL_WINDOW_WEEKS)
   const installHistory = installHistoryFor(installWindowDates)
+
   let renderedReadmes = fs.existsSync('readmes_rendered.json')
     ? JSON.parse(fs.readFileSync('readmes_rendered.json', 'utf8'))
     : {}
@@ -477,6 +478,18 @@ export default async function (eleventyConfig) {
     )
     renderedReadmes = {}
   }
+
+  let sourceModel = {}
+  if (fs.existsSync('source-model.json')) {
+    console.warn('[eleventy] Using source-model.json for deep links')
+    sourceModel = JSON.parse(fs.readFileSync('source-model.json', 'utf8'))
+  } else {
+    console.warn(
+      '[eleventy] source-model.json not available, only fallback source links will be rendered. '
+      + 'Tip: run `make build-source-map`.',
+    )
+  }
+
   let all_packages = util.simplifyPackageLabels(
     // eslint-disable-next-line no-unused-vars
     Object.entries(workspace.packages).map(([id, pkg]) => pkg),
@@ -539,14 +552,6 @@ export default async function (eleventyConfig) {
         console.warn(`[eleventy] LIMIT_DATASET=[${names.join(', ')}] active: ${before} -> ${all_packages.length} packages`)
       }
     }
-  }
-
-  let trustedTrackerLineIndex = new Map()
-  try {
-    trustedTrackerLineIndex = util.buildTrustedTrackerLineIndex('.package_control_channel/repository.json')
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
-    console.warn(`[eleventy] Failed to build trusted tracker line index: ${reason}`)
   }
 
   const packages = all_packages.map(packageData)
@@ -624,7 +629,7 @@ export default async function (eleventyConfig) {
 
   function packageData(pkg) {
     const readme_url = util.getReadmeUrl(pkg.readme)
-    const source_url = util.buildPackageSourceUrl(pkg, trustedTrackerLineIndex)
+    const source_url = util.buildPackageSourceUrl(pkg, sourceModel)
     const stat = stats[pkg.name]
     const weekly_installs = (stat?.installs?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
     const weekly_removals = (stat?.removals?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
