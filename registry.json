@@ -6443,20 +6443,32 @@
       "first_seen": "2012-04-17T22:09:04Z"
     },
     {
-      "name": "Bitbake Syntax",
-      "details": "https://github.com/Driim/bitbake-syntax",
+      "name": "BitBake",
+      "previous_names": [
+        "BitBake Syntax"
+      ],
+      "details": "https://github.com/SublimeText/BitBake",
       "labels": [
         "language syntax"
       ],
       "releases": [
         {
-          "sublime_text": ">3084",
-          "tags": true
+          "sublime_text": ">=3176",
+          "tags": "3176-"
         }
       ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
-      "first_seen": "2016-07-19T10:25:11Z"
+      "first_seen": "2026-08-15T18:34:31Z"
+    },
+    {
+      "name": "Bitbake Syntax",
+      "labels": [
+        "language syntax"
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2016-07-19T10:25:11Z",
+      "removed": "2026-08-15T18:34:31Z"
     },
     {
       "name": "Bitbucket",
@@ -10471,6 +10483,19 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2013-11-11T18:05:04Z"
+    },
+    {
+      "name": "ClaudeSublime",
+      "details": "https://gitlab.com/petr.jakub/claudesublime",
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-15T18:34:31Z"
     },
     {
       "name": "Claudette",
@@ -27647,7 +27672,7 @@
     {
       "name": "GitHub Desktop",
       "previous_names": [
-        "Git\u200bHub.app Menu"
+        "GitHub.app Menu"
       ],
       "details": "https://github.com/braver/SublimeGitHub",
       "releases": [
@@ -35459,8 +35484,8 @@
         "snippets"
       ],
       "previous_names": [
-        "jasmine",
-        "jasmine bdd"
+        "Jasmine",
+        "Jasmine BDD"
       ],
       "releases": [
         {
@@ -44910,7 +44935,8 @@
         "markdown",
         "preview",
         "mermaid",
-        "live preview"
+        "live preview",
+        "syntax highlighting"
       ],
       "releases": [
         {
@@ -52046,7 +52072,11 @@
       "donate": "https://github.com/sponsors/yaroslavyaroslav",
       "releases": [
         {
-          "sublime_text": ">=4050",
+          "sublime_text": "4050 - 4204",
+          "tags": "py38-"
+        },
+        {
+          "sublime_text": ">=4205",
           "tags": true
         }
       ],
@@ -57457,6 +57487,22 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2023-01-06T18:58:59Z"
+    },
+    {
+      "name": "Publora",
+      "details": "https://github.com/publora/sublime-publora",
+      "labels": [
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-15T18:34:31Z"
     },
     {
       "name": "Pue Syntax Highlight",
