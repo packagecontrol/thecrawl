@@ -10485,6 +10485,24 @@
       "first_seen": "2013-11-11T18:05:04Z"
     },
     {
+      "name": "Claude Code IDE",
+      "details": "https://github.com/Cognisant-llc/sublime-claude-code",
+      "labels": [
+        "ai",
+        "claude",
+        "diff"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-16T18:39:08Z"
+    },
+    {
       "name": "ClaudeSublime",
       "details": "https://gitlab.com/petr.jakub/claudesublime",
       "releases": [
