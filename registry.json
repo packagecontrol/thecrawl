@@ -28334,6 +28334,23 @@
       "first_seen": "2020-04-11T16:10:24Z"
     },
     {
+      "name": "GlyphConstruction",
+      "details": "https://github.com/adbac/GlyphConstruction-SublimePackage",
+      "labels": [
+        "language syntax",
+        "completions"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3092",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-16T17:56:46Z"
+    },
+    {
       "name": "GM Syntax",
       "details": "https://github.com/andyp123/GMSyntax",
       "labels": [
