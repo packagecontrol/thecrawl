@@ -17,7 +17,7 @@ page_type: package
 
 <section name="package" data-list-target="main-content">
   <div class="package-title">
-    <h1 id="main-content" tabindex="-1" data-default="{{ pkg.name }}">{{ pkg.name }}</h1>
+    <h1 id="main-content" tabindex="-1" data-default="{{ pkg.name }}">{{ pkg.name | package_name_breaks | safe }}</h1>
 
     {% if not pkg.removed %}
       <button
