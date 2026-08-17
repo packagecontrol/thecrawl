@@ -48,6 +48,7 @@ const MAGIC_WEIGHTS = {
 }
 const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
 const STATUS_TAG_WINDOW_DAYS = 30
+const SUCCESSOR_NOTICE_WINDOW_DAYS = 365
 const HOME_SECTION_PACKAGE_LIMIT = 9
 const REMARKABLE_PACKAGE_LIMIT = 40
 const REMARKABLE_EXCLUDED_PACKAGE_NAMES = new Set(['Package Control'])
@@ -480,6 +481,7 @@ export default async function (eleventyConfig) {
     // eslint-disable-next-line no-unused-vars
     Object.entries(workspace.packages).map(([id, pkg]) => pkg),
   )
+  const successionMetadata = packageSuccessionMetadata(all_packages)
 
   // Optional dataset limiting for faster local dev
   const limitRaw = process.env.LIMIT_DATASET
@@ -642,6 +644,7 @@ export default async function (eleventyConfig) {
     return {
       ...pkg,
       ...basePackage(pkg),
+      ...successionMetadata.get(pkg.name),
       weekly_dates: weekly_dates,
       weekly_installs: weekly_installs.slice(0, end),
       weekly_removals: weekly_removals.slice(0, end),
@@ -738,6 +741,33 @@ export default async function (eleventyConfig) {
     },
     passthroughFileCopy: true,
   }
+}
+
+export function packageSuccessionMetadata(packages, nowTimestamp = Date.now()) {
+  const packagesByName = new Map(packages.map(pkg => [pkg.name, pkg]))
+  const metadata = new Map()
+
+  for (const successor of packages) {
+    if (successor.removed) continue
+
+    const predecessors = (successor.previous_names ?? []).map(name => ({
+      name,
+      has_tombstone: Boolean(packagesByName.get(name)?.removed),
+    }))
+    if (predecessors.length === 0) continue
+
+    for (const predecessor of predecessors) {
+      metadata.set(predecessor.name, { successor_name: successor.name })
+    }
+
+    const firstSeen = toTimestamp(successor.first_seen)
+    const noticeExpires = firstSeen + SUCCESSOR_NOTICE_WINDOW_DAYS * MS_IN_DAY
+    if (firstSeen !== null && nowTimestamp < noticeExpires) {
+      metadata.set(successor.name, { predecessors })
+    }
+  }
+
+  return metadata
 }
 
 export function installHistoryFor(weeklyDates) {
