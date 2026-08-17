@@ -1,15 +1,14 @@
 #!/usr/bin/env node
-/* global process */
 import fs from 'fs'
 import { JSDOM } from 'jsdom'
 import createDOMPurify from 'dompurify'
 import { marked } from 'marked'
-import { configureMarked, renderReadme } from './static/readme-renderer.mjs'
+import { configureMarked, renderReadme } from '../static/readme-renderer.mjs'
 import {
   RENDERED_READMES_ENVIRONMENT_KEY,
   createReadmeRendererEnvironmentHash,
   createReadmeSourceHash,
-} from './util/readme-render-cache.mjs'
+} from './readme-render-cache.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const rawReadmes = readJson(args.input)
@@ -85,7 +84,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log('Usage: node render_readmes.mjs -i readmes.json -o readmes_rendered.json')
+  console.log('Usage: node util/render-readmes.mjs -i readmes.json -o readmes_rendered.json')
 }
 
 function readJson(path) {
