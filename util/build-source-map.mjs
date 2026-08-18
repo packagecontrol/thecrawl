@@ -14,16 +14,14 @@ export async function main(argv = process.argv.slice(2)) {
 
   recreateDirectory(args.repositoriesPath)
 
-  const checkouts = await Promise.all(
-    sources.map(source => cloneSource(source, args.repositoriesPath)),
-  )
+  const checkouts = await cloneSources(sources, args.repositoriesPath)
   console.log('Done with cloning; process what we have...')
   const sourceModel = {}
 
-  for (let index = 0; index < sources.length; index++) {
-    const locations = buildSourceLocations(sources[index], checkouts[index])
+  for (const { source, checkoutPath } of checkouts) {
+    const locations = buildSourceLocations(source, checkoutPath)
     if (Object.keys(locations).length > 0) {
-      sourceModel[sources[index].url] = locations
+      sourceModel[source.url] = locations
     }
   }
 
@@ -39,6 +37,27 @@ export async function main(argv = process.argv.slice(2)) {
     `Wrote ${packageCount} package locations from `
     + `${Object.keys(sourceModel).length} sources to ${args.outputPath}`,
   )
+}
+
+export async function cloneSources(
+  sources,
+  repositoriesPath,
+  clone = cloneSource,
+) {
+  const checkouts = await Promise.all(sources.map(async (source) => {
+    const label = `${source.owner}/${source.repository}@${source.ref}`
+    console.log(`Cloning ${label}`)
+
+    try {
+      const checkoutPath = await clone(source, repositoriesPath)
+      return { source, checkoutPath }
+    } catch (error) {
+      console.error(`Cloning ${label} -- erred.\n${error.message}`)
+      return null
+    }
+  }))
+
+  return checkouts.filter(checkout => checkout !== null)
 }
 
 export function selectSources(workspace, threshold) {
@@ -201,7 +220,6 @@ async function cloneSource(source, repositoriesPath) {
   ].join('--').replace(/[^A-Za-z0-9_.-]/g, '-')
   const checkoutPath = path.join(repositoriesPath, directoryName)
 
-  console.log(`Cloning ${source.owner}/${source.repository}@${source.ref}`)
   await run('git', [
     'clone',
     '--quiet',
