@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   buildSourceLocations,
   cloneSources,
+  createCloneProgress,
   extractPackageName,
   parseGitHubSourceUrl,
   selectSources,
@@ -52,6 +53,30 @@ describe('cloneSources', () => {
     expect(log).toHaveBeenCalledWith('Cloning example/deleted@main')
     expect(error).toHaveBeenCalledWith(
       'Cloning example/deleted@main -- erred.\nrepository not found',
+    )
+  })
+})
+
+describe('createCloneProgress', () => {
+  it('redraws the collected lines in an interactive terminal', () => {
+    const sources = [
+      { owner: 'example', repository: 'available', ref: 'main' },
+      { owner: 'example', repository: 'deleted', ref: 'main' },
+    ]
+    const output = {
+      isTTY: true,
+      columns: 100,
+      write: vi.fn(() => true),
+    }
+    const progress = createCloneProgress(sources, output)
+
+    progress.start()
+    progress.succeed(0)
+    progress.fail(1, new Error('repository\nnot found'))
+
+    expect(output.write).toHaveBeenLastCalledWith(
+      'Cloning example/available@main -- done.\n'
+      + 'Cloning example/deleted@main -- erred - repository not found\n',
     )
   })
 })
