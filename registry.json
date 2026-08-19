@@ -22951,6 +22951,22 @@
       "first_seen": "2012-04-19T12:34:35Z"
     },
     {
+      "name": "Expr",
+      "details": "https://github.com/guille/sublime-expr",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4075",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-19T15:50:10Z"
+    },
+    {
       "name": "Express Color Scheme",
       "details": "https://github.com/TitanKing/Express.tmTheme",
       "labels": [
