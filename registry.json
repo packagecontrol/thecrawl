@@ -65327,6 +65327,23 @@
       "first_seen": "2014-09-18T22:35:11Z"
     },
     {
+      "name": "Semble",
+      "details": "https://github.com/debjan/sublime-semble",
+      "labels": [
+        "commands",
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-19T18:53:56Z"
+    },
+    {
       "name": "Semi",
       "details": "https://github.com/yyx990803/semi-sublime",
       "labels": [
