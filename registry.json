@@ -24363,6 +24363,27 @@
       "first_seen": "2015-02-11T14:00:17Z"
     },
     {
+      "name": "FileConverter",
+      "details": "https://github.com/gerph/sublimetext-fileconverter",
+      "labels": [
+        "utilities",
+        "binary"
+      ],
+      "releases": [
+        {
+          "platforms": [
+            "osx",
+            "linux"
+          ],
+          "sublime_text": ">=3092",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-24T15:01:20Z"
+    },
+    {
       "name": "FileDialog",
       "details": "https://github.com/shagabutdinov/sublime-file-dialog",
       "labels": [
