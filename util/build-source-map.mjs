@@ -2,6 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import readline from 'readline'
 import { spawn } from 'child_process'
 import { pathToFileURL } from 'url'
 
@@ -14,16 +15,14 @@ export async function main(argv = process.argv.slice(2)) {
 
   recreateDirectory(args.repositoriesPath)
 
-  const checkouts = await Promise.all(
-    sources.map(source => cloneSource(source, args.repositoriesPath)),
-  )
+  const checkouts = await cloneSources(sources, args.repositoriesPath)
   console.log('Done with cloning; process what we have...')
   const sourceModel = {}
 
-  for (let index = 0; index < sources.length; index++) {
-    const locations = buildSourceLocations(sources[index], checkouts[index])
+  for (const { source, checkoutPath } of checkouts) {
+    const locations = buildSourceLocations(source, checkoutPath)
     if (Object.keys(locations).length > 0) {
-      sourceModel[sources[index].url] = locations
+      sourceModel[source.url] = locations
     }
   }
 
@@ -39,6 +38,62 @@ export async function main(argv = process.argv.slice(2)) {
     `Wrote ${packageCount} package locations from `
     + `${Object.keys(sourceModel).length} sources to ${args.outputPath}`,
   )
+}
+
+export async function cloneSources(
+  sources,
+  repositoriesPath,
+  clone = cloneSource,
+) {
+  const progress = createCloneProgress(sources)
+  progress.start()
+
+  const checkouts = await Promise.all(sources.map(async (source, index) => {
+    try {
+      const checkoutPath = await clone(source, repositoriesPath)
+      progress.succeed(index)
+      return { source, checkoutPath }
+    } catch (error) {
+      progress.fail(index, error)
+      return null
+    }
+  }))
+
+  return checkouts.filter(checkout => checkout !== null)
+}
+
+export function createCloneProgress(sources, output = process.stdout) {
+  const labels = sources.map(
+    source => `${source.owner}/${source.repository}@${source.ref}`,
+  )
+  const lines = labels.map(label => `Cloning ${label}`)
+  const interactive = output.isTTY
+
+  return {
+    start() {
+      if (interactive) {
+        drawLines(output, lines)
+      } else {
+        for (const line of lines) console.log(line)
+      }
+    },
+    succeed(index) {
+      if (!interactive) return
+
+      lines[index] = `Cloning ${labels[index]} -- done.`
+      redrawLines(output, lines)
+    },
+    fail(index, error) {
+      if (!interactive) {
+        console.error(`Cloning ${labels[index]} -- erred.\n${error.message}`)
+        return
+      }
+
+      const reason = error.message.replace(/\s+/g, ' ').trim()
+      lines[index] = `Cloning ${labels[index]} -- erred - ${reason}`
+      redrawLines(output, lines)
+    },
+  }
 }
 
 export function selectSources(workspace, threshold) {
@@ -201,7 +256,6 @@ async function cloneSource(source, repositoriesPath) {
   ].join('--').replace(/[^A-Za-z0-9_.-]/g, '-')
   const checkoutPath = path.join(repositoriesPath, directoryName)
 
-  console.log(`Cloning ${source.owner}/${source.repository}@${source.ref}`)
   await run('git', [
     'clone',
     '--quiet',
@@ -212,6 +266,28 @@ async function cloneSource(source, repositoriesPath) {
     checkoutPath,
   ])
   return checkoutPath
+}
+
+function redrawLines(output, lines) {
+  if (lines.length === 0) return
+
+  readline.moveCursor(output, 0, -lines.length)
+  readline.cursorTo(output, 0)
+  readline.clearScreenDown(output)
+  drawLines(output, lines)
+}
+
+function drawLines(output, lines) {
+  if (lines.length === 0) return
+
+  const rendered = lines.map(line => fitTerminalLine(line, output.columns))
+  output.write(`${rendered.join('\n')}\n`)
+}
+
+function fitTerminalLine(line, columns) {
+  if (!columns || line.length < columns) return line
+
+  return `${line.slice(0, Math.max(0, columns - 2))}…`
 }
 
 function run(command, args) {

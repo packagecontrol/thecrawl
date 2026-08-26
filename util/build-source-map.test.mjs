@@ -1,9 +1,11 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   buildSourceLocations,
+  cloneSources,
+  createCloneProgress,
   extractPackageName,
   parseGitHubSourceUrl,
   selectSources,
@@ -12,9 +14,71 @@ import {
 const temporaryDirectories = []
 
 afterEach(() => {
+  vi.restoreAllMocks()
   for (const directory of temporaryDirectories.splice(0)) {
     fs.rmSync(directory, { recursive: true, force: true })
   }
+})
+
+describe('cloneSources', () => {
+  it('reports starts and failures and returns successful checkouts', async () => {
+    const successfulSource = {
+      owner: 'example',
+      repository: 'available',
+      ref: 'main',
+    }
+    const failedSource = {
+      owner: 'example',
+      repository: 'deleted',
+      ref: 'main',
+    }
+    const clone = vi.fn(async (source) => {
+      if (source === failedSource) throw new Error('repository not found')
+      return '/checkouts/available'
+    })
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const checkouts = await cloneSources(
+      [successfulSource, failedSource],
+      '/checkouts',
+      clone,
+    )
+
+    expect(checkouts).toEqual([{
+      source: successfulSource,
+      checkoutPath: '/checkouts/available',
+    }])
+    expect(log).toHaveBeenCalledWith('Cloning example/available@main')
+    expect(log).toHaveBeenCalledWith('Cloning example/deleted@main')
+    expect(error).toHaveBeenCalledWith(
+      'Cloning example/deleted@main -- erred.\nrepository not found',
+    )
+  })
+})
+
+describe('createCloneProgress', () => {
+  it('redraws the collected lines in an interactive terminal', () => {
+    const sources = [
+      { owner: 'example', repository: 'available', ref: 'main' },
+      { owner: 'example', repository: 'deleted', ref: 'main' },
+    ]
+    const output = {
+      isTTY: true,
+      columns: 100,
+      write: vi.fn(() => true),
+    }
+    const progress = createCloneProgress(sources, output)
+
+    progress.start()
+    progress.succeed(0)
+    progress.fail(1, new Error('repository\nnot found'))
+
+    expect(output.write).toHaveBeenLastCalledWith(
+      'Cloning example/available@main -- done.\n'
+      + 'Cloning example/deleted@main -- erred - repository not found\n',
+    )
+  })
 })
 
 describe('selectSources', () => {
