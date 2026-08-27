@@ -207,7 +207,7 @@ svg {
   width: calc(100% - (2 * var(--side-padding)));
   max-width: var(--max-line);
   margin: 0 auto;
-  padding: clamp(1.5rem, 5vw, 3.5rem) 0 0;
+  padding: clamp(1.5rem, 5vw, 2.5rem) 0;
 }
 
 .site-brand {
