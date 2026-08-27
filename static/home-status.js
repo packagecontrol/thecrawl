@@ -61,7 +61,7 @@ function renderRibbon(entries) {
 
   ribbonEl.replaceChildren(fragment)
   ribbonEl.setAttribute('aria-label', ribbonLabel(periods, counts))
-  shellEl.hidden = false
+  ribbonEl.setAttribute('aria-busy', 'false')
 }
 
 function segmentTitle(entry, status, duration) {

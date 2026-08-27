@@ -65,6 +65,22 @@
   --red-2: hsl(7 98% 62%);
 }
 
+html.page-home body {
+  --orange-1: hsl(282.39deg 83.61% 46.78%);
+  --orange-2: hsl(269.8deg 88% 45%);
+  --green-2: hsl(100deg 10.06% 14.31%);
+  --red-1: hsl(11.09deg 91.01% 40.67%);
+  --red-2: hsl(7deg 92% 54%);
+}
+
+html.page-home main {
+  --orange-2: hsl(269.8deg 85.61% 45.89%);
+}
+
+html.page-home .site-footer {
+  --orange-2: hsl(259.73deg 85.61% 45.89%);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -246,10 +262,6 @@ svg {
   left: 50%;
   width: 100vw;
   margin: clamp(3rem, 8vw, 5.5rem) 0 0 -50vw;
-}
-
-.home-status[hidden] {
-  display: none;
 }
 
 .home-status-link,
