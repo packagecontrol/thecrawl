@@ -82,10 +82,19 @@ function ribbonLabel(periods, counts) {
 function formatTimestamp(value) {
   const timestamp = Date.parse(value || '')
   if (!Number.isFinite(timestamp)) return 'Unknown time'
-  return new Date(timestamp).toLocaleString('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+
+  const date = new Date(timestamp)
+  const datePart = date.toLocaleString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   })
+  const timePart = date.toLocaleString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  return `${datePart} : ${timePart}`
 }
 
 function formatDuration(milliseconds) {
