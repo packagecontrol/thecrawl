@@ -1,8 +1,8 @@
 <header class="site-header{% if page_type == 'home' %} site-header-home{% endif %}">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <h1 class="site-brand">
-    <a href="/" aria-label="thecrawl home">
-      <img src="/static/assets/thecrawl.svg" alt="thecrawl.">
+    <a href="{{ '/' | site_url }}" aria-label="thecrawl home">
+      <img src="{{ '/static/assets/thecrawl.svg' | site_url }}" alt="thecrawl.">
     </a>
   </h1>
   <p class="site-tagline">The nucleus of Sublime's Package Control.</p>

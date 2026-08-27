@@ -6,7 +6,7 @@ import {
 const shellEl = document.querySelector('[data-home-status]')
 const ribbonEl = document.querySelector('[data-home-status-ribbon]')
 const LOG_URLS = [
-  '/logs.json',
+  new URL('../logs.json', import.meta.url),
   'https://repackager.sublimetext.io/logs.json',
 ]
 const STATUS_LABELS = {

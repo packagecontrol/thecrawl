@@ -10,11 +10,11 @@
       document.documentElement.dataset.theme = dark ? 'dark' : 'light'
     })()
   </script>
-  <link rel="preload" href="/static/fonts/inter-display-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ '/static/fonts/inter-display-latin.woff2' | site_url }}" as="font" type="font/woff2" crossorigin>
   {% if page_type == 'status' %}
-    <link rel="preload" href="/static/fonts/lato-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="/static/fonts/lato-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ '/static/fonts/lato-400-latin.woff2' | site_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ '/static/fonts/lato-700-latin.woff2' | site_url }}" as="font" type="font/woff2" crossorigin>
   {% endif %}
-  <link rel="stylesheet" href="/static/styles.css">
-  <link rel="icon" href="/static/assets/thecrawl.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ '/static/styles.css' | site_url }}">
+  <link rel="icon" href="{{ '/static/assets/thecrawl.svg' | site_url }}" type="image/svg+xml">
 </head>

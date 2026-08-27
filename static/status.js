@@ -248,7 +248,7 @@ function resolveIndexFromUrl() {
   return { index: 0, hasRunId: true, found: false, runId }
 }
 
-const ASSET_URL = '/logs.json'
+const ASSET_URL = new URL('../logs.json', import.meta.url)
 const FALLBACK_URL = 'https://repackager.sublimetext.io/logs.json'
 const LOG_REFRESH_MS = 10 * 60 * 1000
 const MAX_SKIPPED_HARD_FAILURES = 4

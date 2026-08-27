@@ -6,7 +6,7 @@ page_type: home
 ---
 
 <div class="home-status" data-home-status>
-  <a class="home-status-link" href="/status/">
+  <a class="home-status-link" href="{{ '/status/' | site_url }}">
     <span
       class="home-status-ribbon"
       data-home-status-ribbon
@@ -20,9 +20,9 @@ page_type: home
 <section class="home-page" aria-labelledby="fresh-heading">
   <h2 id="fresh-heading">Fresh from the oven</h2>
   <p class="artifact-links">
-    <a href="/registry.json">registry.json</a>
+    <a href="{{ '/registry.json' | site_url }}">registry.json</a>
     and
-    <a href="/channel.json">channel.json</a>
+    <a href="{{ '/channel.json' | site_url }}">channel.json</a>
   </p>
   <p>
     More artifacts are available on the
@@ -32,4 +32,4 @@ page_type: home
   <pre><code>gh -R packagecontrol/thecrawl release download crawler-status [--clobber]</code></pre>
 </section>
 
-<script src="/static/home-status.js" type="module"></script>
+<script src="{{ '/static/home-status.js' | site_url }}" type="module"></script>

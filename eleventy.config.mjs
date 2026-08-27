@@ -1,6 +1,9 @@
 import { spawnSync } from 'node:child_process'
 
 const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
+const PATH_PREFIX = normalizePathPrefix(
+  process.env.SITE_PATH_PREFIX || '/thecrawl/',
+)
 
 export default function (eleventyConfig) {
   eleventyConfig.ignores.add('README.md')
@@ -30,13 +33,24 @@ export default function (eleventyConfig) {
     'status_tag_dates_json',
     () => JSON.stringify(readSemverTags()),
   )
+  eleventyConfig.addFilter('site_url', prefixSitePath)
 
   return {
+    pathPrefix: PATH_PREFIX,
     dir: {
       input: '.',
       output: '_site',
     },
   }
+}
+
+function prefixSitePath(path) {
+  return PATH_PREFIX + String(path || '').replace(/^\/+/, '')
+}
+
+function normalizePathPrefix(path) {
+  const stripped = String(path || '').replace(/^\/+|\/+$/g, '')
+  return stripped ? `/${stripped}/` : '/'
 }
 
 function readSemverTags() {
