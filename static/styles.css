@@ -74,11 +74,11 @@ html.page-home body {
 }
 
 html.page-home main {
-  --orange-2: hsl(269.8deg 85.61% 45.89%);
+  --orange-2: hsl(274.84deg 98.97% 51.26%);
 }
 
 html.page-home .site-footer {
-  --orange-2: hsl(259.73deg 85.61% 45.89%);
+  --orange-2: hsl(259.73deg 87.66% 44.61%);
 }
 
 * {
@@ -87,7 +87,10 @@ html.page-home .site-footer {
 
 html {
   min-height: 100%;
-  scrollbar-gutter: stable;
+}
+
+html.page-home {
+  overflow-x: clip;
 }
 
 body {
@@ -256,7 +259,7 @@ svg {
   --home-status-okay: var(--green-2);
   --home-status-warning: var(--orange-1);
   --home-status-error: var(--red-1);
-  --home-status-border: hsl(0 0% 48%);
+  --home-status-border: hsl(53.38deg 19.32% 58.56% / 47%);
 
   position: relative;
   left: 50%;
@@ -273,6 +276,7 @@ svg {
 .home-status-link {
   border-radius: 0;
   text-decoration: none;
+  box-shadow: 0 0 32px #453a3a75;
 }
 
 .home-status-link:focus-visible {
@@ -298,6 +302,7 @@ svg {
   position: absolute;
   inset: 0;
   border: 1px solid transparent;
+  border-width: 0 2px;
   pointer-events: none;
 }
 
@@ -311,10 +316,19 @@ svg {
 
 .home-status-segment.is-warning {
   background: var(--home-status-warning);
+  box-shadow: 0 0 6px 0 #6120af, 0 0 1px 0 #20af4d;
+  transform: scale(1.05) skewX(-0.4deg);
 }
 
 .home-status-segment.is-error {
   background: var(--home-status-error);
+  box-shadow: 0 0 1px 0 #3d20af;
+}
+
+.home-status-segment.is-error:hover::after {
+  border-color: hsl(53.38deg 19.32% 58.56% / 17%);
+  background: #f45227a8;
+  box-shadow: 0 0 3px 0 #3d20af;
 }
 
 .home-page {
