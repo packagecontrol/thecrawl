@@ -5,7 +5,11 @@ description: "The nucleus of Sublime's Package Control."
 page_type: home
 ---
 
-{# The dense status chart will be inserted here once its contents are defined. #}
+<div class="home-status" data-home-status hidden>
+  <a class="home-status-link" href="/status/">
+    <span class="home-status-ribbon" data-home-status-ribbon role="img"></span>
+  </a>
+</div>
 
 <section class="home-page" aria-labelledby="fresh-heading">
   <h2 id="fresh-heading">Fresh from the oven</h2>
@@ -21,3 +25,5 @@ page_type: home
   <p>Download them to your local computer using <code>gh</code>:</p>
   <pre><code>gh -R packagecontrol/thecrawl release download crawler-status [--clobber]</code></pre>
 </section>
+
+<script src="/static/home-status.js" type="module"></script>

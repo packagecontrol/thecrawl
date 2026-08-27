@@ -75,8 +75,10 @@ html {
 }
 
 body {
+  display: flex;
   min-height: 100vh;
   margin: 0;
+  flex-direction: column;
   background: var(--background-2);
   color: var(--foreground-1);
   font-family: 'Inter Display', sans-serif;
@@ -88,6 +90,7 @@ body {
 main {
   width: 100%;
   max-width: var(--max-content);
+  flex: 1 0 auto;
   min-height: 42vh;
   margin: 0 auto;
   padding: 0 var(--side-padding) 4rem;
@@ -233,9 +236,78 @@ svg {
   filter: invert(1);
 }
 
+.home-status {
+  --home-status-okay: var(--green-2);
+  --home-status-warning: var(--orange-1);
+  --home-status-error: var(--red-1);
+  --home-status-border: hsl(0 0% 48%);
+
+  position: relative;
+  left: 50%;
+  width: 100vw;
+  margin: clamp(3rem, 8vw, 5.5rem) 0 0 -50vw;
+}
+
+.home-status[hidden] {
+  display: none;
+}
+
+.home-status-link,
+.home-status-ribbon {
+  display: flex;
+  width: 100%;
+}
+
+.home-status-link {
+  border-radius: 0;
+  text-decoration: none;
+}
+
+.home-status-link:focus-visible {
+  outline-offset: 4px;
+}
+
+.home-status-ribbon {
+  height: clamp(1.35rem, 15.4vw, 7.05rem);
+  background: var(--background-3);
+  cursor: pointer;
+}
+
+.home-status-segment {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  flex-basis: 0;
+  flex-shrink: 1;
+}
+
+.home-status-segment::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid transparent;
+  pointer-events: none;
+}
+
+.home-status-segment:hover::after {
+  border-color: var(--home-status-border);
+}
+
+.home-status-segment.is-okay {
+  background: var(--home-status-okay);
+}
+
+.home-status-segment.is-warning {
+  background: var(--home-status-warning);
+}
+
+.home-status-segment.is-error {
+  background: var(--home-status-error);
+}
+
 .home-page {
   max-width: var(--max-line);
-  margin: clamp(4.5rem, 12vw, 9rem) auto 0;
+  margin: clamp(3rem, 8vw, 5.5rem) auto 0;
 }
 
 .home-page h2 {
