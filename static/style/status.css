@@ -1,0 +1,589 @@
+html.page-status {
+  scrollbar-gutter: stable;
+}
+
+html.page-status main {
+  margin-top: calc(var(--grid-line) * 1.5);
+  min-height: 66vh;
+}
+
+.status-page {
+  --status-change-marker-color: hsl(124.46deg 56.45% 41.65%);
+  --status-removed-failing-color: hsl(7deg 84% 53% / 88%);
+
+  :root[data-theme='dark'] & {
+    --status-change-marker-color: hsl(120deg 50.9% 49.19%);
+    --status-removed-failing-color: hsl(7deg 92% 68% / 94%);
+  }
+
+  margin-top: var(--grid-line);
+  max-width: var(--max-line);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.status-chart-shell {
+  --status-update-mode-color: hsl(103.73deg 65% 42%);
+
+  width: 100%;
+  max-width: var(--max-content);
+  margin: 0 auto calc(var(--grid-line) * 1.5) auto;
+
+  :root[data-theme='dark'] & {
+    --status-update-mode-color: var(--green-2);
+  }
+}
+
+.status-chart-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  max-width: var(--max-line);
+  margin: -1rem auto 1rem auto;
+
+  &[hidden] {
+    display: none;
+  }
+
+  @media (width >= 52rem) {
+    margin-top: -2rem;
+  }
+}
+
+.status-chart-mode-button {
+  all: unset;
+  padding: 1px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--foreground-3);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 18px;
+  transition: color .12s ease, background-color .12s ease;
+
+  &:hover,
+  &:focus-visible,
+  &[aria-pressed='true'] {
+    color: var(--status-update-mode-color);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: hsl(138.66deg 57.49% 40.59%);
+    border-style: solid;
+    border-width: 1px;
+
+    :root[data-theme='dark'] & {
+      border-color: hsl(93.66deg 57.49% 40.59%);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--orange-1);
+    outline-offset: 3px;
+  }
+}
+
+.status-chart {
+  --status-dot: hsl(222.25deg 15.62% 63.35%);
+  --status-dot-active-fill: hsl(273.7deg 12.38% 32.69%);
+  --status-dot-active-stroke: hsl(282.55deg 11.03% 41.72%);
+  --status-tag-line: hsl(222.25deg 3.29% 81.37%);
+  --status-tag-line-stroke: 1;
+  --status-tag-label: hsl(201.48deg 9.8% 67.95%);
+  /* Top version labels and their long callout lines. */
+  --status-tag-runout: 9; /* preferred horizontal elbow length */
+  --status-tag-min-runout: 3; /* narrow-width lower bound */
+  --status-tag-top-y: 10;
+  --status-tag-lean-deg: 0.6;
+  --status-tag-label-offset-x: 0;
+  --status-tag-label-offset-y: 3;
+  --status-tag-label-min-gap-x: 2; /* overlap threshold between adjacent labels */
+  --status-tag-label-fallback-char-width: 6; /* before SVG text metrics are available */
+  --status-tag-hover-hide-day-radius: 1;
+
+  /* Inline fallback for top labels that would collide on narrow viewports. */
+  --status-tag-inline-cluster-hours: 1; /* merge nearby omitted labels */
+  --status-tag-inline-near-top-hours: 1; /* draw downward when too close to 00:00 */
+  --status-tag-inline-runout: 6; /* short horizontal elbow from dot edge */
+  --status-tag-inline-rise: 6; /* short vertical elbow */
+  --status-tag-inline-text-offset-x: -3; /* text starts slightly before vertical elbow */
+  --status-tag-inline-text-offset-y: -3;
+  --status-tag-inline-down-text-shift-x: 1; /* optical tweak for downward labels */
+  --status-tag-inline-down-text-shift-y: -3;
+  --status-tag-inline-padding-x: 2;
+  --status-tag-inline-padding-y: 1;
+  --status-tag-inline-radius: 3;
+  --status-tag-inline-font-size: 9px;
+
+  /* Left-edge marker for tag history continuing outside the visible window. */
+  --status-tag-overflow-shaft: 30;
+  --status-tag-overflow-center-offset: 3;
+  --status-tag-overflow-shift-x: -3;
+  --status-tag-overflow-arrow-length: 4;
+  --status-tag-overflow-arrow-half-width: 3;
+  --status-tag-overflow-label-gap: 6;
+
+  --status-change-dot: hsl(32deg 100% 66.22%);
+  --status-error-dot: hsl(7deg 90.45% 50.1%);
+  --status-error-dot-soft: hsl(7deg 100% 64.46% / 91%);
+  --status-glitch-dot: hsl(35.76deg 93.03% 61.99%);
+  --status-glitch-link: hsl(38.27deg 82.93% 41.7% / 27%);
+  --status-update-dot: var(--status-update-mode-color);
+  --status-update-marker: hsl(103.73deg 65% 42% / 38%);
+  --status-update-connector: hsl(103.73deg 68.44% 40% / 15%);
+  --status-update-connector-active: hsl(116.32deg 68.44% 40% / 52%);
+
+  :root[data-theme='dark'] & {
+    --status-dot: hsl(245deg 34.8% 64.47%);
+    --status-dot-active-fill: hsl(273.7deg 48.28% 87.52%);
+    --status-dot-active-stroke: hsl(282.55deg 60.41% 75.84%);
+    --status-tag-line: hsl(253.72deg 6.87% 33.27%);
+    --status-tag-line-stroke: 0.8;
+    --status-tag-label: hsl(202.85deg 4.72% 45.55%);
+
+    --status-change-dot: hsl(35.76deg 70.24% 54.56%);
+    --status-glitch-dot: var(--status-change-dot);
+    --status-glitch-link: hsl(253.48deg 32.4% 48.82% / 69%);
+    --status-error-dot: var(--red-2);
+    --status-error-dot-soft: hsl(0.51deg 85.44% 66.12% / 90%);
+    --status-update-marker: hsl(80deg 70% 49% / 42%);
+    --status-update-connector: hsl(80deg 70.13% 49.15% / 5%);
+    --status-update-connector-active: hsl(98.69deg 70.13% 49.15% / 45%);
+  }
+
+  &:hover {
+    --status-tag-line: hsl(140.43deg 38.59% 66.91%);
+    --status-tag-line-stroke: 0.5;
+    --status-tag-label: hsl(138.54deg 67.98% 42.65%);
+    --status-glitch-dot: hsl(30.72deg 88.92% 56.7%);
+    --status-glitch-link: hsl(35.76deg 78.85% 63.24% / 89%);
+    --status-update-connector: hsl(40.79deg 77.83% 37.28% / 31%);
+
+    :root[data-theme='dark'] & {
+      --status-tag-line: hsl(130.99deg 34.37% 41.5%);
+      --status-tag-line-stroke: 0.5;
+      --status-tag-label: hsl(139.17deg 31.52% 46.09%);
+      --status-glitch-dot: hsl(30.72deg 77.22% 49.28%);
+      --status-glitch-link: hsl(48.34deg 85.59% 30.67% / 82%);
+      --status-update-connector: hsl(50.86deg 70.13% 49.15% / 24%);
+    }
+  }
+
+  &.is-updates-mode {
+    --status-dot: hsl(222.25deg 15.62% 63.35% / 50%);
+    --status-glitch-link: hsl(38deg 22% 65% / 27%);
+
+    :root[data-theme='dark'] & {
+      --status-dot: hsl(245deg 34.8% 64.47% / 50%);
+      --status-glitch-link: hsl(253.48deg 24.79% 34.99% / 69%);
+    }
+  }
+
+  position: relative;
+  width: 100%;
+  height: 380px;
+  margin: 0 auto;
+  max-width: 100%;
+
+  svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+  }
+}
+
+.status-chart svg {
+  .grid {
+    stroke: var(--background-3);
+    stroke-linecap: round;
+    stroke-width: 1;
+    pointer-events: none;
+    transition: stroke .12s ease;
+    shape-rendering: crispEdges;
+
+    line[data-axis="true"] {
+      stroke: var(--foreground-1);
+      stroke-width: 0.6px;
+    }
+  }
+
+  .tag-line {
+    fill: none;
+    stroke: var(--status-tag-line);
+    stroke-width: var(--status-tag-line-stroke);
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+
+  .tag-label {
+    fill: var(--status-tag-label);
+    font-size: 9px;
+    text-anchor: middle;
+    pointer-events: auto;
+    cursor: default;
+    transition: opacity .1s ease;
+  }
+
+  .tag-label-neighbor-hidden {
+    opacity: 0;
+  }
+
+  .tag-inline-callout {
+    pointer-events: auto;
+  }
+
+  .tag-inline-line {
+    fill: none;
+    stroke: var(--status-tag-line);
+    stroke-width: var(--status-tag-line-stroke);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .tag-inline-label-bg {
+    fill: var(--background-2);
+    stroke: none;
+  }
+
+  .tag-inline-label {
+    fill: var(--status-tag-label);
+    font-size: var(--status-tag-inline-font-size);
+    pointer-events: auto;
+    cursor: default;
+  }
+
+  .tag-overflow-line {
+    stroke: var(--status-tag-line);
+    stroke-width: var(--status-tag-line-stroke);
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+
+  .tag-overflow-arrow {
+    fill: var(--status-tag-line);
+    pointer-events: none;
+  }
+
+  .tag-overflow-label {
+    fill: var(--status-tag-label);
+    font-size: 9px;
+    text-anchor: start;
+    pointer-events: auto;
+    cursor: default;
+  }
+
+  .dot {
+    fill: var(--status-dot); /* success default */
+    transition: transform .12s ease, stroke-width .12s ease, fill .12s ease;
+    transform-origin: center;
+    transform-box: fill-box;
+    cursor: pointer;
+    opacity: 1;
+
+    &.warn {
+      fill: var(--orange-2);
+    }
+    &.error {
+      fill: var(--status-error-dot);
+    }
+    &.error:not(.no-notes):not(.active) {
+      fill: var(--status-error-dot-soft);
+    }
+    &.muted {
+      fill: var(--foreground-3);
+    }
+    &.changed {
+      fill: var(--status-change-dot);
+    }
+    &.glitch {
+      fill: var(--status-glitch-dot);
+    }
+    &.no-notes {
+      opacity: 0.35;
+    }
+    &.error.no-notes {
+      opacity: 1;
+    }
+    &.active {
+      stroke: var(--status-dot-active-stroke);
+      fill: var(--status-dot-active-fill);
+      opacity: 1;
+    }
+  }
+
+  .glitch-link {
+    fill: none;
+    stroke: var(--status-glitch-link);
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .update-line,
+  .update-connector {
+    fill: none;
+    stroke: transparent;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+  }
+
+  .update-line {
+    stroke-width: 0.8;
+  }
+
+  .update-connector {
+    stroke-width: 0.7;
+  }
+
+  .y-label {
+    fill: var(--foreground-3);
+    font-size: 9px;
+    dominant-baseline: middle;
+    pointer-events: none;
+  }
+
+  .x-label {
+    fill: var(--foreground-3);
+    font-size: 9px;
+    text-anchor: middle;
+    pointer-events: none;
+  }
+
+  .x-label-month {
+    fill: var(--foreground-1);
+  }
+
+  .x-callout {
+    stroke: var(--background-3);
+    stroke-width: 1;
+    stroke-linecap: round;
+    transition: stroke 0.1s;
+    shape-rendering: crispEdges;
+  }
+
+  @media (width < 30rem) {
+    .x-label-before-month,
+    .x-callout-before-month {
+      display: none;
+    }
+  }
+
+  .x-arrow {
+    fill: var(--foreground-2);
+    stroke: none;
+  }
+}
+
+.status-chart.is-updates-mode svg {
+  .dot,
+  .dot.warn,
+  .dot.error,
+  .dot.error:not(.no-notes):not(.active),
+  .dot.muted,
+  .dot.changed,
+  .dot.glitch {
+    fill: var(--status-dot);
+  }
+
+  .dot.has-updates,
+  .dot.has-updates.warn,
+  .dot.has-updates.error,
+  .dot.has-updates.error:not(.no-notes):not(.active),
+  .dot.has-updates.muted,
+  .dot.has-updates.changed,
+  .dot.has-updates.glitch {
+    fill: var(--status-update-dot);
+  }
+
+  .dot.active:not(.has-updates) {
+    fill: var(--status-dot-active-fill);
+  }
+
+  .update-line {
+    stroke: var(--status-update-marker);
+  }
+
+  .update-connector {
+    stroke: var(--status-update-connector);
+  }
+
+  .update-connector.is-active {
+    stroke: var(--status-update-connector-active);
+  }
+
+  .dot.has-updates.active {
+    stroke: hsl(97.65deg 80.68% 33.02%);
+  }
+
+  :root[data-theme='dark'] & .dot.has-updates.active {
+    stroke: hsl(79.76deg 100% 50%);
+  }
+}
+
+.status-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 14px;
+  line-height: var(--grid-line);
+  font-weight: 700;
+  color: var(--foreground-4);
+  border-radius: 6px;
+  padding: 0 8px;
+  margin-bottom: 17px;
+}
+
+.status-label {
+  color: var(--foreground-2);
+  text-transform: capitalize;
+  font-weight: 400;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2px 0;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  text-transform: capitalize;
+  letter-spacing: 0.01em;
+
+  &::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+  }
+}
+
+.status-badge-success {
+  background: transparent;
+  color: var(--green-2);
+}
+
+.status-badge-warning {
+  background: transparent;
+  color: var(--orange-2);
+}
+
+.status-badge-error {
+  background: transparent;
+  color: hsl(7deg 92% 54% / 78%);
+}
+
+.status-badge-muted {
+  background: var(--background-3);
+  color: var(--foreground-2);
+  border-color: transparent;
+}
+
+.status-notes {
+  --grid-line: 24px;
+  background: var(--background-1);
+  border-radius: 6px;
+  padding: var(--grid-line) calc(var(--side-padding) * 2);
+  max-width: var(--max-line);
+
+  h4 {
+    font-size: 16px;
+  }
+
+  .status-change-marker {
+    color: var(--status-change-marker-color);
+  }
+
+  .status-removed-failing-item {
+    color: var(--status-removed-failing-color);
+  }
+
+  .status-removed-failing-name {
+    color: var(--status-removed-failing-color);
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: var(--status-removed-failing-color);
+  }
+
+  &, p, ol, ul, summary {
+    /*font-family: "IBM Plex Mono", monospace;*/
+    font-size: 15px;
+    line-height: 24px;
+  }
+
+  code {
+    background: var(--highlight);
+  }
+
+  pre {
+    border-radius: 6px;
+    background: var(--highlight);
+    overflow-x: auto;
+  }
+  pre code {
+    background: transparent;
+  }
+
+  p, ul, ol, summary {
+    padding-top: 0;
+    margin-bottom: 12px; /* half a gridline */
+    ul, ol {
+      margin-bottom: 0;
+    }
+  }
+
+  ul, ol {
+    padding-left: 1.2em;
+  }
+
+  li {
+    margin-bottom: 6px;
+  }
+
+  a {
+    word-break: break-word;
+  }
+
+}
+
+.status-artifacts {
+  --grid-line: 24px;
+  margin-top: var(--grid-line);
+  background: var(--background-1);
+  border-radius: 6px;
+  padding: calc(var(--grid-line) * 0.75) calc(var(--side-padding) * 2);
+  max-width: var(--max-line);
+
+  a {
+    word-break: break-word;
+  }
+}
+
+.status-artifacts[hidden] {
+  display: none;
+}
+
+.status-artifact-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  td {
+    padding: 3px 0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  td:nth-child(2),
+  td:nth-child(3) {
+    text-align: right;
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "thecrawl-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "eleventy --quiet",
+    "dev": "eleventy --serve",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@11ty/eleventy": "^3.1.6",
+    "dompurify": "^3.4.10",
+    "marked": "^18.0.5"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.6"
+  }
+}

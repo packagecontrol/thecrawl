@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en" class="page-{{ page_type or 'default' }}">
+  {% include "head.njk" %}
+  <body>
+    {% include "header.njk" %}
+
+    <main id="main-content">
+      {{ content | safe }}
+    </main>
+
+    {% include "footer.njk" %}
+  </body>
+</html>

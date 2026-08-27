@@ -1,0 +1,20 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or 'thecrawl' }}</title>
+  <meta name="description" content="{{ description or "The nucleus of Sublime's Package Control." }}">
+
+  <script>
+    (() => {
+      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+    })()
+  </script>
+  <link rel="preload" href="/static/fonts/inter-display-latin.woff2" as="font" type="font/woff2" crossorigin>
+  {% if page_type == 'status' %}
+    <link rel="preload" href="/static/fonts/lato-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/lato-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+  {% endif %}
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="/static/assets/thecrawl.svg" type="image/svg+xml">
+</head>
