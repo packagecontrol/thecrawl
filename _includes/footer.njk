@@ -5,11 +5,49 @@
   <p>
     The nucleus of Sublime's Package Control.<br>
     Dates and times are in your local time.<br>
-    &copy; {{ built.year }} · Built {{ built.formatted }}
+    &copy; {{ built.year }}
+    <span class="footer-built" data-footer-built>
+      · Built <time datetime="{{ built.iso }}" data-footer-built-time>{{ built.formatted }}</time>
+    </span>
   </p>
   <nav aria-label="Footer">
     <a href="https://github.com/packagecontrol/thecrawl">GitHub</a>
     <a href="https://github.com/packagecontrol/thecrawl/releases">Artifacts</a>
     <a href="{{ '/status/' | site_url }}">Status</a>
   </nav>
+  <script>
+    (() => {
+      const footer = document.currentScript.closest('.site-footer')
+      const built = footer?.querySelector('[data-footer-built]')
+      const time = footer?.querySelector('[data-footer-built-time]')
+      const date = new Date(time?.dateTime || '')
+      if (!built || !time || !Number.isFinite(date.getTime())) return
+
+      time.textContent = formatLocalTimestamp(date)
+      requestAnimationFrame(() => built.classList.add('is-visible'))
+
+      function formatLocalTimestamp(value) {
+        const datePart = [
+          value.getFullYear(),
+          pad(value.getMonth() + 1),
+          pad(value.getDate()),
+        ].join('-')
+        const timePart = `${pad(value.getHours())}:${pad(value.getMinutes())}`
+        return `${datePart} ${timePart} ${formatTimezoneOffset(value)}`
+      }
+
+      function formatTimezoneOffset(value) {
+        const offset = -value.getTimezoneOffset()
+        const sign = offset >= 0 ? '+' : '-'
+        const absolute = Math.abs(offset)
+        const hours = Math.floor(absolute / 60)
+        const minutes = absolute % 60
+        return `GMT${sign}${hours}${minutes ? `:${pad(minutes)}` : ''}`
+      }
+
+      function pad(value) {
+        return String(value).padStart(2, '0')
+      }
+    })()
+  </script>
 </footer>

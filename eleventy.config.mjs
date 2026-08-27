@@ -26,6 +26,7 @@ export default function (eleventyConfig) {
     const now = new Date()
     return {
       year: now.getFullYear(),
+      iso: now.toISOString(),
       formatted: now.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
     }
   })

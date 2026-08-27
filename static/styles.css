@@ -371,6 +371,17 @@ svg {
   margin-bottom: 0.75rem;
 }
 
+.footer-built {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 240ms ease-out;
+}
+
+.footer-built.is-visible {
+  visibility: visible;
+  opacity: 1;
+}
+
 .site-footer nav {
   display: flex;
   flex-wrap: wrap;
