@@ -75,6 +75,20 @@ html.page-home body {
   --green-2: hsl(100deg 10.06% 14.31%);
   --red-1: hsl(11.09deg 91.01% 40.67%);
   --red-2: hsl(7deg 92% 54%);
+
+  position: relative;
+}
+
+html.page-home body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  backdrop-filter: hue-rotate(266deg);
+  mask-image: linear-gradient(104deg, transparent, black);
+  backdrop-filter: hue-rotate(246deg);
+  mask-image: linear-gradient(134deg, transparent, black);
 }
 
 html.page-home main {
