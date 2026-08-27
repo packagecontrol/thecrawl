@@ -1,5 +1,9 @@
 @import url('./style/status.css');
 
+@view-transition {
+  navigation: auto;
+}
+
 @font-face {
   font-family: 'Inter Display';
   src: url('./fonts/inter-display-latin.woff2') format('woff2-variations');
@@ -212,6 +216,7 @@ svg {
 
 .site-brand {
   width: min(13.5rem, 70vw);
+  view-transition-name: site-brand;
   margin: 0;
   line-height: 0;
 }
@@ -230,6 +235,7 @@ svg {
 
 .site-tagline {
   margin: 0.9rem 0 0;
+  view-transition-name: site-tagline;
   color: var(--foreground-2);
   font-size: clamp(1rem, 2.4vw, 1.2rem);
   font-weight: 250;
@@ -470,11 +476,33 @@ svg {
   }
 }
 
+::view-transition-group(site-brand) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-group(site-tagline) {
+  animation-duration: 360ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(site-brand),
+::view-transition-new(site-brand),
+::view-transition-old(site-tagline),
+::view-transition-new(site-tagline) {
+  mix-blend-mode: normal;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-group(site-brand),
+  ::view-transition-group(site-tagline) {
+    animation-duration: 0.01ms;
   }
 }
