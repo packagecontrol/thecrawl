@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 
 const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
 const PATH_PREFIX = normalizePathPrefix(
@@ -21,6 +22,11 @@ export default function (eleventyConfig) {
     'node_modules/marked/lib/marked.esm.js':
       'static/vendor/marked/marked.esm.js',
   })
+  if (existsSync('crawl-history.json')) {
+    eleventyConfig.addPassthroughCopy({
+      'crawl-history.json': 'crawl-history.json',
+    })
+  }
 
   eleventyConfig.addGlobalData('built', () => {
     const now = new Date()

@@ -118,6 +118,9 @@ html.page-status main {
   --status-dot: hsl(222.25deg 15.62% 63.35%);
   --status-dot-active-fill: hsl(273.7deg 12.38% 32.69%);
   --status-dot-active-stroke: hsl(282.55deg 11.03% 41.72%);
+  --status-navigation-corridor: hsl(282.55deg 31% 41.72% / 55%);
+  --status-navigation-corridor-fill: hsl(282.55deg 31% 41.72% / 5%);
+  --status-navigation-corridor-base-fill: hsl(282.55deg 31% 41.72% / 9%);
   --status-tag-line: hsl(222.25deg 3.29% 81.37%);
   --status-tag-line-stroke: 1;
   --status-tag-label: hsl(201.48deg 9.8% 67.95%);
@@ -163,11 +166,16 @@ html.page-status main {
   --status-update-marker: hsl(103.73deg 65% 42% / 38%);
   --status-update-connector: hsl(103.73deg 68.44% 40% / 15%);
   --status-update-connector-active: hsl(116.32deg 68.44% 40% / 52%);
+  --status-package-touched: hsl(105deg 54% 40%);
+  --status-package-untouched: hsl(215deg 8% 65%);
 
   :root[data-theme='dark'] & {
     --status-dot: hsl(245deg 34.8% 64.47%);
     --status-dot-active-fill: hsl(273.7deg 48.28% 87.52%);
     --status-dot-active-stroke: hsl(282.55deg 60.41% 75.84%);
+    --status-navigation-corridor: hsl(282.55deg 60.41% 75.84% / 52%);
+    --status-navigation-corridor-fill: hsl(282.55deg 60.41% 75.84% / 5%);
+    --status-navigation-corridor-base-fill: hsl(282.55deg 60.41% 75.84% / 9%);
     --status-tag-line: hsl(253.72deg 6.87% 33.27%);
     --status-tag-line-stroke: 0.8;
     --status-tag-label: hsl(202.85deg 4.72% 45.55%);
@@ -180,6 +188,8 @@ html.page-status main {
     --status-update-marker: hsl(80deg 70% 49% / 42%);
     --status-update-connector: hsl(80deg 70.13% 49.15% / 5%);
     --status-update-connector-active: hsl(98.69deg 70.13% 49.15% / 45%);
+    --status-package-touched: hsl(100deg 49% 53%);
+    --status-package-untouched: hsl(245deg 9% 55%);
   }
 
   &:hover {
@@ -227,6 +237,26 @@ html.page-status main {
 }
 
 .status-chart svg {
+  .directional-navigation-corridor {
+    pointer-events: none;
+  }
+
+  .directional-navigation-corridor-fill {
+    fill: var(--status-navigation-corridor-fill);
+    stroke: none;
+  }
+
+  .directional-navigation-corridor-edge {
+    stroke: var(--status-navigation-corridor);
+    stroke-width: 0.75;
+    stroke-dasharray: 3 3;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .directional-navigation-corridor-base .directional-navigation-corridor-fill {
+    fill: var(--status-navigation-corridor-base-fill);
+  }
+
   .grid {
     stroke: var(--background-3);
     stroke-linecap: round;
@@ -365,6 +395,18 @@ html.page-status main {
     }
     &.notes-search-nonmatch {
       opacity: 0.25;
+    }
+    &.notes-search-nonmatch.package-run-touched {
+      fill: var(--status-package-touched);
+      opacity: 0.62;
+    }
+    &.notes-search-nonmatch.package-run-untouched {
+      fill: var(--status-package-untouched);
+      opacity: 0.18;
+    }
+    &.notes-search-nonmatch.package-run-unknown {
+      fill: var(--status-package-untouched);
+      opacity: 0.08;
     }
     &.notes-search-match {
       filter: brightness(0.7) saturate(3);

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  createDirectionalNavigationOrigin,
   createNotesMatcher,
+  directionalCorridorRadius,
+  findDirectionalCorridorTarget,
   findNextNotesMatchIndex,
   MIN_NOTES_SEARCH_CHARS,
   tokenizeSearchText,
@@ -61,6 +64,146 @@ describe('findNextNotesMatchIndex', () => {
   it('stops instead of leaving the matching results', () => {
     expect(findNextNotesMatchIndex(entries, 0, -1, matcher)).toBe(-1)
     expect(findNextNotesMatchIndex(entries, 4, 1, matcher)).toBe(-1)
+  })
+})
+
+describe('findDirectionalCorridorTarget', () => {
+  const origin = { id: 'origin', x: 0, y: 0 }
+
+  it('uses the first horizontal corridor containing a result', () => {
+    const points = [
+      { id: 'adjacent-day-outside', x: -10, y: 11 },
+      { id: 'aligned-farther-day', x: -20, y: 0 },
+      { id: 'opposite', x: 5, y: 0 },
+    ]
+
+    expect(findDirectionalCorridorTarget(
+      points,
+      origin,
+      { x: -1, y: 0 },
+      10,
+    )).toEqual({
+      point: points[1],
+      corridorRadius: 10,
+    })
+  })
+
+  it('chooses the nearest forward result within one corridor width', () => {
+    const points = [
+      { id: 'far', x: 30, y: 0 },
+      { id: 'near', x: 10, y: 8 },
+    ]
+
+    expect(findDirectionalCorridorTarget(
+      points,
+      origin,
+      { x: 1, y: 0 },
+      10,
+    )?.point.id).toBe('near')
+  })
+
+  it('widens the corridor in fixed steps for one jump', () => {
+    const points = [{ id: 'wide', x: 10, y: 25 }]
+
+    expect(findDirectionalCorridorTarget(
+      points,
+      origin,
+      { x: 1, y: 0 },
+      10,
+    )?.corridorRadius).toBe(30)
+  })
+
+  it('applies the same corridor search vertically', () => {
+    const points = [
+      { id: 'near-time-outside-days', x: 11, y: 10 },
+      { id: 'later-time-inside-days', x: 0, y: 20 },
+    ]
+
+    expect(findDirectionalCorridorTarget(
+      points,
+      origin,
+      { x: 0, y: 1 },
+      10,
+    )?.point.id).toBe('later-time-inside-days')
+  })
+
+  it('treats both adjacent day centers as the same vertical corridor', () => {
+    const dayWidth = 1184 / 30
+    const current = { id: '32514539468', x: 920, y: 315.81 }
+    const points = [
+      { id: '32360669988', x: 880.5333333333334, y: 201.61 },
+      { id: '32577332846', x: 959.4666666666667, y: 247.73 },
+    ]
+
+    expect(findDirectionalCorridorTarget(
+      points,
+      current,
+      { x: 0, y: -1 },
+      dayWidth,
+    )?.point.id).toBe('32577332846')
+  })
+
+  it('strongly prefers the corridor from the reported example', () => {
+    const points = [
+      { id: '32360669988', x: -40, y: -114 },
+      { id: '31965204291', x: -200, y: 0 },
+    ]
+
+    expect(findDirectionalCorridorTarget(
+      points,
+      origin,
+      { x: -1, y: 0 },
+      44,
+    )?.point.id).toBe('31965204291')
+  })
+})
+
+describe('createDirectionalNavigationOrigin', () => {
+  it('retains the original corridor while staying on one axis', () => {
+    const current = { id: 'drifted', x: -20, y: 15 }
+    const previous = { axis: 'horizontal', corridor: 0 }
+
+    expect(createDirectionalNavigationOrigin(
+      current,
+      { x: -1, y: 0 },
+      previous,
+    )).toMatchObject({
+      axis: 'horizontal',
+      corridor: 0,
+      point: { id: 'drifted', x: -20, y: 0 },
+    })
+  })
+
+  it('starts a new corridor when changing axes', () => {
+    const current = { id: 'drifted', x: -20, y: 15 }
+    const previous = { axis: 'horizontal', corridor: 0 }
+
+    expect(createDirectionalNavigationOrigin(
+      current,
+      { x: 0, y: 1 },
+      previous,
+    )).toMatchObject({
+      axis: 'vertical',
+      corridor: -20,
+      point: { id: 'drifted', x: -20, y: 15 },
+    })
+  })
+})
+
+describe('directionalCorridorRadius', () => {
+  it('uses at least the base corridor and widens by whole steps', () => {
+    expect(directionalCorridorRadius(
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 1, y: 0 },
+      10,
+    )).toBe(10)
+    expect(directionalCorridorRadius(
+      { x: 0, y: 0 },
+      { x: 10, y: 21 },
+      { x: 1, y: 0 },
+      10,
+    )).toBe(30)
   })
 })
 

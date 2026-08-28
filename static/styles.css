@@ -307,7 +307,19 @@ svg {
   height: clamp(1.35rem, 15.4vw, 7.05rem);
   background: var(--background-3);
   cursor: pointer;
+  position: relative;
 }
+
+.home-status-ribbon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+/*  backdrop-filter: hue-rotate(246deg);
+  mask-image: linear-gradient(134deg, transparent, black);
+*/}
+
 
 .home-status-segment {
   --duration-warning-color: var(--home-status-warning);

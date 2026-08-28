@@ -46,8 +46,19 @@ build or development server:
 make artifacts
 ```
 
-The downloaded artifacts, generated `_site/` directory, and installed
-`node_modules/` are ignored by Git.
+Build an experimental package-to-crawl history from the retained
+`crawl-backup` artifacts:
+
+```sh
+npm run collect-history
+```
+
+The collector range-downloads only `workspace.json` from each backup and
+caches its per-run result in `.crawl-history-cache/`. Later runs download only
+new backups, retain cached data after artifacts expire, and prune runs that
+have left `logs.json`. The generated `crawl-history.json`, downloaded
+artifacts, `_site/` directory, and installed `node_modules/` are ignored by
+Git.
 
 ## Project structure
 
@@ -56,5 +67,6 @@ The downloaded artifacts, generated `_site/` directory, and installed
 - `status/index.njk` — crawler status page
 - `static/status.js` — status data loading and chart rendering
 - `static/module/` — status data helpers and tests
+- `scripts/collect-crawl-history.mjs` — experimental crawl-history collector
 - `static/styles.css` — site-wide design and layout
 - `static/style/status.css` — status-page and chart styling

@@ -18,9 +18,15 @@ import {
   normalizeStatusNotes,
 } from './module/status-failing.js'
 import {
+  createDirectionalNavigationOrigin,
   createNotesMatcher,
-  findNextNotesMatchIndex,
+  directionalCorridorRadius,
+  findDirectionalCorridorTarget,
 } from './module/status-search.js'
+import {
+  parseCrawlHistory,
+  resolvePackageRunState,
+} from './module/status-history.js'
 import { newestTagBeforeDayWindow } from './module/status-tags.js'
 import DOMPurify from './vendor/dompurify/purify.es.mjs'
 import { marked } from './vendor/marked/marked.esm.js'
@@ -88,9 +94,12 @@ let index = 0
 /** @type {StatusChart | null} */
 let chart = null
 let notesMatcher = null
+let packageSearchRevision = 0
+let crawlHistoryPromise = null
 let emptyStateMessage = ''
 const STATUS_CHART_MODE_STATUS = 'status'
 const STATUS_CHART_MODE_UPDATES = 'updates'
+const DRAW_DIRECTIONAL_NAVIGATION_CORRIDORS = false
 let chartColorMode = STATUS_CHART_MODE_STATUS
 /** @type {TagMarker[]} */
 const tagMarkers = loadTagMarkers(tagDataEl)
@@ -139,9 +148,9 @@ function init() {
 }
 
 function bindControls() {
-  prevButton?.addEventListener('click', () => render(index + 1))
-  nextButton?.addEventListener('click', () => render(index - 1))
-  lastButton?.addEventListener('click', () => render(0))
+  prevButton?.addEventListener('click', () => renderFromControl(index + 1))
+  nextButton?.addEventListener('click', () => renderFromControl(index - 1))
+  lastButton?.addEventListener('click', () => renderFromControl(0))
 
   notesSearchInput?.addEventListener('input', updateNotesSearch)
   notesSearchInput?.addEventListener('keydown', unfocusNotesSearchOnEnter)
@@ -152,9 +161,32 @@ function bindControls() {
   chartModeButton?.addEventListener('click', toggleUpdatesMode)
 }
 
+function renderFromControl(targetIndex) {
+  chart?.resetDirectionalNavigation()
+  render(targetIndex)
+}
+
 function updateNotesSearch() {
-  notesMatcher = createNotesMatcher(notesSearchInput?.value || '')
+  const query = notesSearchInput?.value || ''
+  notesMatcher = createNotesMatcher(query)
+  chart?.setPackageRunState(null)
   chart?.setNotesMatcher(notesMatcher)
+  updatePackageRunSearch(query)
+}
+
+function updatePackageRunSearch(query) {
+  const revision = ++packageSearchRevision
+  if (!notesMatcher) return
+
+  loadCrawlHistory()
+    .then((history) => {
+      if (revision !== packageSearchRevision) return
+      chart?.setPackageRunState(resolvePackageRunState(history, query))
+    })
+    .catch((error) => {
+      if (revision !== packageSearchRevision) return
+      console.warn('Failed to load crawl history:', error)
+    })
 }
 
 function unfocusNotesSearchOnEnter(event) {
@@ -204,62 +236,63 @@ function bindKeyboard() {
     }
     else if (event.key === 'ArrowLeft') {
       event.preventDefault()
-      navigateDay(-1)
+      navigateHorizontally(-1)
     }
     else if (event.key === 'ArrowRight') {
       event.preventDefault()
-      navigateDay(1)
+      navigateHorizontally(1)
     }
     else if (event.key === 'ArrowUp') {
       event.preventDefault()
-      navigateEntry(1)
+      navigateVertically(-1)
     }
     else if (event.key === 'ArrowDown') {
       event.preventDefault()
-      navigateEntry(-1)
+      navigateVertically(1)
     }
   })
 }
 
-function navigateEntry(indexOffset) {
-  if (!notesMatcher) {
-    render(index + indexOffset)
+function navigateVertically(direction) {
+  const step = direction < 0 ? -1 : 1
+  if (notesMatcher && chart) {
+    navigateToMatchingPoint({ x: 0, y: step })
     return
   }
 
-  const targetIndex = findNextNotesMatchIndex(logs, index, indexOffset, notesMatcher)
-  if (targetIndex >= 0) {
-    render(targetIndex)
-  }
+  render(index - step)
 }
 
-function navigateDay(dayOffset) {
-  if (!logs.length || dayOffset === 0) return
+function navigateHorizontally(direction) {
+  if (!logs.length || direction === 0) return
   const current = logs[index]
+  const step = direction < 0 ? -1 : 1
+
+  if (notesMatcher && chart) {
+    navigateToMatchingPoint({ x: step, y: 0 })
+    return
+  }
+
   const currentTs = safeDate(current.date)
   if (!currentTs) return
-
-  const direction = dayOffset < 0 ? -1 : 1
-  const daySearchLimit = notesMatcher ? (chart?.days || 30) : 1
-
-  for (let distance = 1; distance <= daySearchLimit; distance += 1) {
-    const targetTs = shiftTimestampByLocalDays(currentTs, direction * distance)
-    const closest = findClosestByTimestamp(targetTs, notesMatcher)
-    if (closest === -1) {
-      if (notesMatcher) continue
-      return
-    }
-
-    render(closest)
-    return
-  }
+  const targetTs = shiftTimestampByLocalDays(currentTs, step)
+  const closest = findClosestByTimestamp(targetTs)
+  if (closest >= 0) render(closest)
 }
 
-function findClosestByTimestamp(targetTs, matcher = null) {
+function navigateToMatchingPoint(direction) {
+  const current = logs[index]
+  const targetEntry = chart?.findNearestMatchingEntry(current, direction)
+  if (!targetEntry) return
+
+  const targetIndex = findEntryIndex(targetEntry)
+  if (targetIndex >= 0) render(targetIndex)
+}
+
+function findClosestByTimestamp(targetTs) {
   let bestIdx = -1
   let bestDelta = Number.POSITIVE_INFINITY
   logs.forEach((entry, idx) => {
-    if (matcher && !matcher(entry.notes || '')) return
     const ts = safeDate(entry.date)
     if (!ts || !sameLocalDay(ts, targetTs)) return
     const delta = Math.abs(ts - targetTs)
@@ -288,6 +321,7 @@ function resolveIndexFromUrl() {
 }
 
 const ASSET_URL = new URL('../logs.json', import.meta.url)
+const HISTORY_ASSET_URL = new URL('../crawl-history.json', import.meta.url)
 const FALLBACK_URL = 'https://repackager.sublimetext.io/logs.json'
 const LOG_REFRESH_MS = 10 * 60 * 1000
 const MAX_SKIPPED_HARD_FAILURES = 4
@@ -315,6 +349,14 @@ async function loadLogs() {
   }
 
   throw lastError || new Error('Failed to load logs')
+}
+
+function loadCrawlHistory() {
+  crawlHistoryPromise ||= fetch(HISTORY_ASSET_URL).then(async (response) => {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    return parseCrawlHistory(await response.json())
+  })
+  return crawlHistoryPromise
 }
 
 /**
@@ -679,6 +721,7 @@ function restoreActiveEntry() {
  */
 function renderEntry(entry) {
   if (!entry || !logs.length) return
+  chart?.resetDirectionalNavigation()
   const idx = findEntryIndex(entry)
   if (idx >= 0) {
     render(idx)
@@ -702,6 +745,8 @@ class StatusChart {
     this.gridLayer.setAttribute('class', 'grid')
     this.labelLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.labelLayer.setAttribute('class', 'labels')
+    this.directionalNavigationLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    this.directionalNavigationLayer.setAttribute('class', 'directional-navigation')
     this.tagLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
     this.tagLayer.setAttribute('class', 'tag-lines')
     this.glitchLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g')
@@ -719,6 +764,7 @@ class StatusChart {
     this.inlineTagLayer.setAttribute('class', 'inline-tag-labels')
     this.svg.appendChild(this.gridLayer)
     this.svg.appendChild(this.labelLayer)
+    this.svg.appendChild(this.directionalNavigationLayer)
     this.svg.appendChild(this.tagLayer)
     this.svg.appendChild(this.glitchLayer)
     this.svg.appendChild(this.updateLayer)
@@ -740,6 +786,8 @@ class StatusChart {
     this.entries = []
     this.tagMarkers = []
     this.notesMatcher = null
+    this.packageRunState = null
+    this.directionalNavigation = null
     this.selectedUpdateEntryKey = ''
     this.hoveredUpdateEntryKey = ''
     this.gridAnchorDayKey = currentLocalDayKey()
@@ -876,15 +924,223 @@ class StatusChart {
 
   setData(entries) {
     this.entries = entries || []
+    this.resetDirectionalNavigation()
     this.redrawDots()
   }
 
   setNotesMatcher(matcher) {
     this.notesMatcher = matcher
+    this.resetDirectionalNavigation()
     this.points.forEach(({ entry, node }) => {
       node.setAttribute('r', radiusForEntry(entry, this.radius, this.notesMatcher))
       this.updateDotNotesSearchState(entry, node)
+      this.updateDotPackageRunState(entry, node)
     })
+  }
+
+  setPackageRunState(state) {
+    this.packageRunState = state
+    this.points.forEach(({ entry, node }) => {
+      this.updateDotPackageRunState(entry, node)
+    })
+  }
+
+  findNearestMatchingEntry(entry, direction) {
+    if (!this.notesMatcher || !entry) return null
+
+    const current = this.pointForEntry(entry)
+    const navigation = createDirectionalNavigationOrigin(
+      current,
+      direction,
+      this.directionalNavigation,
+    )
+    if (!current || !navigation) return null
+
+    const { axis, corridor, movement, point: navigationOrigin } = navigation
+    const corridorStep = axis === 'horizontal'
+      ? this.hourHeight * 3
+      : this.barWidth
+
+    let target = this.reverseDirectionalPoint(current, movement)
+    let corridorRadius = target
+      ? directionalCorridorRadius(navigationOrigin, target, movement, corridorStep)
+      : 0
+    if (!target) {
+      const matchingPoints = this.points.filter(point => (
+        this.notesMatcher(point.entry.notes || '')
+      ))
+      const result = findDirectionalCorridorTarget(
+        matchingPoints,
+        navigationOrigin,
+        movement,
+        corridorStep,
+      )
+      target = result?.point || null
+      corridorRadius = result?.corridorRadius || 0
+    }
+    if (!target) {
+      this.directionalNavigationLayer.replaceChildren()
+      return null
+    }
+
+    if (DRAW_DIRECTIONAL_NAVIGATION_CORRIDORS) {
+      this.drawDirectionalNavigationCorridor(
+        navigationOrigin,
+        target,
+        movement,
+        corridorRadius,
+        corridorStep,
+      )
+    }
+    this.directionalNavigation = {
+      axis,
+      corridor,
+      fromKey: entryKey(current.entry),
+      toKey: entryKey(target.entry),
+      x: movement.x,
+      y: movement.y,
+    }
+    return target.entry
+  }
+
+  resetDirectionalNavigation() {
+    this.directionalNavigation = null
+    this.directionalNavigationLayer.replaceChildren()
+  }
+
+  drawDirectionalNavigationCorridor(origin, target, direction, radius, baseRadius) {
+    const columnHalfWidth = direction.y !== 0 ? this.barWidth / 2 : 0
+    const visualRadius = radius + columnHalfWidth
+    const visualBaseRadius = baseRadius + columnHalfWidth
+    const outer = this.directionalCorridorRect(origin, direction, visualRadius)
+    if (!outer) return
+
+    const outerNode = this.makeDirectionalCorridor(
+      outer,
+      'directional-navigation-corridor',
+      true,
+    )
+    outerNode.dataset.fromKey = entryKey(origin.entry)
+    outerNode.dataset.toKey = entryKey(target.entry)
+    outerNode.dataset.corridorRadius = String(radius)
+    outerNode.dataset.corridorStep = String(baseRadius)
+
+    const nodes = [outerNode]
+    if (radius > baseRadius) {
+      const inner = this.directionalCorridorRect(origin, direction, visualBaseRadius)
+      if (inner) {
+        nodes.push(this.makeDirectionalCorridor(
+          inner,
+          'directional-navigation-corridor directional-navigation-corridor-base',
+          false,
+        ))
+      }
+    }
+    this.directionalNavigationLayer.replaceChildren(...nodes)
+  }
+
+  directionalCorridorRect(origin, direction, radius) {
+    if (!(radius > 0)) return null
+
+    const left = this.padding.left
+    const right = this.width - this.padding.right
+    const top = this.padding.top
+    const bottom = this.height - this.padding.bottom
+
+    if (direction.x !== 0) {
+      const y = Math.max(top, origin.y - radius)
+      const corridorBottom = Math.min(bottom, origin.y + radius)
+      return {
+        axis: 'horizontal',
+        x: left,
+        y,
+        width: right - left,
+        height: corridorBottom - y,
+      }
+    }
+
+    const x = Math.max(left, origin.x - radius)
+    const corridorRight = Math.min(right, origin.x + radius)
+    return {
+      axis: 'vertical',
+      x,
+      y: top,
+      width: corridorRight - x,
+      height: bottom - top,
+    }
+  }
+
+  makeDirectionalCorridor(geometry, className, drawEdges) {
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    group.setAttribute('class', className)
+
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    rect.setAttribute('class', 'directional-navigation-corridor-fill')
+    rect.setAttribute('x', String(geometry.x))
+    rect.setAttribute('y', String(geometry.y))
+    rect.setAttribute('width', String(Math.max(0, geometry.width)))
+    rect.setAttribute('height', String(Math.max(0, geometry.height)))
+    group.appendChild(rect)
+
+    if (!drawEdges) return group
+
+    if (geometry.axis === 'horizontal') {
+      group.appendChild(this.makeDirectionalCorridorEdge(
+        geometry.x,
+        geometry.y,
+        geometry.x + geometry.width,
+        geometry.y,
+      ))
+      group.appendChild(this.makeDirectionalCorridorEdge(
+        geometry.x,
+        geometry.y + geometry.height,
+        geometry.x + geometry.width,
+        geometry.y + geometry.height,
+      ))
+    }
+    else {
+      group.appendChild(this.makeDirectionalCorridorEdge(
+        geometry.x,
+        geometry.y,
+        geometry.x,
+        geometry.y + geometry.height,
+      ))
+      group.appendChild(this.makeDirectionalCorridorEdge(
+        geometry.x + geometry.width,
+        geometry.y,
+        geometry.x + geometry.width,
+        geometry.y + geometry.height,
+      ))
+    }
+
+    return group
+  }
+
+  makeDirectionalCorridorEdge(x1, y1, x2, y2) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    line.setAttribute('class', 'directional-navigation-corridor-edge')
+    line.setAttribute('x1', String(x1))
+    line.setAttribute('y1', String(y1))
+    line.setAttribute('x2', String(x2))
+    line.setAttribute('y2', String(y2))
+    return line
+  }
+
+  pointForEntry(entry) {
+    const key = entryKey(entry)
+    return this.points.find(point => entryKey(point.entry) === key) || null
+  }
+
+  reverseDirectionalPoint(current, direction) {
+    const previous = this.directionalNavigation
+    if (!previous) return null
+    if (previous.toKey !== entryKey(current.entry)) return null
+    if (previous.x !== -direction.x || previous.y !== -direction.y) return null
+
+    return this.points.find(point => (
+      entryKey(point.entry) === previous.fromKey
+      && this.notesMatcher(point.entry.notes || '')
+    )) || null
   }
 
   setTagMarkers(markers) {
@@ -896,6 +1152,8 @@ class StatusChart {
     this.redrawGridIfDayWindowShifted()
 
     this.points = []
+    this.directionalNavigation = null
+    this.directionalNavigationLayer.replaceChildren()
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
     while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
     while (this.updateConnectorLayer.firstChild) this.updateConnectorLayer.firstChild.remove()
@@ -935,20 +1193,20 @@ class StatusChart {
       const cls = classForEntry(entry)
       const isNeutral = cls === '' || cls === 'muted'
       const target = isNeutral ? neutralNodes : otherNodes
-      target.push({ entry, node })
+      target.push({ entry, node, x, y })
     })
 
     this.drawGlitchLinks(positions)
     this.drawUpdateLines(positions)
 
     // Append neutral first, then everything else on top
-    neutralNodes.forEach(({ entry, node }) => {
-      this.dotLayer.appendChild(node)
-      this.points.push({ entry, node })
+    neutralNodes.forEach((point) => {
+      this.dotLayer.appendChild(point.node)
+      this.points.push(point)
     })
-    otherNodes.forEach(({ entry, node }) => {
-      this.dotLayer.appendChild(node)
-      this.points.push({ entry, node })
+    otherNodes.forEach((point) => {
+      this.dotLayer.appendChild(point.node)
+      this.points.push(point)
     })
   }
 
@@ -1532,6 +1790,7 @@ class StatusChart {
       .join(' ')
     circle.setAttribute('class', classes)
     this.updateDotNotesSearchState(entry, circle)
+    this.updateDotPackageRunState(entry, circle)
     circle.addEventListener('click', () => {
       if (typeof this.onSelect === 'function') {
         this.onSelect(entry)
@@ -1560,6 +1819,17 @@ class StatusChart {
       : null
     node.classList.toggle('notes-search-match', matches === true)
     node.classList.toggle('notes-search-nonmatch', matches === false)
+  }
+
+  updateDotPackageRunState(entry, node) {
+    const runId = String(entry.run_id || '')
+    const state = this.notesMatcher ? this.packageRunState : null
+    const isAvailable = Boolean(state?.availableRunIds.has(runId))
+    const wasTouched = Boolean(isAvailable && state.touchedRunIds.has(runId))
+
+    node.classList.toggle('package-run-touched', wasTouched)
+    node.classList.toggle('package-run-untouched', isAvailable && !wasTouched)
+    node.classList.toggle('package-run-unknown', Boolean(state && !isAvailable))
   }
 
   drawUpdateLines(positions) {

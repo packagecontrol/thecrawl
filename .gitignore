@@ -1,6 +1,8 @@
 node_modules/
 _site/
+.crawl-history-cache/
 channel.json
+crawl-history.json
 logs.json
 registry.json
 .DS_Store

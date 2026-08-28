@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "eleventy --quiet",
+    "collect-history": "node scripts/collect-crawl-history.mjs",
     "dev": "eleventy --serve",
     "test": "vitest run"
   },
