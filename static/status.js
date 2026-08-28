@@ -17,7 +17,10 @@ import {
   normalizePackageNameKey,
   normalizeStatusNotes,
 } from './module/status-failing.js'
-import { createNotesMatcher } from './module/status-search.js'
+import {
+  createNotesMatcher,
+  findNextNotesMatchIndex,
+} from './module/status-search.js'
 import { newestTagBeforeDayWindow } from './module/status-tags.js'
 import DOMPurify from './vendor/dompurify/purify.es.mjs'
 import { marked } from './vendor/marked/marked.esm.js'
@@ -84,6 +87,7 @@ let logs = []
 let index = 0
 /** @type {StatusChart | null} */
 let chart = null
+let notesMatcher = null
 let emptyStateMessage = ''
 const STATUS_CHART_MODE_STATUS = 'status'
 const STATUS_CHART_MODE_UPDATES = 'updates'
@@ -140,6 +144,7 @@ function bindControls() {
   lastButton?.addEventListener('click', () => render(0))
 
   notesSearchInput?.addEventListener('input', updateNotesSearch)
+  notesSearchInput?.addEventListener('keydown', unfocusNotesSearchOnEnter)
   chartModeButton?.addEventListener('mouseenter', previewUpdatesMode)
   chartModeButton?.addEventListener('mouseleave', restoreChartColorMode)
   chartModeButton?.addEventListener('focus', previewUpdatesMode)
@@ -148,7 +153,14 @@ function bindControls() {
 }
 
 function updateNotesSearch() {
-  chart?.setNotesMatcher(createNotesMatcher(notesSearchInput?.value || ''))
+  notesMatcher = createNotesMatcher(notesSearchInput?.value || '')
+  chart?.setNotesMatcher(notesMatcher)
+}
+
+function unfocusNotesSearchOnEnter(event) {
+  if (event.key !== 'Enter') return
+  event.preventDefault()
+  notesSearchInput?.blur()
 }
 
 function previewUpdatesMode() {
@@ -186,7 +198,11 @@ function bindKeyboard() {
       return
     }
 
-    if (event.key === 'ArrowLeft') {
+    if (event.key === 's') {
+      event.preventDefault()
+      notesSearchInput?.focus()
+    }
+    else if (event.key === 'ArrowLeft') {
       event.preventDefault()
       navigateDay(-1)
     }
@@ -196,41 +212,56 @@ function bindKeyboard() {
     }
     else if (event.key === 'ArrowUp') {
       event.preventDefault()
-      render(index + 1)
+      navigateEntry(1)
     }
     else if (event.key === 'ArrowDown') {
       event.preventDefault()
-      render(index - 1)
+      navigateEntry(-1)
     }
   })
 }
 
+function navigateEntry(indexOffset) {
+  if (!notesMatcher) {
+    render(index + indexOffset)
+    return
+  }
+
+  const targetIndex = findNextNotesMatchIndex(logs, index, indexOffset, notesMatcher)
+  if (targetIndex >= 0) {
+    render(targetIndex)
+  }
+}
+
 function navigateDay(dayOffset) {
-  if (!logs.length) return
+  if (!logs.length || dayOffset === 0) return
   const current = logs[index]
   const currentTs = safeDate(current.date)
   if (!currentTs) return
 
-  const targetTs = shiftTimestampByLocalDays(currentTs, dayOffset)
+  const direction = dayOffset < 0 ? -1 : 1
+  const daySearchLimit = notesMatcher ? (chart?.days || 30) : 1
 
-  const closest = findClosestByTimestamp(targetTs)
-  if (closest === -1) return
+  for (let distance = 1; distance <= daySearchLimit; distance += 1) {
+    const targetTs = shiftTimestampByLocalDays(currentTs, direction * distance)
+    const closest = findClosestByTimestamp(targetTs, notesMatcher)
+    if (closest === -1) {
+      if (notesMatcher) continue
+      return
+    }
 
-  const targetEntry = logs[closest]
-  const targetEntryTs = safeDate(targetEntry.date)
-  if (!targetEntryTs) return
-
-  if (!sameLocalDay(targetEntryTs, targetTs)) return
-
-  render(closest)
+    render(closest)
+    return
+  }
 }
 
-function findClosestByTimestamp(targetTs) {
+function findClosestByTimestamp(targetTs, matcher = null) {
   let bestIdx = -1
   let bestDelta = Number.POSITIVE_INFINITY
   logs.forEach((entry, idx) => {
+    if (matcher && !matcher(entry.notes || '')) return
     const ts = safeDate(entry.date)
-    if (!ts) return
+    if (!ts || !sameLocalDay(ts, targetTs)) return
     const delta = Math.abs(ts - targetTs)
     if (delta < bestDelta) {
       bestDelta = delta
