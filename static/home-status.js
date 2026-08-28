@@ -1,4 +1,5 @@
 import {
+  homeStatusDurationStops,
   homeStatusForEntry,
   homeStatusPeriods,
 } from './module/home-status.js'
@@ -55,6 +56,7 @@ function renderRibbon(entries) {
     const segment = document.createElement('span')
     segment.className = `home-status-segment is-${status}`
     segment.style.flexGrow = String(period.duration)
+    applyDurationStops(segment, period.duration)
     segment.title = segmentTitle(period.entry, status, period.duration)
     fragment.appendChild(segment)
   }
@@ -62,6 +64,18 @@ function renderRibbon(entries) {
   ribbonEl.replaceChildren(fragment)
   ribbonEl.setAttribute('aria-label', ribbonLabel(periods, counts))
   ribbonEl.setAttribute('aria-busy', 'false')
+}
+
+function applyDurationStops(segment, duration) {
+  const stops = homeStatusDurationStops(duration)
+  if (!stops) return
+
+  segment.classList.add('has-duration-warning')
+  segment.style.setProperty('--duration-warning-stop', `${stops.warning}%`)
+  if (stops.error !== null) {
+    segment.classList.add('has-duration-error')
+    segment.style.setProperty('--duration-error-stop', `${stops.error}%`)
+  }
 }
 
 function segmentTitle(entry, status, duration) {

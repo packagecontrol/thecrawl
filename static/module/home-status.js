@@ -60,6 +60,22 @@ export function homeStatusPeriods(entries) {
   })
 }
 
+/**
+ * Locate the two-hour warning and three-hour error thresholds within a period.
+ * Normal periods have no stops; warning periods have only a warning stop.
+ *
+ * @param {number} duration
+ * @returns {{ warning: number, error: number | null } | null}
+ */
+export function homeStatusDurationStops(duration) {
+  const hour = 60 * 60 * 1000
+  if (!Number.isFinite(duration) || duration <= 2 * hour) return null
+  return {
+    warning: ((2 * hour) / duration) * 100,
+    error: duration > 3 * hour ? ((3 * hour) / duration) * 100 : null,
+  }
+}
+
 function hasUnexpectedPackageFailure(notes) {
   const blocks = extractCurrentlyFailingBlocks(notes || '')
   return blocks.some((block) => {

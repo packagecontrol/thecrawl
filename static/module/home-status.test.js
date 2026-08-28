@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  homeStatusDurationStops,
   homeStatusForEntry,
   homeStatusPeriods,
 } from './home-status.js'
@@ -58,6 +59,24 @@ describe('homepage status helpers', () => {
       2 * 60 * 60 * 1000,
       1.5 * 60 * 60 * 1000,
     ])
+  })
+
+  it('marks two-hour warnings and three-hour errors within periods', () => {
+    const hour = 60 * 60 * 1000
+
+    expect(homeStatusDurationStops(2 * hour)).toBeNull()
+    expect(homeStatusDurationStops(2.5 * hour)).toEqual({
+      warning: 80,
+      error: null,
+    })
+    expect(homeStatusDurationStops(3 * hour)).toEqual({
+      warning: (2 / 3) * 100,
+      error: null,
+    })
+    expect(homeStatusDurationStops(4 * hour)).toEqual({
+      warning: 50,
+      error: 75,
+    })
   })
 
   it('ignores entries without valid dates', () => {

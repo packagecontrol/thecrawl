@@ -310,6 +310,9 @@ svg {
 }
 
 .home-status-segment {
+  --duration-warning-color: var(--home-status-warning);
+  --duration-error-color: var(--home-status-error);
+
   position: relative;
   min-width: 0;
   height: 100%;
@@ -331,18 +334,43 @@ svg {
 }
 
 .home-status-segment.is-okay {
-  background: var(--home-status-okay);
+  --home-status-segment-color: var(--home-status-okay);
+
+  background: var(--home-status-segment-color);
 }
 
 .home-status-segment.is-warning {
-  background: var(--home-status-warning);
+  --home-status-segment-color: var(--home-status-warning);
+
+  background: var(--home-status-segment-color);
   box-shadow: 0 0 6px 0 #6120af, 0 0 1px 0 #20af4d;
   transform: scale(1.05) skewX(-0.4deg);
 }
 
 .home-status-segment.is-error {
-  background: var(--home-status-error);
+  --home-status-segment-color: var(--home-status-error);
+  --duration-warning-color: var(--home-status-error);
+
+  background: var(--home-status-segment-color);
   box-shadow: 0 0 1px 0 #3d20af;
+}
+
+.home-status-segment.has-duration-warning {
+  background: linear-gradient(
+    90deg,
+    var(--home-status-segment-color) 0 var(--duration-warning-stop),
+    var(--duration-warning-color) var(--duration-warning-stop) 100%
+  );
+}
+
+.home-status-segment.has-duration-error {
+  background: linear-gradient(
+    90deg,
+    var(--home-status-segment-color) 0 var(--duration-warning-stop),
+    var(--duration-warning-color)
+      var(--duration-warning-stop) var(--duration-error-stop),
+    var(--duration-error-color) var(--duration-error-stop) 100%
+  );
 }
 
 .home-status-segment.is-error:hover::after {
