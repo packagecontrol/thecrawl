@@ -1,6 +1,8 @@
 export const MIN_NOTES_SEARCH_CHARS = 2
 
-const SEARCH_TOKEN_CACHE_LIMIT = 2048
+const SEARCH_TEXT_CACHE_LIMIT = 2048
+const normalizedSearchTextCache = new Map()
+const normalizedLiteralNotesCache = new Map()
 const searchTokenCache = new Map()
 
 /**
@@ -46,7 +48,7 @@ export function createPackageNotesMatcher(packageName, knownPackageNames = []) {
     const rawNotes = String(notes || '')
     if (matchCache.has(rawNotes)) return matchCache.get(rawNotes)
 
-    const canonicalSource = normalizeLiteralText(rawNotes)
+    const canonicalSource = normalizeLiteralNotes(rawNotes)
     namePattern.lastIndex = 0
     let match = namePattern.exec(canonicalSource)
     while (match) {
@@ -195,14 +197,13 @@ export function tokenizeSearchText(value) {
   const cached = searchTokenCache.get(source)
   if (cached) return cached
 
-  const tokens = source
-    .normalize('NFKC')
+  const tokens = normalizeSearchText(source)
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
     .replace(/([a-z\d])([A-Z])/g, '$1 $2')
     .toLocaleLowerCase()
     .match(/[\p{L}\p{N}]+(?:[+#]+)?/gu) || []
 
-  if (searchTokenCache.size >= SEARCH_TOKEN_CACHE_LIMIT) {
+  if (searchTokenCache.size >= SEARCH_TEXT_CACHE_LIMIT) {
     searchTokenCache.clear()
   }
   searchTokenCache.set(source, tokens)
@@ -245,6 +246,31 @@ function isInsideLongerPackageName(source, start, end, extensions) {
       && source.startsWith(prefix, extendedStart)
       && source.startsWith(suffix, end)
   })
+}
+
+function normalizeLiteralNotes(value) {
+  const source = String(value || '')
+  const cached = normalizedLiteralNotesCache.get(source)
+  if (typeof cached === 'string') return cached
+
+  const normalized = normalizeSearchText(source).replace(/\s+/gu, ' ')
+  cacheSearchText(normalizedLiteralNotesCache, source, normalized)
+  return normalized
+}
+
+function normalizeSearchText(value) {
+  const source = String(value || '')
+  const cached = normalizedSearchTextCache.get(source)
+  if (typeof cached === 'string') return cached
+
+  const normalized = source.normalize('NFKC')
+  cacheSearchText(normalizedSearchTextCache, source, normalized)
+  return normalized
+}
+
+function cacheSearchText(cache, source, value) {
+  if (cache.size >= SEARCH_TEXT_CACHE_LIMIT) cache.clear()
+  cache.set(source, value)
 }
 
 function escapeRegExp(value) {
