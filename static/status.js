@@ -40,6 +40,9 @@ const chartToolbarEl = document.querySelector('[data-status-chart-toolbar]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
 /** @type {HTMLInputElement | null} */
 const notesSearchInput = document.querySelector('[data-status-notes-search]')
+const packageLockEl = document.querySelector('[data-status-package-lock]')
+/** @type {HTMLAnchorElement | null} */
+const packageLinkEl = document.querySelector('[data-status-package-link]')
 /** @type {HTMLButtonElement | null} */
 const chartModeButton = document.querySelector('[data-status-mode-toggle]')
 /** @type {HTMLButtonElement | null} */
@@ -98,6 +101,7 @@ let crawlHistoryPromise = null
 let emptyStateMessage = ''
 const STATUS_CHART_MODE_STATUS = 'status'
 const STATUS_CHART_MODE_UPDATES = 'updates'
+const PACKAGE_SITE_URL = 'https://packages.sublimetext.io/packages/'
 const HORIZONTAL_NAVIGATION_CORRIDOR_HOURS = 3
 const VERTICAL_NAVIGATION_CORRIDOR_DAYS = 1
 const DRAW_DIRECTIONAL_NAVIGATION_CORRIDORS = false
@@ -170,7 +174,7 @@ function renderFromControl(targetIndex) {
 function updateNotesSearch() {
   const query = notesSearchInput?.value || ''
   notesMatcher = createNotesMatcher(query)
-  chart?.setPackageRunState(null)
+  applyPackageRunState(null)
   chart?.setNotesMatcher(notesMatcher)
   updatePackageRunSearch(query)
 }
@@ -182,12 +186,27 @@ function updatePackageRunSearch(query) {
   loadCrawlHistory()
     .then((history) => {
       if (revision !== packageSearchRevision) return
-      chart?.setPackageRunState(resolvePackageRunState(history, query))
+      applyPackageRunState(resolvePackageRunState(history, query))
     })
     .catch((error) => {
       if (revision !== packageSearchRevision) return
       console.warn('Failed to load crawl history:', error)
     })
+}
+
+function applyPackageRunState(state) {
+  chart?.setPackageRunState(state)
+  if (!packageLockEl || !packageLinkEl) return
+
+  packageLockEl.hidden = !state
+  if (!state) {
+    packageLinkEl.removeAttribute('href')
+    packageLinkEl.textContent = ''
+    return
+  }
+
+  packageLinkEl.href = PACKAGE_SITE_URL + encodeURIComponent(state.name)
+  packageLinkEl.textContent = `“${state.name}”`
 }
 
 function unfocusNotesSearchOnEnter(event) {

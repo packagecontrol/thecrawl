@@ -36,6 +36,7 @@ html.page-status main {
 
 .status-chart-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
@@ -51,7 +52,30 @@ html.page-status main {
   }
 }
 
+.status-chart-search-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+
+.status-package-lock {
+  position: relative;
+  top: 0;
+  color: var(--foreground-3);
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+  opacity: 0.9;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
 .status-chart-search {
+  position: relative;
+  top: -2px;
   appearance: none;
   width: clamp(7rem, 22vw, 12rem);
   min-width: 0;

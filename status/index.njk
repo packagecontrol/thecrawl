@@ -7,17 +7,28 @@ page_type: status
 
 <div class="status-chart-shell">
   <div class="status-chart-toolbar" data-status-chart-toolbar hidden>
-    <label class="screenreader-only" for="status-notes-search">Search run notes</label>
-    <input
-      type="search"
-      class="status-chart-search"
-      id="status-notes-search"
-      data-status-notes-search
-      aria-keyshortcuts="s"
-      placeholder="Search notes"
-      autocomplete="off"
-      spellcheck="false"
-    >
+    <div class="status-chart-search-group">
+      <label class="screenreader-only" for="status-notes-search">Search run notes</label>
+      <input
+        type="search"
+        class="status-chart-search"
+        id="status-notes-search"
+        data-status-notes-search
+        aria-keyshortcuts="s"
+        placeholder="Search notes"
+        autocomplete="off"
+        spellcheck="false"
+      >
+      <span
+        class="status-package-lock"
+        data-status-package-lock
+        role="status"
+        aria-live="polite"
+        hidden
+      >
+        Locked to package <a data-status-package-link></a>
+      </span>
+    </div>
     <button type="button" class="status-chart-mode-button" data-status-mode-toggle aria-pressed="false">
       Which runs actually found updates?
     </button>
