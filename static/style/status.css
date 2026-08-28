@@ -36,7 +36,9 @@ html.page-status main {
 
 .status-chart-toolbar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   max-width: var(--max-line);
   margin: -1rem auto 1rem auto;
 
@@ -46,6 +48,36 @@ html.page-status main {
 
   @media (width >= 52rem) {
     margin-top: -2rem;
+  }
+}
+
+.status-chart-search {
+  appearance: none;
+  width: clamp(7rem, 22vw, 12rem);
+  min-width: 0;
+  padding: 2px 10px;
+  border: 1px solid var(--background-3);
+  border-radius: 999px;
+  background: var(--background-1);
+  color: var(--foreground-2);
+  font: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  transition: border-color .12s ease, box-shadow .12s ease;
+
+  &::placeholder {
+    color: var(--foreground-4);
+    opacity: 1;
+  }
+
+  &:hover {
+    border-color: var(--background-4);
+  }
+
+  &:focus-visible {
+    border-color: var(--foreground-4);
+    outline: 2px solid var(--orange-1);
+    outline-offset: 2px;
   }
 }
 
@@ -277,12 +309,13 @@ html.page-status main {
 
   .dot {
     fill: var(--status-dot); /* success default */
-    transition: transform .12s ease, stroke-width .12s ease, fill .12s ease;
+    transition: r .12s ease, transform .12s ease, stroke-width .12s ease, fill .12s ease, opacity .12s ease;
     transform-origin: center;
     transform-box: fill-box;
     cursor: pointer;
     opacity: 1;
 
+    /* Search hooks: .notes-search-match and .notes-search-nonmatch. */
     &.warn {
       fill: var(--orange-2);
     }
@@ -311,6 +344,15 @@ html.page-status main {
       stroke: var(--status-dot-active-stroke);
       fill: var(--status-dot-active-fill);
       opacity: 1;
+    }
+    &.notes-search-nonmatch {
+      opacity: 0.25;
+    }
+    &.notes-search-match {
+      filter: brightness(0.5);
+    }
+    &.error.no-notes.notes-search-nonmatch {
+      opacity: 0.5;
     }
   }
 

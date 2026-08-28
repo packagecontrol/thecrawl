@@ -17,6 +17,7 @@ import {
   normalizePackageNameKey,
   normalizeStatusNotes,
 } from './module/status-failing.js'
+import { createNotesMatcher } from './module/status-search.js'
 import { newestTagBeforeDayWindow } from './module/status-tags.js'
 import DOMPurify from './vendor/dompurify/purify.es.mjs'
 import { marked } from './vendor/marked/marked.esm.js'
@@ -29,6 +30,8 @@ const badgeLabelEl = document.querySelector('[data-status-label]')
 const chartEl = document.querySelector('[data-status-chart]')
 const chartToolbarEl = document.querySelector('[data-status-chart-toolbar]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
+/** @type {HTMLInputElement | null} */
+const notesSearchInput = document.querySelector('[data-status-notes-search]')
 /** @type {HTMLButtonElement | null} */
 const chartModeButton = document.querySelector('[data-status-mode-toggle]')
 /** @type {HTMLButtonElement | null} */
@@ -136,11 +139,16 @@ function bindControls() {
   nextButton?.addEventListener('click', () => render(index - 1))
   lastButton?.addEventListener('click', () => render(0))
 
+  notesSearchInput?.addEventListener('input', updateNotesSearch)
   chartModeButton?.addEventListener('mouseenter', previewUpdatesMode)
   chartModeButton?.addEventListener('mouseleave', restoreChartColorMode)
   chartModeButton?.addEventListener('focus', previewUpdatesMode)
   chartModeButton?.addEventListener('blur', restoreChartColorMode)
   chartModeButton?.addEventListener('click', toggleUpdatesMode)
+}
+
+function updateNotesSearch() {
+  chart?.setNotesMatcher(createNotesMatcher(notesSearchInput?.value || ''))
 }
 
 function previewUpdatesMode() {
@@ -597,10 +605,15 @@ function roundedCornerToLimit(startX, startY, elbowX, limitY, radius) {
   ].join(' ')
 }
 
-function radiusForEntry(entry, fallbackRadius) {
-  const crawledPackages = extractPackagesCrawled(entry.notes || '')
+function radiusForEntry(entry, fallbackRadius, notesMatcher = null) {
   const MIN_RADIUS = 2
   const MAX_RADIUS = 3
+
+  if (notesMatcher) {
+    return notesMatcher(entry.notes || '') ? MAX_RADIUS : MIN_RADIUS
+  }
+
+  const crawledPackages = extractPackagesCrawled(entry.notes || '')
   const MIN_PACKAGES = 100
   const MAX_PACKAGES = 400
   if (crawledPackages === null) return fallbackRadius
@@ -695,6 +708,7 @@ class StatusChart {
     this.points = []
     this.entries = []
     this.tagMarkers = []
+    this.notesMatcher = null
     this.selectedUpdateEntryKey = ''
     this.hoveredUpdateEntryKey = ''
     this.gridAnchorDayKey = currentLocalDayKey()
@@ -834,6 +848,14 @@ class StatusChart {
     this.redrawDots()
   }
 
+  setNotesMatcher(matcher) {
+    this.notesMatcher = matcher
+    this.points.forEach(({ entry, node }) => {
+      node.setAttribute('r', radiusForEntry(entry, this.radius, this.notesMatcher))
+      this.updateDotNotesSearchState(entry, node)
+    })
+  }
+
   setTagMarkers(markers) {
     this.tagMarkers = markers || []
     this.redrawDots()
@@ -875,7 +897,7 @@ class StatusChart {
       if (!position) return
 
       const { x, y, dayIndex } = position
-      const radius = radiusForEntry(entry, this.radius)
+      const radius = radiusForEntry(entry, this.radius, this.notesMatcher)
       const node = this.makeDot(entry, x, y, radius, glitchDotIndexes.has(idx))
       positions[idx] = { x, y, radius, dayIndex }
 
@@ -1478,6 +1500,7 @@ class StatusChart {
       .filter(Boolean)
       .join(' ')
     circle.setAttribute('class', classes)
+    this.updateDotNotesSearchState(entry, circle)
     circle.addEventListener('click', () => {
       if (typeof this.onSelect === 'function') {
         this.onSelect(entry)
@@ -1498,6 +1521,14 @@ class StatusChart {
       this.hideUpdateConnectors()
     })
     return circle
+  }
+
+  updateDotNotesSearchState(entry, node) {
+    const matches = this.notesMatcher
+      ? this.notesMatcher(entry.notes || '')
+      : null
+    node.classList.toggle('notes-search-match', matches === true)
+    node.classList.toggle('notes-search-nonmatch', matches === false)
   }
 
   drawUpdateLines(positions) {

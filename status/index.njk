@@ -7,6 +7,16 @@ page_type: status
 
 <div class="status-chart-shell">
   <div class="status-chart-toolbar" data-status-chart-toolbar hidden>
+    <label class="screenreader-only" for="status-notes-search">Search run notes</label>
+    <input
+      type="search"
+      class="status-chart-search"
+      id="status-notes-search"
+      data-status-notes-search
+      placeholder="Search notes"
+      autocomplete="off"
+      spellcheck="false"
+    >
     <button type="button" class="status-chart-mode-button" data-status-mode-toggle aria-pressed="false">
       Which runs actually found updates?
     </button>
