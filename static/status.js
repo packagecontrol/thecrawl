@@ -98,6 +98,7 @@ let index = 0
 let chart = null
 let notesMatcher = null
 let packageSearchRevision = 0
+let crawlHistory = null
 let crawlHistoryPromise = null
 let emptyStateMessage = ''
 const STATUS_CHART_MODE_STATUS = 'status'
@@ -174,25 +175,35 @@ function renderFromControl(targetIndex) {
 
 function updateNotesSearch() {
   const query = notesSearchInput?.value || ''
-  notesMatcher = createNotesMatcher(query)
-  applyPackageRunState(null)
-  chart?.setNotesMatcher(notesMatcher)
-  updatePackageRunSearch(query)
+  const revision = ++packageSearchRevision
+  const packageState = crawlHistory
+    ? resolvePackageRunState(crawlHistory, query)
+    : null
+
+  if (packageState) {
+    const matcher = createPackageNotesMatcher(
+      packageState.name,
+      crawlHistory.packageNames,
+    )
+    applyNotesSearchState(matcher, packageState)
+    return
+  }
+
+  applyNotesSearchState(createNotesMatcher(query), null)
+  if (String(query).trim() && !crawlHistory) {
+    updatePackageRunSearch(query, revision)
+  }
 }
 
-function updatePackageRunSearch(query) {
-  const revision = ++packageSearchRevision
-  if (!String(query || '').trim()) return
-
+function updatePackageRunSearch(query, revision) {
   loadCrawlHistory()
     .then((history) => {
       if (revision !== packageSearchRevision) return
       const state = resolvePackageRunState(history, query)
-      if (state) {
-        notesMatcher = createPackageNotesMatcher(state.name, history.packageNames)
-        chart?.setNotesMatcher(notesMatcher)
-      }
-      applyPackageRunState(state)
+      if (!state) return
+
+      const matcher = createPackageNotesMatcher(state.name, history.packageNames)
+      applyNotesSearchState(matcher, state)
     })
     .catch((error) => {
       if (revision !== packageSearchRevision) return
@@ -200,8 +211,13 @@ function updatePackageRunSearch(query) {
     })
 }
 
-function applyPackageRunState(state) {
-  chart?.setPackageRunState(state)
+function applyNotesSearchState(matcher, packageState) {
+  notesMatcher = matcher
+  chart?.setSearchState(matcher, packageState)
+  updatePackageLock(packageState)
+}
+
+function updatePackageLock(state) {
   if (!packageLockEl || !packageLinkEl) return
 
   packageLockEl.hidden = !state
@@ -380,7 +396,8 @@ async function loadLogs() {
 function loadCrawlHistory() {
   crawlHistoryPromise ||= fetch(HISTORY_ASSET_URL).then(async (response) => {
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    return parseCrawlHistory(await response.json())
+    crawlHistory = parseCrawlHistory(await response.json())
+    return crawlHistory
   })
   return crawlHistoryPromise
 }
@@ -954,19 +971,13 @@ class StatusChart {
     this.redrawDots()
   }
 
-  setNotesMatcher(matcher) {
+  setSearchState(matcher, packageRunState) {
     this.notesMatcher = matcher
+    this.packageRunState = packageRunState
     this.resetDirectionalNavigation()
     this.points.forEach(({ entry, node }) => {
       node.setAttribute('r', radiusForEntry(entry, this.radius, this.notesMatcher))
       this.updateDotNotesSearchState(entry, node)
-      this.updateDotPackageRunState(entry, node)
-    })
-  }
-
-  setPackageRunState(state) {
-    this.packageRunState = state
-    this.points.forEach(({ entry, node }) => {
       this.updateDotPackageRunState(entry, node)
     })
   }
