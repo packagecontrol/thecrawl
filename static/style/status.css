@@ -393,6 +393,8 @@ html.page-status main {
     &.notes-search-nonmatch.package-run-touched {
       fill: var(--status-package-touched);
       opacity: 0.62;
+      clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+      transform: scale(1.25);
     }
     &.notes-search-nonmatch.package-run-untouched {
       fill: var(--status-package-untouched);
