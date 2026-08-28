@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   createDirectionalNavigationOrigin,
   createNotesMatcher,
-  directionalCorridorRadius,
   findDirectionalCorridorTarget,
   findNextNotesMatchIndex,
   MIN_NOTES_SEARCH_CHARS,
@@ -70,7 +69,7 @@ describe('findNextNotesMatchIndex', () => {
 describe('findDirectionalCorridorTarget', () => {
   const origin = { id: 'origin', x: 0, y: 0 }
 
-  it('uses the first horizontal corridor containing a result', () => {
+  it('uses a fixed horizontal corridor', () => {
     const points = [
       { id: 'adjacent-day-outside', x: -10, y: 11 },
       { id: 'aligned-farther-day', x: -20, y: 0 },
@@ -84,7 +83,7 @@ describe('findDirectionalCorridorTarget', () => {
       10,
     )).toEqual({
       point: points[1],
-      corridorRadius: 10,
+      warped: false,
     })
   })
 
@@ -102,15 +101,30 @@ describe('findDirectionalCorridorTarget', () => {
     )?.point.id).toBe('near')
   })
 
-  it('widens the corridor in fixed steps for one jump', () => {
-    const points = [{ id: 'wide', x: 10, y: 25 }]
+  it('does not widen for a result outside the corridor', () => {
+    const points = [{ id: 'outside', x: 10, y: 25 }]
 
     expect(findDirectionalCorridorTarget(
       points,
       origin,
       { x: 1, y: 0 },
       10,
-    )?.corridorRadius).toBe(30)
+    )).toBeNull()
+  })
+
+  it('warps to the opposite edge when no forward result remains', () => {
+    const current = { id: 'right-edge', x: 30, y: 0 }
+    const points = [
+      { id: 'middle', x: 10, y: 0 },
+      { id: 'left-edge', x: 0, y: 5 },
+    ]
+
+    expect(findDirectionalCorridorTarget(
+      points,
+      current,
+      { x: 1, y: 0 },
+      10,
+    )).toEqual({ point: points[1], warped: true })
   })
 
   it('applies the same corridor search vertically', () => {
@@ -187,23 +201,6 @@ describe('createDirectionalNavigationOrigin', () => {
       corridor: -20,
       point: { id: 'drifted', x: -20, y: 15 },
     })
-  })
-})
-
-describe('directionalCorridorRadius', () => {
-  it('uses at least the base corridor and widens by whole steps', () => {
-    expect(directionalCorridorRadius(
-      { x: 0, y: 0 },
-      { x: 10, y: 0 },
-      { x: 1, y: 0 },
-      10,
-    )).toBe(10)
-    expect(directionalCorridorRadius(
-      { x: 0, y: 0 },
-      { x: 10, y: 21 },
-      { x: 1, y: 0 },
-      10,
-    )).toBe(30)
   })
 })
 

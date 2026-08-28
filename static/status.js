@@ -20,7 +20,6 @@ import {
 import {
   createDirectionalNavigationOrigin,
   createNotesMatcher,
-  directionalCorridorRadius,
   findDirectionalCorridorTarget,
 } from './module/status-search.js'
 import {
@@ -957,14 +956,12 @@ class StatusChart {
     if (!current || !navigation) return null
 
     const { axis, corridor, movement, point: navigationOrigin } = navigation
-    const corridorStep = axis === 'horizontal'
+    const corridorRadius = axis === 'horizontal'
       ? this.hourHeight * 3
       : this.barWidth
 
     let target = this.reverseDirectionalPoint(current, movement)
-    let corridorRadius = target
-      ? directionalCorridorRadius(navigationOrigin, target, movement, corridorStep)
-      : 0
+    let warped = false
     if (!target) {
       const matchingPoints = this.points.filter(point => (
         this.notesMatcher(point.entry.notes || '')
@@ -973,10 +970,10 @@ class StatusChart {
         matchingPoints,
         navigationOrigin,
         movement,
-        corridorStep,
+        corridorRadius,
       )
       target = result?.point || null
-      corridorRadius = result?.corridorRadius || 0
+      warped = result?.warped || false
     }
     if (!target) {
       this.directionalNavigationLayer.replaceChildren()
@@ -989,7 +986,7 @@ class StatusChart {
         target,
         movement,
         corridorRadius,
-        corridorStep,
+        warped,
       )
     }
     this.directionalNavigation = {
@@ -999,6 +996,7 @@ class StatusChart {
       toKey: entryKey(target.entry),
       x: movement.x,
       y: movement.y,
+      warped,
     }
     return target.entry
   }
@@ -1008,10 +1006,9 @@ class StatusChart {
     this.directionalNavigationLayer.replaceChildren()
   }
 
-  drawDirectionalNavigationCorridor(origin, target, direction, radius, baseRadius) {
+  drawDirectionalNavigationCorridor(origin, target, direction, radius, warped) {
     const columnHalfWidth = direction.y !== 0 ? this.barWidth / 2 : 0
     const visualRadius = radius + columnHalfWidth
-    const visualBaseRadius = baseRadius + columnHalfWidth
     const outer = this.directionalCorridorRect(origin, direction, visualRadius)
     if (!outer) return
 
@@ -1023,20 +1020,8 @@ class StatusChart {
     outerNode.dataset.fromKey = entryKey(origin.entry)
     outerNode.dataset.toKey = entryKey(target.entry)
     outerNode.dataset.corridorRadius = String(radius)
-    outerNode.dataset.corridorStep = String(baseRadius)
-
-    const nodes = [outerNode]
-    if (radius > baseRadius) {
-      const inner = this.directionalCorridorRect(origin, direction, visualBaseRadius)
-      if (inner) {
-        nodes.push(this.makeDirectionalCorridor(
-          inner,
-          'directional-navigation-corridor directional-navigation-corridor-base',
-          false,
-        ))
-      }
-    }
-    this.directionalNavigationLayer.replaceChildren(...nodes)
+    outerNode.dataset.warped = String(warped)
+    this.directionalNavigationLayer.replaceChildren(outerNode)
   }
 
   directionalCorridorRect(origin, direction, radius) {

@@ -120,7 +120,6 @@ html.page-status main {
   --status-dot-active-stroke: hsl(282.55deg 11.03% 41.72%);
   --status-navigation-corridor: hsl(282.55deg 31% 41.72% / 55%);
   --status-navigation-corridor-fill: hsl(282.55deg 31% 41.72% / 5%);
-  --status-navigation-corridor-base-fill: hsl(282.55deg 31% 41.72% / 9%);
   --status-tag-line: hsl(222.25deg 3.29% 81.37%);
   --status-tag-line-stroke: 1;
   --status-tag-label: hsl(201.48deg 9.8% 67.95%);
@@ -175,7 +174,6 @@ html.page-status main {
     --status-dot-active-stroke: hsl(282.55deg 60.41% 75.84%);
     --status-navigation-corridor: hsl(282.55deg 60.41% 75.84% / 52%);
     --status-navigation-corridor-fill: hsl(282.55deg 60.41% 75.84% / 5%);
-    --status-navigation-corridor-base-fill: hsl(282.55deg 60.41% 75.84% / 9%);
     --status-tag-line: hsl(253.72deg 6.87% 33.27%);
     --status-tag-line-stroke: 0.8;
     --status-tag-label: hsl(202.85deg 4.72% 45.55%);
@@ -251,10 +249,6 @@ html.page-status main {
     stroke-width: 0.75;
     stroke-dasharray: 3 3;
     vector-effect: non-scaling-stroke;
-  }
-
-  .directional-navigation-corridor-base .directional-navigation-corridor-fill {
-    fill: var(--status-navigation-corridor-base-fill);
   }
 
   .grid {

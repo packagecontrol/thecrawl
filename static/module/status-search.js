@@ -49,50 +49,39 @@ export function findNextNotesMatchIndex(entries, currentIndex, direction, matche
 }
 
 /**
- * Find the nearest forward point in the first stepped corridor containing a
- * candidate. The corridor expands across the movement axis one fixed step at
- * a time; within that width, the nearest point along the movement axis wins.
+ * Find the nearest forward point inside a fixed corridor. At the movement
+ * edge, wrap to the point nearest the opposite edge without widening the
+ * corridor.
  *
  * @template {{ x: number, y: number }} T
  * @param {T[]} points
  * @param {{ x: number, y: number }} origin
  * @param {{ x: number, y: number }} direction
- * @param {number} corridorStep
- * @returns {{ point: T, corridorRadius: number } | null}
+ * @param {number} corridorRadius
+ * @returns {{ point: T, warped: boolean } | null}
  */
-export function findDirectionalCorridorTarget(points, origin, direction, corridorStep) {
+export function findDirectionalCorridorTarget(points, origin, direction, corridorRadius) {
   const movement = cardinalDirection(direction)
-  if (!Array.isArray(points) || !origin || !movement || !(corridorStep > 0)) {
+  if (!Array.isArray(points) || !origin || !movement || !(corridorRadius > 0)) {
     return null
   }
 
-  let nearest = null
-  let nearestLevel = Number.POSITIVE_INFINITY
-  let nearestAlong = Number.POSITIVE_INFINITY
-  let nearestAcross = Number.POSITIVE_INFINITY
+  const candidates = points
+    .map(point => directionalCandidate(point, origin, movement))
+    .filter(candidate => (
+      candidate.along !== 0
+      && insideCorridor(candidate.across, corridorRadius)
+    ))
+  if (!candidates.length) return null
 
-  for (const point of points) {
-    const offsetX = point.x - origin.x
-    const offsetY = point.y - origin.y
-    const along = offsetX * movement.x + offsetY * movement.y
-    if (!(along > 0)) continue
+  const forward = candidates.filter(candidate => candidate.along > 0)
+  const pool = forward.length ? forward : candidates
+  const warped = forward.length === 0
+  pool.sort((left, right) => (
+    left.along - right.along || left.across - right.across
+  ))
 
-    const across = Math.abs(offsetX * movement.y - offsetY * movement.x)
-    const level = corridorLevel(across, corridorStep)
-    const isBetter = level < nearestLevel
-      || (level === nearestLevel && along < nearestAlong)
-      || (level === nearestLevel && along === nearestAlong && across < nearestAcross)
-    if (!isBetter) continue
-
-    nearest = point
-    nearestLevel = level
-    nearestAlong = along
-    nearestAcross = across
-  }
-
-  return nearest
-    ? { point: nearest, corridorRadius: nearestLevel * corridorStep }
-    : null
+  return { point: pool[0].point, warped }
 }
 
 /**
@@ -127,25 +116,6 @@ export function createDirectionalNavigationOrigin(current, direction, previous =
   }
 }
 
-/**
- * Find the stepped corridor radius required to include one point.
- *
- * @param {{ x: number, y: number }} origin
- * @param {{ x: number, y: number }} target
- * @param {{ x: number, y: number }} direction
- * @param {number} corridorStep
- * @returns {number}
- */
-export function directionalCorridorRadius(origin, target, direction, corridorStep) {
-  const movement = cardinalDirection(direction)
-  if (!origin || !target || !movement || !(corridorStep > 0)) return 0
-
-  const offsetX = target.x - origin.x
-  const offsetY = target.y - origin.y
-  const across = Math.abs(offsetX * movement.y - offsetY * movement.x)
-  return corridorLevel(across, corridorStep) * corridorStep
-}
-
 function cardinalDirection(direction) {
   const x = Math.sign(Number(direction?.x) || 0)
   const y = Math.sign(Number(direction?.y) || 0)
@@ -153,10 +123,19 @@ function cardinalDirection(direction) {
   return { x, y }
 }
 
-function corridorLevel(across, corridorStep) {
+function directionalCandidate(point, origin, movement) {
+  const offsetX = point.x - origin.x
+  const offsetY = point.y - origin.y
+  return {
+    point,
+    along: offsetX * movement.x + offsetY * movement.y,
+    across: Math.abs(offsetX * movement.y - offsetY * movement.x),
+  }
+}
+
+function insideCorridor(across, corridorRadius) {
   const CORRIDOR_BOUNDARY_EPSILON = 1e-9
-  const steps = across / corridorStep
-  return Math.max(1, Math.ceil(steps - CORRIDOR_BOUNDARY_EPSILON))
+  return across / corridorRadius <= 1 + CORRIDOR_BOUNDARY_EPSILON
 }
 
 /**
