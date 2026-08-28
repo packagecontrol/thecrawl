@@ -98,6 +98,8 @@ let crawlHistoryPromise = null
 let emptyStateMessage = ''
 const STATUS_CHART_MODE_STATUS = 'status'
 const STATUS_CHART_MODE_UPDATES = 'updates'
+const HORIZONTAL_NAVIGATION_CORRIDOR_HOURS = 3
+const VERTICAL_NAVIGATION_CORRIDOR_DAYS = 1
 const DRAW_DIRECTIONAL_NAVIGATION_CORRIDORS = false
 let chartColorMode = STATUS_CHART_MODE_STATUS
 /** @type {TagMarker[]} */
@@ -957,8 +959,8 @@ class StatusChart {
 
     const { axis, corridor, movement, point: navigationOrigin } = navigation
     const corridorRadius = axis === 'horizontal'
-      ? this.hourHeight * 3
-      : this.barWidth
+      ? this.hourHeight * HORIZONTAL_NAVIGATION_CORRIDOR_HOURS
+      : this.barWidth * VERTICAL_NAVIGATION_CORRIDOR_DAYS
 
     let target = this.reverseDirectionalPoint(current, movement)
     let warped = false
