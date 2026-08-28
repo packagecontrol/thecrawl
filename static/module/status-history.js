@@ -8,6 +8,7 @@ import { normalizePackageNameKey } from './status-failing.js'
  * @param {unknown} payload
  * @returns {{
  *   availableRunIds: Set<string>,
+ *   packageNames: string[],
  *   packagesByName: Map<string, { name: string, touchedRunIds: Set<string> }>,
  * }}
  */
@@ -16,19 +17,21 @@ export function parseCrawlHistory(payload) {
     ? payload.runs.map(runId => String(runId || ''))
     : []
   const availableRunIds = runIdsAtIndexes(runs, payload?.available)
+  const packageNames = []
   const packagesByName = new Map()
   const packages = isPlainObject(payload?.packages) ? payload.packages : {}
 
   for (const [name, indexes] of Object.entries(packages)) {
     const nameKey = normalizePackageNameKey(name)
     if (!nameKey || !Array.isArray(indexes)) continue
+    packageNames.push(name)
     packagesByName.set(nameKey, {
       name,
       touchedRunIds: runIdsAtIndexes(runs, indexes),
     })
   }
 
-  return { availableRunIds, packagesByName }
+  return { availableRunIds, packageNames, packagesByName }
 }
 
 /**

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createDirectionalNavigationOrigin,
   createNotesMatcher,
+  createPackageNotesMatcher,
   findDirectionalCorridorTarget,
   findNextNotesMatchIndex,
   MIN_NOTES_SEARCH_CHARS,
@@ -37,6 +38,61 @@ describe('createNotesMatcher', () => {
 
     expect(matcher('Two packages are currently failing.')).toBe(true)
     expect(matcher('Two packages were updated.')).toBe(false)
+  })
+})
+
+describe('createPackageNotesMatcher', () => {
+  const packageNames = [
+    'AngularJS',
+    'AngularJS (CoffeeScript)',
+    'Apiary.io Blueprint',
+    'ATG(CocoR C#) Syntax',
+    'Candela Color Schemes',
+    'Color Scheme',
+    'LSP',
+    'LSP-pyright',
+    'Scheme',
+  ]
+
+  it('matches the canonical package name case-insensitively', () => {
+    const matcher = createPackageNotesMatcher('Candela Color Schemes', packageNames)
+
+    expect(matcher('Found update for CANDELA color schemes.')).toBe(true)
+    expect(matcher('Found updates for Candela and several color schemes.')).toBe(false)
+  })
+
+  it('does not match identifier-like package-name extensions', () => {
+    const matcher = createPackageNotesMatcher('LSP', packageNames)
+
+    expect(matcher('Found update for LSP.')).toBe(true)
+    expect(matcher('Found update for LSP-pyright.')).toBe(false)
+    expect(matcher('Found update for LSP_utils.')).toBe(false)
+    expect(matcher('Found update for SublimeLSP.')).toBe(false)
+  })
+
+  it('still finds a standalone mention after a longer package name', () => {
+    const matcher = createPackageNotesMatcher('LSP', packageNames)
+
+    expect(matcher('LSP-pyright failed, but LSP was updated.')).toBe(true)
+  })
+
+  it('gives longer known package names precedence across spaces', () => {
+    const schemeMatcher = createPackageNotesMatcher('Scheme', packageNames)
+    const angularMatcher = createPackageNotesMatcher('AngularJS', packageNames)
+
+    expect(schemeMatcher('Found update for Color Scheme.')).toBe(false)
+    expect(schemeMatcher('Found update for color scheme.')).toBe(true)
+    expect(schemeMatcher('Found update for Scheme.')).toBe(true)
+    expect(angularMatcher('AngularJS (CoffeeScript) failed.')).toBe(false)
+  })
+
+  it('treats punctuation in real package names literally', () => {
+    const apiaryMatcher = createPackageNotesMatcher('Apiary.io Blueprint', packageNames)
+    const atgMatcher = createPackageNotesMatcher('ATG(CocoR C#) Syntax', packageNames)
+
+    expect(apiaryMatcher('Updated **Apiary.io Blueprint**.')).toBe(true)
+    expect(apiaryMatcher('Updated ApiaryXio Blueprint.')).toBe(false)
+    expect(atgMatcher('Updated ATG(CocoR C#) Syntax.')).toBe(true)
   })
 })
 

@@ -27,6 +27,51 @@ export function createNotesMatcher(query) {
 }
 
 /**
+ * Match literal mentions of one canonical package name. Longer known package
+ * names take precedence, so LSP does not match LSP-pyright and Scheme does not
+ * match Color Scheme.
+ *
+ * @param {string} packageName
+ * @param {Iterable<string>} [knownPackageNames]
+ * @returns {((notes: string) => boolean) | null}
+ */
+export function createPackageNotesMatcher(packageName, knownPackageNames = []) {
+  const canonicalName = normalizeLiteralText(packageName).trim()
+  if (!canonicalName) return null
+
+  const namePattern = new RegExp(escapeRegExp(canonicalName), 'giu')
+  const longerNameExtensions = packageNameExtensions(canonicalName, knownPackageNames)
+  const matchCache = new Map()
+  return (notes) => {
+    const rawNotes = String(notes || '')
+    if (matchCache.has(rawNotes)) return matchCache.get(rawNotes)
+
+    const canonicalSource = normalizeLiteralText(rawNotes)
+    namePattern.lastIndex = 0
+    let match = namePattern.exec(canonicalSource)
+    while (match) {
+      const start = match.index
+      const end = start + match[0].length
+      if (
+        hasPackageNameBoundaries(canonicalSource, start, end)
+        && !isInsideLongerPackageName(
+          canonicalSource,
+          start,
+          end,
+          longerNameExtensions,
+        )
+      ) {
+        matchCache.set(rawNotes, true)
+        return true
+      }
+      match = namePattern.exec(canonicalSource)
+    }
+    matchCache.set(rawNotes, false)
+    return false
+  }
+}
+
+/**
  * Find the next entry matching an active notes search. Returns -1 when there
  * is no match in the requested direction.
  *
@@ -162,4 +207,52 @@ export function tokenizeSearchText(value) {
   }
   searchTokenCache.set(source, tokens)
   return tokens
+}
+
+function packageNameExtensions(packageName, knownPackageNames) {
+  const extensions = new Map()
+  for (const candidate of knownPackageNames) {
+    const longerName = normalizeLiteralText(candidate).trim()
+    if (longerName === packageName || longerName.length <= packageName.length) continue
+
+    let start = longerName.indexOf(packageName)
+    while (start >= 0) {
+      const prefix = longerName.slice(0, start)
+      const suffix = longerName.slice(start + packageName.length)
+      extensions.set(`${prefix}\0${suffix}`, { prefix, suffix })
+      start = longerName.indexOf(packageName, start + 1)
+    }
+  }
+  return [...extensions.values()]
+}
+
+function hasPackageNameBoundaries(source, start, end) {
+  return !continuesPackageName(source, start - 1, -1)
+    && !continuesPackageName(source, end, 1)
+}
+
+function continuesPackageName(source, index, direction) {
+  const character = source[index]
+  if (!character) return false
+  if (/[\p{L}\p{N}_+#@-]/u.test(character)) return true
+  return character === '.' && /[\p{L}\p{N}]/u.test(source[index + direction] || '')
+}
+
+function isInsideLongerPackageName(source, start, end, extensions) {
+  return extensions.some(({ prefix, suffix }) => {
+    const extendedStart = start - prefix.length
+    return extendedStart >= 0
+      && source.startsWith(prefix, extendedStart)
+      && source.startsWith(suffix, end)
+  })
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function normalizeLiteralText(value) {
+  return String(value || '')
+    .normalize('NFKC')
+    .replace(/\s+/gu, ' ')
 }

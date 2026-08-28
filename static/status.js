@@ -20,6 +20,7 @@ import {
 import {
   createDirectionalNavigationOrigin,
   createNotesMatcher,
+  createPackageNotesMatcher,
   findDirectionalCorridorTarget,
 } from './module/status-search.js'
 import {
@@ -181,12 +182,17 @@ function updateNotesSearch() {
 
 function updatePackageRunSearch(query) {
   const revision = ++packageSearchRevision
-  if (!notesMatcher) return
+  if (!String(query || '').trim()) return
 
   loadCrawlHistory()
     .then((history) => {
       if (revision !== packageSearchRevision) return
-      applyPackageRunState(resolvePackageRunState(history, query))
+      const state = resolvePackageRunState(history, query)
+      if (state) {
+        notesMatcher = createPackageNotesMatcher(state.name, history.packageNames)
+        chart?.setNotesMatcher(notesMatcher)
+      }
+      applyPackageRunState(state)
     })
     .catch((error) => {
       if (revision !== packageSearchRevision) return
