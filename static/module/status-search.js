@@ -1,4 +1,5 @@
 export const MIN_NOTES_SEARCH_CHARS = 2
+export const NOTES_SEARCH_QUERY_PARAM = 'q'
 
 const SEARCH_TEXT_CACHE_LIMIT = 2048
 const normalizedSearchTextCache = new Map()
@@ -101,6 +102,41 @@ export function editAutoPairedSearchQuotes(
     }
   }
   return null
+}
+
+/**
+ * Read a notes search query from a page URL.
+ *
+ * @param {string | URL} value
+ * @returns {string}
+ */
+export function notesSearchQueryFromUrl(value) {
+  try {
+    return new URL(String(value)).searchParams.get(NOTES_SEARCH_QUERY_PARAM) || ''
+  }
+  catch {
+    return ''
+  }
+}
+
+/**
+ * Return a copy of a page URL containing the notes search query. Empty queries
+ * remove the parameter while preserving unrelated URL state.
+ *
+ * @param {string | URL} value
+ * @param {string} query
+ * @returns {URL}
+ */
+export function urlWithNotesSearchQuery(value, query) {
+  const url = new URL(String(value))
+  const searchQuery = String(query || '')
+  if (searchQuery) {
+    url.searchParams.set(NOTES_SEARCH_QUERY_PARAM, searchQuery)
+  }
+  else {
+    url.searchParams.delete(NOTES_SEARCH_QUERY_PARAM)
+  }
+  return url
 }
 
 /**

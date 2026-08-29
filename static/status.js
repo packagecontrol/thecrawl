@@ -24,6 +24,8 @@ import {
   editAutoPairedSearchQuotes,
   findDirectionalCorridorTarget,
   findPackageNameSuggestion,
+  notesSearchQueryFromUrl,
+  urlWithNotesSearchQuery,
 } from './module/status-search.js'
 import { SearchInputHistory } from './module/status-search-history.js'
 import {
@@ -127,6 +129,7 @@ function init() {
     return
   }
 
+  restoreNotesSearchFromUrl()
   if (chartEl) {
     chart = new StatusChart(chartEl, {
       onSelect: renderEntry,
@@ -138,6 +141,7 @@ function init() {
 
   bindControls()
   bindKeyboard()
+  updateNotesSearch()
   loadLogs().then((entries) => {
     const days = chart?.days
     const visibleEntries = typeof days === 'number'
@@ -195,8 +199,24 @@ function renderFromControl(targetIndex) {
   render(targetIndex)
 }
 
+function restoreNotesSearchFromUrl() {
+  if (!notesSearchInput) return
+
+  const query = notesSearchQueryFromUrl(window.location.href)
+  notesSearchInput.value = query
+  notesSearchInput.setSelectionRange(query.length, query.length)
+  autoPairedQuoteIndex = null
+  autoPairedQuoteValueLength = query.length
+}
+
+function updateNotesSearchUrl(query) {
+  const url = urlWithNotesSearchQuery(window.location.href, query)
+  window.history.replaceState(window.history.state, '', url.toString())
+}
+
 function updateNotesSearch() {
   const query = notesSearchInput?.value || ''
+  updateNotesSearchUrl(query)
   const revision = ++packageSearchRevision
   const packageState = crawlHistory
     ? resolvePackageRunState(crawlHistory, query)
@@ -278,6 +298,7 @@ function usePackageSuggestion(event) {
   autoPairedQuoteIndex = null
   autoPairedQuoteValueLength = name.length
   recordProgrammaticNotesSearchEdit(beforeState)
+  updateNotesSearchUrl(name)
   updatePackageSuggestion(null)
   updatePackageLock(resolvePackageRunState(crawlHistory, name))
 

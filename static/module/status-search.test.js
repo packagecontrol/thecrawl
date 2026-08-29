@@ -8,7 +8,9 @@ import {
   findNextNotesMatchIndex,
   findPackageNameSuggestion,
   MIN_NOTES_SEARCH_CHARS,
+  notesSearchQueryFromUrl,
   tokenizeSearchText,
+  urlWithNotesSearchQuery,
 } from './status-search.js'
 
 describe('createNotesMatcher', () => {
@@ -113,6 +115,35 @@ describe('editAutoPairedSearchQuotes', () => {
   it('leaves other edits to the browser', () => {
     expect(editAutoPairedSearchQuotes('"server error"', 14, 14, '"'))
       .toBeNull()
+  })
+})
+
+describe('notes search URLs', () => {
+  it('reads decoded searches from the query string', () => {
+    expect(notesSearchQueryFromUrl(
+      'https://example.com/status/?q=%22server+error%22&run_id=123',
+    )).toBe('"server error"')
+  })
+
+  it('sets searches without disturbing other URL state', () => {
+    const url = urlWithNotesSearchQuery(
+      'https://example.com/status/?run_id=123#notes',
+      'server error',
+    )
+
+    expect(url.searchParams.get('q')).toBe('server error')
+    expect(url.searchParams.get('run_id')).toBe('123')
+    expect(url.hash).toBe('#notes')
+  })
+
+  it('removes empty searches', () => {
+    const url = urlWithNotesSearchQuery(
+      'https://example.com/status/?run_id=123&q=server',
+      '',
+    )
+
+    expect(url.searchParams.has('q')).toBe(false)
+    expect(url.searchParams.get('run_id')).toBe('123')
   })
 })
 
