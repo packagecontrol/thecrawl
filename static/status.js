@@ -46,6 +46,7 @@ const chartToolbarEl = document.querySelector('[data-status-chart-toolbar]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
 /** @type {HTMLInputElement | null} */
 const notesSearchInput = document.querySelector('[data-status-notes-search]')
+const packageSearchTipEl = document.querySelector('[data-status-package-search-tip]')
 const packageLockEl = document.querySelector('[data-status-package-lock]')
 /** @type {HTMLAnchorElement | null} */
 const packageLinkEl = document.querySelector('[data-status-package-link]')
@@ -106,6 +107,7 @@ let index = 0
 let chart = null
 let notesMatcher = null
 let packageSearchRevision = 0
+let packageSearchTipTimeout = null
 let autoPairedQuoteIndex = null
 let autoPairedQuoteValueLength = 0
 let notesSearchHistory = null
@@ -117,6 +119,7 @@ let emptyStateMessage = ''
 const STATUS_CHART_MODE_STATUS = 'status'
 const STATUS_CHART_MODE_UPDATES = 'updates'
 const PACKAGE_SITE_URL = 'https://packages.sublimetext.io/packages/'
+const PACKAGE_SEARCH_TIP_DURATION = 8_000
 const HORIZONTAL_NAVIGATION_CORRIDOR_HOURS = 3
 const VERTICAL_NAVIGATION_CORRIDOR_DAYS = 1
 const DRAW_DIRECTIONAL_NAVIGATION_CORRIDORS = false
@@ -155,6 +158,7 @@ function init() {
     if (chart) {
       chart.setData(logs)
       chartToolbarEl?.removeAttribute('hidden')
+      focusNotesSearchFromFragment()
     }
     const resolved = resolveIndexFromUrl()
     if (resolved.hasRunId && !resolved.found) {
@@ -179,6 +183,7 @@ function bindControls() {
     notesSearchHistory = new SearchInputHistory(lastNotesSearchState)
   }
   notesSearchInput?.addEventListener('beforeinput', handleNotesSearchBeforeInput)
+  notesSearchInput?.addEventListener('input', hidePackageSearchTip)
   notesSearchInput?.addEventListener('input', syncAutoPairedQuote)
   notesSearchInput?.addEventListener('input', recordNotesSearchInput)
   notesSearchInput?.addEventListener('input', updateNotesSearch)
@@ -207,6 +212,42 @@ function restoreNotesSearchFromUrl() {
   notesSearchInput.setSelectionRange(query.length, query.length)
   autoPairedQuoteIndex = null
   autoPairedQuoteValueLength = query.length
+}
+
+function focusNotesSearchFromFragment() {
+  if (!notesSearchInput || window.location.hash !== '#status-notes-search') return
+
+  showPackageSearchTip()
+  const activeElement = document.activeElement
+  if (
+    activeElement !== notesSearchInput
+    && (activeElement === document.body || activeElement === document.documentElement)
+  ) {
+    notesSearchInput.focus({ preventScroll: true })
+  }
+
+  const url = new URL(window.location.href)
+  url.hash = ''
+  window.history.replaceState(window.history.state, '', url.toString())
+}
+
+function showPackageSearchTip() {
+  if (!packageSearchTipEl) return
+
+  packageSearchTipEl.hidden = false
+  packageSearchTipEl.classList.add('is-visible')
+  window.addEventListener('keydown', hidePackageSearchTip, { once: true })
+  window.clearTimeout(packageSearchTipTimeout)
+  packageSearchTipTimeout = window.setTimeout(
+    hidePackageSearchTip,
+    PACKAGE_SEARCH_TIP_DURATION,
+  )
+}
+
+function hidePackageSearchTip() {
+  packageSearchTipEl?.classList.remove('is-visible')
+  window.clearTimeout(packageSearchTipTimeout)
+  packageSearchTipTimeout = null
 }
 
 function updateNotesSearchUrl(query) {

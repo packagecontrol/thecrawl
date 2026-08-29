@@ -15,10 +15,18 @@ page_type: status
         id="status-notes-search"
         data-status-notes-search
         aria-keyshortcuts="s"
+        aria-describedby="status-package-search-tip"
         placeholder="Search notes"
         autocomplete="off"
         spellcheck="false"
       >
+      <span
+        class="status-package-search-tip"
+        id="status-package-search-tip"
+        data-status-package-search-tip
+        role="tooltip"
+        hidden
+      >Type or paste your package name here.</span>
       <span
         class="status-package-lock"
         data-status-package-lock

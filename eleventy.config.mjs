@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
 const PATH_PREFIX = normalizePathPrefix(
@@ -36,6 +36,7 @@ export default function (eleventyConfig) {
       formatted: now.toISOString().slice(0, 16).replace('T', ' ') + ' UTC',
     }
   })
+  eleventyConfig.addGlobalData('artifact_counts', readArtifactCounts)
   eleventyConfig.addGlobalData(
     'status_tag_dates_json',
     () => JSON.stringify(readSemverTags()),
@@ -53,6 +54,36 @@ export default function (eleventyConfig) {
 
 function prefixSitePath(path) {
   return PATH_PREFIX + String(path || '').replace(/^\/+/, '')
+}
+
+function readArtifactCounts() {
+  const channel = readJson('channel.json')
+  const registry = readJson('registry.json')
+
+  return {
+    channelEntries:
+      countCachedEntries(channel.packages_cache)
+      + countCachedEntries(channel.libraries_cache),
+    registryEntries:
+      countEntries(registry.packages)
+      + countEntries(registry.libraries),
+  }
+}
+
+function readJson(path) {
+  return JSON.parse(readFileSync(path, 'utf8'))
+}
+
+function countCachedEntries(cache) {
+  if (!cache || typeof cache !== 'object') return 0
+  return Object.values(cache).reduce(
+    (total, entries) => total + countEntries(entries),
+    0,
+  )
+}
+
+function countEntries(entries) {
+  return Array.isArray(entries) ? entries.length : 0
 }
 
 function normalizePathPrefix(path) {

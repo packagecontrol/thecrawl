@@ -18,18 +18,41 @@ page_type: home
 </div>
 
 <section class="home-page" aria-labelledby="fresh-heading">
-  <h2 id="fresh-heading">Fresh from the oven</h2>
-  <p class="artifact-links">
-    <a href="{{ '/registry.json' | site_url }}">registry.json</a>
-    and
-    <a href="{{ '/channel.json' | site_url }}">channel.json</a>
-  </p>
+  <h2 id="fresh-heading">Fresh from the oven,<br>ready to use</h2>
+
+  <div class="artifact-list" aria-label="Latest artifacts">
+    <p>
+      <a href="{{ '/channel.json' | site_url }}"><code>channel.json</code></a>
+      shipping {{ artifact_counts.channelEntries }} packages and libraries
+    </p>
+    <p>
+      <a href="{{ '/registry.json' | site_url }}"><code>registry.json</code></a>
+      listing {{ artifact_counts.registryEntries }} live or tombstoned entries
+    </p>
+  </div>
+
+  <p>Point Package Control at it and use it:</p>
+  <pre><code>{
+    "channels": [
+        "https://packagecontrol.github.io/thecrawl/channel.json"
+    ],
+    ...
+}</code></pre>
+
   <p>
     More artifacts are available on the
     <a href="https://github.com/packagecontrol/thecrawl/releases">release page</a>.
   </p>
   <p>Download them to your local computer using <code>gh</code>:</p>
   <pre><code>gh -R packagecontrol/thecrawl release download crawler-status [--clobber]</code></pre>
+  <p>and build your client and tools around it.</p>
+
+  <div class="package-status-prompt">
+    <a
+      class="package-status-link"
+      href="{{ '/status/#status-notes-search' | site_url }}"
+    >How's my package doing?</a>
+  </div>
 </section>
 
 <script src="{{ '/static/home-status.js' | site_url }}" type="module"></script>

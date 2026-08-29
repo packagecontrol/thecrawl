@@ -397,12 +397,59 @@ svg {
 }
 
 .home-page h2 {
-  font-weight: 650;
-  letter-spacing: -0.035em;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(2.25rem, 7vw, 4.6rem);
+  font-weight: 680;
+  letter-spacing: -0.055em;
+  line-height: 0.94;
 }
 
-.artifact-links {
-  font-size: clamp(1.2rem, 2.6vw, 1.45rem);
+.artifact-list {
+  margin: 0 0 clamp(2.25rem, 5vw, 3.5rem);
+  padding: 0.15rem 0 0.15rem clamp(1rem, 3vw, 1.6rem);
+  border-left: 3px solid var(--orange-1);
+  font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+}
+
+.artifact-list p {
+  margin-bottom: 0.55rem;
+}
+
+.artifact-list p:last-child {
+  margin-bottom: 0;
+}
+
+.artifact-list a code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 0.9em;
+  font-weight: 650;
+}
+
+.package-status-prompt {
+  position: relative;
+  display: inline-flex;
+  margin-top: clamp(1.75rem, 5vw, 3rem);
+}
+
+.package-status-link {
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 0.08em;
+}
+
+.package-status-link::after {
+  content: ' →';
+  display: inline-block;
+  transition: transform 160ms ease-out;
+}
+
+.package-status-link:hover::after,
+.package-status-link:focus-visible::after {
+  transform: translateX(0.25em);
 }
 
 .site-footer {

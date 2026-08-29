@@ -53,11 +53,61 @@ html.page-status main {
 }
 
 .status-chart-search-group {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 20px;
   min-width: 0;
+}
+
+.status-package-search-tip {
+  position: absolute;
+  right: auto;
+  bottom: calc(100% + 0.85rem);
+  left: calc(clamp(7rem, 22vw, 12rem) - 0.6rem);
+  z-index: 5;
+  width: max-content;
+  max-width: min(18rem, calc(100vw - (2 * var(--side-padding))));
+  padding: 0.55rem 0.8rem;
+  border-radius: 5px 5px 5px 0;
+  visibility: hidden;
+  background: var(--foreground-1);
+  box-shadow: 0 0.4rem 1.4rem hsl(0 0% 0% / 18%);
+  color: var(--background-1);
+  font-family: 'Inter Display', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-0.35rem, 0.35rem);
+  transition: opacity 140ms ease-out, transform 260ms ease-out,
+    visibility 0s linear 140ms;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: calc(100% - 2px);
+    left: calc(-0.5rem + 4px);
+    width: 1rem;
+    height: 0.6rem;
+    background: var(--foreground-1);
+    clip-path: polygon(30% 0, 110% 0, 0 100%);
+  }
+}
+
+.status-package-search-tip.is-visible {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition: opacity 140ms ease-out, transform 140ms ease-out,
+    visibility 0s;
 }
 
 .status-package-lock,
