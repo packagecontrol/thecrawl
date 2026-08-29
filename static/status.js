@@ -25,6 +25,7 @@ import {
   findDirectionalCorridorTarget,
   findPackageNameSuggestion,
 } from './module/status-search.js'
+import { SearchInputHistory } from './module/status-search-history.js'
 import {
   parseCrawlHistory,
   resolvePackageRunState,
@@ -105,6 +106,9 @@ let notesMatcher = null
 let packageSearchRevision = 0
 let autoPairedQuoteIndex = null
 let autoPairedQuoteValueLength = 0
+let notesSearchHistory = null
+let notesSearchBeforeInputState = null
+let lastNotesSearchState = null
 let crawlHistory = null
 let crawlHistoryPromise = null
 let emptyStateMessage = ''
@@ -166,10 +170,18 @@ function bindControls() {
   nextButton?.addEventListener('click', () => renderFromControl(index - 1))
   lastButton?.addEventListener('click', () => renderFromControl(0))
 
+  if (notesSearchInput) {
+    lastNotesSearchState = readNotesSearchState()
+    notesSearchHistory = new SearchInputHistory(lastNotesSearchState)
+  }
+  notesSearchInput?.addEventListener('beforeinput', handleNotesSearchBeforeInput)
   notesSearchInput?.addEventListener('input', syncAutoPairedQuote)
+  notesSearchInput?.addEventListener('input', recordNotesSearchInput)
   notesSearchInput?.addEventListener('input', updateNotesSearch)
+  notesSearchInput?.addEventListener('keydown', handleNotesSearchHistoryKeydown)
   notesSearchInput?.addEventListener('keydown', handleNotesSearchAutoPair)
   notesSearchInput?.addEventListener('keydown', unfocusNotesSearchOnEnter)
+  notesSearchInput?.addEventListener('blur', breakNotesSearchHistoryGroup)
   packageSuggestionButton?.addEventListener('click', usePackageSuggestion)
   chartModeButton?.addEventListener('mouseenter', previewUpdatesMode)
   chartModeButton?.addEventListener('mouseleave', restoreChartColorMode)
@@ -259,14 +271,112 @@ function usePackageSuggestion(event) {
   const name = packageSuggestionButton?.textContent || ''
   if (!name || !notesSearchInput) return
 
+  const beforeState = readNotesSearchState()
   notesSearchInput.value = name
+  notesSearchInput.setSelectionRange(name.length, name.length)
   if (event.detail === 0) notesSearchInput.focus()
+  autoPairedQuoteIndex = null
+  autoPairedQuoteValueLength = name.length
+  recordProgrammaticNotesSearchEdit(beforeState)
   updatePackageSuggestion(null)
   updatePackageLock(resolvePackageRunState(crawlHistory, name))
 
   window.requestAnimationFrame(() => {
     window.setTimeout(updateNotesSearch, 0)
   })
+}
+
+function handleNotesSearchBeforeInput(event) {
+  if (event.inputType === 'historyUndo' || event.inputType === 'historyRedo') {
+    event.preventDefault()
+    restoreNotesSearchHistory(event.inputType === 'historyUndo' ? 'undo' : 'redo')
+    return
+  }
+  notesSearchBeforeInputState = readNotesSearchState()
+}
+
+function recordNotesSearchInput(event) {
+  if (!notesSearchHistory) return
+
+  const afterState = readNotesSearchState()
+  const beforeState = notesSearchBeforeInputState
+    || lastNotesSearchState
+    || afterState
+  notesSearchHistory.record(beforeState, afterState, {
+    group: notesSearchInputGroup(event.inputType),
+    timestamp: Date.now(),
+  })
+  notesSearchBeforeInputState = null
+  lastNotesSearchState = afterState
+}
+
+function handleNotesSearchHistoryKeydown(event) {
+  if (
+    event.defaultPrevented
+    || event.isComposing
+    || event.altKey
+    || (!event.ctrlKey && !event.metaKey)
+  ) {
+    return
+  }
+
+  const key = event.key.toLocaleLowerCase()
+  const isUndo = key === 'z' && !event.shiftKey
+  const isRedo = (key === 'z' && event.shiftKey)
+    || (key === 'y' && event.ctrlKey && !event.shiftKey)
+  if (!isUndo && !isRedo) return
+
+  event.preventDefault()
+  restoreNotesSearchHistory(isUndo ? 'undo' : 'redo')
+}
+
+function restoreNotesSearchHistory(direction) {
+  if (!notesSearchHistory || !notesSearchInput) return
+
+  const currentState = readNotesSearchState()
+  const state = direction === 'undo'
+    ? notesSearchHistory.undo(currentState)
+    : notesSearchHistory.redo(currentState)
+  if (!state) return
+
+  notesSearchInput.value = state.value
+  notesSearchInput.setSelectionRange(state.selectionStart, state.selectionEnd)
+  autoPairedQuoteIndex = state.autoPairedQuoteIndex
+  autoPairedQuoteValueLength = state.value.length
+  syncAutoPairedQuote()
+  notesSearchBeforeInputState = null
+  lastNotesSearchState = readNotesSearchState()
+  updateNotesSearch()
+}
+
+function recordProgrammaticNotesSearchEdit(beforeState) {
+  if (!notesSearchHistory) return
+
+  const afterState = readNotesSearchState()
+  notesSearchHistory.record(beforeState, afterState, { timestamp: Date.now() })
+  notesSearchBeforeInputState = null
+  lastNotesSearchState = afterState
+}
+
+function readNotesSearchState() {
+  return {
+    value: notesSearchInput?.value || '',
+    selectionStart: notesSearchInput?.selectionStart ?? 0,
+    selectionEnd: notesSearchInput?.selectionEnd ?? 0,
+    autoPairedQuoteIndex,
+  }
+}
+
+function notesSearchInputGroup(inputType) {
+  if (inputType === 'insertText') return 'insert'
+  if (inputType === 'insertCompositionText') return 'composition'
+  if (inputType === 'deleteContentBackward') return 'delete-backward'
+  if (inputType === 'deleteContentForward') return 'delete-forward'
+  return null
+}
+
+function breakNotesSearchHistoryGroup() {
+  notesSearchHistory?.breakGroup()
 }
 
 function syncAutoPairedQuote() {
@@ -296,6 +406,7 @@ function handleNotesSearchAutoPair(event) {
     return
   }
 
+  const beforeState = readNotesSearchState()
   const edit = editAutoPairedSearchQuotes(
     notesSearchInput.value,
     notesSearchInput.selectionStart,
@@ -315,8 +426,14 @@ function handleNotesSearchAutoPair(event) {
     edit.selectionEnd ?? edit.caret,
   )
   if (valueChanged) {
+    recordProgrammaticNotesSearchEdit(beforeState)
     notesSearchInput.dispatchEvent(new Event('input', { bubbles: true }))
+    return
   }
+
+  notesSearchHistory?.breakGroup()
+  notesSearchBeforeInputState = null
+  lastNotesSearchState = readNotesSearchState()
 }
 
 function unfocusNotesSearchOnEnter(event) {
