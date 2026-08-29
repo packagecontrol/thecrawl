@@ -40,6 +40,22 @@ describe('createNotesMatcher', () => {
     expect(matcher('Two packages are currently failing.')).toBe(true)
     expect(matcher('Two packages were updated.')).toBe(false)
   })
+
+  it('matches quoted terms as literal phrases', () => {
+    const matcher = createNotesMatcher('"server error"')
+
+    expect(matcher('A SERVER ERROR interrupted the crawl.')).toBe(true)
+    expect(matcher('The server returned an error.')).toBe(false)
+    expect(matcher('An error occurred on the server.')).toBe(false)
+  })
+
+  it('requires quoted phrases and free-form terms together', () => {
+    const matcher = createNotesMatcher('retry "server error"')
+
+    expect(matcher('Retrying after a server error.')).toBe(true)
+    expect(matcher('Waiting after a server error.')).toBe(false)
+    expect(matcher('Retry after the server returned an error.')).toBe(false)
+  })
 })
 
 describe('findPackageNameSuggestion', () => {
@@ -76,6 +92,10 @@ describe('findPackageNameSuggestion', () => {
 
   it('does not choose between ambiguous complete token matches', () => {
     expect(findPackageNameSuggestion('power', packageNames)).toBeNull()
+  })
+
+  it('does not suggest packages for literal phrase searches', () => {
+    expect(findPackageNameSuggestion('"pyright"', packageNames)).toBeNull()
   })
 
   it('does not suggest packages for inactive or unrelated searches', () => {

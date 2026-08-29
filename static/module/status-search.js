@@ -14,17 +14,21 @@ const searchTokenCache = new Map()
  * @returns {((notes: string) => boolean) | null}
  */
 export function createNotesMatcher(query) {
-  const value = String(query || '').trim()
-  if ([...value].length < MIN_NOTES_SEARCH_CHARS) return null
+  const parsed = parseNotesQuery(query)
+  if ([...parsed.searchableText].length < MIN_NOTES_SEARCH_CHARS) return null
 
-  const queryTokens = tokenizeSearchText(value)
-  if (!queryTokens.length) return null
+  const queryTokens = tokenizeSearchText(parsed.unquotedText)
+  if (!queryTokens.length && !parsed.literalPhrases.length) return null
 
   return (notes) => {
     const noteTokens = tokenizeSearchText(notes)
-    return queryTokens.every(queryToken => (
+    const tokensMatch = queryTokens.every(queryToken => (
       noteTokens.some(noteToken => noteToken.startsWith(queryToken))
     ))
+    if (!tokensMatch || !parsed.literalPhrases.length) return tokensMatch
+
+    const literalNotes = normalizeLiteralNotes(notes).toLocaleLowerCase()
+    return parsed.literalPhrases.every(phrase => literalNotes.includes(phrase))
   }
 }
 
@@ -39,7 +43,8 @@ export function createNotesMatcher(query) {
  * @returns {string | null}
  */
 export function findPackageNameSuggestion(query, knownPackageNames = []) {
-  if (!createNotesMatcher(query)) return null
+  const parsed = parseNotesQuery(query)
+  if (parsed.literalPhrases.length || !createNotesMatcher(query)) return null
 
   const queryTokens = tokenizeSearchText(query)
   const queryLength = queryTokens.join('').length
@@ -251,6 +256,19 @@ export function tokenizeSearchText(value) {
   }
   searchTokenCache.set(source, tokens)
   return tokens
+}
+
+function parseNotesQuery(query) {
+  const literalPhrases = []
+  const unquotedText = String(query || '').replace(/"([^"]*)"/gu, (_, phrase) => {
+    const normalizedPhrase = normalizeLiteralText(phrase).trim()
+    if (normalizedPhrase) {
+      literalPhrases.push(normalizedPhrase.toLocaleLowerCase())
+    }
+    return ' '
+  })
+  const searchableText = `${unquotedText} ${literalPhrases.join(' ')}`.trim()
+  return { literalPhrases, searchableText, unquotedText }
 }
 
 function comparePackageSuggestionRanks(left, right) {
