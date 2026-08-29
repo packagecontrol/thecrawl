@@ -3,6 +3,7 @@ import {
   createDirectionalNavigationOrigin,
   createNotesMatcher,
   createPackageNotesMatcher,
+  editAutoPairedSearchQuotes,
   findDirectionalCorridorTarget,
   findNextNotesMatchIndex,
   findPackageNameSuggestion,
@@ -55,6 +56,63 @@ describe('createNotesMatcher', () => {
     expect(matcher('Retrying after a server error.')).toBe(true)
     expect(matcher('Waiting after a server error.')).toBe(false)
     expect(matcher('Retry after the server returned an error.')).toBe(false)
+  })
+})
+
+describe('editAutoPairedSearchQuotes', () => {
+  it('inserts a quote pair into an empty field', () => {
+    expect(editAutoPairedSearchQuotes('', 0, 0, '"')).toEqual({
+      value: '""',
+      caret: 1,
+      autoPairedQuoteIndex: 1,
+    })
+  })
+
+  it('steps over a closing quote', () => {
+    expect(editAutoPairedSearchQuotes(
+      '"server error"',
+      13,
+      13,
+      '"',
+      13,
+    )).toEqual({
+      value: '"server error"',
+      caret: 14,
+      autoPairedQuoteIndex: null,
+    })
+  })
+
+  it('removes both quotes when backspacing between an empty pair', () => {
+    expect(editAutoPairedSearchQuotes(
+      'retry "" later',
+      7,
+      7,
+      'Backspace',
+      7,
+    )).toEqual({
+      value: 'retry  later',
+      caret: 6,
+      autoPairedQuoteIndex: null,
+    })
+  })
+
+  it('surrounds selected text and keeps it selected', () => {
+    expect(editAutoPairedSearchQuotes('selected', 0, 8, '"')).toEqual({
+      value: '"selected"',
+      caret: 1,
+      selectionEnd: 9,
+      autoPairedQuoteIndex: 9,
+    })
+  })
+
+  it('does not step over quotes that were not auto-paired', () => {
+    expect(editAutoPairedSearchQuotes('"server error"', 13, 13, '"'))
+      .toBeNull()
+  })
+
+  it('leaves other edits to the browser', () => {
+    expect(editAutoPairedSearchQuotes('"server error"', 14, 14, '"'))
+      .toBeNull()
   })
 })
 

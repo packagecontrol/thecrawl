@@ -21,6 +21,7 @@ import {
   createDirectionalNavigationOrigin,
   createNotesMatcher,
   createPackageNotesMatcher,
+  editAutoPairedSearchQuotes,
   findDirectionalCorridorTarget,
   findPackageNameSuggestion,
 } from './module/status-search.js'
@@ -102,6 +103,8 @@ let index = 0
 let chart = null
 let notesMatcher = null
 let packageSearchRevision = 0
+let autoPairedQuoteIndex = null
+let autoPairedQuoteValueLength = 0
 let crawlHistory = null
 let crawlHistoryPromise = null
 let emptyStateMessage = ''
@@ -163,7 +166,9 @@ function bindControls() {
   nextButton?.addEventListener('click', () => renderFromControl(index - 1))
   lastButton?.addEventListener('click', () => renderFromControl(0))
 
+  notesSearchInput?.addEventListener('input', syncAutoPairedQuote)
   notesSearchInput?.addEventListener('input', updateNotesSearch)
+  notesSearchInput?.addEventListener('keydown', handleNotesSearchAutoPair)
   notesSearchInput?.addEventListener('keydown', unfocusNotesSearchOnEnter)
   packageSuggestionButton?.addEventListener('click', usePackageSuggestion)
   chartModeButton?.addEventListener('mouseenter', previewUpdatesMode)
@@ -262,6 +267,56 @@ function usePackageSuggestion(event) {
   window.requestAnimationFrame(() => {
     window.setTimeout(updateNotesSearch, 0)
   })
+}
+
+function syncAutoPairedQuote() {
+  if (autoPairedQuoteIndex === null || !notesSearchInput) return
+
+  const lengthChange = notesSearchInput.value.length - autoPairedQuoteValueLength
+  const closingQuoteIndex = autoPairedQuoteIndex + lengthChange
+  const selectionEnd = notesSearchInput.selectionEnd
+  autoPairedQuoteIndex = closingQuoteIndex >= 0
+    && notesSearchInput.value[closingQuoteIndex] === '"'
+    && selectionEnd !== null
+    && selectionEnd <= closingQuoteIndex
+    ? closingQuoteIndex
+    : null
+  autoPairedQuoteValueLength = notesSearchInput.value.length
+}
+
+function handleNotesSearchAutoPair(event) {
+  if (
+    event.defaultPrevented
+    || event.isComposing
+    || event.metaKey
+    || event.ctrlKey
+    || event.altKey
+    || !notesSearchInput
+  ) {
+    return
+  }
+
+  const edit = editAutoPairedSearchQuotes(
+    notesSearchInput.value,
+    notesSearchInput.selectionStart,
+    notesSearchInput.selectionEnd,
+    event.key,
+    autoPairedQuoteIndex,
+  )
+  if (!edit) return
+
+  event.preventDefault()
+  const valueChanged = notesSearchInput.value !== edit.value
+  autoPairedQuoteIndex = edit.autoPairedQuoteIndex
+  autoPairedQuoteValueLength = edit.value.length
+  notesSearchInput.value = edit.value
+  notesSearchInput.setSelectionRange(
+    edit.caret,
+    edit.selectionEnd ?? edit.caret,
+  )
+  if (valueChanged) {
+    notesSearchInput.dispatchEvent(new Event('input', { bubbles: true }))
+  }
 }
 
 function unfocusNotesSearchOnEnter(event) {

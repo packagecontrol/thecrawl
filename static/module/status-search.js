@@ -33,6 +33,77 @@ export function createNotesMatcher(query) {
 }
 
 /**
+ * Apply quote-pair editing for a search field. Returns null when the browser
+ * should handle the key normally.
+ *
+ * @param {string} value
+ * @param {number} selectionStart
+ * @param {number} selectionEnd
+ * @param {string} key
+ * @param {number | null} autoPairedQuoteIndex
+ * @returns {{
+ *   value: string,
+ *   caret: number,
+ *   selectionEnd?: number,
+ *   autoPairedQuoteIndex: number | null,
+ * } | null}
+ */
+export function editAutoPairedSearchQuotes(
+  value,
+  selectionStart,
+  selectionEnd,
+  key,
+  autoPairedQuoteIndex = null,
+) {
+  const source = String(value || '')
+  if (!Number.isInteger(selectionStart) || !Number.isInteger(selectionEnd)) {
+    return null
+  }
+
+  if (key === '"' && selectionStart !== selectionEnd) {
+    return {
+      value: source.slice(0, selectionStart)
+        + '"'
+        + source.slice(selectionStart, selectionEnd)
+        + '"'
+        + source.slice(selectionEnd),
+      caret: selectionStart + 1,
+      selectionEnd: selectionEnd + 1,
+      autoPairedQuoteIndex: selectionEnd + 1,
+    }
+  }
+  if (selectionStart !== selectionEnd) return null
+
+  if (key === '"' && !source) {
+    return { value: '""', caret: 1, autoPairedQuoteIndex: 1 }
+  }
+  if (
+    key === '"'
+    && selectionStart === autoPairedQuoteIndex
+    && source[selectionStart] === '"'
+  ) {
+    return {
+      value: source,
+      caret: selectionStart + 1,
+      autoPairedQuoteIndex: null,
+    }
+  }
+  if (
+    key === 'Backspace'
+    && selectionStart === autoPairedQuoteIndex
+    && selectionStart > 0
+    && source.slice(selectionStart - 1, selectionStart + 1) === '""'
+  ) {
+    return {
+      value: source.slice(0, selectionStart - 1) + source.slice(selectionStart + 1),
+      caret: selectionStart - 1,
+      autoPairedQuoteIndex: null,
+    }
+  }
+  return null
+}
+
+/**
  * Suggest a canonical package name when every query term matches a complete
  * package-name token and exactly one known package is the best match. One typo
  * is allowed in tokens of at least five characters, while exact matches always
