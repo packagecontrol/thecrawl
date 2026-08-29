@@ -49,6 +49,8 @@ describe('findPackageNameSuggestion', () => {
     'LSP-pyright',
     'PowerPaste',
     'PowerShell',
+    'PowershellUtils',
+    'Pyrightt Tools',
     'Python 3',
   ]
 
@@ -57,6 +59,15 @@ describe('findPackageNameSuggestion', () => {
       .toBe('LSP-pyright')
     expect(findPackageNameSuggestion('candela', packageNames))
       .toBe('Candela Color Schemes')
+  })
+
+  it('allows one typo in a sufficiently long token', () => {
+    expect(findPackageNameSuggestion('pyrght', packageNames))
+      .toBe('LSP-pyright')
+    expect(findPackageNameSuggestion('pyrihgt', packageNames))
+      .toBe('LSP-pyright')
+    expect(findPackageNameSuggestion('powrshell', packageNames))
+      .toBe('PowerShell')
   })
 
   it('does not suggest packages for partial tokens', () => {

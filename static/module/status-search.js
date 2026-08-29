@@ -29,9 +29,10 @@ export function createNotesMatcher(query) {
 }
 
 /**
- * Suggest a canonical package name only when every query term is a complete
- * package-name token and exactly one known package matches. This keeps partial
- * or ambiguous free-form searches from switching to package mode too eagerly.
+ * Suggest a canonical package name when every query term matches a complete
+ * package-name token and exactly one known package is the best match. One typo
+ * is allowed in tokens of at least five characters, while exact matches always
+ * take precedence over typo matches.
  *
  * @param {string} query
  * @param {Iterable<string>} [knownPackageNames]
@@ -41,18 +42,33 @@ export function findPackageNameSuggestion(query, knownPackageNames = []) {
   if (!createNotesMatcher(query)) return null
 
   const queryTokens = tokenizeSearchText(query)
-  let suggestion = null
+  const queryLength = queryTokens.join('').length
+  let bestRank = null
+  let suggestions = []
   for (const value of knownPackageNames) {
     const name = String(value || '').trim()
     if (!name) continue
 
     const nameTokens = tokenizeSearchText(name)
-    const matches = queryTokens.every(queryToken => nameTokens.includes(queryToken))
-    if (!matches) continue
-    if (suggestion) return null
-    suggestion = name
+    const editCount = packageSuggestionEditCount(
+      queryTokens,
+      packageSuggestionTokens(nameTokens),
+    )
+    if (editCount === null) continue
+
+    const rank = {
+      editCount,
+      extraCharacters: Math.abs(nameTokens.join('').length - queryLength),
+    }
+    const comparison = comparePackageSuggestionRanks(rank, bestRank)
+    if (comparison > 0) continue
+    if (comparison < 0) {
+      bestRank = rank
+      suggestions = []
+    }
+    suggestions.push(name)
   }
-  return suggestion
+  return suggestions.length === 1 ? suggestions[0] : null
 }
 
 /**
@@ -235,6 +251,70 @@ export function tokenizeSearchText(value) {
   }
   searchTokenCache.set(source, tokens)
   return tokens
+}
+
+function comparePackageSuggestionRanks(left, right) {
+  if (!right) return -1
+  return left.editCount - right.editCount
+    || left.extraCharacters - right.extraCharacters
+}
+
+function packageSuggestionTokens(tokens) {
+  if (tokens.length < 2) return tokens
+  return [...tokens, tokens.join('')]
+}
+
+function packageSuggestionEditCount(queryTokens, nameTokens) {
+  let editCount = 0
+  for (const queryToken of queryTokens) {
+    if (nameTokens.includes(queryToken)) continue
+    if (
+      [...queryToken].length < 5
+      || !nameTokens.some(nameToken => isSingleTypoAway(queryToken, nameToken))
+    ) {
+      return null
+    }
+    editCount += 1
+    if (editCount > 1) return null
+  }
+  return editCount
+}
+
+function isSingleTypoAway(left, right) {
+  const leftCharacters = [...left]
+  const rightCharacters = [...right]
+  const lengthDifference = leftCharacters.length - rightCharacters.length
+  if (Math.abs(lengthDifference) > 1) return false
+
+  if (lengthDifference === 0) {
+    const mismatches = []
+    for (let index = 0; index < leftCharacters.length; index += 1) {
+      if (leftCharacters[index] !== rightCharacters[index]) mismatches.push(index)
+      if (mismatches.length > 2) return false
+    }
+    if (mismatches.length <= 1) return true
+    const [first, second] = mismatches
+    return second === first + 1
+      && leftCharacters[first] === rightCharacters[second]
+      && leftCharacters[second] === rightCharacters[first]
+  }
+
+  const shorter = lengthDifference < 0 ? leftCharacters : rightCharacters
+  const longer = lengthDifference < 0 ? rightCharacters : leftCharacters
+  let shorterIndex = 0
+  let longerIndex = 0
+  let skipped = false
+  while (shorterIndex < shorter.length && longerIndex < longer.length) {
+    if (shorter[shorterIndex] === longer[longerIndex]) {
+      shorterIndex += 1
+      longerIndex += 1
+      continue
+    }
+    if (skipped) return false
+    skipped = true
+    longerIndex += 1
+  }
+  return true
 }
 
 function packageNameExtensions(packageName, knownPackageNames) {
