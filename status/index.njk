@@ -28,6 +28,19 @@ page_type: status
       >
         Locked to package <a data-status-package-link></a>
       </span>
+      <span
+        class="status-package-suggestion"
+        data-status-package-suggestion
+        aria-live="polite"
+        hidden
+      >
+        Did you mean
+        <button
+          type="button"
+          class="status-package-suggestion-button"
+          data-status-package-suggestion-button
+        ></button>?
+      </span>
     </div>
     <button type="button" class="status-chart-mode-button" data-status-mode-toggle aria-pressed="false">
       Which runs actually found updates?

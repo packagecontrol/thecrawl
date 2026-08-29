@@ -54,12 +54,14 @@ html.page-status main {
 
 .status-chart-search-group {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 20px;
+  gap: 8px 20px;
   min-width: 0;
 }
 
-.status-package-lock {
+.status-package-lock,
+.status-package-suggestion {
   position: relative;
   top: 0;
   color: var(--foreground-3);
@@ -70,6 +72,26 @@ html.page-status main {
 
   &[hidden] {
     display: none;
+  }
+}
+
+.status-package-suggestion-button {
+  all: unset;
+  border-radius: 3px;
+  color: var(--orange-2);
+  cursor: pointer;
+  text-decoration: underline transparent;
+  text-underline-offset: 0.15em;
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration-color: currentColor;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--orange-1);
+    outline-offset: 3px;
   }
 }
 

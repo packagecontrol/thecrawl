@@ -22,6 +22,7 @@ import {
   createNotesMatcher,
   createPackageNotesMatcher,
   findDirectionalCorridorTarget,
+  findPackageNameSuggestion,
 } from './module/status-search.js'
 import {
   parseCrawlHistory,
@@ -44,6 +45,9 @@ const notesSearchInput = document.querySelector('[data-status-notes-search]')
 const packageLockEl = document.querySelector('[data-status-package-lock]')
 /** @type {HTMLAnchorElement | null} */
 const packageLinkEl = document.querySelector('[data-status-package-link]')
+const packageSuggestionEl = document.querySelector('[data-status-package-suggestion]')
+/** @type {HTMLButtonElement | null} */
+const packageSuggestionButton = document.querySelector('[data-status-package-suggestion-button]')
 /** @type {HTMLButtonElement | null} */
 const chartModeButton = document.querySelector('[data-status-mode-toggle]')
 /** @type {HTMLButtonElement | null} */
@@ -161,6 +165,7 @@ function bindControls() {
 
   notesSearchInput?.addEventListener('input', updateNotesSearch)
   notesSearchInput?.addEventListener('keydown', unfocusNotesSearchOnEnter)
+  packageSuggestionButton?.addEventListener('click', usePackageSuggestion)
   chartModeButton?.addEventListener('mouseenter', previewUpdatesMode)
   chartModeButton?.addEventListener('mouseleave', restoreChartColorMode)
   chartModeButton?.addEventListener('focus', previewUpdatesMode)
@@ -186,10 +191,14 @@ function updateNotesSearch() {
       crawlHistory.packageNames,
     )
     applyNotesSearchState(matcher, packageState)
+    updatePackageSuggestion(null)
     return
   }
 
   applyNotesSearchState(createNotesMatcher(query), null)
+  updatePackageSuggestion(crawlHistory
+    ? findPackageNameSuggestion(query, crawlHistory.packageNames)
+    : null)
   if (String(query).trim() && !crawlHistory) {
     updatePackageRunSearch(query, revision)
   }
@@ -200,10 +209,13 @@ function updatePackageRunSearch(query, revision) {
     .then((history) => {
       if (revision !== packageSearchRevision) return
       const state = resolvePackageRunState(history, query)
-      if (!state) return
-
-      const matcher = createPackageNotesMatcher(state.name, history.packageNames)
-      applyNotesSearchState(matcher, state)
+      if (state) {
+        const matcher = createPackageNotesMatcher(state.name, history.packageNames)
+        applyNotesSearchState(matcher, state)
+        updatePackageSuggestion(null)
+        return
+      }
+      updatePackageSuggestion(findPackageNameSuggestion(query, history.packageNames))
     })
     .catch((error) => {
       if (revision !== packageSearchRevision) return
@@ -229,6 +241,27 @@ function updatePackageLock(state) {
 
   packageLinkEl.href = PACKAGE_SITE_URL + encodeURIComponent(state.name)
   packageLinkEl.textContent = `“${state.name}”`
+}
+
+function updatePackageSuggestion(name) {
+  if (!packageSuggestionEl || !packageSuggestionButton) return
+
+  packageSuggestionEl.hidden = !name
+  packageSuggestionButton.textContent = name || ''
+}
+
+function usePackageSuggestion(event) {
+  const name = packageSuggestionButton?.textContent || ''
+  if (!name || !notesSearchInput) return
+
+  notesSearchInput.value = name
+  if (event.detail === 0) notesSearchInput.focus()
+  updatePackageSuggestion(null)
+  updatePackageLock(resolvePackageRunState(crawlHistory, name))
+
+  window.requestAnimationFrame(() => {
+    window.setTimeout(updateNotesSearch, 0)
+  })
 }
 
 function unfocusNotesSearchOnEnter(event) {

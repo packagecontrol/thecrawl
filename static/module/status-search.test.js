@@ -5,6 +5,7 @@ import {
   createPackageNotesMatcher,
   findDirectionalCorridorTarget,
   findNextNotesMatchIndex,
+  findPackageNameSuggestion,
   MIN_NOTES_SEARCH_CHARS,
   tokenizeSearchText,
 } from './status-search.js'
@@ -38,6 +39,37 @@ describe('createNotesMatcher', () => {
 
     expect(matcher('Two packages are currently failing.')).toBe(true)
     expect(matcher('Two packages were updated.')).toBe(false)
+  })
+})
+
+describe('findPackageNameSuggestion', () => {
+  const packageNames = [
+    'Candela Color Schemes',
+    'LSP-basedpyright',
+    'LSP-pyright',
+    'PowerPaste',
+    'PowerShell',
+    'Python 3',
+  ]
+
+  it('finds a package by a unique complete name token', () => {
+    expect(findPackageNameSuggestion('pyright', packageNames))
+      .toBe('LSP-pyright')
+    expect(findPackageNameSuggestion('candela', packageNames))
+      .toBe('Candela Color Schemes')
+  })
+
+  it('does not suggest packages for partial tokens', () => {
+    expect(findPackageNameSuggestion('pyr', packageNames)).toBeNull()
+  })
+
+  it('does not choose between ambiguous complete token matches', () => {
+    expect(findPackageNameSuggestion('power', packageNames)).toBeNull()
+  })
+
+  it('does not suggest packages for inactive or unrelated searches', () => {
+    expect(findPackageNameSuggestion('p', packageNames)).toBeNull()
+    expect(findPackageNameSuggestion('ruby', packageNames)).toBeNull()
   })
 })
 

@@ -29,6 +29,33 @@ export function createNotesMatcher(query) {
 }
 
 /**
+ * Suggest a canonical package name only when every query term is a complete
+ * package-name token and exactly one known package matches. This keeps partial
+ * or ambiguous free-form searches from switching to package mode too eagerly.
+ *
+ * @param {string} query
+ * @param {Iterable<string>} [knownPackageNames]
+ * @returns {string | null}
+ */
+export function findPackageNameSuggestion(query, knownPackageNames = []) {
+  if (!createNotesMatcher(query)) return null
+
+  const queryTokens = tokenizeSearchText(query)
+  let suggestion = null
+  for (const value of knownPackageNames) {
+    const name = String(value || '').trim()
+    if (!name) continue
+
+    const nameTokens = tokenizeSearchText(name)
+    const matches = queryTokens.every(queryToken => nameTokens.includes(queryToken))
+    if (!matches) continue
+    if (suggestion) return null
+    suggestion = name
+  }
+  return suggestion
+}
+
+/**
  * Match literal mentions of one canonical package name. Longer known package
  * names take precedence, so LSP does not match LSP-pyright and Scheme does not
  * match Color Scheme.
