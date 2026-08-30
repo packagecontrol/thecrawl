@@ -7281,6 +7281,31 @@
       "first_seen": "2026-04-09T19:07:22Z"
     },
     {
+      "name": "BoxLang",
+      "details": "https://github.com/ortus-boxlang/sublimetext-boxlang",
+      "labels": [
+        "boxlang",
+        "cfml",
+        "jvm",
+        "formatting",
+        "language syntax",
+        "java",
+        "build system",
+        "completions",
+        "auto-complete",
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-30T18:46:08Z"
+    },
+    {
       "name": "Boxy Theme",
       "labels": [
         "theme",
