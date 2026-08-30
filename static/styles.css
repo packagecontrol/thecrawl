@@ -433,6 +433,10 @@ svg {
   font-family: ui-monospace, 'Cascadia Code', monospace;
 }
 
+.more-artifacts {
+  margin-top: clamp(2.25rem, 5vw, 3.5rem);
+}
+
 .package-status-prompt {
   position: relative;
   display: inline-flex;
