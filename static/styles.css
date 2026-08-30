@@ -284,7 +284,7 @@ svg {
   position: relative;
   left: 50%;
   width: 100vw;
-  margin: clamp(3rem, 8vw, 5.5rem) 0 0 -50vw;
+  margin: clamp(3rem, 8vw, 3.5rem) 0 0 -50vw;
 }
 
 .home-status-link,
