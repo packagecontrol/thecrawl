@@ -1,3 +1,8 @@
+html.page-status,
+html.page-status body {
+  overflow-x: clip;
+}
+
 html.page-status {
   scrollbar-gutter: stable;
 }
@@ -36,7 +41,7 @@ html.page-status main {
 
 .status-chart-toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
@@ -55,6 +60,7 @@ html.page-status main {
 .status-chart-search-group {
   position: relative;
   display: flex;
+  flex: 0 0 auto;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 20px;
@@ -179,6 +185,7 @@ html.page-status main {
 
 .status-chart-mode-button {
   all: unset;
+  flex: 0 0 auto;
   padding: 1px 8px;
   border: 1px solid transparent;
   border-radius: 8px;
