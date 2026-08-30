@@ -40496,6 +40496,26 @@
       "first_seen": "2021-01-09T16:58:22Z"
     },
     {
+      "name": "Limitcode",
+      "details": "https://github.com/Jawuilp/Limitcode",
+      "labels": [
+        "ai",
+        "llm",
+        "agent",
+        "assistant",
+        "chat"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-08-30T15:28:34Z"
+    },
+    {
       "name": "LimitTabs",
       "details": "https://github.com/maximilize/LimitTabs",
       "releases": [
