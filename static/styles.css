@@ -427,6 +427,12 @@ svg {
   font-weight: 650;
 }
 
+.channel-artifact-link {
+  display: inline-block;
+  margin-right: 0.7ch;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+}
+
 .package-status-prompt {
   position: relative;
   display: inline-flex;
