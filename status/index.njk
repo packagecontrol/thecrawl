@@ -92,4 +92,4 @@ page_type: status
 <script type="application/json" data-status-tag-dates>
 {{ (status_tag_dates_json or '[]') | safe }}
 </script>
-<script src="{{ '/static/status.js' | site_url }}" type="module" async></script>
+<script src="{{ '/static/status.js' | bundled | site_url }}" type="module" async></script>

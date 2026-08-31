@@ -15,6 +15,7 @@
     "marked": "^18.0.5"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "vitest": "^3.2.6"
   }
 }

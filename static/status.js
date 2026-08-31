@@ -641,8 +641,11 @@ function resolveIndexFromUrl() {
   return { index: 0, hasRunId: true, found: false, runId }
 }
 
-const ASSET_URL = new URL('../logs.json', import.meta.url)
-const HISTORY_ASSET_URL = new URL('../crawl-history.json', import.meta.url)
+const DATA_BASE_URL = document.querySelector(
+  'meta[name="thecrawl-data-base"]',
+)?.content
+const ASSET_URL = `${DATA_BASE_URL}logs.json`
+const HISTORY_ASSET_URL = `${DATA_BASE_URL}crawl-history.json`
 const FALLBACK_URL = 'https://repackager.sublimetext.io/logs.json'
 const LOG_REFRESH_MS = 10 * 60 * 1000
 const MAX_SKIPPED_HARD_FAILURES = 4
