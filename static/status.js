@@ -51,6 +51,7 @@ const packageSearchTipEl = document.querySelector('[data-status-package-search-t
 const packageLockEl = document.querySelector('[data-status-package-lock]')
 /** @type {HTMLAnchorElement | null} */
 const packageLinkEl = document.querySelector('[data-status-package-link]')
+const packageLinkLabelEl = document.querySelector('[data-status-package-link-label]')
 const packageSuggestionEl = document.querySelector('[data-status-package-suggestion]')
 /** @type {HTMLButtonElement | null} */
 const packageSuggestionButton = document.querySelector('[data-status-package-suggestion-button]')
@@ -318,17 +319,17 @@ function applyNotesSearchState(matcher, packageState) {
 }
 
 function updatePackageLock(state) {
-  if (!packageLockEl || !packageLinkEl) return
+  if (!packageLockEl || !packageLinkEl || !packageLinkLabelEl) return
 
   packageLockEl.hidden = !state
   if (!state) {
     packageLinkEl.removeAttribute('href')
-    packageLinkEl.textContent = ''
+    packageLinkLabelEl.textContent = ''
     return
   }
 
   packageLinkEl.href = PACKAGE_SITE_URL + encodeURIComponent(state.name)
-  packageLinkEl.textContent = `“${state.name}”`
+  packageLinkLabelEl.textContent = state.name
 }
 
 function updatePackageSuggestion(name) {

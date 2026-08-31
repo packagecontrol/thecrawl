@@ -136,6 +136,20 @@ html.page-status main {
   }
 }
 
+.status-package-lock a {
+  text-decoration: none;
+
+  .status-package-link-label {
+    text-decoration: underline transparent;
+    text-underline-offset: 0.15em;
+    transition: text-decoration-color 120ms ease;
+  }
+
+  &:hover .status-package-link-label {
+    text-decoration-color: currentColor;
+  }
+}
+
 .status-package-suggestion-button {
   all: unset;
   border-radius: 3px;
