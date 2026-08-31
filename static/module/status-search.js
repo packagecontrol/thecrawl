@@ -292,6 +292,53 @@ export function findNextNotesMatchIndex(entries, currentIndex, direction, matche
 }
 
 /**
+ * Find a directional navigation target, preferring the fixed corridor. When
+ * both the horizontal and vertical corridors are empty, a horizontal move
+ * falls back to the next or previous occupied day.
+ *
+ * @template {{ x: number, y: number }} T
+ * @param {T[]} points
+ * @param {T} current
+ * @param {{ x: number, y: number }} origin
+ * @param {{ x: number, y: number }} direction
+ * @param {number} corridorRadius
+ * @param {number} verticalCorridorRadius
+ * @returns {{ point: T, warped: boolean } | null}
+ */
+export function findDirectionalNavigationTarget(
+  points,
+  current,
+  origin,
+  direction,
+  corridorRadius,
+  verticalCorridorRadius,
+) {
+  const movement = cardinalDirection(direction)
+  if (!Array.isArray(points) || !current || !origin || !movement || !(corridorRadius > 0)) {
+    return null
+  }
+
+  const corridorTarget = findDirectionalCorridorTarget(
+    points,
+    origin,
+    movement,
+    corridorRadius,
+  )
+  if (corridorTarget || movement.x === 0) return corridorTarget
+  if (!(verticalCorridorRadius > 0)) return null
+
+  const verticalCorridorTarget = findDirectionalCorridorTarget(
+    points,
+    current,
+    { x: 0, y: 1 },
+    verticalCorridorRadius,
+  )
+  if (verticalCorridorTarget) return null
+
+  return findDirectionalAxisTarget(points, origin, movement)
+}
+
+/**
  * Find the nearest forward point inside a fixed corridor. At the movement
  * edge, wrap to the point nearest the opposite edge without widening the
  * corridor.
@@ -315,16 +362,8 @@ export function findDirectionalCorridorTarget(points, origin, direction, corrido
       candidate.along !== 0
       && insideCorridor(candidate.across, corridorRadius)
     ))
-  if (!candidates.length) return null
 
-  const forward = candidates.filter(candidate => candidate.along > 0)
-  const pool = forward.length ? forward : candidates
-  const warped = forward.length === 0
-  pool.sort((left, right) => (
-    left.along - right.along || left.across - right.across
-  ))
-
-  return { point: pool[0].point, warped }
+  return nearestDirectionalTarget(candidates)
 }
 
 /**
@@ -357,6 +396,26 @@ export function createDirectionalNavigationOrigin(current, direction, previous =
       y: axis === 'horizontal' ? corridor : current.y,
     },
   }
+}
+
+function findDirectionalAxisTarget(points, origin, movement) {
+  const candidates = points
+    .map(point => directionalCandidate(point, origin, movement))
+    .filter(candidate => candidate.along !== 0)
+  return nearestDirectionalTarget(candidates)
+}
+
+function nearestDirectionalTarget(candidates) {
+  if (!candidates.length) return null
+
+  const forward = candidates.filter(candidate => candidate.along > 0)
+  const pool = forward.length ? forward : candidates
+  const warped = forward.length === 0
+  pool.sort((left, right) => (
+    left.along - right.along || left.across - right.across
+  ))
+
+  return { point: pool[0].point, warped }
 }
 
 function cardinalDirection(direction) {

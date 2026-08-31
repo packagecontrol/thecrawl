@@ -23,7 +23,7 @@ import {
   createNotesMatcher,
   createPackageNotesMatcher,
   editAutoPairedSearchQuotes,
-  findDirectionalCorridorTarget,
+  findDirectionalNavigationTarget,
   findPackageNameSuggestion,
   notesSearchQueryFromUrl,
   urlWithNotesSearchQuery,
@@ -1304,21 +1304,24 @@ class StatusChart {
     if (!current || !navigation) return null
 
     const { axis, corridor, movement, point: navigationOrigin } = navigation
+    const verticalCorridorRadius = this.barWidth * VERTICAL_NAVIGATION_CORRIDOR_DAYS
     const corridorRadius = axis === 'horizontal'
       ? this.hourHeight * HORIZONTAL_NAVIGATION_CORRIDOR_HOURS
-      : this.barWidth * VERTICAL_NAVIGATION_CORRIDOR_DAYS
+      : verticalCorridorRadius
 
+    const matchingPoints = this.points.filter(point => (
+      this.notesMatcher(point.entry.notes || '')
+    ))
     let target = this.reverseDirectionalPoint(current, movement)
     let warped = false
     if (!target) {
-      const matchingPoints = this.points.filter(point => (
-        this.notesMatcher(point.entry.notes || '')
-      ))
-      const result = findDirectionalCorridorTarget(
+      const result = findDirectionalNavigationTarget(
         matchingPoints,
+        current,
         navigationOrigin,
         movement,
         corridorRadius,
+        verticalCorridorRadius,
       )
       target = result?.point || null
       warped = result?.warped || false

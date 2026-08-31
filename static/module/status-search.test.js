@@ -6,6 +6,7 @@ import {
   createPackageNotesMatcher,
   editAutoPairedSearchQuotes,
   findDirectionalCorridorTarget,
+  findDirectionalNavigationTarget,
   findNextNotesMatchIndex,
   findPackageNameSuggestion,
   MIN_NOTES_SEARCH_CHARS,
@@ -317,6 +318,93 @@ describe('findNextNotesMatchIndex', () => {
   it('stops instead of leaving the matching results', () => {
     expect(findNextNotesMatchIndex(entries, 0, -1, matcher)).toBe(-1)
     expect(findNextNotesMatchIndex(entries, 4, 1, matcher)).toBe(-1)
+  })
+})
+
+describe('findDirectionalNavigationTarget', () => {
+  const current = { id: 'current', x: 0, y: 0 }
+
+  it('does not special-case the only other point', () => {
+    const other = { id: 'other', x: 30, y: 30 }
+
+    expect(findDirectionalNavigationTarget(
+      [current, other],
+      current,
+      current,
+      { x: 0, y: 1 },
+      10,
+      10,
+    )).toBeNull()
+  })
+
+  it('falls back horizontally when both corridors are empty', () => {
+    const nextDay = { id: 'next-day', x: 20, y: 30 }
+    const fartherDay = { id: 'farther-day', x: 30, y: 40 }
+
+    expect(findDirectionalNavigationTarget(
+      [current, nextDay, fartherDay],
+      current,
+      current,
+      { x: 1, y: 0 },
+      10,
+      10,
+    )?.point).toBe(nextDay)
+  })
+
+  it('does not fall back horizontally when the vertical corridor is occupied', () => {
+    const vertical = { id: 'vertical', x: 0, y: 20 }
+    const diagonal = { id: 'diagonal', x: 20, y: 30 }
+
+    expect(findDirectionalNavigationTarget(
+      [current, vertical, diagonal],
+      current,
+      current,
+      { x: 1, y: 0 },
+      10,
+      10,
+    )).toBeNull()
+  })
+
+  it('wraps between occupied days in the horizontal fallback', () => {
+    const nextDay = { id: 'next-day', x: 20, y: 30 }
+    const lastDay = { id: 'last-day', x: 30, y: 30 }
+
+    expect(findDirectionalNavigationTarget(
+      [current, nextDay, lastDay],
+      current,
+      current,
+      { x: -1, y: 0 },
+      10,
+      10,
+    )).toEqual({ point: lastDay, warped: true })
+  })
+
+  it('does nothing when a vertical corridor is empty', () => {
+    const outsideOne = { id: 'outside-one', x: 20, y: 10 }
+    const outsideTwo = { id: 'outside-two', x: 30, y: 20 }
+
+    expect(findDirectionalNavigationTarget(
+      [current, outsideOne, outsideTwo],
+      current,
+      current,
+      { x: 0, y: 1 },
+      10,
+      10,
+    )).toBeNull()
+  })
+
+  it('keeps using a corridor target when one exists', () => {
+    const outside = { id: 'outside', x: 10, y: 30 }
+    const inside = { id: 'inside', x: 20, y: 0 }
+
+    expect(findDirectionalNavigationTarget(
+      [current, outside, inside],
+      current,
+      current,
+      { x: 1, y: 0 },
+      10,
+      10,
+    )?.point).toBe(inside)
   })
 })
 
