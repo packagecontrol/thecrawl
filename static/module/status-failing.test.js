@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   annotateChanges,
   classForConclusion,
+  classForEntry,
   diffFailingPackages,
   extractCurrentlyFailing,
   extractCurrentlyFailingBlocks,
@@ -121,6 +122,18 @@ describe('status-failing helpers', () => {
     expect(classForConclusion('unknown_value')).toBe('muted')
   })
 
+  it('scopes changed status classes to the locked package', () => {
+    const entry = {
+      conclusion: 'success',
+      failuresChanged: true,
+      failureChangeNames: new Set(['scss expander']),
+    }
+
+    expect(classForEntry(entry)).toBe('changed')
+    expect(classForEntry(entry, 'SCSS Expander')).toBe('changed')
+    expect(classForEntry(entry, 'LSP-pyright')).toBe('')
+  })
+
   it('detects hard failures without notes', () => {
     expect(isHardFailureWithoutNotes({ notes: '', conclusion: 'failure' })).toBe(true)
     expect(isHardFailureWithoutNotes({ notes: 'has notes', conclusion: 'failure' })).toBe(false)
@@ -163,8 +176,10 @@ describe('status-failing helpers', () => {
     const annotated = annotateChanges(entries, { lookback: 10, maxSkippedHardFailures: 2 })
 
     expect(annotated[0].failuresChanged).toBe(true)
+    expect([...annotated[0].failureChangeNames]).toEqual(['a', 'b'])
     expect(annotated[0].glitchStartIndex).toBe(1)
     expect(annotated[1].failuresChanged).toBe(true)
+    expect([...annotated[1].failureChangeNames]).toEqual(['b', 'a'])
     expect(annotated[1].glitchStartIndex).toBeNull()
   })
 })

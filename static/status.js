@@ -9,7 +9,7 @@ import {
 } from './module/status-day.js'
 import {
   annotateChanges,
-  classForConclusion,
+  classForEntry,
   diffFailingPackages,
   extractCurrentlyFailing,
   extractPackagesCrawled,
@@ -85,6 +85,7 @@ const lastButton = document.querySelector('[data-control="last"]')
  *    artifacts?: LogArtifact[],
  *    found_updates?: FoundUpdate[],
  *    failuresChanged?: boolean,
+ *    failureChangeNames?: Set<string>,
  *    glitchStartIndex?: number | null
  *  }} LogEntry
  */
@@ -1244,6 +1245,7 @@ class StatusChart {
     this.resetDirectionalNavigation()
     this.points.forEach(({ entry, node }) => {
       node.setAttribute('r', radiusForEntry(entry, this.radius, this.notesMatcher))
+      this.updateDotStatusState(entry, node)
       this.updateDotNotesSearchState(entry, node)
       this.updateDotPackageRunState(entry, node)
     })
@@ -1480,7 +1482,7 @@ class StatusChart {
       const node = this.makeDot(entry, x, y, radius, glitchDotIndexes.has(idx))
       positions[idx] = { x, y, radius, dayIndex }
 
-      const cls = classForEntry(entry)
+      const cls = classForEntry(entry, this.packageRunState?.name)
       const isNeutral = cls === '' || cls === 'muted'
       const target = isNeutral ? neutralNodes : otherNodes
       target.push({ entry, node, x, y })
@@ -2071,14 +2073,15 @@ class StatusChart {
     circle.dataset.key = entryKey(entry)
     const classes = [
       'dot',
-      classForEntry(entry),
-      isGlitch ? 'glitch' : '',
+      classForEntry(entry, this.packageRunState?.name),
+      this.isRelevantGlitch(entry, isGlitch) ? 'glitch' : '',
       hasFoundUpdates(entry) ? 'has-updates' : '',
       entry.notes ? '' : 'no-notes',
     ]
       .filter(Boolean)
       .join(' ')
     circle.setAttribute('class', classes)
+    circle.dataset.isGlitch = String(isGlitch)
     this.updateDotNotesSearchState(entry, circle)
     this.updateDotPackageRunState(entry, circle)
     circle.addEventListener('click', () => {
@@ -2101,6 +2104,22 @@ class StatusChart {
       this.hideUpdateConnectors()
     })
     return circle
+  }
+
+  updateDotStatusState(entry, node) {
+    node.classList.remove('warn', 'error', 'muted', 'changed')
+    const statusClass = classForEntry(entry, this.packageRunState?.name)
+    if (statusClass) node.classList.add(statusClass)
+    node.classList.toggle(
+      'glitch',
+      this.isRelevantGlitch(entry, node.dataset.isGlitch === 'true'),
+    )
+  }
+
+  isRelevantGlitch(entry, isGlitch) {
+    if (!isGlitch || !this.packageRunState) return isGlitch
+    const packageNameKey = normalizePackageNameKey(this.packageRunState.name)
+    return Boolean(entry.failureChangeNames?.has(packageNameKey))
   }
 
   updateDotNotesSearchState(entry, node) {
@@ -2277,14 +2296,6 @@ class StatusChart {
 
 function entryKey(entry) {
   return (entry?.run_id || '') + '|' + (entry?.date || '')
-}
-
-function classForEntry(entry) {
-  const base = classForConclusion(entry.conclusion)
-  if (entry.failuresChanged && base !== 'error') {
-    return 'changed'
-  }
-  return base
 }
 
 function hasFoundUpdates(entry) {

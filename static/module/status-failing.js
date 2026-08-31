@@ -23,7 +23,11 @@
  * @template {{ notes?: string, conclusion?: string }} T
  * @param {T[]} entries
  * @param {{ lookback?: number, maxSkippedHardFailures?: number }} [options]
- * @returns {(T & { failuresChanged: boolean, glitchStartIndex: number | null })[]}
+ * @returns {(T & {
+ *   failuresChanged: boolean,
+ *   failureChangeNames: Set<string>,
+ *   glitchStartIndex: number | null,
+ * })[]}
  */
 export function annotateChanges(entries, {
   lookback = 10,
@@ -48,6 +52,9 @@ export function annotateChanges(entries, {
     // Keep previousSection un-normalized so false (no notes) differs from ''
     // (notes, no failing section).
     const failuresChanged = hasPrevious && section !== previousSection
+    const failureChangeNames = failuresChanged
+      ? failureChangeNamesBetween(entry, entries[previous.index])
+      : new Set()
     let glitchStartIndex = null
 
     if (failuresChanged && rawSection !== false) {
@@ -77,7 +84,7 @@ export function annotateChanges(entries, {
       }
     }
 
-    return { ...entry, failuresChanged, glitchStartIndex }
+    return { ...entry, failuresChanged, failureChangeNames, glitchStartIndex }
   })
 }
 
@@ -303,6 +310,46 @@ export function classForConclusion(conclusion) {
   if (['failure', 'failed', 'cancelled', 'timed_out'].includes(normalized)) return 'error'
   if (['action_required', 'neutral', 'stale'].includes(normalized)) return 'warn'
   return 'muted'
+}
+
+/**
+ * Map an entry to its status-dot class. When a package is locked, only paint a
+ * changed dot when that package's failing state caused the change.
+ *
+ * @param {{
+ *   conclusion?: string,
+ *   failuresChanged?: boolean,
+ *   failureChangeNames?: Set<string>,
+ * } | undefined} entry
+ * @param {string} [lockedPackageName]
+ * @returns {'' | 'error' | 'warn' | 'muted' | 'changed'}
+ */
+export function classForEntry(entry, lockedPackageName = '') {
+  const base = classForConclusion(entry?.conclusion)
+  if (!entry?.failuresChanged || base === 'error') return base
+
+  const packageNameKey = normalizePackageNameKey(lockedPackageName)
+  if (packageNameKey && !entry.failureChangeNames?.has(packageNameKey)) {
+    return base
+  }
+  return 'changed'
+}
+
+/**
+ * @param {{ notes?: string } | undefined} currentEntry
+ * @param {{ notes?: string } | undefined} previousEntry
+ * @returns {Set<string>}
+ */
+function failureChangeNamesBetween(currentEntry, previousEntry) {
+  const diff = diffFailingPackages(
+    currentEntry?.notes || '',
+    previousEntry?.notes || '',
+  )
+  const names = new Set(diff.changedNames)
+  for (const block of diff.removedBlocks) {
+    names.add(block.nameKey)
+  }
+  return names
 }
 
 /**
