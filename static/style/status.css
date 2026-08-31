@@ -21,10 +21,6 @@ html.page-status main {
   --status-change-marker-color: hsl(124.46deg 56.45% 41.65%);
   --status-removed-failing-color: hsl(7deg 84% 53% / 88%);
 
-  :root[data-theme='dark'] & {
-    --status-change-marker-color: hsl(120deg 50.9% 49.19%);
-    --status-removed-failing-color: hsl(7deg 92% 68% / 94%);
-  }
 
   margin-top: var(--grid-line);
   max-width: var(--max-line);
@@ -39,9 +35,6 @@ html.page-status main {
   max-width: var(--max-content);
   margin: 0 auto calc(var(--grid-line) * 1.5) auto;
 
-  :root[data-theme='dark'] & {
-    --status-update-mode-color: var(--green-2);
-  }
 }
 
 .status-chart-toolbar {
@@ -225,9 +218,6 @@ html.page-status main {
     border-style: solid;
     border-width: 1px;
 
-    :root[data-theme='dark'] & {
-      border-color: hsl(93.66deg 57.49% 40.59%);
-    }
   }
 
   &:focus-visible {
@@ -290,27 +280,6 @@ html.page-status main {
   --status-package-touched: hsl(105deg 54% 40%);
   --status-package-untouched: hsl(215deg 8% 65%);
 
-  :root[data-theme='dark'] & {
-    --status-dot: hsl(245deg 34.8% 64.47%);
-    --status-dot-active-fill: hsl(273.7deg 48.28% 87.52%);
-    --status-dot-active-stroke: hsl(282.55deg 60.41% 75.84%);
-    --status-navigation-corridor: hsl(282.55deg 60.41% 75.84% / 52%);
-    --status-navigation-corridor-fill: hsl(282.55deg 60.41% 75.84% / 5%);
-    --status-tag-line: hsl(253.72deg 6.87% 33.27%);
-    --status-tag-line-stroke: 0.8;
-    --status-tag-label: hsl(202.85deg 4.72% 45.55%);
-
-    --status-change-dot: hsl(35.76deg 70.24% 54.56%);
-    --status-glitch-dot: var(--status-change-dot);
-    --status-glitch-link: hsl(253.48deg 32.4% 48.82% / 69%);
-    --status-error-dot: var(--red-2);
-    --status-error-dot-soft: hsl(0.51deg 85.44% 66.12% / 90%);
-    --status-update-marker: hsl(80deg 70% 49% / 42%);
-    --status-update-connector: hsl(80deg 70.13% 49.15% / 5%);
-    --status-update-connector-active: hsl(98.69deg 70.13% 49.15% / 45%);
-    --status-package-touched: hsl(100deg 49% 53%);
-    --status-package-untouched: hsl(245deg 9% 55%);
-  }
 
   &:hover {
     --status-tag-line: hsl(140.43deg 38.59% 66.91%);
@@ -320,14 +289,6 @@ html.page-status main {
     --status-glitch-link: hsl(35.76deg 78.85% 63.24% / 89%);
     --status-update-connector: hsl(40.79deg 77.83% 37.28% / 31%);
 
-    :root[data-theme='dark'] & {
-      --status-tag-line: hsl(130.99deg 34.37% 41.5%);
-      --status-tag-line-stroke: 0.5;
-      --status-tag-label: hsl(139.17deg 31.52% 46.09%);
-      --status-glitch-dot: hsl(30.72deg 77.22% 49.28%);
-      --status-glitch-link: hsl(48.34deg 85.59% 30.67% / 82%);
-      --status-update-connector: hsl(50.86deg 70.13% 49.15% / 24%);
-    }
   }
 
   &.is-package-locked {
@@ -340,10 +301,6 @@ html.page-status main {
     --status-dot: hsl(222.25deg 15.62% 63.35% / 50%);
     --status-glitch-link: hsl(38deg 22% 65% / 27%);
 
-    :root[data-theme='dark'] & {
-      --status-dot: hsl(245deg 34.8% 64.47% / 50%);
-      --status-glitch-link: hsl(253.48deg 24.79% 34.99% / 69%);
-    }
   }
 
   position: relative;
@@ -664,9 +621,6 @@ html.page-status main {
       saturate(1.5);
   }
 
-  :root[data-theme='dark'] & .dot.has-updates.active {
-    stroke: hsl(79.76deg 100% 50%);
-  }
 }
 
 .status-heading {

@@ -51,24 +51,6 @@
   --red-2: hsl(7 92% 54%);
 }
 
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --background-1: hsl(215 16% 16%);
-  --background-2: hsl(215 16% 19%);
-  --background-3: hsl(212 13% 29%);
-  --background-4: hsl(211 12% 35%);
-  --foreground-1: hsl(60 10% 88%);
-  --foreground-2: hsl(60 5% 74%);
-  --foreground-3: hsl(60 3% 60%);
-  --foreground-4: hsl(60 2% 49%);
-  --highlight: hsl(0 0% 100% / 8%);
-  --orange-1: hsl(32 92% 52%);
-  --orange-2: hsl(32 94% 58%);
-  --green-2: hsl(80 70% 49%);
-  --red-1: hsl(7 92% 58%);
-  --red-2: hsl(7 98% 62%);
-}
-
 html.page-home body {
   --orange-1: hsl(282.39deg 83.61% 46.78%);
   --orange-2: hsl(269.8deg 88% 45%);
@@ -268,11 +250,6 @@ svg {
 .site-header-home .site-tagline {
   margin-top: clamp(1.25rem, 3vw, 2.4rem);
   font-size: clamp(1.35rem, 4vw, 1.9rem);
-}
-
-:root[data-theme='dark'] .site-brand img,
-:root[data-theme='dark'] .footer-brand img {
-  filter: invert(1);
 }
 
 .home-status {
