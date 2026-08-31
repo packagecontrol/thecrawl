@@ -427,12 +427,6 @@ svg {
   font-weight: 650;
 }
 
-.channel-artifact-link {
-  display: inline-block;
-  margin-right: 0.7ch;
-  font-family: ui-monospace, 'Cascadia Code', monospace;
-}
-
 .more-artifacts {
   margin-top: clamp(2.25rem, 5vw, 3.5rem);
 }
