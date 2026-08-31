@@ -637,7 +637,11 @@ html.page-status main {
   }
 
   .dot.has-updates.active {
-    stroke: hsl(97.65deg 80.68% 33.02%);
+    filter:
+      brightness(0.7)
+      saturate(3)
+      drop-shadow(0 0 3px hsl(221deg 40% 90%))
+      saturate(1.5);
   }
 
   :root[data-theme='dark'] & .dot.has-updates.active {
