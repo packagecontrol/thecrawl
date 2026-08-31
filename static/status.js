@@ -34,6 +34,7 @@ import {
   resolvePackageRunState,
 } from './module/status-history.js'
 import { newestTagBeforeDayWindow } from './module/status-tags.js'
+import { updatesForPackage } from './module/status-updates.js'
 import DOMPurify from './vendor/dompurify/purify.es.mjs'
 import { marked } from './vendor/marked/marked.esm.js'
 
@@ -1283,6 +1284,7 @@ class StatusChart {
   setSearchState(matcher, packageRunState) {
     this.notesMatcher = matcher
     this.packageRunState = packageRunState
+    this.el.classList.toggle('is-package-locked', Boolean(packageRunState))
     this.resetDirectionalNavigation()
     this.points.forEach(({ entry, node }) => {
       node.setAttribute('r', radiusForEntry(entry, this.radius, this.notesMatcher))
@@ -1290,6 +1292,7 @@ class StatusChart {
       this.updateDotNotesSearchState(entry, node)
       this.updateDotPackageRunState(entry, node)
     })
+    this.redrawUpdateLines()
   }
 
   findNearestMatchingEntry(entry, direction) {
@@ -1492,8 +1495,6 @@ class StatusChart {
     this.directionalNavigationLayer.replaceChildren()
     while (this.dotLayer.firstChild) this.dotLayer.firstChild.remove()
     while (this.glitchLayer.firstChild) this.glitchLayer.firstChild.remove()
-    while (this.updateConnectorLayer.firstChild) this.updateConnectorLayer.firstChild.remove()
-    while (this.updateMarkerLayer.firstChild) this.updateMarkerLayer.firstChild.remove()
     while (this.tagLayer.firstChild) this.tagLayer.firstChild.remove()
     while (this.inlineTagLayer.firstChild) this.inlineTagLayer.firstChild.remove()
 
@@ -1533,7 +1534,7 @@ class StatusChart {
     })
 
     this.drawGlitchLinks(positions)
-    this.drawUpdateLines(positions)
+    this.redrawUpdateLines(positions)
 
     // Append neutral first, then everything else on top
     neutralNodes.forEach((point) => {
@@ -2185,6 +2186,19 @@ class StatusChart {
     node.classList.toggle('package-run-unknown', Boolean(state && !isAvailable))
   }
 
+  redrawUpdateLines(positions = null) {
+    this.updateConnectorLayer.replaceChildren()
+    this.updateMarkerLayer.replaceChildren()
+
+    const todayDayId = localDayId(Date.now())
+    const updatePositions = positions || this.entries.map((entry) => {
+      const ts = safeDate(entry.date)
+      return ts ? this.positionForTimestamp(ts, { todayDayId }) : null
+    })
+    this.drawUpdateLines(updatePositions)
+    this.syncUpdateConnectorHighlights()
+  }
+
   drawUpdateLines(positions) {
     const todayDayId = localDayId(Date.now())
     const MARKER_HALF_WIDTH = 3
@@ -2195,7 +2209,7 @@ class StatusChart {
       if (!runPos) return
 
       const key = entryKey(entry)
-      const updates = updatesForEntry(entry)
+      const updates = updatesForPackage(entry, this.packageRunState?.name)
       for (const update of updates) {
         const publishedTs = safeDate(update.published_at)
         if (!publishedTs) continue

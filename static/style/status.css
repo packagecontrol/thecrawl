@@ -284,9 +284,9 @@ html.page-status main {
   --status-glitch-dot: hsl(35.76deg 93.03% 61.99%);
   --status-glitch-link: hsl(38.27deg 82.93% 41.7% / 27%);
   --status-update-dot: var(--status-update-mode-color);
-  --status-update-marker: hsl(103.73deg 65% 42% / 38%);
+  --status-update-marker: hsl(103.73deg 68.44% 43.3% / 48%);
   --status-update-connector: hsl(103.73deg 68.44% 40% / 15%);
-  --status-update-connector-active: hsl(116.32deg 68.44% 40% / 52%);
+  --status-update-connector-active: hsl(116.32deg 73.01% 44.64% / 62%);
   --status-package-touched: hsl(105deg 54% 40%);
   --status-package-untouched: hsl(215deg 8% 65%);
 
@@ -328,6 +328,12 @@ html.page-status main {
       --status-glitch-link: hsl(48.34deg 85.59% 30.67% / 82%);
       --status-update-connector: hsl(50.86deg 70.13% 49.15% / 24%);
     }
+  }
+
+  &.is-package-locked {
+    --status-update-marker: hsl(103.73deg 58.01% 29.44% / 43%);
+    --status-update-connector: hsl(121.35deg 70.13% 41.31% / 68%);
+    --status-update-connector-active: hsl(126.39deg 75.39% 44.97% / 77%);
   }
 
   &.is-updates-mode {
