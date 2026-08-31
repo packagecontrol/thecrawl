@@ -10,6 +10,7 @@ const ARTIFACT_NAME = 'crawl-backup'
 const WORKSPACE_NAME = 'workspace.json'
 const CACHE_DIRECTORY = '.crawl-history-cache'
 const CONCURRENCY = 8
+const MAX_LOG_AGE = 24 * 60 * 60 * 1000
 const RANGE_PADDING = 4096
 
 await main()
@@ -19,6 +20,7 @@ async function main() {
   const outputPath = path.resolve(process.argv[3] || 'crawl-history.json')
   const cachePath = path.resolve(CACHE_DIRECTORY)
   const logs = JSON.parse(await readFile(logsPath, 'utf8'))
+  warnIfLogsOutdated(logs, logsPath)
   const entriesByRunId = new Map(
     logs
       .filter(entry => entry?.run_id)
@@ -87,6 +89,24 @@ async function main() {
   if (failures.length) {
     console.warn(`Could not collect ${failures.length} runs: ${failures.join(', ')}`)
   }
+}
+
+function warnIfLogsOutdated(logs, logsPath) {
+  const timestamps = logs
+    .map(entry => new Date(entry?.date).getTime())
+    .filter(Number.isFinite)
+  const latestTimestamp = Math.max(...timestamps)
+  if (!Number.isFinite(latestTimestamp)) return
+  if (Date.now() - latestTimestamp <= MAX_LOG_AGE) return
+
+  const latest = new Date(latestTimestamp)
+    .toISOString()
+    .replace('T', ' ')
+    .slice(0, 16)
+  console.warn(
+    `${path.basename(logsPath)} seems outdated. Its latest entry is from ${latest}. `
+    + 'Maybe download a fresh one using `make artifacts`.',
+  )
 }
 
 function findMissingArtifacts(entriesByRunId, missingRunIds) {
