@@ -466,8 +466,74 @@ svg {
 
 .site-footer nav {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 0.35rem 1rem;
+}
+
+.theme-switch {
+  --theme-switch-rotation: 22.5deg;
+  --theme-switch-duration: 180ms;
+  --theme-switch-easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.15rem;
+  margin: -0.45rem -0.55rem -0.45rem -0.45rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: hsl(0deg 0% 7.77%);
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.theme-switch-scene {
+  display: block;
+  position: relative;
+  width: 2.25rem;
+  height: 2rem;
+  perspective: 8rem;
+}
+
+.theme-switch-label {
+  color: inherit;
+  font-weight: 500;
+}
+
+.theme-switch-cylinder {
+  display: block;
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.theme-switch-icon {
+  --theme-switch-offset: 0deg;
+  --theme-switch-radius: 1.05rem;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 13px;
+  height: 13px;
+  backface-visibility: hidden;
+  transform: translate(-50%, -50%)
+    rotate3d(
+      1,
+      -1,
+      0,
+      calc(var(--theme-switch-rotation) + var(--theme-switch-offset))
+    )
+    translateZ(var(--theme-switch-radius));
+  transition: transform var(--theme-switch-duration) var(--theme-switch-easing);
+}
+
+.theme-switch-moon {
+  --theme-switch-offset: -45deg;
 }
 
 .button-group {
@@ -607,6 +673,10 @@ svg {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .theme-switch-icon {
+    transition-duration: var(--theme-switch-duration) !important;
   }
 
   ::view-transition-group(site-brand),
