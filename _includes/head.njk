@@ -5,6 +5,24 @@
   <meta name="description" content="{{ description or "The nucleus of Sublime's Package Control." }}">
   <meta name="thecrawl-data-base" content="{{ data_base_url }}">
 
+  <script>
+    (() => {
+      let mode = 'auto'
+      try {
+        const storedMode = localStorage.getItem('thecrawl-theme')
+        if (['auto', 'light', 'dark'].includes(storedMode)) mode = storedMode
+      }
+      catch {
+        // Use the system theme when storage is unavailable.
+      }
+
+      const systemIsDark = matchMedia('(prefers-color-scheme: dark)').matches
+      const effectiveTheme = mode === 'auto'
+        ? (systemIsDark ? 'dark' : 'light')
+        : mode
+      document.documentElement.dataset.theme = effectiveTheme
+    })()
+  </script>
   <link rel="preload" href="{{ '/static/fonts/inter-display-latin.woff2' | static_url }}" as="font" type="font/woff2" crossorigin>
   {% if page_type == 'status' %}
     <link rel="preload" href="{{ '/static/fonts/lato-400-latin.woff2' | static_url }}" as="font" type="font/woff2" crossorigin>

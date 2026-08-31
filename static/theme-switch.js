@@ -29,6 +29,7 @@ function init() {
 }
 
 function applyInitialMode() {
+  applyEffectiveTheme()
   switchEl.dataset.mode = currentMode
   switchEl.style.setProperty('--theme-switch-rotation', `${rotation}deg`)
   if (labelEl) labelEl.textContent = capitalize(currentMode)
@@ -44,6 +45,7 @@ function selectNextMode() {
 
   rotation += delta
   currentMode = mode
+  applyEffectiveTheme()
   switchEl.style.setProperty('--theme-switch-rotation', `${rotation}deg`)
   switchEl.style.setProperty(
     '--theme-switch-duration',
@@ -61,6 +63,7 @@ function selectNextMode() {
 
 function handleSystemThemeChange() {
   if (currentMode !== 'auto') return
+  applyEffectiveTheme()
   turnDirection = directionForSystemTheme()
   updateDescription(nextModeForAuto())
 }
@@ -104,6 +107,13 @@ function directionalDelta(current, target, direction) {
   const normalizedCurrent = ((current % 360) + 360) % 360
   if (direction > 0) return (target - normalizedCurrent + 360) % 360
   return -((normalizedCurrent - target + 360) % 360)
+}
+
+function applyEffectiveTheme() {
+  const effectiveTheme = currentMode === 'auto'
+    ? (systemTheme?.matches ? 'dark' : 'light')
+    : currentMode
+  document.documentElement.dataset.theme = effectiveTheme
 }
 
 function updateDescription(followingMode) {

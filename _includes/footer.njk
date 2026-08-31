@@ -14,15 +14,14 @@
     <a href="https://github.com/packagecontrol/thecrawl">GitHub</a>
     <a href="https://github.com/packagecontrol/thecrawl/releases">Artifacts</a>
     <a href="{{ '/status/' | site_url }}">Status</a>
-    {% if page_type == 'home' %}
-      <button
-        class="theme-switch"
-        type="button"
-        data-theme-switch
-        data-mode="auto"
-        aria-label="Switch light/dark mode"
-        title="Switch light/dark mode"
-      >
+    <button
+      class="theme-switch"
+      type="button"
+      data-theme-switch
+      data-mode="auto"
+      aria-label="Switch light/dark mode"
+      title="Switch light/dark mode"
+    >
         <span class="theme-switch-scene" aria-hidden="true">
           <span class="theme-switch-cylinder">
             <svg class="theme-switch-icon theme-switch-sun" viewBox="0 0 16 16" width="16" height="16">
@@ -34,8 +33,7 @@
           </span>
         </span>
         <span class="theme-switch-label" data-theme-switch-label>Auto</span>
-      </button>
-    {% endif %}
+    </button>
   </nav>
   <script>
     (() => {
@@ -72,4 +70,5 @@
       }
     })()
   </script>
+  <script src="{{ '/static/theme-switch.js' | bundled | site_url }}" type="module"></script>
 </footer>
