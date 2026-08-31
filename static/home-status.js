@@ -13,12 +13,6 @@ const LOG_URLS = [
   `${dataBaseUrl}logs.json`,
   'https://repackager.sublimetext.io/logs.json',
 ]
-const STATUS_LABELS = {
-  okay: 'Okay',
-  warning: 'Unexpected package failure',
-  error: 'Run failed',
-}
-
 init()
 
 function init() {
@@ -60,7 +54,6 @@ function renderRibbon(entries) {
     segment.className = `home-status-segment is-${status}`
     segment.style.flexGrow = String(period.duration)
     applyDurationStops(segment, period.duration)
-    segment.title = segmentTitle(period.entry, status, period.duration)
     fragment.appendChild(segment)
   }
 
@@ -79,12 +72,6 @@ function applyDurationStops(segment, duration) {
     segment.classList.add('has-duration-error')
     segment.style.setProperty('--duration-error-stop', `${stops.error}%`)
   }
-}
-
-function segmentTitle(entry, status, duration) {
-  const started = formatTimestamp(entry.date)
-  const label = STATUS_LABELS[status]
-  return `${started} — ${label} — ${formatDuration(duration)}`
 }
 
 function ribbonLabel(periods, counts) {
@@ -112,13 +99,4 @@ function formatTimestamp(value) {
     hour12: false,
   })
   return `${datePart} : ${timePart}`
-}
-
-function formatDuration(milliseconds) {
-  const minutes = Math.max(1, Math.round(milliseconds / 60_000))
-  if (minutes < 60) return `${minutes} min`
-  const hours = minutes / 60
-  if (hours < 24) return `${hours.toFixed(hours < 10 ? 1 : 0)} hr`
-  const days = hours / 24
-  return `${days.toFixed(days < 10 ? 1 : 0)} days`
 }
