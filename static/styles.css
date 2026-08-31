@@ -110,7 +110,11 @@ html.page-status[data-theme='dark'] .status-artifacts {
 }
 
 html {
+  /* Uncomment in DevTools to enable the experimental palette. */
+  /* --palette: lagoon; */
+
   min-height: 100%;
+  container-name: page-theme;
 }
 
 html.page-home {
@@ -298,6 +302,21 @@ svg {
   border-radius: 0;
   text-decoration: none;
   box-shadow: 0 0 32px #453a3a75;
+}
+
+@container page-theme style(--palette: lagoon) {
+  html.page-home[data-theme='light'] body::after {
+    backdrop-filter: hue-rotate(230deg);
+    mask-image: linear-gradient(344deg, transparent, black);
+  }
+
+  html.page-home[data-theme='light'] main {
+    --orange-2: hsl(259.73deg 100% 56.03%);
+  }
+
+  html.page-home[data-theme='light'] .home-status-link {
+    box-shadow: 0 0 32px #2c2a2e75;
+  }
 }
 
 .home-status-link:focus-visible {
