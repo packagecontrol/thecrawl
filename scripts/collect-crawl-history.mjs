@@ -18,7 +18,6 @@ async function main() {
   const logsPath = path.resolve(process.argv[2] || 'logs.json')
   const outputPath = path.resolve(process.argv[3] || 'crawl-history.json')
   const cachePath = path.resolve(CACHE_DIRECTORY)
-  const token = resolveGitHubToken()
   const logs = JSON.parse(await readFile(logsPath, 'utf8'))
   const entriesByRunId = new Map(
     logs
@@ -39,18 +38,14 @@ async function main() {
   const missingRunIds = new Set(
     [...entriesByRunId.keys()].filter(runId => !cachedRunIds.has(runId)),
   )
-  const artifacts = missingRunIds.size ? await fetchArtifacts(token) : []
-  const relevant = artifacts.filter(artifact => (
-    !artifact.expired
-    && artifact.name === ARTIFACT_NAME
-    && missingRunIds.has(String(artifact.workflow_run?.id || ''))
-  ))
+  const relevant = findMissingArtifacts(entriesByRunId, missingRunIds)
 
   console.log(
     `Loaded ${cachedRecords.length} cached runs; `
     + `${relevant.length} retained crawl backups require collection.`,
   )
 
+  const token = relevant.length ? resolveGitHubToken() : null
   let completed = 0
   const failures = []
   const collectedRecords = await mapConcurrent(relevant, CONCURRENCY, async (artifact) => {
@@ -76,9 +71,7 @@ async function main() {
     }
     finally {
       completed += 1
-      if (completed % 10 === 0 || completed === relevant.length) {
-        process.stdout.write(`\rCollected ${completed}/${relevant.length} backups`)
-      }
+      process.stdout.write(`\rCollected ${completed}/${relevant.length} backups`)
     }
   })
   if (relevant.length) process.stdout.write('\n')
@@ -94,6 +87,22 @@ async function main() {
   if (failures.length) {
     console.warn(`Could not collect ${failures.length} runs: ${failures.join(', ')}`)
   }
+}
+
+function findMissingArtifacts(entriesByRunId, missingRunIds) {
+  const artifacts = []
+  for (const runId of missingRunIds) {
+    const entry = entriesByRunId.get(runId)
+    for (const artifact of entry.artifacts || []) {
+      if (artifact?.name !== ARTIFACT_NAME || !artifact.id) continue
+      artifacts.push({
+        id: artifact.id,
+        size_in_bytes: artifact.size,
+        workflow_run: { id: runId },
+      })
+    }
+  }
+  return artifacts
 }
 
 async function collectRunRecord(token, artifactId, entry) {
@@ -239,24 +248,6 @@ function extractLocalZipEntry(payload, entry) {
   if (entry.compressionMethod === 0) return compressed
   if (entry.compressionMethod === 8) return inflateRawSync(compressed)
   throw new Error(`unsupported ZIP compression method ${entry.compressionMethod}`)
-}
-
-async function fetchArtifacts(token) {
-  const artifacts = []
-  for (let page = 1; ; page += 1) {
-    const url = new URL(`${API_ROOT}/repos/${REPOSITORY}/actions/artifacts`)
-    url.searchParams.set('name', ARTIFACT_NAME)
-    url.searchParams.set('per_page', '100')
-    url.searchParams.set('page', String(page))
-    const response = await fetch(url, { headers: githubHeaders(token) })
-    if (!response.ok) {
-      throw new Error(`artifact listing returned HTTP ${response.status}`)
-    }
-    const payload = await response.json()
-    const pageArtifacts = Array.isArray(payload.artifacts) ? payload.artifacts : []
-    artifacts.push(...pageArtifacts)
-    if (pageArtifacts.length < 100) return artifacts
-  }
 }
 
 function extractFailedAttemptNames(notes) {
