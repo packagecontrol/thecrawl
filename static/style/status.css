@@ -12,6 +12,11 @@ html.page-status main {
   min-height: 66vh;
 }
 
+::highlight(status-notes-search) {
+  background-color: Mark;
+  color: MarkText;
+}
+
 .status-page {
   --status-change-marker-color: hsl(124.46deg 56.45% 41.65%);
   --status-removed-failing-color: hsl(7deg 84% 53% / 88%);
@@ -715,14 +720,6 @@ html.page-status main {
 
   .status-change-marker {
     color: var(--status-change-marker-color);
-  }
-
-  mark.status-search-highlight {
-    margin-inline: -0.08em;
-    padding-inline: 0.08em;
-    color: inherit;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
   }
 
   .status-removed-failing-item {

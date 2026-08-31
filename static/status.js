@@ -126,6 +126,7 @@ const PACKAGE_SEARCH_TIP_DURATION = 8_000
 const HORIZONTAL_NAVIGATION_CORRIDOR_HOURS = 3
 const VERTICAL_NAVIGATION_CORRIDOR_DAYS = 1
 const DRAW_DIRECTIONAL_NAVIGATION_CORRIDORS = false
+const NOTES_SEARCH_HIGHLIGHT_NAME = 'status-notes-search'
 let chartColorMode = STATUS_CHART_MODE_STATUS
 /** @type {TagMarker[]} */
 const tagMarkers = loadTagMarkers(tagDataEl)
@@ -749,6 +750,7 @@ function renderNotes(entry, entryIndex) {
     notesEl.innerHTML = `
       <p>No notes for this run. (${linkToRun(entry.run_id)})</p>
     `
+    highlightNotesSearchMatches()
     renderArtifacts(entry)
     return
   }
@@ -764,32 +766,31 @@ function renderNotes(entry, entryIndex) {
 }
 
 function highlightNotesSearchMatches() {
-  const existingHighlights = notesEl.querySelectorAll('mark.status-search-highlight')
-  for (const highlight of existingHighlights) {
-    highlight.replaceWith(document.createTextNode(highlight.textContent || ''))
-  }
-  notesEl.normalize()
+  const highlights = globalThis.CSS?.highlights
+  if (!highlights || typeof globalThis.Highlight !== 'function') return
+
+  highlights.delete(NOTES_SEARCH_HIGHLIGHT_NAME)
   if (!notesHighlightFinder) return
 
-  const textNodes = []
+  const ranges = []
   const walker = document.createTreeWalker(notesEl, NodeFilter.SHOW_TEXT)
   let textNode = walker.nextNode()
   while (textNode) {
-    textNodes.push(textNode)
+    const matches = notesHighlightFinder(textNode.nodeValue || '')
+    for (const match of matches) {
+      const range = document.createRange()
+      range.setStart(textNode, match.start)
+      range.setEnd(textNode, match.end)
+      ranges.push(range)
+    }
     textNode = walker.nextNode()
   }
 
-  for (const node of textNodes) {
-    const ranges = notesHighlightFinder(node.nodeValue || '')
-    for (let index = ranges.length - 1; index >= 0; index -= 1) {
-      const range = ranges[index]
-      const match = node.splitText(range.start)
-      match.splitText(range.end - range.start)
-      const highlight = document.createElement('mark')
-      highlight.className = 'status-search-highlight'
-      highlight.textContent = match.nodeValue
-      match.replaceWith(highlight)
-    }
+  if (ranges.length) {
+    highlights.set(
+      NOTES_SEARCH_HIGHLIGHT_NAME,
+      new globalThis.Highlight(...ranges),
+    )
   }
 }
 
