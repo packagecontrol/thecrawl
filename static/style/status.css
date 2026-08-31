@@ -717,6 +717,14 @@ html.page-status main {
     color: var(--status-change-marker-color);
   }
 
+  mark.status-search-highlight {
+    margin-inline: -0.08em;
+    padding-inline: 0.08em;
+    color: inherit;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
   .status-removed-failing-item {
     color: var(--status-removed-failing-color);
   }

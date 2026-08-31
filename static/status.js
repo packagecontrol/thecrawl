@@ -19,6 +19,7 @@ import {
 } from './module/status-failing.js'
 import {
   createDirectionalNavigationOrigin,
+  createNotesHighlightFinder,
   createNotesMatcher,
   createPackageNotesMatcher,
   editAutoPairedSearchQuotes,
@@ -107,6 +108,7 @@ let index = 0
 /** @type {StatusChart | null} */
 let chart = null
 let notesMatcher = null
+let notesHighlightFinder = null
 let packageSearchRevision = 0
 let packageSearchTipTimeout = null
 let autoPairedQuoteIndex = null
@@ -304,8 +306,14 @@ function updatePackageRunSearch(query, revision) {
 
 function applyNotesSearchState(matcher, packageState) {
   notesMatcher = matcher
+  notesHighlightFinder = createNotesHighlightFinder(
+    notesSearchInput?.value || '',
+    packageState?.name || '',
+    crawlHistory?.packageNames || [],
+  )
   chart?.setSearchState(matcher, packageState)
   updatePackageLock(packageState)
+  highlightNotesSearchMatches()
 }
 
 function updatePackageLock(state) {
@@ -751,7 +759,38 @@ function renderNotes(entry, entryIndex) {
     ? DOMPurify.sanitize(html)
     : html
   applyFailureChangeMarkers(entry, entryIndex)
+  highlightNotesSearchMatches()
   renderArtifacts(entry)
+}
+
+function highlightNotesSearchMatches() {
+  const existingHighlights = notesEl.querySelectorAll('mark.status-search-highlight')
+  for (const highlight of existingHighlights) {
+    highlight.replaceWith(document.createTextNode(highlight.textContent || ''))
+  }
+  notesEl.normalize()
+  if (!notesHighlightFinder) return
+
+  const textNodes = []
+  const walker = document.createTreeWalker(notesEl, NodeFilter.SHOW_TEXT)
+  let textNode = walker.nextNode()
+  while (textNode) {
+    textNodes.push(textNode)
+    textNode = walker.nextNode()
+  }
+
+  for (const node of textNodes) {
+    const ranges = notesHighlightFinder(node.nodeValue || '')
+    for (let index = ranges.length - 1; index >= 0; index -= 1) {
+      const range = ranges[index]
+      const match = node.splitText(range.start)
+      match.splitText(range.end - range.start)
+      const highlight = document.createElement('mark')
+      highlight.className = 'status-search-highlight'
+      highlight.textContent = match.nodeValue
+      match.replaceWith(highlight)
+    }
+  }
 }
 
 /**

@@ -34,6 +34,47 @@ export function createNotesMatcher(query) {
 }
 
 /**
+ * Compile a query into a finder for visible match ranges within one text node.
+ * Package locks pass their canonical name as literalText so only complete
+ * package-name mentions are highlighted.
+ *
+ * @param {string} query
+ * @param {string} [literalText]
+ * @param {Iterable<string>} [knownPackageNames]
+ * @returns {((text: string) => { start: number, end: number }[]) | null}
+ */
+export function createNotesHighlightFinder(
+  query,
+  literalText = '',
+  knownPackageNames = [],
+) {
+  const literal = normalizeLiteralText(literalText).trim()
+  if (literal) {
+    const extensions = packageNameExtensions(literal, knownPackageNames)
+    return (text) => mergeMatchRanges(
+      findLiteralMatchRanges(text, literal).filter(({ start, end }) => (
+        hasPackageNameBoundaries(text, start, end)
+        && !isInsideLongerPackageName(text, start, end, extensions)
+      )),
+    )
+  }
+
+  const parsed = parseNotesQuery(query)
+  if ([...parsed.searchableText].length < MIN_NOTES_SEARCH_CHARS) return null
+
+  const queryTokens = tokenizeSearchText(parsed.unquotedText)
+  if (!queryTokens.length && !parsed.literalPhrases.length) return null
+
+  return (text) => {
+    const ranges = findTokenMatchRanges(text, queryTokens)
+    for (const phrase of parsed.literalPhrases) {
+      ranges.push(...findLiteralMatchRanges(text, phrase))
+    }
+    return mergeMatchRanges(ranges)
+  }
+}
+
+/**
  * Apply quote-pair editing for a search field. Returns null when the browser
  * should handle the key normally.
  *
@@ -363,6 +404,80 @@ export function tokenizeSearchText(value) {
   }
   searchTokenCache.set(source, tokens)
   return tokens
+}
+
+function findTokenMatchRanges(value, queryTokens) {
+  if (!queryTokens.length) return []
+
+  const source = String(value || '')
+  const ranges = []
+  const wordPattern = /[\p{L}\p{N}]+(?:[+#]+)?/gu
+  let word = wordPattern.exec(source)
+  while (word) {
+    const wordStart = word.index
+    const boundaries = identifierBoundaries(word[0])
+    for (let index = 0; index < boundaries.length; index += 1) {
+      const segmentStart = boundaries[index]
+      const segmentEnd = boundaries[index + 1] ?? word[0].length
+      const segment = word[0].slice(segmentStart, segmentEnd)
+      const normalizedSegment = normalizeSearchText(segment).toLocaleLowerCase()
+      for (const queryToken of queryTokens) {
+        if (!normalizedSegment.startsWith(queryToken)) continue
+        const matchedText = [...segment].slice(0, [...queryToken].length).join('')
+        ranges.push({
+          start: wordStart + segmentStart,
+          end: wordStart + segmentStart + matchedText.length,
+        })
+      }
+    }
+    word = wordPattern.exec(source)
+  }
+  return ranges
+}
+
+function identifierBoundaries(value) {
+  const boundaries = [0]
+  for (let index = 1; index < value.length; index += 1) {
+    const previous = value[index - 1]
+    const current = value[index]
+    const next = value[index + 1] || ''
+    if (
+      /[a-z\d]/.test(previous) && /[A-Z]/.test(current)
+      || /[A-Z]/.test(previous) && /[A-Z]/.test(current) && /[a-z]/.test(next)
+    ) {
+      boundaries.push(index)
+    }
+  }
+  return boundaries
+}
+
+function findLiteralMatchRanges(value, literalText) {
+  const source = String(value || '')
+  const words = normalizeLiteralText(literalText).trim().split(' ').filter(Boolean)
+  if (!words.length) return []
+
+  const pattern = new RegExp(words.map(escapeRegExp).join('\\s+'), 'giu')
+  return [...source.matchAll(pattern)].map(match => ({
+    start: match.index,
+    end: match.index + match[0].length,
+  }))
+}
+
+function mergeMatchRanges(ranges) {
+  const sorted = ranges
+    .filter(range => range.end > range.start)
+    .sort((left, right) => left.start - right.start || left.end - right.end)
+  const merged = []
+  for (const range of sorted) {
+    const previous = merged.at(-1)
+    if (previous && range.start <= previous.end) {
+      previous.end = Math.max(previous.end, range.end)
+    }
+    else {
+      merged.push({ ...range })
+    }
+  }
+  return merged
 }
 
 function parseNotesQuery(query) {

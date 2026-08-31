@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   createDirectionalNavigationOrigin,
+  createNotesHighlightFinder,
   createNotesMatcher,
   createPackageNotesMatcher,
   editAutoPairedSearchQuotes,
@@ -58,6 +59,51 @@ describe('createNotesMatcher', () => {
     expect(matcher('Retrying after a server error.')).toBe(true)
     expect(matcher('Waiting after a server error.')).toBe(false)
     expect(matcher('Retry after the server returned an error.')).toBe(false)
+  })
+})
+
+describe('createNotesHighlightFinder', () => {
+  it('highlights token prefixes without highlighting inside words', () => {
+    const findRanges = createNotesHighlightFinder('style')
+    const text = 'ThatStyle updates this-style, not lifestyle.'
+
+    expect(highlightedText(text, findRanges)).toEqual(['Style', 'style'])
+  })
+
+  it('highlights every free-form term', () => {
+    const findRanges = createNotesHighlightFinder('package fail')
+    const text = 'The Package is currently failing.'
+
+    expect(highlightedText(text, findRanges)).toEqual(['Package', 'fail'])
+  })
+
+  it('highlights quoted phrases as one range', () => {
+    const findRanges = createNotesHighlightFinder('retry "server error"')
+    const text = 'Retry after a SERVER ERROR.'
+
+    expect(highlightedText(text, findRanges)).toEqual(['Retry', 'SERVER ERROR'])
+  })
+
+  it('uses the canonical package name for locked searches', () => {
+    const findRanges = createNotesHighlightFinder('scss', 'SCSS Expander')
+    const text = 'SCSS was mentioned, then SCSS Expander failed.'
+
+    expect(highlightedText(text, findRanges)).toEqual(['SCSS Expander'])
+  })
+
+  it('does not highlight a locked package inside a longer package name', () => {
+    const findRanges = createNotesHighlightFinder(
+      'LSP',
+      'LSP',
+      ['LSP', 'LSP-pyright'],
+    )
+    const text = 'LSP-pyright failed, but LSP was updated.'
+
+    expect(highlightedText(text, findRanges)).toEqual(['LSP'])
+  })
+
+  it('stays inactive below the minimum query length', () => {
+    expect(createNotesHighlightFinder('s')).toBeNull()
   })
 })
 
@@ -411,6 +457,10 @@ describe('createDirectionalNavigationOrigin', () => {
     })
   })
 })
+
+function highlightedText(text, findRanges) {
+  return findRanges(text).map(range => text.slice(range.start, range.end))
+}
 
 describe('tokenizeSearchText', () => {
   it('keeps common language names useful as tokens', () => {
