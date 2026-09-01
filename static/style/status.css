@@ -667,6 +667,8 @@ html.page-status main {
 .status-badge-success {
   background: transparent;
   color: var(--green-2);
+  color: hsl(133.15deg 65.34% 43.99%);
+  color: hsl(155.81deg 65.34% 43.99%);
 }
 
 .status-badge-warning {
@@ -747,9 +749,18 @@ html.page-status main {
   }
 
   a {
+    color: hsl(199.24deg 82.97% 17.6%);
+    font-family: monospace;
     word-break: break-word;
   }
 
+  &:hover a {
+    background: hsl(208deg 100% 97.06% / 54%);
+  }
+
+  a:hover {
+    text-decoration-color: hsl(25.69deg 79.71% 22.78% / 92%);
+  }
 }
 
 .status-artifacts {
@@ -761,6 +772,7 @@ html.page-status main {
   max-width: var(--max-line);
 
   a {
+    color: hsl(20.49deg 97.11% 47.07%);
     word-break: break-word;
   }
 }

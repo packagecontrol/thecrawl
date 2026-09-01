@@ -79,6 +79,10 @@ html.page-home .site-footer {
   --orange-2: hsl(259.73deg 87.66% 44.61%);
 }
 
+html.page-status .site-footer {
+  --orange-2: hsl(17.05deg 95.3% 51.19%);
+}
+
 html.page-home[data-theme='dark'] {
   filter: hue-rotate(138deg) invert(1);
 }
@@ -110,8 +114,9 @@ html.page-status[data-theme='dark'] .status-artifacts {
 }
 
 html {
-  /* Uncomment in DevTools to enable the experimental palette. */
+  /* Uncomment one in DevTools to enable an experimental palette. */
   /* --palette: lagoon; */
+  /* --palette: glow; */
 
   min-height: 100%;
   container-name: page-theme;
@@ -316,6 +321,17 @@ svg {
 
   html.page-home[data-theme='light'] .home-status-link {
     box-shadow: 0 0 32px #2c2a2e75;
+  }
+}
+
+@container page-theme style(--palette: glow) {
+  html.page-home[data-theme='light'] body::after {
+    backdrop-filter: hue-rotate(255deg);
+    mask-image: linear-gradient(108deg, transparent, black);
+  }
+
+  html.page-home[data-theme='light'] .home-status {
+    filter: hue-rotate(300deg);
   }
 }
 
