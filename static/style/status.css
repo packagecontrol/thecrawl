@@ -713,6 +713,11 @@ html.page-status main {
   padding: var(--grid-line) calc(var(--side-padding) * 2);
   max-width: var(--max-line);
 
+  &.is-empty {
+    background: #ffffffa8;
+    opacity: 0.9;
+  }
+
   h4 {
     font-size: 16px;
   }
@@ -757,6 +762,10 @@ html.page-status main {
     ul, ol {
       margin-bottom: 0;
     }
+  }
+
+  .status-no-notes {
+    margin-bottom: 0;
   }
 
   ul, ol {

@@ -764,8 +764,9 @@ function updateRunLink(runId) {
  * @param {number} entryIndex
  */
 function renderNotes(entry, entryIndex) {
+  notesEl.classList.toggle('is-empty', !entry.notes)
   if (!entry.notes) {
-    notesEl.innerHTML = '<p>No notes for this run.</p>'
+    notesEl.innerHTML = '<p class="status-no-notes">No notes for this run. ¯\\_(ツ)_/¯.</p>'
     highlightNotesSearchMatches()
     renderArtifacts(entry)
     return
@@ -947,6 +948,7 @@ function renderEmptyState(message) {
   badgeLabelEl.textContent = '¯\\_(ツ)_/¯'
   badgeEl.className = 'status-badge status-badge-muted'
   if (runLinkGroupEl) runLinkGroupEl.hidden = true
+  notesEl.classList.add('is-empty')
   notesEl.innerHTML = `<p>${message}</p>`
   if (artifactsEl) {
     artifactsEl.replaceChildren()
