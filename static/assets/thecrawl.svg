@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    width="92.714394mm"
    height="16.110325mm"
@@ -8,13 +6,12 @@
    version="1.1"
    id="svg1"
    xml:space="preserve"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   xmlns="http://www.w3.org/2000/svg"><defs
      id="defs1" /><g
      id="layer1"
      transform="translate(-27.587003,-18.932631)"><g
        id="text1"
-       style="font-weight:900;font-size:16.9333px;font-family:'Inter Display';-inkscape-font-specification:'Inter Display Heavy';stroke-width:0.264583"
+       style="font-weight:900;font-size:16.9333px;font-family:'Inter Display';stroke-width:0.264583"
        aria-label="thecrawl"><path
          d="m 35.882031,23.455297 v 3.167951 h -2.271753 v 3.814046 q 0,0.489782 0.187576,0.677357 0.197997,0.177155 0.771145,0.177155 h 1.313032 v 3.167951 h -2.292596 q -2.167545,0 -3.157529,-0.781566 -0.989984,-0.791988 -0.989984,-2.511435 v -4.543508 h -1.854919 v -3.167951 h 1.854919 v -3.001216 h 4.168356 v 3.001216 z"
          id="path30"
