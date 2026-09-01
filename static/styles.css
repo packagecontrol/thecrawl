@@ -255,8 +255,7 @@ svg {
   color: inherit;
 }
 
-.site-brand img,
-.footer-brand img {
+.site-brand img {
   display: block;
   width: 100%;
   height: auto;
@@ -503,9 +502,13 @@ svg {
 }
 
 .footer-brand {
-  display: block;
-  width: 6.8rem;
-  margin-bottom: 1rem;
+  display: inline-block;
+  color: hsl(0 0% 0%);
+  font-family: 'Inter Display', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  line-height: 1;
+  text-decoration: none;
 }
 
 .site-footer p {
