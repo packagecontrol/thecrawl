@@ -24,6 +24,20 @@ describe('status-failing helpers', () => {
     expect(normalized).not.toContain('\r')
   })
 
+  it('strips the run link from rendered notes', () => {
+    const text = [
+      'August 30, 2026, 23:51 GMT+2  ([logs](https://github.com/packagecontrol/thecrawl/actions/runs/33337562877))',
+      '',
+      'Run notes',
+    ].join('\n')
+
+    expect(normalizeStatusNotes(text)).toBe([
+      'August 30, 2026, 23:51 GMT+2',
+      '',
+      'Run notes',
+    ].join('\n'))
+  })
+
   it('extracts package crawl counts from notes', () => {
     const notes = 'Found 1,234 packages to crawl.'
 

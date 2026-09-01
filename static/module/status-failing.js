@@ -155,6 +155,10 @@ export function findGlitchStartIndex(entries, sections, startIndex, minIndex, ma
 export function normalizeStatusNotes(text) {
   return text
     .replace(/\r\n?/g, '\n')
+    .replace(
+      /[ \t]*\(\[logs\]\(https:\/\/github\.com\/packagecontrol\/thecrawl\/actions\/runs\/\d+\)\)/gi,
+      '',
+    )
     // Added 2026-01-11; delete after 2026-02-12
     .replace(/\*\*currently failing\*\*:\s*\n/gi, '#### Currently failing\n')
 }

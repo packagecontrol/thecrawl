@@ -43,6 +43,9 @@ const artifactsEl = document.getElementById('status-artifacts')
 const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
 const badgeLabelEl = document.querySelector('[data-status-label]')
+const runLinkGroupEl = document.querySelector('[data-status-run]')
+/** @type {HTMLAnchorElement | null} */
+const runLinkEl = document.querySelector('[data-status-run-link]')
 const chartEl = document.querySelector('[data-status-chart]')
 const chartToolbarEl = document.querySelector('[data-status-chart-toolbar]')
 const tagDataEl = document.querySelector('[data-status-tag-dates]')
@@ -744,6 +747,16 @@ function updateHeading(entry) {
 
   badgeLabelEl.textContent = badgeInfo.label === 'unknown' ? '' : badgeInfo.label
   badgeEl.className = `status-badge ${badgeInfo.className}`
+  updateRunLink(entry.run_id)
+}
+
+function updateRunLink(runId) {
+  if (!runLinkGroupEl || !runLinkEl) return
+
+  const href = runUrl(runId)
+  runLinkGroupEl.hidden = !href
+  if (href) runLinkEl.href = href
+  else runLinkEl.removeAttribute('href')
 }
 
 /**
@@ -752,9 +765,7 @@ function updateHeading(entry) {
  */
 function renderNotes(entry, entryIndex) {
   if (!entry.notes) {
-    notesEl.innerHTML = `
-      <p>No notes for this run. (${linkToRun(entry.run_id)})</p>
-    `
+    notesEl.innerHTML = '<p>No notes for this run.</p>'
     highlightNotesSearchMatches()
     renderArtifacts(entry)
     return
@@ -935,6 +946,7 @@ function renderEmptyState(message) {
   dateEl.textContent = ''
   badgeLabelEl.textContent = '¯\\_(ツ)_/¯'
   badgeEl.className = 'status-badge status-badge-muted'
+  if (runLinkGroupEl) runLinkGroupEl.hidden = true
   notesEl.innerHTML = `<p>${message}</p>`
   if (artifactsEl) {
     artifactsEl.replaceChildren()
@@ -2383,9 +2395,14 @@ function currentLocalDayKey() {
 }
 
 function linkToRun(runId, label = 'logs') {
-  if (!runId) return ''
-  const href = `https://github.com/packagecontrol/thecrawl/actions/runs/${runId}`
-  return `<a href="${href}">${label}</a>`
+  const href = runUrl(runId)
+  return href ? `<a href="${href}">${label}</a>` : ''
+}
+
+function runUrl(runId) {
+  return runId
+    ? `https://github.com/packagecontrol/thecrawl/actions/runs/${runId}`
+    : ''
 }
 
 function missingRunMessage(runId) {

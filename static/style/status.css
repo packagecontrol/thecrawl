@@ -643,6 +643,25 @@ html.page-status main {
   font-weight: 400;
 }
 
+.status-run-link {
+  display: inline-block;
+  margin-right: 2px;
+  margin-left: clamp(2px, calc(16vw - 146.8px), 10px);
+  color: #5d6767;
+  font-family: monospace;
+  transform: translateY(1px);
+}
+
+.status-run-link:hover {
+  background: hsl(158.99deg 100% 89.33%);
+  color: #0baf5f;
+}
+
+.status-badge-error ~ [data-status-run] .status-run-link:hover {
+  background: hsl(30.72deg 100% 89.33%);
+  color: #af3a0b;
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;
