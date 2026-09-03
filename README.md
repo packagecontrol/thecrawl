@@ -62,6 +62,8 @@ LIMIT_DATASET=100 npm run devb
 ### Environment variables
 
 - `LIMIT_DATASET` — limit the number of packages or provide a comma-separated list of package names (case-insensitive) to include.
+- `SITE_ORIGIN` — override the generated site's origin, for example `https://packagecontrol.github.io`.
+- `SITE_PATH_PREFIX` — host the generated site below a path such as `/website-stage`.
 - `DISABLE_L_LINK` — set to any non-empty value to hide the dev-only “L” link to the live site.
 
 

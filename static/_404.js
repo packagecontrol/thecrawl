@@ -1,5 +1,5 @@
 (() => {
-  const path = location?.pathname ?? ''
+  const path = siteRelativePath(location?.pathname ?? '')
   if (!path || !path.startsWith('/packages/')) return
 
   // Extract the attempted package name
@@ -39,7 +39,7 @@
     suggestionEl.append('Were you looking for ')
     suggestions.forEach((name, index) => {
       const link = document.createElement('a')
-      link.setAttribute('href', `/packages/${encodeURIComponent(name)}`)
+      link.setAttribute('href', sitePath(`/packages/${encodeURIComponent(name)}`))
       link.textContent = name
       if (index > 0) {
         suggestionEl.append(index === suggestions.length - 1 ? ' or ' : ', ')
@@ -58,7 +58,21 @@
     else {
       btn.textContent = 'Search instead'
     }
-    btn.setAttribute('href', `/?q=${encodeURIComponent(query)}`)
+    btn.setAttribute('href', sitePath(`/?q=${encodeURIComponent(query)}`))
+  }
+
+  function sitePath(path) {
+    const prefix = window.SITE_PATH_PREFIX || ''
+    return prefix + path
+  }
+
+  function siteRelativePath(path) {
+    const prefix = window.SITE_PATH_PREFIX || ''
+    if (path === prefix) return '/'
+    if (prefix && path.startsWith(prefix + '/')) {
+      return path.slice(prefix.length)
+    }
+    return path
   }
 
   function levenshtein(a, b, limit = 2) {

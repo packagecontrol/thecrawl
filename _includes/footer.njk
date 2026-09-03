@@ -33,9 +33,15 @@
             return
           }
           const prodOrigin = '{{ site.prodOrigin }}'
+          const sitePathPrefix = '{{ site.pathPrefix }}'
           const updateHref = (anchor) => {
             const { pathname, search, hash } = window.location
-            anchor.href = prodOrigin + pathname + search + hash
+            const sitePath = pathname === sitePathPrefix
+              ? '/'
+              : sitePathPrefix && pathname.startsWith(sitePathPrefix + '/')
+                ? pathname.slice(sitePathPrefix.length)
+                : pathname
+            anchor.href = prodOrigin + sitePath + search + hash
           }
           const handler = (event) => updateHref(event.currentTarget)
           link.addEventListener('click', handler)

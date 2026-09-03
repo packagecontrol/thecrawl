@@ -1,4 +1,5 @@
 import { List } from './module/list.js'
+import { sitePath } from './module/site-path.mjs'
 import MiniSearch from './vendor/minisearch/index.js'
 import { createMinisearch } from './module/minisearch.js'
 import {
@@ -166,7 +167,7 @@ function renderFeaturedLabels(query, featuredPackages) {
     if (isActive) {
       a.classList.add('is-active')
     }
-    a.href = '/?q=' + encodeURIComponent(token)
+    a.href = sitePath('/?q=' + encodeURIComponent(token))
     a.appendChild(document.createTextNode(label))
     li.appendChild(a)
     featuredLabelsWrap.appendChild(li)
@@ -175,7 +176,7 @@ function renderFeaturedLabels(query, featuredPackages) {
   const li = document.createElement('li')
   const moreLink = document.createElement('a')
   moreLink.classList.add('button', 'label-more')
-  moreLink.href = '/labels'
+  moreLink.href = sitePath('/labels')
   moreLink.title = 'More labels'
   moreLink.appendChild(document.createTextNode('…'))
   li.appendChild(moreLink)
