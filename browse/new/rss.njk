@@ -11,14 +11,14 @@ eleventyAllowMissingExtension: true
     <description>The 25 newest additions to the default Package Control channel</description>
     <language>en-us</language>
     <copyright>Copyright {{ built.year }}, the packagecontrol gang</copyright>
-    <link>{{ site.origin }}</link>
+    <link>{{ site.baseUrl }}</link>
 {% for pkg in collections.newest_packages_feed %}
     <item>
       <title>{{ pkg.name }}</title>
       <author>{{ pkg.author | join(', ') }}</author>
       <description>{{ pkg.description | default('') | escape }}</description>
       <pubDate>{{ pkg.first_seen }}</pubDate>
-      <link>{{ site.origin }}/packages/{{ pkg.name | urlencode }}</link>
+      <link>{{ site.baseUrl }}/packages/{{ pkg.name | urlencode }}</link>
       <guid>{{ pkg.guid }}</guid>
     </item>
 {% endfor %}

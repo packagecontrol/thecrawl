@@ -1,4 +1,5 @@
 import * as util from './eleventy.util.mjs'
+import { normalizeSitePathPrefix } from './static/module/site-path.mjs'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -333,6 +334,18 @@ export function format_requirement(spec) {
   return trimmed
 }
 
+export function site_path(value, pathPrefix = process.env.SITE_PATH_PREFIX) {
+  const path = String(value ?? '')
+  const prefix = normalizeSitePathPrefix(pathPrefix)
+  if (!prefix || !path.startsWith('/') || path.startsWith('//')) {
+    return path
+  }
+  if (path === prefix || path.startsWith(prefix + '/')) {
+    return path
+  }
+  return prefix + path
+}
+
 // Cache bust source-controlled static files by commit.
 export function bust(p) {
   if (!isProd) return p
@@ -348,6 +361,20 @@ export function data_bust(p) {
 // Inline tests (Vitest)
 if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest
+
+  describe('site_path', () => {
+    it('prefixes root paths without touching external URLs', () => {
+      expect(site_path('/data/icons.svg#icon', '/website-stage'))
+        .toBe('/website-stage/data/icons.svg#icon')
+      expect(site_path('https://example.com/', '/website-stage'))
+        .toBe('https://example.com/')
+    })
+
+    it('does not duplicate an existing prefix', () => {
+      expect(site_path('/website-stage/labels', '/website-stage'))
+        .toBe('/website-stage/labels')
+    })
+  })
 
   describe('label icon sprites', () => {
     it('keeps common and preferred icons in the primary sprite', () => {

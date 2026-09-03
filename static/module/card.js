@@ -1,3 +1,5 @@
+import { sitePath } from './site-path.mjs'
+
 export class Card {
   pkg = {}
   clone
@@ -25,7 +27,7 @@ export class Card {
     }
 
     this.clone.querySelector('.card-heading a').innerHTML = this.pkg.name
-    const permalink = '/packages/' + encodeURIComponent(this.pkg.name)
+    const permalink = sitePath('/packages/' + encodeURIComponent(this.pkg.name))
     this.clone.querySelector('.card-heading a').setAttribute('href', permalink)
     this.authors(this.clone.querySelector('p.authors'))
 
@@ -330,12 +332,12 @@ export function installTooltipFor({ count, period }) {
 
 const searchQueryFor = (field, rawValue) => {
   const value = String(rawValue ?? '').trim()
-  if (!value) return '/?q='
+  if (!value) return sitePath('/?q=')
 
   const filter = field === 'platform' && !value.includes(' ')
     ? `${field}:${value}`
     : `${field}:"${value}"`
-  return '/?q=' + encodeURIComponent(filter)
+  return sitePath('/?q=' + encodeURIComponent(filter))
 }
 
 const resolveLabelIconId = (label) => {

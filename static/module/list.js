@@ -2,6 +2,7 @@ import { Card } from './card.js'
 import { Pagination } from './pagination.js'
 import { Sort } from './sort.js'
 import { Search } from './search.js'
+import { sitePath } from './site-path.mjs'
 
 /**
  * Manage the search results section.
@@ -18,7 +19,7 @@ export class List {
   pagination = null
   // We freeze the current URL in `revertPath` if not `revertLocked` when
   // we transition to the search results page; see `goSearch`.
-  revertPath = '/'
+  revertPath = sitePath('/')
   revertLocked = false
   initialTitle = document.title
   restorableMainContent = document.getElementById('main-content')
@@ -240,7 +241,7 @@ export class List {
 
     const queryString = params.toString()
     const queryString_ = queryString ? '?' + queryString : ''
-    const target = queryString_ ? '/' + queryString_ : this.revertPath
+    const target = queryString_ ? sitePath('/' + queryString_) : this.revertPath
     const isReverting = target === this.revertPath
     const currentPath = `${window.location.pathname}${window.location.search}`
     const sortTitle = this.sortTitleMap[sortBy] ?? sortBy

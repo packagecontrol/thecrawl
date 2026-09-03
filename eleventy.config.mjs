@@ -3,8 +3,10 @@ import path from 'path'
 import { spawnSync } from 'child_process'
 import { minify } from 'terser'
 import * as esbuild from 'esbuild'
+import { HtmlBasePlugin } from '@11ty/eleventy'
 import * as util from './eleventy.util.mjs'
 import * as filters from './eleventy.filters.mjs'
+import { normalizeSitePathPrefix } from './static/module/site-path.mjs'
 import { bundleCss } from './util/bundle-css.mjs'
 import {
   RENDERED_READMES_ENVIRONMENT_KEY,
@@ -379,11 +381,14 @@ export default async function (eleventyConfig) {
   const isProd = process.env.NODE_ENV === 'production' || process.env.ELEVENTY_ENV === 'production'
   const prodOrigin = 'https://packages.sublimetext.io'
   const devOrigin = process.env.DEV_ORIGIN || 'http://localhost:8080'
-  const siteOrigin = isProd ? prodOrigin : devOrigin
+  const siteOrigin = (process.env.SITE_ORIGIN || (isProd ? prodOrigin : devOrigin)).replace(/\/+$/, '')
+  const sitePathPrefix = normalizeSitePathPrefix(process.env.SITE_PATH_PREFIX)
   const staticOutputDir = isProd ? 'static_' + util.gitHash : 'static'
   const dataOutputDir = isProd ? 'data_' + util.dataVersion : 'data'
   const bundledScriptEntries = new Set()
   let labelIcons = null
+
+  eleventyConfig.addPlugin(HtmlBasePlugin)
 
   eleventyConfig.addPassthroughCopy(
     { static: staticOutputDir },
@@ -419,6 +424,7 @@ export default async function (eleventyConfig) {
   })
 
   eleventyConfig.ignores.add('.AFileIcon')
+  eleventyConfig.ignores.add('.plans')
   eleventyConfig.ignores.add('util')
   eleventyConfig.ignores.add('README.md')
   eleventyConfig.ignores.add('**/*.test.js')
@@ -686,6 +692,8 @@ export default async function (eleventyConfig) {
 
   eleventyConfig.addGlobalData('site', {
     origin: siteOrigin,
+    baseUrl: siteOrigin + sitePathPrefix,
+    pathPrefix: sitePathPrefix,
     prodOrigin,
     devOrigin,
     disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
@@ -744,6 +752,7 @@ export default async function (eleventyConfig) {
       input: '.',
       output: '_site',
     },
+    pathPrefix: sitePathPrefix || '/',
     passthroughFileCopy: true,
   }
 }

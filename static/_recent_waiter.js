@@ -10,10 +10,10 @@
       <h3></h3>
       <p></p>
       <ul class="button-group labels">
-          <li><a class="button platform platform-" href="/"></a></li>
-          <li><a class="button label" href="/"></a></li>
-          <li><a class="button label" href="/"></a></li>
-          <li><a class="button label" href="/"></a></li>
+          <li><a class="button platform platform-" href="#"></a></li>
+          <li><a class="button label" href="#"></a></li>
+          <li><a class="button label" href="#"></a></li>
+          <li><a class="button label" href="#"></a></li>
       </ul>
     </div>
     `
