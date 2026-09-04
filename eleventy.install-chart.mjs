@@ -327,16 +327,21 @@ function renderUpgradesOverlay(model) {
       //          C2 = P2 − (P3−P1)/6
 
       const c1x = x1 + (x2 - x0) / 6
-      const c1y = y1 + (y2 - y0) / 6
       const c2x = x2 - (x3 - x1) / 6
-      const c2y = y2 - (y3 - y1) / 6
+      const segmentMinY = Math.min(y1, y2)
+      const segmentMaxY = Math.max(y1, y2)
+      // Limit controls to the range between the adjacent samples. This
+      // deliberately dampens curves near extrema rather than clipping them at
+      // zero, and equal adjacent values produce a flat segment.
+      const c1y = clamp(y1 + (y2 - y0) / 6, segmentMinY, segmentMaxY)
+      const c2y = clamp(y2 - (y3 - y1) / 6, segmentMinY, segmentMaxY)
 
       d += ` C ${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}`
     }
   }
 
   // Reach the outer SVG edges on three sides so only the continuation past
-  // the right axis is clipped. Curves may legitimately overshoot the baseline.
+  // the right axis is clipped.
   return html`
     <clipPath id="clip-upgrades">
       ${rect(-dim.left, -dim.top, dim.left + dim.chart_w, dim.svg_h)}
@@ -953,6 +958,10 @@ function atLeast(v, defaultValue = 0) {
 
 function atMost(v, defaultValue = Number.POSITIVE_INFINITY) {
   return Math.min(defaultValue, v)
+}
+
+function clamp(v, minimum, maximum) {
+  return atMost(atLeast(v, minimum), maximum)
 }
 
 function sum(arr) {

@@ -63,6 +63,32 @@ describe('renderInstallChart', () => {
     expect(output).toContain('class="release-point"')
     expect(output).toContain('53 in the 53 weeks shown')
   })
+
+  it('keeps zero-to-zero upgrade curves flat on the x-axis', () => {
+    const output = renderInstallChart({
+      weekly_dates: Array(4).fill('2026-W17'),
+      weekly_installs: Array(4).fill(1),
+      weekly_removals: Array(4).fill(0),
+      weekly_upgrades: [1, 0, 0, 1],
+    })
+
+    expect(output).toContain(
+      'C 21.166666666666668 160 27.666666666666668 160 32 160',
+    )
+  })
+
+  it('dampens upgrade curves to the adjacent sample range', () => {
+    const output = renderInstallChart({
+      weekly_dates: Array(4).fill('2026-W17'),
+      weekly_installs: Array(4).fill(1),
+      weekly_removals: Array(4).fill(0),
+      weekly_upgrades: [2, 1, 1, 2],
+    })
+
+    expect(output).toContain(
+      'C 21.166666666666668 128 27.666666666666668 128 32 128',
+    )
+  })
 })
 
 describe('everyOther', () => {
