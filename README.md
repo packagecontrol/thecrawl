@@ -50,13 +50,19 @@ Build an experimental package-to-crawl history from the retained
 `crawl-backup` artifacts:
 
 ```sh
-npm run collect-history
+make history
 ```
 
-The collector range-downloads only `workspace.json` from each backup and
-caches its per-run result in `.crawl-history-cache/`. Later runs download only
-new backups, retain cached data after artifacts expire, and prune runs that
-have left `logs.json`. The generated `crawl-history.json`, downloaded
+This step also runs automatically before `make build` and `make dev`. The
+collector range-downloads only `workspace.json` from each backup and writes
+each completed run atomically to `.crawl-history-cache/`. Later attempts resume
+from those records, including after interruption or an API-limit response.
+Persist that directory between CI attempts to retain this progress. Collection
+uses eight concurrent downloads by default; lower it with
+`COLLECT_HISTORY_CONCURRENCY` if a constrained runner encounters memory pressure.
+Later runs download only new backups,
+retain cached data after artifacts expire, and prune runs that have left
+`logs.json`. The generated `crawl-history.json`, downloaded
 artifacts, `_site/` directory, and installed `node_modules/` are ignored by
 Git.
 

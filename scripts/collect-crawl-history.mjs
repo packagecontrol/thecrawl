@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { inflateRawSync } from 'node:zlib'
-import { mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, rename, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -9,7 +9,10 @@ const REPOSITORY = 'packagecontrol/thecrawl'
 const ARTIFACT_NAME = 'crawl-backup'
 const WORKSPACE_NAME = 'workspace.json'
 const CACHE_DIRECTORY = '.crawl-history-cache'
-const CONCURRENCY = 8
+const CONCURRENCY = positiveIntegerEnvironment(
+  'COLLECT_HISTORY_CONCURRENCY',
+  8,
+)
 const MAX_LOG_AGE = 24 * 60 * 60 * 1000
 const RANGE_PADDING = 4096
 
@@ -49,8 +52,11 @@ async function main() {
 
   const token = relevant.length ? resolveGitHubToken() : null
   let completed = 0
+  let rateLimited = false
   const failures = []
   const collectedRecords = await mapConcurrent(relevant, CONCURRENCY, async (artifact) => {
+    if (rateLimited) return null
+
     const runId = String(artifact.workflow_run.id)
     const entry = entriesByRunId.get(runId)
 
@@ -59,14 +65,11 @@ async function main() {
         ...entry,
         artifact_size: artifact.size_in_bytes,
       })
-      await writeFile(
-        path.join(cachePath, `${runId}.json`),
-        JSON.stringify(record),
-        'utf8',
-      )
+      await writeJsonAtomically(path.join(cachePath, `${runId}.json`), record)
       return record
     }
     catch (error) {
+      if (error.code === 'GITHUB_RATE_LIMIT') rateLimited = true
       failures.push(runId)
       console.error(`\n${runId}: ${error.message}`)
       return null
@@ -76,11 +79,11 @@ async function main() {
       process.stdout.write(`\rCollected ${completed}/${relevant.length} backups`)
     }
   })
-  if (relevant.length) process.stdout.write('\n')
+  if (completed) process.stdout.write('\n')
 
   const records = [...cachedRecords, ...collectedRecords].filter(Boolean)
   const history = buildHistory(logs, records)
-  await writeFile(outputPath, JSON.stringify(history), 'utf8')
+  await writeJsonAtomically(outputPath, history)
 
   console.log(
     `Wrote ${outputPath} with ${history.available.length} runs and `
@@ -88,6 +91,12 @@ async function main() {
   )
   if (failures.length) {
     console.warn(`Could not collect ${failures.length} runs: ${failures.join(', ')}`)
+  }
+  if (rateLimited) {
+    console.warn(
+      'Stopped starting new downloads after hitting a GitHub API limit. '
+      + 'Retry later to resume from the cached runs.',
+    )
   }
 }
 
@@ -215,7 +224,7 @@ async function fetchArtifactUrl(token, artifactId) {
     },
   )
   if (response.status !== 302) {
-    throw new Error(`artifact download returned HTTP ${response.status}`)
+    throw responseError(`artifact download returned HTTP ${response.status}`, response)
   }
   const location = response.headers.get('location')
   if (!location) throw new Error('artifact download omitted its redirect URL')
@@ -225,7 +234,7 @@ async function fetchArtifactUrl(token, artifactId) {
 async function fetchRange(url, range) {
   const response = await fetch(url, { headers: { Range: range } })
   if (response.status !== 206) {
-    throw new Error(`artifact range ${range} returned HTTP ${response.status}`)
+    throw responseError(`artifact range ${range} returned HTTP ${response.status}`, response)
   }
   return Buffer.from(await response.arrayBuffer())
 }
@@ -301,13 +310,24 @@ function workspaceTimestamp(date) {
 }
 
 async function readCachedRecord(cachePath, runId) {
+  const recordPath = path.join(cachePath, `${runId}.json`)
   try {
-    return JSON.parse(await readFile(path.join(cachePath, `${runId}.json`), 'utf8'))
+    return JSON.parse(await readFile(recordPath, 'utf8'))
   }
   catch (error) {
     if (error.code === 'ENOENT') return null
-    throw error
+    if (!(error instanceof SyntaxError)) throw error
+
+    console.warn(`Discarding incomplete cache record ${recordPath}.`)
+    await unlink(recordPath)
+    return null
   }
+}
+
+async function writeJsonAtomically(outputPath, value) {
+  const temporaryPath = `${outputPath}.${process.pid}.tmp`
+  await writeFile(temporaryPath, JSON.stringify(value), 'utf8')
+  await rename(temporaryPath, outputPath)
 }
 
 async function pruneCache(cachePath, retainedRunIds) {
@@ -347,10 +367,24 @@ async function retry(operation, attempts = 3) {
     }
     catch (error) {
       lastError = error
+      if (error.code === 'GITHUB_RATE_LIMIT') throw error
       if (attempt < attempts) await delay(500 * (2 ** (attempt - 1)))
     }
   }
   throw lastError
+}
+
+function responseError(message, response) {
+  const error = new Error(message)
+  const retryAfter = response.headers.get('retry-after')
+  const remaining = response.headers.get('x-ratelimit-remaining')
+  if (
+    response.status === 429
+    || (response.status === 403 && (remaining === '0' || retryAfter))
+  ) {
+    error.code = 'GITHUB_RATE_LIMIT'
+  }
+  return error
 }
 
 function delay(milliseconds) {
@@ -373,4 +407,9 @@ function resolveGitHubToken() {
 
 function compareNames(left, right) {
   return left.localeCompare(right, 'en', { sensitivity: 'base' })
+}
+
+function positiveIntegerEnvironment(name, fallback) {
+  const value = Number(process.env[name])
+  return Number.isInteger(value) && value > 0 ? value : fallback
 }

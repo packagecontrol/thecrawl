@@ -1,11 +1,11 @@
 ARTIFACTS := registry.json channel.json logs.json
 
-.PHONY: build dev test artifacts dependencies clean
+.PHONY: build dev test artifacts history dependencies clean
 
-build: dependencies artifacts
+build: history
 	npm run build
 
-dev: dependencies artifacts
+dev: history
 	npm run dev
 
 test: dependencies
@@ -19,6 +19,9 @@ artifacts:
 	gh -R packagecontrol/thecrawl release download the-channel \
 		--pattern channel.json \
 		--clobber
+
+history: dependencies artifacts
+	npm run collect-history
 
 dependencies: node_modules/.package-lock.json
 
