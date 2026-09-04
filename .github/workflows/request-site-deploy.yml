@@ -1,0 +1,24 @@
+name: Request crawl site deployment
+
+on:
+  push:
+    branches:
+      - crawl-pages
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  request-deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch deployment workflow on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run deploy-crawl-site.yml \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref main \
+            --field source_ref="${GITHUB_SHA}"
