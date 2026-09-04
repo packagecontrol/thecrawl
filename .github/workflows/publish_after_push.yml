@@ -8,9 +8,7 @@ on:
     branches: ["gh-pages"]
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 jobs:
   lint-and-test-and-build:
@@ -44,10 +42,6 @@ jobs:
       - name: Test
         run: make test
 
-      - name: Upload Pages artifact (push)
-        if: ${{ github.event_name == 'push' }}
-        uses: actions/upload-pages-artifact@v5
-
   trigger-website-deploy:
     if: ${{ github.event_name == 'push' }}
     needs: lint-and-test-and-build
@@ -64,29 +58,3 @@ jobs:
             --header "Authorization: Bearer ${SITE_DEPLOY_TOKEN}" \
             --header "X-GitHub-Api-Version: 2022-11-28" \
             --data "{\"ref\":\"main\",\"inputs\":{\"source_ref\":\"${GITHUB_SHA}\"}}"
-
-  and-deploy:
-    if: ${{ github.event_name == 'push' }}
-    needs: lint-and-test-and-build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Setup pages
-        uses: actions/configure-pages@v6
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
-
-      - name: Purge Cloudflare cache
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-        run: |
-          curl --fail-with-body -X POST \
-            "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            --data '{"purge_everything":true}'
