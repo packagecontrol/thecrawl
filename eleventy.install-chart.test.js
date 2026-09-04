@@ -44,8 +44,11 @@ describe('renderInstallChart', () => {
     expect(output).not.toContain('999')
   })
 
-  it('clips the upgrades line toward a 54th week at the right axis', () => {
+  it('clips the upgrades line toward a 54th week without weekly dots', () => {
     const output = renderInstallChart({
+      allReleases: [
+        { date: '2026-04-22T18:02:46Z', version: '1.0.0' },
+      ],
       weekly_dates: Array(54).fill('2026-W17'),
       weekly_installs: Array(54).fill(1),
       weekly_removals: Array(54).fill(0),
@@ -55,7 +58,8 @@ describe('renderInstallChart', () => {
     expect(output).toContain('<svg viewBox="0 0 798 216"')
     expect(output).toContain('<g clip-path="url(#clip-upgrades)">')
     expect(output).toContain('695 0" class="upgrades-line"')
-    expect(output.match(/class="upgrades-point"/g)).toHaveLength(53)
+    expect(output).not.toContain('upgrades-point')
+    expect(output).toContain('class="release-point"')
     expect(output).toContain('53 in the 53 weeks shown')
   })
 })

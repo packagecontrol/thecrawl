@@ -3,8 +3,6 @@
   --install-bar-color: var(--orange-1);
   --install-bar-hover-color: var(--orange-2);
   --upgrade-line-color: hsl(212deg, 88%, 62%);
-  --upgrade-point-stroke-color: hsl(0deg 0% 82.07%);
-  --upgrade-point-fill-color: var(--blue-3);
   --release-point-fill-color: var(--red-1);
   --release-point-stroke-color: hsl(7deg 91.82% 41.44%);
   --release-point-stroke-alt-color: hsl(0deg 100% 82.7%);
@@ -39,8 +37,6 @@
   --install-bar-color: hsl(33deg 85.87% 34.85%);
   --install-bar-hover-color: var(--orange-2);
   --upgrade-line-color: hsl(212deg 67.07% 47.48%);
-  --upgrade-point-stroke-color: hsl(201 97% 50% / 1);
-  --upgrade-point-fill-color: hsl(216.94deg 100% 70.72%);
   --release-point-fill-color: var(--red-1);
   --release-point-stroke-color: hsl(7deg 91.82% 41.44%);
   --avg-line-color: var(--orange-3);
@@ -136,12 +132,6 @@ section:has(.chart-container)::after {
   }
   .upgrades-line-dashed {
     stroke-dasharray: 1 4;
-  }
-  .upgrades-point {
-    stroke: var(--upgrade-point-stroke-color);
-    stroke-width: 0.6px;
-    fill: var(--upgrade-point-fill-color);
-    pointer-events: none; /* tooltip is on the hit circle */
   }
   /*
     Interaction-heavy release callout selectors live in the chart renderer's

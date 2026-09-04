@@ -9,7 +9,7 @@ const VISIBLE_WEEK_COUNT = 53
 const BASE_DIMENSIONS = {
   bar_w: 12,
   gap: 1,
-  upgrade_pt_r: 2,
+  release_pt_r: 2,
   release_pt_hit_r: 14,
   top: 14,
   bottom: 42,
@@ -343,11 +343,6 @@ function renderUpgradesOverlay(model) {
       <path d="${d}" class="upgrades-line" />
       ${count > 1 ? renderRunningWeekUpgradeLine(model) : ''}
     </g>
-    ${upgrades.slice(0, count).map((val, i) => {
-      const y2 = rAxis.y_for(val)
-      const x2 = i * dim.bar_w_gap + (dim.bar_w / 2)
-      return `<circle cx="${x2}" cy="${y2}" r="${dim.upgrade_pt_r}" class="upgrades-point" />`
-    })}
   `
 }
 
@@ -434,10 +429,6 @@ function renderReleaseInteractionStyle(model) {
           .upgrades-line {
             stroke-width: 2.8px;
           }
-          .upgrades-point {
-            stroke-width: 0.2px;
-            transition: .5s opacity;
-          }
         }
       }
       ${range(0, paddedCount).map((weekIdx) => {
@@ -492,7 +483,7 @@ function renderReleaseWeek(model, release, rCoord, isLatestRelease) {
   }
 
   const releaseWeekClass = classes('release-week', isLatestRelease && 'is-default')
-  const releasePointClasses = classes('upgrades-point release-point', !releaseHasStats && 'release-point-in-the-void')
+  const releasePointClasses = classes('release-point', !releaseHasStats && 'release-point-in-the-void')
 
   return html`
     <g class="${releaseWeekClass}" data-week="${release.week_idx}">
@@ -504,7 +495,7 @@ function renderReleaseWeek(model, release, rCoord, isLatestRelease) {
         <title>${escapeText(releaseTitle)}</title>
       </circle>
 
-      <circle cx="${rCoord.x}" cy="${rCoord.y}" r="${model.dim.upgrade_pt_r}" class="${releasePointClasses}" />
+      <circle cx="${rCoord.x}" cy="${rCoord.y}" r="${model.dim.release_pt_r}" class="${releasePointClasses}" />
 
       <g class="release-callout-group">
         ${renderReleaseCallout(model, release, rCoord)}
@@ -523,7 +514,7 @@ function renderReleaseCallout(model, release, rCoord) {
   const voidLineLength = 24
 
   // Callout line heading North.
-  let lineStartY = atLeast(rCoord.y - dim.upgrade_pt_r - gapToLineStart, 0)
+  let lineStartY = atLeast(rCoord.y - dim.release_pt_r - gapToLineStart, 0)
   // Watch out +- 4 weeks and compute `line_end_y` to stay visually above
   // everything else.
   const lookStart = atLeast(release.week_idx - 4, 0)
@@ -535,7 +526,7 @@ function renderReleaseCallout(model, release, rCoord) {
   if (maxUpgradeVal === 0 && maxInstallVal === 0) {
     lineEndY = atLeast(lineStartY - voidLineLength, 0)
   } else {
-    const upgradeTop = rAxis.y_for(maxUpgradeVal) - dim.upgrade_pt_r - gapToLineStart
+    const upgradeTop = rAxis.y_for(maxUpgradeVal) - dim.release_pt_r - gapToLineStart
     const installTop = lAxis.y_for(maxInstallVal) - gapToLineStart
     lineEndY = atLeast(min([lineStartY - minimumLineLength, upgradeTop, installTop]), 0)
   }
