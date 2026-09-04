@@ -2,8 +2,14 @@ SOURCE_REPOSITORIES_DIR := .source_repositories
 SOURCE_MODEL := source-model.json
 SOURCE_THRESHOLD := 5
 
+ifeq ($(CI),true)
+NPM_INSTALL := npm ci --prefer-offline --no-audit --no-fund
+else
+NPM_INSTALL := npm install
+endif
+
 build:
-	npm install
+	$(NPM_INSTALL)
 	$(MAKE) up
 	$(MAKE) render-readmes
 	# compile eleventy (production)
