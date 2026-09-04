@@ -46,6 +46,14 @@ describe('createNotesMatcher', () => {
     expect(matcher('Two packages were updated.')).toBe(false)
   })
 
+  it('continues across contiguous camel-case token boundaries', () => {
+    const notes = 'Updated KeepPastedTextSelected.'
+
+    expect(createNotesMatcher('keepp')(notes)).toBe(true)
+    expect(createNotesMatcher('keeppast')(notes)).toBe(true)
+    expect(createNotesMatcher('kepp')(notes)).toBe(false)
+  })
+
   it('matches quoted terms as literal phrases', () => {
     const matcher = createNotesMatcher('"server error"')
 
@@ -76,6 +84,15 @@ describe('createNotesHighlightFinder', () => {
     const text = 'The Package is currently failing.'
 
     expect(highlightedText(text, findRanges)).toEqual(['Package', 'fail'])
+  })
+
+  it('highlights prefixes that cross camel-case token boundaries', () => {
+    const text = 'Updated KeepPastedTextSelected.'
+
+    expect(highlightedText(text, createNotesHighlightFinder('keepp')))
+      .toEqual(['KeepP'])
+    expect(highlightedText(text, createNotesHighlightFinder('keeppast')))
+      .toEqual(['KeepPast'])
   })
 
   it('highlights quoted phrases as one range', () => {

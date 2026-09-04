@@ -5,11 +5,20 @@ const SEARCH_TEXT_CACHE_LIMIT = 2048
 const normalizedSearchTextCache = new Map()
 const normalizedLiteralNotesCache = new Map()
 const searchTokenCache = new Map()
+const searchTokenCandidateCache = new Map()
 
 /**
+ * Status search primarily filters the run chart, so unquoted queries favor
+ * precision over exhaustive substring matching. Terms match from natural or
+ * code-identifier boundaries and combine with AND semantics. This encourages
+ * useful input and reduces highlighted dots. Quoted text requests literal
+ * matching explicitly.
+ *
  * Compile a notes query into a matcher. Queries shorter than the minimum are
  * inactive. Terms match at token starts so "style" finds both "this-style"
- * and "ThatStyle", without also finding "lifestyle".
+ * and "ThatStyle", without also finding "lifestyle". A term can continue
+ * across contiguous identifier boundaries, so "keeppast" finds
+ * "KeepPastedTextSelected" (but "eepp" will not!).
  *
  * @param {string} query
  * @returns {((notes: string) => boolean) | null}
@@ -22,7 +31,7 @@ export function createNotesMatcher(query) {
   if (!queryTokens.length && !parsed.literalPhrases.length) return null
 
   return (notes) => {
-    const noteTokens = tokenizeSearchText(notes)
+    const noteTokens = searchTokenCandidates(notes)
     const tokensMatch = queryTokens.every(queryToken => (
       noteTokens.some(noteToken => noteToken.startsWith(queryToken))
     ))
@@ -465,6 +474,30 @@ export function tokenizeSearchText(value) {
   return tokens
 }
 
+function searchTokenCandidates(value) {
+  const source = String(value || '')
+  const cached = searchTokenCandidateCache.get(source)
+  if (cached) return cached
+
+  const candidates = []
+  const wordPattern = /[\p{L}\p{N}]+(?:[+#]+)?/gu
+  let word = wordPattern.exec(source)
+  while (word) {
+    for (const boundary of identifierBoundaries(word[0])) {
+      candidates.push(normalizeSearchText(
+        word[0].slice(boundary),
+      ).toLocaleLowerCase())
+    }
+    word = wordPattern.exec(source)
+  }
+
+  if (searchTokenCandidateCache.size >= SEARCH_TEXT_CACHE_LIMIT) {
+    searchTokenCandidateCache.clear()
+  }
+  searchTokenCandidateCache.set(source, candidates)
+  return candidates
+}
+
 function findTokenMatchRanges(value, queryTokens) {
   if (!queryTokens.length) return []
 
@@ -477,12 +510,11 @@ function findTokenMatchRanges(value, queryTokens) {
     const boundaries = identifierBoundaries(word[0])
     for (let index = 0; index < boundaries.length; index += 1) {
       const segmentStart = boundaries[index]
-      const segmentEnd = boundaries[index + 1] ?? word[0].length
-      const segment = word[0].slice(segmentStart, segmentEnd)
-      const normalizedSegment = normalizeSearchText(segment).toLocaleLowerCase()
+      const candidate = word[0].slice(segmentStart)
+      const normalizedCandidate = normalizeSearchText(candidate).toLocaleLowerCase()
       for (const queryToken of queryTokens) {
-        if (!normalizedSegment.startsWith(queryToken)) continue
-        const matchedText = [...segment].slice(0, [...queryToken].length).join('')
+        if (!normalizedCandidate.startsWith(queryToken)) continue
+        const matchedText = [...candidate].slice(0, [...queryToken].length).join('')
         ranges.push({
           start: wordStart + segmentStart,
           end: wordStart + segmentStart + matchedText.length,
