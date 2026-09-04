@@ -288,7 +288,7 @@ svg {
   --home-status-okay: var(--green-2);
   --home-status-warning: var(--orange-1);
   --home-status-error: var(--red-1);
-  --home-status-border: hsl(53.38deg 19.32% 58.56% / 47%);
+  --home-status-border: hsl(48.34deg 0.47% 27.62% / 47%);
 
   position: relative;
   left: 50%;
@@ -378,6 +378,8 @@ svg {
 
 .home-status-segment:hover::after {
   border-color: var(--home-status-border);
+  transform: scaleX(1.4);
+  background: #d4d7da3d;
 }
 
 .home-status-segment.is-okay {
