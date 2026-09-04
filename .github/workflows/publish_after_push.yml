@@ -48,6 +48,23 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         uses: actions/upload-pages-artifact@v5
 
+  trigger-website-deploy:
+    if: ${{ github.event_name == 'push' }}
+    needs: lint-and-test-and-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger website deployment
+        env:
+          SITE_DEPLOY_TOKEN: ${{ secrets.SITE_DEPLOY_TOKEN }}
+        run: |
+          curl --fail-with-body \
+            --request POST \
+            --url "https://api.github.com/repos/packagecontrol/website-stage/actions/workflows/deploy.yml/dispatches" \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${SITE_DEPLOY_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            --data "{\"ref\":\"main\",\"inputs\":{\"source_ref\":\"${GITHUB_SHA}\"}}"
+
   and-deploy:
     if: ${{ github.event_name == 'push' }}
     needs: lint-and-test-and-build
