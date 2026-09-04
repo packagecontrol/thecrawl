@@ -1,0 +1,92 @@
+name: Deploy crawl site
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: crawl-pages branch, tag, or commit to deploy
+        required: false
+        default: crawl-pages
+  schedule:
+    - cron: '22 8 * * *'
+
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+  pages: write
+
+concurrency:
+  group: crawl-site-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout crawl site
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.source_ref || 'crawl-pages' }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Verify standard GitHub Pages target
+        env:
+          PAGES_ORIGIN: ${{ steps.pages.outputs.origin }}
+          PAGES_PATH: ${{ steps.pages.outputs.base_path }}
+        run: |
+          if [ "$PAGES_ORIGIN" != "https://packagecontrol.github.io" ] || \
+             [ "$PAGES_PATH" != "/thecrawl" ]; then
+            echo "Refusing to deploy to ${PAGES_ORIGIN}${PAGES_PATH}." >&2
+            echo "Expected https://packagecontrol.github.io/thecrawl." >&2
+            exit 1
+          fi
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Restore crawl history cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .crawl-history-cache
+          key: >-
+            crawl-history-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            crawl-history-v1-
+
+      - name: Build
+        timeout-minutes: 45
+        run: make build
+
+      - name: Save crawl history cache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: .crawl-history-cache
+          key: >-
+            crawl-history-v1-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Test
+        run: make test
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

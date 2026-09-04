@@ -329,6 +329,38 @@ jobs:
             --header "X-GitHub-Api-Version: 2022-11-28" \
             --data '{"ref":"main","inputs":{"source_ref":"gh-pages"}}'
 
+  crawl-site-after-logs:
+    runs-on: ubuntu-latest
+    needs: enrich_logs
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Trigger crawl site deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run deploy-crawl-site.yml \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref main \
+            --field source_ref=crawl-pages
+
+  crawl-site-on-new-tags:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Trigger crawl site deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run deploy-crawl-site.yml \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref main \
+            --field source_ref=crawl-pages
+
   deploy-on-new-tags:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
