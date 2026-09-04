@@ -335,9 +335,11 @@ function renderUpgradesOverlay(model) {
     }
   }
 
+  // Reach the outer SVG edges on three sides so only the continuation past
+  // the right axis is clipped. Curves may legitimately overshoot the baseline.
   return html`
     <clipPath id="clip-upgrades">
-      ${rect(0, 0, dim.chart_w, dim.chart_h)}
+      ${rect(-dim.left, -dim.top, dim.left + dim.chart_w, dim.svg_h)}
     </clipPath>
     <g clip-path="url(#clip-upgrades)">
       <path d="${d}" class="upgrades-line" />
