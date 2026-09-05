@@ -113,19 +113,19 @@ function chartModel(pkg) {
 
 export function upgradePointModel(weeklyUpgrades, weeklyDates, dailyUpgrades, dailyDates, dim) {
   const dailyPoints = []
-  const dailyCount = Math.min(DAILY_UPGRADE_DAY_COUNT, dailyUpgrades.length, dailyDates.length)
+  const completeWindowCount = atLeast(dailyUpgrades.length - DAILY_UPGRADE_ROLLING_DAYS + 1, 0)
+  const dailyCount = Math.min(DAILY_UPGRADE_DAY_COUNT, completeWindowCount, dailyDates.length)
 
   for (let i = 0; i < dailyCount; i += 1) {
     const x = chartXForDay(dailyDates[i], weeklyDates, dim)
     if (x === null || x < 0) continue
     const rollingValues = dailyUpgrades.slice(i, i + DAILY_UPGRADE_ROLLING_DAYS)
-    const rollingTotal = sum(rollingValues)
     dailyPoints.push({
       date: dailyDates[i],
       rawValue: dailyUpgrades[i],
       // A trailing seven-day total has the same units and typical scale as the
-      // weekly series. At the oldest edge, normalize any partial window.
-      value: rollingTotal * DAILY_UPGRADE_ROLLING_DAYS / rollingValues.length,
+      // weekly series.
+      value: sum(rollingValues),
       x,
     })
   }

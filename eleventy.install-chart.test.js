@@ -265,8 +265,8 @@ describe('isoWeekIndex', () => {
 
 describe('upgradePointModel', () => {
   it('uses trailing seven-day upgrade rates for the latest 28 days', () => {
-    const dailyDates = descendingDates('2026-09-04', 30)
-    const dailyUpgrades = Array.from({ length: 30 }, (_, i) => i + 1)
+    const dailyDates = descendingDates('2026-09-04', 34)
+    const dailyUpgrades = Array.from({ length: 34 }, (_, i) => i + 1)
     const weeklyUpgrades = [100, 90, 80, 70, 60, 50]
     const dim = { bar_w: 12, bar_w_gap: 13 }
 
@@ -282,8 +282,21 @@ describe('upgradePointModel', () => {
     expect(model.dailyPoints).toHaveLength(28)
     expect(model.dailyPoints[0]).toMatchObject({ date: '2026-09-04', rawValue: 1, value: 28 })
     expect(model.dailyPoints[0].x).toBeCloseTo(13 * 2.5 / 7)
-    expect(model.dailyPoints[27]).toMatchObject({ date: '2026-08-08', rawValue: 28, value: 203 })
+    expect(model.dailyPoints[27]).toMatchObject({ date: '2026-08-08', rawValue: 28, value: 217 })
     expect(model.points.slice(28).map(point => point.week_idx)).toEqual([4, 5])
+  })
+
+  it('omits daily points without a complete seven-day window', () => {
+    const model = upgradePointModel(
+      [100, 90, 80, 70, 60],
+      ['2026-W36'],
+      Array.from({ length: 30 }, (_, i) => i + 1),
+      descendingDates('2026-09-04', 30),
+      { bar_w: 12, bar_w_gap: 13 },
+    )
+
+    expect(model.dailyPoints).toHaveLength(24)
+    expect(model.dailyPoints[23].value).toBe(189)
   })
 
   it('does not multiply isolated daily spikes', () => {
@@ -318,8 +331,8 @@ describe('releasePointModel', () => {
     const dailyPoints = upgradePointModel(
       [10, 20, 30],
       ['2026-W36'],
-      [2, 3, 4, 5, 6, 7, 8],
-      descendingDates('2026-09-04', 7),
+      [2, 3, 4, 5, 6, 7, 8, 9],
+      descendingDates('2026-09-04', 8),
       dim,
     ).dailyPoints
     const releases = [
