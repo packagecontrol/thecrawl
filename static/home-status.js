@@ -13,6 +13,7 @@ const DATA_MANIFEST_URL = document.querySelector(
   'meta[name="thecrawl-data-manifest"]',
 )?.content
 const LOG_REFRESH_MS = 10 * 60 * 1000
+const RIBBON_TRANSITION_MS = 650
 init()
 
 function init() {
@@ -40,7 +41,7 @@ async function refreshLogs() {
 
     const entries = await loadLogs(latestLogsUrl)
     logsUrl = latestLogsUrl
-    renderRibbon(entries)
+    renderRibbon(entries, true)
   }
   catch (error) {
     console.error('Failed to refresh homepage status:', error)
@@ -51,12 +52,17 @@ function startLogRefreshInterval() {
   window.setInterval(refreshLogs, LOG_REFRESH_MS)
 }
 
-function renderRibbon(entries) {
+function renderRibbon(entries, animate = false) {
   const periods = homeStatusPeriods(entries)
   if (!periods.length) return
 
+  const shouldAnimate = animate
+    && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const previousRects = shouldAnimate ? ribbonSegmentRects() : new Map()
   const counts = { okay: 0, warning: 0, error: 0 }
   const fragment = document.createDocumentFragment()
+  const track = document.createElement('span')
+  track.className = 'home-status-track'
 
   for (const period of periods) {
     const status = homeStatusForEntry(period.entry)
@@ -64,14 +70,47 @@ function renderRibbon(entries) {
 
     const segment = document.createElement('span')
     segment.className = `home-status-segment is-${status}`
+    segment.dataset.ribbonKey = ribbonSegmentKey(period)
     segment.style.flexGrow = String(period.duration)
     applyDurationStops(segment, period.duration)
     fragment.appendChild(segment)
   }
 
-  ribbonEl.replaceChildren(fragment)
+  track.appendChild(fragment)
+  ribbonEl.replaceChildren(track)
   ribbonEl.setAttribute('aria-label', ribbonLabel(periods, counts))
   ribbonEl.setAttribute('aria-busy', 'false')
+  if (shouldAnimate) animateRibbonTrack(track, previousRects)
+}
+
+function ribbonSegmentRects() {
+  const segments = ribbonEl.querySelectorAll('.home-status-segment')
+  return new Map([...segments].map(segment => [
+    segment.dataset.ribbonKey,
+    segment.getBoundingClientRect(),
+  ]))
+}
+
+function ribbonSegmentKey(period) {
+  return String(period.entry?.run_id || period.timestamp)
+}
+
+function animateRibbonTrack(track, previousRects) {
+  let offset = 0
+  for (const segment of track.children) {
+    const previous = previousRects.get(segment.dataset.ribbonKey)
+    if (!previous) continue
+    offset = previous.right - segment.getBoundingClientRect().right
+  }
+  if (Math.abs(offset) < 0.1) return
+
+  track.animate([
+    { translate: `${offset}px 0` },
+    { translate: '0 0' },
+  ], {
+    duration: RIBBON_TRANSITION_MS,
+    easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+  })
 }
 
 function applyDurationStops(segment, duration) {
