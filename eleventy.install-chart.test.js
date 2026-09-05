@@ -311,6 +311,23 @@ describe('upgradePointModel', () => {
     expect(Math.max(...model.dailyPoints.map(point => point.value))).toBe(1000)
   })
 
+  it('does not plot daily upgrades from before the package existed', () => {
+    const model = upgradePointModel(
+      [100, 90, 80],
+      ['2026-W36'],
+      Array.from({ length: 10 }, (_, i) => i + 1),
+      descendingDates('2026-09-04', 10),
+      { bar_w: 12, bar_w_gap: 13 },
+      '2026-09-02T18:00:00Z',
+    )
+
+    expect(model.dailyPoints.map(point => point.date)).toEqual([
+      '2026-09-04',
+      '2026-09-03',
+      '2026-09-02',
+    ])
+  })
+
   it('retains the weekly series when daily data is unavailable', () => {
     const model = upgradePointModel(
       [3, 2, 1],

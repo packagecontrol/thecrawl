@@ -78,6 +78,7 @@ function chartModel(pkg) {
     pkg.daily_upgrades ?? [],
     pkg.daily_dates ?? [],
     dim,
+    pkg.first_seen,
   )
   const lAxis = dim.axis_for(installs, 5)
   const rAxis = dim.axis_for(upgradeSeries.points.map(point => point.value), 5)
@@ -111,12 +112,14 @@ function chartModel(pkg) {
   }
 }
 
-export function upgradePointModel(weeklyUpgrades, weeklyDates, dailyUpgrades, dailyDates, dim) {
+export function upgradePointModel(weeklyUpgrades, weeklyDates, dailyUpgrades, dailyDates, dim, firstSeen) {
   const dailyPoints = []
+  const firstSeenDate = firstSeen?.slice(0, 10)
   const completeWindowCount = atLeast(dailyUpgrades.length - DAILY_UPGRADE_ROLLING_DAYS + 1, 0)
   const dailyCount = Math.min(DAILY_UPGRADE_DAY_COUNT, completeWindowCount, dailyDates.length)
 
   for (let i = 0; i < dailyCount; i += 1) {
+    if (firstSeenDate && dailyDates[i] < firstSeenDate) continue
     const x = chartXForDay(dailyDates[i], weeklyDates, dim)
     if (x === null || x < 0) continue
     const rollingValues = dailyUpgrades.slice(i, i + DAILY_UPGRADE_ROLLING_DAYS)
