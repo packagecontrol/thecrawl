@@ -1,0 +1,65 @@
+---
+layout: layout.njk
+title: Graveyard
+description: "Packages removed from Package Control."
+page_type: graveyard
+hasCompactSearch: true
+---
+
+<section class="graveyard" aria-labelledby="main-content" data-list-target="main-content">
+  <div class="graveyard-header">
+    <h1 id="main-content" tabindex="-1">Graveyard</h1>
+    <div class="graveyard-sort-toggle" data-graveyard-sort-controls role="group" aria-label="Sort dead packages">
+      <button type="button" data-graveyard-sort="name" class="is-active" aria-pressed="true">By Name</button>
+      <span aria-hidden="true">|</span>
+      <button type="button" data-graveyard-sort="date" aria-pressed="false">By Date</button>
+    </div>
+  </div>
+
+  <section class="graveyard-group" aria-label="Dead packages">
+    <ul class="graveyard-list">
+      {% for pkg in collections.graveyard_packages %}
+        <li
+          class="graveyard-card"
+          id="{{ pkg.graveyard_id }}"
+          data-name="{{ pkg.name }}"
+          data-removed="{{ pkg.removed or pkg.last_seen }}"
+        >
+          <div class="graveyard-card-main">
+            <span class="graveyard-package-name">{{ pkg.name | package_name_breaks | safe }}</span>
+
+            <span class="graveyard-dates">
+              {% set first_seen = pkg.first_seen or pkg.created_at %}
+              {% set removed = pkg.removed or pkg.last_seen %}
+              {% if first_seen %}
+                <time datetime="{{ first_seen }}" title="First seen: {{ first_seen | graveyard_title_date }}">*{{ first_seen | graveyard_date }}</time>
+              {% endif %}
+              {% if removed %}
+                <time datetime="{{ removed }}" title="Removed: {{ removed | graveyard_title_date }}">+{{ removed | graveyard_date }}</time>
+              {% endif %}
+            </span>
+          </div>
+
+          {% if pkg.successor_name %}
+            <p class="graveyard-relation">Lives now as <a href="{{ pkg.successor_href }}">{{ pkg.successor_name | package_name_breaks | safe }}</a>.</p>
+          {% elif pkg.predecessors and pkg.predecessors | length %}
+            <p class="graveyard-relation">Successor of
+              {% for predecessor in pkg.predecessors -%}
+                {% if predecessor.has_tombstone -%}
+                  <a href="{{ predecessor.href }}">{{ predecessor.name | package_name_breaks | safe }}</a>
+                {%- else -%}
+                  <span title="No tombstone record is available for this package.">{{ predecessor.name | package_name_breaks | safe }}</span>
+                {%- endif -%}
+                {%- if not loop.last -%}
+                  {%- if loop.length == 2 %} and {% elif loop.revindex == 2 %}, and {% else %}, {% endif -%}
+                {%- endif -%}
+              {%- endfor %}.</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+</section>
+
+{% include "search_section.njk" %}
+<script src="{{ '/static/graveyard.js' | bundled }}" type="module" async></script>

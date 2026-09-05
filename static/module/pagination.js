@@ -13,11 +13,15 @@ export class Pagination {
 
   // calculate pagination and result the items of the current page
   calculate() {
-    this.totalPages = Math.ceil(this.items.length / this.itemsPerPage)
+    this.totalPages = Math.max(1, Math.ceil(this.items.length / this.itemsPerPage))
     const startIndex = (this.currentPage - 1) * this.itemsPerPage
     const endIndex = Math.min(startIndex + this.itemsPerPage, this.items.length)
 
     return this.items.slice(startIndex, endIndex)
+  }
+
+  get isLastPage() {
+    return this.currentPage === this.totalPages
   }
 
   clear() {

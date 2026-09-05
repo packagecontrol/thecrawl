@@ -15,6 +15,20 @@
   {% endif %}
 
   <ul class="list" data-list-target="list"></ul>
+
+  <ul
+    class="supplementary-search-list st2-search-list"
+    data-list-target="st2-list"
+    aria-label="Sublime Text 2 packages"
+    hidden
+  ></ul>
+
+  <aside class="graveyard-search" data-list-target="graveyard" hidden>
+    <h3 class="graveyard-search-heading">
+      <span data-list-target="graveyard-counter"></span>
+    </h3>
+    <ul class="supplementary-search-list graveyard-search-list" data-list-target="graveyard-list"></ul>
+  </aside>
 </section>
 
 <script src="{{ '/static/package-search.js' | bundled }}" type="module" async></script>

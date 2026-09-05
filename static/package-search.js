@@ -79,6 +79,8 @@ function expandSearchPackage(row, installHistory) {
     outdated,
     removed,
     archived_at,
+    graveyard_id,
+    graveyard_only,
   ] = row
 
   return {
@@ -99,6 +101,8 @@ function expandSearchPackage(row, installHistory) {
     ...(outdated ? { outdated: true } : {}),
     ...(removed ? { removed } : {}),
     ...(archived_at ? { archived_at } : {}),
+    ...(graveyard_id ? { graveyard: true, graveyard_id } : {}),
+    ...(graveyard_only ? { graveyard_only: true } : {}),
   }
 }
 

@@ -4,6 +4,8 @@ import { Sort } from './sort.js'
 import { Search } from './search.js'
 import { sitePath } from './site-path.mjs'
 
+const GRAVEYARD_SEARCH_MATCH_LIMIT = 10
+
 /**
  * Manage the search results section.
  *
@@ -64,6 +66,10 @@ export class List {
   list = this.section.querySelector(`[${this.attr}='list']`)
   rangeIndicator = this.section.querySelector(`[${this.attr}='range']`)
   pageIndicator = this.section.querySelector(`[${this.attr}='page']`)
+  st2List = this.section.querySelector(`[${this.attr}='st2-list']`)
+  graveyardSection = this.section.querySelector(`[${this.attr}='graveyard']`)
+  graveyardCounter = this.section.querySelector(`[${this.attr}='graveyard-counter']`)
+  graveyardList = this.section.querySelector(`[${this.attr}='graveyard-list']`)
 
   constructor() {
     this.revertPath = onSearchPage()
@@ -123,22 +129,28 @@ export class List {
   // clear any pagination ui and previous results
   clear() {
     this.pagination?.clear()
-    this.timelineNodes.forEach(node => node.remove())
+    for (const node of this.timelineNodes) {
+      node.remove()
+    }
     this.timelineNodes = []
-    Array.from(this.list.children).forEach((card) => {
+    for (const card of Array.from(this.list.children)) {
       card.remove()
-    })
+    }
+    this.st2List.replaceChildren()
+    this.st2List.hidden = true
+    this.graveyardList.replaceChildren()
+    this.graveyardSection.hidden = true
   }
 
   // render the current page of results and pagination
-  renderPage(items, page) {
+  renderPage(items, page, st2Items = [], graveyardItems = []) {
     this.clear()
 
     this.pagination = new Pagination(this, items, page, this.section)
     const pageItems = this.pagination.calculate()
 
     const timeRangeLabel = this.buildTimeRangeLabel(pageItems)
-    this.updateHeading(items.length, timeRangeLabel, page)
+    this.updateHeading(items.length + st2Items.length, timeRangeLabel, page)
 
     let assignedMainContent = false
     let installMode = 'standard'
@@ -150,7 +162,7 @@ export class List {
     }
 
     const renderItems = (targetList, packages) => {
-      packages.forEach((pkg) => {
+      for (const pkg of packages) {
         const li = document.createElement('li')
         const fragment = (new Card(pkg, null, installMode)).render()
         if (!assignedMainContent) {
@@ -159,7 +171,7 @@ export class List {
         }
         li.appendChild(fragment)
         targetList.appendChild(li)
-      })
+      }
     }
 
     const timeline = this.buildTimeline(pageItems)
@@ -170,7 +182,103 @@ export class List {
       renderItems(this.list, pageItems)
     }
 
+    if (this.pagination.isLastPage) {
+      if (st2Items.length > 0) {
+        const firstSt2Anchor = this.renderSt2Matches(st2Items)
+        if (!assignedMainContent && firstSt2Anchor) {
+          this.assignMainContentAnchor(firstSt2Anchor)
+          assignedMainContent = true
+        }
+      }
+
+      if (graveyardItems.length > 0) {
+        const hasPackageMatches = items.length > 0 || st2Items.length > 0
+        const firstGraveyardAnchor = this.renderGraveyardMatches(graveyardItems, hasPackageMatches)
+        if (!assignedMainContent && firstGraveyardAnchor) {
+          this.assignMainContentAnchor(firstGraveyardAnchor)
+        }
+      }
+    }
+
     this.pagination.render()
+  }
+
+  renderSt2Matches(packages) {
+    let firstAnchor = null
+    for (const pkg of packages) {
+      const item = document.createElement('li')
+      const anchor = this.st2MatchLink(pkg)
+      item.append(anchor, this.st2MatchReason())
+      this.st2List.appendChild(item)
+      firstAnchor ??= anchor
+    }
+
+    this.st2List.hidden = false
+    return firstAnchor
+  }
+
+  st2MatchLink(pkg) {
+    const href = sitePath(`/packages/${encodeURIComponent(pkg.name)}`)
+    return this.supplementaryMatchLink(pkg, href)
+  }
+
+  st2MatchReason() {
+    const marker = document.createElement('span')
+    marker.className = 'st2-search-reason'
+    marker.textContent = 'ST2'
+    marker.title = 'Outdated package for Sublime Text 2'
+    return marker
+  }
+
+  renderGraveyardMatches(packages, hasRegularMatches) {
+    const noun = packages.length === 1 ? 'match' : 'matches'
+    const prefix = hasRegularMatches ? 'Also ' : ''
+    this.graveyardCounter.replaceChildren(
+      document.createTextNode(`${prefix}${packages.length} ${noun} in our `),
+      this.graveyardPageLink(),
+    )
+
+    let firstAnchor = null
+    for (const pkg of packages) {
+      const item = document.createElement('li')
+      const anchor = this.graveyardMatchLink(pkg)
+      item.append(anchor, this.graveyardMatchReason())
+      this.graveyardList.appendChild(item)
+      firstAnchor ??= anchor
+    }
+
+    this.graveyardSection.hidden = false
+    return firstAnchor
+  }
+
+  graveyardPageLink() {
+    const anchor = document.createElement('a')
+    anchor.href = sitePath('/graveyard')
+    anchor.textContent = 'graveyard'
+    return anchor
+  }
+
+  graveyardMatchLink(pkg) {
+    const href = pkg.graveyard_only
+      ? sitePath(`/graveyard#${pkg.graveyard_id}`)
+      : sitePath(`/packages/${encodeURIComponent(pkg.name)}`)
+    return this.supplementaryMatchLink(pkg, href)
+  }
+
+  supplementaryMatchLink(pkg, href) {
+    const anchor = document.createElement('a')
+    anchor.className = 'supplementary-search-name'
+    anchor.href = href
+    appendPackageName(anchor, pkg.name)
+    return anchor
+  }
+
+  graveyardMatchReason() {
+    const marker = document.createElement('span')
+    marker.className = 'graveyard-search-reason'
+    marker.textContent = '+'
+    marker.title = 'Removed from Package Control'
+    return marker
   }
 
   // scroll to top of results after updating the list "in place"
@@ -195,10 +303,12 @@ export class List {
 
   assignMainContentTarget(fragment) {
     const anchor = fragment.querySelector('h3 a')
-    if (!anchor) {
-      return
+    if (anchor) {
+      this.assignMainContentAnchor(anchor)
     }
+  }
 
+  assignMainContentAnchor(anchor) {
     const current = document.getElementById('main-content')
     if (current && current !== anchor) {
       this.restorableMainContent = current
@@ -276,11 +386,12 @@ export class List {
       return
     }
 
-    const searchResults = hasQuery
+    const allSearchResults = hasQuery
       ? this.search.search(query)
       : this.search.all()
+    const { searchResults, st2Results, graveyardResults } = splitSearchResults(allSearchResults, hasQuery)
 
-    this.filterStateUpdater?.(query, searchResults)
+    this.filterStateUpdater?.(query, [...searchResults, ...st2Results])
 
     let effectiveSort = sortBy
     if (usingWildcard && effectiveSort.startsWith('author')) {
@@ -292,7 +403,7 @@ export class List {
     this.switchToResults()
 
     // render results with pagination
-    this.renderPage(sortedResults, page)
+    this.renderPage(sortedResults, page, st2Results, graveyardResults)
 
     window.dispatchEvent(new Event('search:done'))
   }
@@ -493,6 +604,35 @@ export class List {
     const latestLabel = this.monthShortFormatter.format(latest)
     return `${latestLabel}-${earliestLabel} ${latestYear}`
   }
+}
+
+export function splitSearchResults(results, hasQuery) {
+  const searchResults = results.filter(pkg => !pkg.graveyard && !pkg.outdated)
+  const st2Results = results.filter(pkg => pkg.outdated && !pkg.removed)
+  const showGraveyard = hasQuery && results.length < GRAVEYARD_SEARCH_MATCH_LIMIT
+  const graveyardResults = showGraveyard
+    ? results.filter(pkg => pkg.graveyard)
+    : []
+  return { searchResults, st2Results, graveyardResults }
+}
+
+function appendPackageName(parent, name) {
+  const value = String(name)
+  let start = 0
+
+  for (let index = 1; index < value.length; index += 1) {
+    const previous = value[index - 1]
+    const current = value[index]
+    const next = value[index + 1] ?? ''
+    const breaksBeforeUppercase = /[a-z\d]/.test(previous) && /[A-Z]/.test(current)
+    const breaksBeforeWord = /[A-Z]/.test(previous) && /[A-Z]/.test(current) && /[a-z]/.test(next)
+    if (!breaksBeforeUppercase && !breaksBeforeWord) continue
+
+    parent.append(document.createTextNode(value.slice(start, index)), document.createElement('wbr'))
+    start = index
+  }
+
+  parent.appendChild(document.createTextNode(value.slice(start)))
 }
 
 function onSearchPage() {

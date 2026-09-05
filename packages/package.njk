@@ -72,7 +72,7 @@ page_type: package
           {%- endif %}
         </li>
         {% if pkg.successor_name %}
-          <li class="package-timeline-statement package-timeline-followup">Lives now as <a href="/packages/{{ pkg.successor_name | urlencode }}">{{ pkg.successor_name }}</a>.</li>
+          <li class="package-timeline-statement package-timeline-followup">Lives now as <a href="{{ pkg.successor_href }}">{{ pkg.successor_name }}</a>.</li>
         {% endif %}
 
       {% elif pkg.created_at %}
@@ -98,7 +98,7 @@ page_type: package
         <li class="package-timeline-statement package-timeline-followup">Successor of
           {% for predecessor in pkg.predecessors -%}
             {% if predecessor.has_tombstone -%}
-              <a href="/packages/{{ predecessor.name | urlencode }}">{{ predecessor.name }}</a>
+              <a href="{{ predecessor.href }}">{{ predecessor.name }}</a>
             {%- else -%}
               <span
                 class="package-timeline-unlinked-name"

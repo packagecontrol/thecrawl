@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { createHash } from 'crypto'
 import { minify } from 'terser'
 import * as esbuild from 'esbuild'
 import { HtmlBasePlugin } from '@11ty/eleventy'
@@ -50,6 +51,7 @@ const MAGIC_WEIGHTS = {
   recency: 0.05,
 }
 const SUCCESSOR_NOTICE_WINDOW_DAYS = 365
+const GRAVEYARD_REMOVAL_AGE_MONTHS = 9
 const HOME_SECTION_PACKAGE_LIMIT = 9
 const REMARKABLE_PACKAGE_LIMIT = 40
 const REMARKABLE_EXCLUDED_PACKAGE_NAMES = new Set(['Package Control'])
@@ -449,7 +451,6 @@ export default async function (eleventyConfig) {
     // eslint-disable-next-line no-unused-vars
     Object.entries(workspace.packages).map(([id, pkg]) => pkg),
   )
-  const successionMetadata = packageSuccessionMetadata(all_packages)
 
   // Optional dataset limiting for faster local dev
   const limitRaw = process.env.LIMIT_DATASET
@@ -509,11 +510,31 @@ export default async function (eleventyConfig) {
     }
   }
 
-  const packages = all_packages.map(packageData)
-  const packagesWithMagic = computeMagicMetadata(packages)
+  const packageDetails = all_packages.map(packageData)
+  const classifiedPackages = packageDetails.map((pkg) => {
+    if (!pkg.removed) return pkg
+
+    return {
+      ...pkg,
+      graveyard: true,
+      graveyard_id: graveyardId(pkg.name),
+      ...(isGraveyardOnlyPackage(pkg) ? { graveyard_only: true } : {}),
+    }
+  })
+  const packagesByName = new Map(classifiedPackages.map(pkg => [pkg.name, pkg]))
+  const successionMetadata = packageSuccessionMetadata(classifiedPackages)
+  const allPackages = classifiedPackages.map((pkg) => {
+    return addSuccessionLinks(pkg, successionMetadata.get(pkg.name), packagesByName)
+  })
+  const packages = allPackages.filter(pkg => !pkg.graveyard_only)
+  const graveyardPackages = allPackages
+    .filter(pkg => pkg.removed)
+    .sort((a, b) => a.name.localeCompare(b.name))
+  const allPackagesWithMagic = computeMagicMetadata(allPackages)
+  const packagesWithMagic = allPackagesWithMagic.filter(pkg => !pkg.graveyard && !pkg.outdated)
   const labels = util.collectLabels(all_packages)
 
-  const livingHomePackages = packages.filter(pkg => !pkg.removed)
+  const livingHomePackages = packages.filter(pkg => !pkg.removed && !pkg.outdated)
 
   const packagesByDate = (field) => {
     return [...livingHomePackages].sort((a, b) => {
@@ -560,8 +581,10 @@ export default async function (eleventyConfig) {
   eleventyConfig.addCollection('packages', () => packages)
 
   eleventyConfig.addCollection('searchable_packages', () => {
-    return [...packagesWithMagic].sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
+    return [...allPackagesWithMagic].sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
   })
+
+  eleventyConfig.addCollection('graveyard_packages', () => graveyardPackages)
 
   eleventyConfig.addCollection('updated_packages', () => updatedHomePackages)
 
@@ -571,7 +594,7 @@ export default async function (eleventyConfig) {
 
   eleventyConfig.addCollection('newest_packages_feed', () => {
     return packages
-      .filter(pkg => !pkg.removed && pkg.first_seen)
+      .filter(pkg => !pkg.removed && !pkg.outdated && pkg.first_seen)
       .sort((a, b) => {
         return new Date(b.first_seen ?? '1970-01-01 00:00:00') - new Date(a.first_seen ?? '1970-01-01 00:00:00')
       })
@@ -607,7 +630,6 @@ export default async function (eleventyConfig) {
     return {
       ...pkg,
       ...basePackage(pkg),
-      ...successionMetadata.get(pkg.name),
       daily_dates: allDailyDates.slice(0, INSTALL_CHART_DAYS),
       daily_upgrades,
       weekly_dates: weekly_dates,
@@ -704,6 +726,25 @@ export default async function (eleventyConfig) {
   }
 }
 
+export function isGraveyardOnlyPackage(pkg, nowTimestamp = Date.now()) {
+  const removedTimestamp = toTimestamp(pkg.removed)
+  if (removedTimestamp === null) return false
+
+  const cutoff = new Date(nowTimestamp)
+  cutoff.setUTCMonth(cutoff.getUTCMonth() - GRAVEYARD_REMOVAL_AGE_MONTHS)
+  return removedTimestamp <= cutoff.getTime()
+}
+
+export function graveyardId(name) {
+  const normalizedName = String(name ?? '').normalize('NFKD').toLowerCase()
+  const slug = normalizedName
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'package'
+  const hash = createHash('sha256').update(String(name ?? '')).digest('hex').slice(0, 7)
+  return `${slug}-${hash}`
+}
+
 export function packageSuccessionMetadata(packages, nowTimestamp = Date.now()) {
   const packagesByName = new Map(packages.map(pkg => [pkg.name, pkg]))
   const metadata = new Map()
@@ -729,6 +770,32 @@ export function packageSuccessionMetadata(packages, nowTimestamp = Date.now()) {
   }
 
   return metadata
+}
+
+function addSuccessionLinks(pkg, succession, packagesByName) {
+  if (!succession) return pkg
+
+  const successor = packagesByName.get(succession.successor_name)
+  const predecessors = succession.predecessors?.map(predecessor => ({
+    ...predecessor,
+    href: predecessor.has_tombstone
+      ? packageHref(packagesByName.get(predecessor.name))
+      : null,
+  }))
+
+  return {
+    ...pkg,
+    ...succession,
+    ...(successor ? { successor_href: packageHref(successor) } : {}),
+    ...(predecessors ? { predecessors } : {}),
+  }
+}
+
+function packageHref(pkg) {
+  if (pkg.graveyard_only) {
+    return `/graveyard#${pkg.graveyard_id}`
+  }
+  return `/packages/${encodeURIComponent(pkg.name)}`
 }
 
 export function installHistoryFor(weeklyDates) {
