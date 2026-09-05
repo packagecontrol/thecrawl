@@ -644,47 +644,56 @@ function resolveIndexFromUrl() {
   return { index: 0, hasRunId: true, found: false, runId }
 }
 
-const DATA_BASE_URL = document.querySelector(
-  'meta[name="thecrawl-data-base"]',
+let logsUrl = document.querySelector(
+  'meta[name="thecrawl-logs"]',
 )?.content
-const ASSET_URL = `${DATA_BASE_URL}logs.json`
-const HISTORY_ASSET_URL = `${DATA_BASE_URL}crawl-history.json`
-const FALLBACK_URL = 'https://repackager.sublimetext.io/logs.json'
+let crawlHistoryUrl = document.querySelector(
+  'meta[name="thecrawl-crawl-history"]',
+)?.content
+const DATA_MANIFEST_URL = document.querySelector(
+  'meta[name="thecrawl-data-manifest"]',
+)?.content
 const LOG_REFRESH_MS = 10 * 60 * 1000
 const MAX_SKIPPED_HARD_FAILURES = 4
 
-async function loadLogs() {
-  const sources = [
-    () => fetch(ASSET_URL),
-    () => fetch(FALLBACK_URL),
-  ]
+async function loadLogs(url = logsUrl) {
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
-  let lastError = null
-  for (const fn of sources) {
-    try {
-      const res = await fn()
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`)
-      }
-      /** @type {LogEntry[]} */
-      const data = await res.json()
-      return [...data].sort((a, b) => safeDate(b.date) - safeDate(a.date))
-    }
-    catch (err) {
-      lastError = err
-    }
+  /** @type {LogEntry[]} */
+  const data = await response.json()
+  return [...data].sort((a, b) => safeDate(b.date) - safeDate(a.date))
+}
+
+async function loadLatestDataUrls() {
+  const response = await fetch(DATA_MANIFEST_URL, { cache: 'no-cache' })
+  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+  const manifest = await response.json()
+  if (!manifest?.logs_url || !manifest?.crawl_history_url) {
+    throw new Error('Invalid data manifest')
   }
-
-  throw lastError || new Error('Failed to load logs')
+  return {
+    logsUrl: manifest.logs_url,
+    crawlHistoryUrl: manifest.crawl_history_url,
+  }
 }
 
 function loadCrawlHistory() {
-  crawlHistoryPromise ||= fetch(HISTORY_ASSET_URL).then(async (response) => {
+  if (crawlHistoryPromise) return crawlHistoryPromise
+
+  const requestedUrl = crawlHistoryUrl
+  const request = fetch(requestedUrl).then(async (response) => {
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    crawlHistory = parseCrawlHistory(await response.json())
-    return crawlHistory
+    const history = parseCrawlHistory(await response.json())
+    if (requestedUrl === crawlHistoryUrl) crawlHistory = history
+    return history
+  }).catch((error) => {
+    if (crawlHistoryPromise === request) crawlHistoryPromise = null
+    throw error
   })
-  return crawlHistoryPromise
+  crawlHistoryPromise = request
+  return request
 }
 
 /**
@@ -705,17 +714,29 @@ function render(targetIndex) {
   updateUrl(entry)
 }
 
-function refreshLogs() {
+async function refreshLogs() {
   const wasAtNewest = logs.length > 0 && index === 0 && !emptyStateMessage
 
-  loadLogs().then((entries) => {
+  try {
+    const latestDataUrls = await loadLatestDataUrls()
+    const logsChanged = latestDataUrls.logsUrl !== logsUrl
+    const historyChanged = latestDataUrls.crawlHistoryUrl !== crawlHistoryUrl
+    if (!logsChanged) {
+      if (historyChanged) setCrawlHistoryUrl(latestDataUrls.crawlHistoryUrl)
+      return
+    }
+
+    const entries = await loadLogs(latestDataUrls.logsUrl)
     if (!entries.length) return
+
+    logsUrl = latestDataUrls.logsUrl
     const days = chart?.days
     const visibleEntries = typeof days === 'number'
       ? filterEntriesToDayWindow(entries, days)
       : entries
     logs = annotateChanges(visibleEntries)
     chart?.setData(logs)
+    if (historyChanged) setCrawlHistoryUrl(latestDataUrls.crawlHistoryUrl)
     if (wasAtNewest) {
       render(0)
       return
@@ -726,9 +747,17 @@ function refreshLogs() {
       return
     }
     render(resolved.index)
-  }).catch((err) => {
-    console.error('Failed to refresh logs:', err)
-  })
+  }
+  catch (error) {
+    console.error('Failed to refresh logs:', error)
+  }
+}
+
+function setCrawlHistoryUrl(url) {
+  crawlHistoryUrl = url
+  crawlHistory = null
+  crawlHistoryPromise = null
+  if (String(notesSearchInput?.value || '').trim()) updateNotesSearch()
 }
 
 function startLogRefreshInterval() {

@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import * as esbuild from 'esbuild'
@@ -10,9 +11,15 @@ const PATH_PREFIX = normalizePathPrefix(
 
 export default function (eleventyConfig) {
   const isBuild = process.env.ELEVENTY_RUN_MODE === 'build'
-  // Source assets change with commits; crawler artifacts can change on every build.
+  // Source assets change with commits; crawler artifacts use content hashes.
   const staticOutputDir = isBuild ? `static_${readGitHash()}` : 'static'
-  const dataOutputDir = isBuild ? `data_${Date.now().toString(36)}` : 'data'
+  const logsOutputFile = isBuild
+    ? versionedDataPath('logs.json')
+    : 'data/logs.json'
+  const hasCrawlHistory = existsSync('crawl-history.json')
+  const historyOutputFile = isBuild && hasCrawlHistory
+    ? versionedDataPath('crawl-history.json')
+    : 'data/crawl-history.json'
   const bundledScriptEntries = new Set()
 
   eleventyConfig.ignores.add('README.md')
@@ -30,11 +37,11 @@ export default function (eleventyConfig) {
       `${staticOutputDir}/vendor/marked/marked.esm.js`,
   })
   eleventyConfig.addPassthroughCopy({
-    'logs.json': `${dataOutputDir}/logs.json`,
+    'logs.json': logsOutputFile,
   })
-  if (existsSync('crawl-history.json')) {
+  if (hasCrawlHistory) {
     eleventyConfig.addPassthroughCopy({
-      'crawl-history.json': `${dataOutputDir}/crawl-history.json`,
+      'crawl-history.json': historyOutputFile,
     })
   }
 
@@ -65,8 +72,16 @@ export default function (eleventyConfig) {
     () => JSON.stringify(readSemverTags()),
   )
   eleventyConfig.addGlobalData(
-    'data_base_url',
-    prefixSitePath(`${dataOutputDir}/`),
+    'logs_url',
+    prefixSitePath(logsOutputFile),
+  )
+  eleventyConfig.addGlobalData(
+    'crawl_history_url',
+    prefixSitePath(historyOutputFile),
+  )
+  eleventyConfig.addGlobalData(
+    'data_manifest_url',
+    prefixSitePath('data-manifest.json'),
   )
   eleventyConfig.addFilter('site_url', prefixSitePath)
   eleventyConfig.addFilter(
@@ -130,6 +145,16 @@ function versionedStaticUrl(source, staticOutputDir) {
 
 function prefixSitePath(path) {
   return PATH_PREFIX + String(path || '').replace(/^\/+/, '')
+}
+
+function versionedDataPath(fileName) {
+  const extension = path.extname(fileName)
+  const stem = path.basename(fileName, extension)
+  const hash = createHash('sha256')
+    .update(readFileSync(fileName))
+    .digest('hex')
+    .slice(0, 12)
+  return `data/${stem}_${hash}${extension}`
 }
 
 function readArtifactCounts() {

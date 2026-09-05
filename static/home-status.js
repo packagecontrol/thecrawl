@@ -6,13 +6,9 @@ import {
 
 const shellEl = document.querySelector('[data-home-status]')
 const ribbonEl = document.querySelector('[data-home-status-ribbon]')
-const dataBaseUrl = document.querySelector(
-  'meta[name="thecrawl-data-base"]',
+const LOG_URL = document.querySelector(
+  'meta[name="thecrawl-logs"]',
 )?.content
-const LOG_URLS = [
-  `${dataBaseUrl}logs.json`,
-  'https://repackager.sublimetext.io/logs.json',
-]
 init()
 
 function init() {
@@ -24,19 +20,9 @@ function init() {
 }
 
 async function loadLogs() {
-  let lastError = null
-  for (const url of LOG_URLS) {
-    try {
-      const response = await fetch(url)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      return await response.json()
-    }
-    catch (error) {
-      lastError = error
-    }
-  }
-
-  throw lastError || new Error('Failed to load logs')
+  const response = await fetch(LOG_URL)
+  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  return response.json()
 }
 
 function renderRibbon(entries) {

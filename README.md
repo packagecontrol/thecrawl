@@ -22,8 +22,9 @@ artifacts, and starts Eleventy. Eleventy prints the local URL, normally
 <http://localhost:8080/>. Changes to page templates, styles, and scripts are
 rebuilt automatically while the dev server is running.
 
-The status page reads the downloaded `logs.json`. It falls back to
-<https://repackager.sublimetext.io/logs.json> if the local file is unavailable.
+The status page reads content-versioned `logs.json` and `crawl-history.json`
+artifacts. A small stable manifest lets open pages discover newly deployed data
+without defeating browser caching for the larger files.
 
 ## Build and test
 
