@@ -3,8 +3,10 @@ import {
   __test__,
   dimensions,
   isoWeekIndex,
+  releasePointModel,
   releaseWeekModel,
   renderInstallChart,
+  upgradePointModel,
 } from './eleventy.install-chart.mjs'
 
 describe('renderInstallChart', () => {
@@ -62,6 +64,23 @@ describe('renderInstallChart', () => {
     expect(output).not.toContain('upgrades-point')
     expect(output).toContain('class="release-point"')
     expect(output).toContain('53 in the 53 weeks shown')
+  })
+
+  it('labels recent release dots with weekly and daily upgrades', () => {
+    const output = renderInstallChart({
+      allReleases: [
+        { date: '2026-09-04T18:02:46Z', version: '6.3.0' },
+      ],
+      daily_dates: descendingDates('2026-09-04', 7),
+      daily_upgrades: [30, 29, 28, 27, 26, 25, 24],
+      weekly_dates: ['2026-W36'],
+      weekly_installs: [1],
+      weekly_removals: [0],
+      weekly_upgrades: [179],
+    })
+
+    expect(output).toContain('2026-09-04 | upgrades: 179 | 30 on that day')
+    expect(output).not.toContain('7-day rate')
   })
 
   it('keeps zero-to-zero upgrade curves flat on the x-axis', () => {
@@ -244,6 +263,88 @@ describe('isoWeekIndex', () => {
   })
 })
 
+describe('upgradePointModel', () => {
+  it('uses trailing seven-day upgrade rates for the latest 28 days', () => {
+    const dailyDates = descendingDates('2026-09-04', 30)
+    const dailyUpgrades = Array.from({ length: 30 }, (_, i) => i + 1)
+    const weeklyUpgrades = [100, 90, 80, 70, 60, 50]
+    const dim = { bar_w: 12, bar_w_gap: 13 }
+
+    const model = upgradePointModel(
+      weeklyUpgrades,
+      ['2026-W36'],
+      dailyUpgrades,
+      dailyDates,
+      dim,
+    )
+
+    expect(model.usesDaily).toBe(true)
+    expect(model.dailyPoints).toHaveLength(28)
+    expect(model.dailyPoints[0]).toMatchObject({ date: '2026-09-04', rawValue: 1, value: 28 })
+    expect(model.dailyPoints[0].x).toBeCloseTo(13 * 2.5 / 7)
+    expect(model.dailyPoints[27]).toMatchObject({ date: '2026-08-08', rawValue: 28, value: 203 })
+    expect(model.points.slice(28).map(point => point.week_idx)).toEqual([4, 5])
+  })
+
+  it('does not multiply isolated daily spikes', () => {
+    const model = upgradePointModel(
+      [1000, 1000, 1000, 1000, 1000],
+      ['2026-W36'],
+      [1000, ...Array(29).fill(0)],
+      descendingDates('2026-09-04', 30),
+      { bar_w: 12, bar_w_gap: 13 },
+    )
+
+    expect(Math.max(...model.dailyPoints.map(point => point.value))).toBe(1000)
+  })
+
+  it('retains the weekly series when daily data is unavailable', () => {
+    const model = upgradePointModel(
+      [3, 2, 1],
+      ['2026-W36'],
+      [],
+      [],
+      { bar_w: 12, bar_w_gap: 13 },
+    )
+
+    expect(model.usesDaily).toBe(false)
+    expect(model.points.map(point => point.value)).toEqual([3, 2, 1])
+  })
+})
+
+describe('releasePointModel', () => {
+  it('positions recent releases on their daily upgrade samples', () => {
+    const dim = { bar_w: 12, bar_w_gap: 13 }
+    const dailyPoints = upgradePointModel(
+      [10, 20, 30],
+      ['2026-W36'],
+      [2, 3, 4, 5, 6, 7, 8],
+      descendingDates('2026-09-04', 7),
+      dim,
+    ).dailyPoints
+    const releases = [
+      { date: '2026-09-04T18:02:46Z', version: '2.0.0' },
+      { date: '2026-09-03T08:00:00Z', version: '1.1.0' },
+      { date: '2026-09-03T07:00:00Z', version: '1.0.0' },
+    ]
+
+    const points = releasePointModel(releases, ['2026-W36'], [10, 20, 30], dailyPoints, 53, dim)
+
+    expect(points).toHaveLength(2)
+    expect(points[0]).toMatchObject({
+      date: '2026-09-04',
+      dailyValue: 2,
+      period: 'daily',
+      rawValue: 10,
+      value: 35,
+      versions: ['2.0.0'],
+      week_idx: 0,
+    })
+    expect(points[0].x).toBe(dailyPoints[0].x)
+    expect(points[1].versions).toEqual(['1.1.0', '1.0.0'])
+  })
+})
+
 describe('releaseWeekModel', () => {
   it('sorts and deduplicates versions in each release week', () => {
     const releases = [
@@ -262,6 +363,15 @@ describe('releaseWeekModel', () => {
     ])
   })
 })
+
+function descendingDates(latest, count) {
+  const date = new Date(`${latest}T00:00:00Z`)
+  return Array.from({ length: count }, (_, i) => {
+    const day = new Date(date)
+    day.setUTCDate(day.getUTCDate() - i)
+    return day.toISOString().slice(0, 10)
+  })
+}
 
 describe('dimensions', () => {
   it('uses bar_w_gap except for last slice', () => {

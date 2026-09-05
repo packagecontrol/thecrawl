@@ -33,6 +33,8 @@ const LABEL_ICON_MINIMUM_USAGE = 3
 const LABEL_ICON_RECENT_WINDOW_DAYS = 365
 // The main chart width is 53 weeks; + 1 for a possible continuation line
 const INSTALL_CHART_WEEKS = 53 + 1
+const INSTALL_CHART_DAILY_POINTS = 4 * 7
+const INSTALL_CHART_DAYS = INSTALL_CHART_DAILY_POINTS + 6
 const INSTALL_WINDOW_YEARS = 3
 const INSTALL_WINDOW_WEEKS = 53 * INSTALL_WINDOW_YEARS
 const INSTALL_THREE_YEAR_THRESHOLD_WEEKS = 52 * INSTALL_WINDOW_YEARS
@@ -465,6 +467,7 @@ export default async function (eleventyConfig) {
 
   const workspace = JSON.parse(fs.readFileSync('workspace.json', 'utf8'))
   const stats = JSON.parse(fs.readFileSync('stats.json', 'utf8'))
+  const allDailyDates = stats['__daily_dates'] ?? []
   const allWeeklyDates = stats['__weekly_dates'] ?? []
   const installWindowStart = allWeeklyDates.length >= INSTALL_WINDOW_WEEKS ? 1 : 0
   const installWindowDates = allWeeklyDates.slice(installWindowStart, INSTALL_WINDOW_WEEKS)
@@ -637,6 +640,9 @@ export default async function (eleventyConfig) {
     const readme_url = util.getReadmeUrl(pkg.readme)
     const source_url = util.buildPackageSourceUrl(pkg, sourceModel)
     const stat = stats[pkg.name]
+    // Keep six extra days to compute trailing seven-day upgrade rates for
+    // each of the 28 daily chart points.
+    const daily_upgrades = (stat?.upgrades?.daily ?? []).slice(0, INSTALL_CHART_DAYS)
     const weekly_installs = (stat?.installs?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
     const weekly_removals = (stat?.removals?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
     const weekly_upgrades = (stat?.upgrades?.weekly ?? []).slice(0, INSTALL_CHART_WEEKS)
@@ -656,6 +662,8 @@ export default async function (eleventyConfig) {
       ...pkg,
       ...basePackage(pkg),
       ...successionMetadata.get(pkg.name),
+      daily_dates: allDailyDates.slice(0, INSTALL_CHART_DAYS),
+      daily_upgrades,
       weekly_dates: weekly_dates,
       weekly_installs: weekly_installs.slice(0, end),
       weekly_removals: weekly_removals.slice(0, end),

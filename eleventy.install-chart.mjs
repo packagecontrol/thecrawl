@@ -5,6 +5,8 @@ const shortMonthFormatter = new Intl.DateTimeFormat('en', { month: 'short', time
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 const MS_PER_WEEK = MS_PER_DAY * 7
 const VISIBLE_WEEK_COUNT = 53
+const DAILY_UPGRADE_DAY_COUNT = 28
+const DAILY_UPGRADE_ROLLING_DAYS = 7
 
 const BASE_DIMENSIONS = {
   bar_w: 12,
@@ -70,10 +72,24 @@ function chartModel(pkg) {
   // Pad chart width to a fixed 53 weeks to avoid width changes.
   const paddedCount = VISIBLE_WEEK_COUNT
   const dim = dimensions(BASE_DIMENSIONS, paddedCount)
+  const upgradeSeries = upgradePointModel(
+    upgrades,
+    dates,
+    pkg.daily_upgrades ?? [],
+    pkg.daily_dates ?? [],
+    dim,
+  )
   const lAxis = dim.axis_for(installs, 5)
-  const rAxis = dim.axis_for(upgrades, 5)
+  const rAxis = dim.axis_for(upgradeSeries.points.map(point => point.value), 5)
   const averages = averageModel(installs, removals, count, dim, lAxis)
-  const releaseWeeks = releaseWeekModel(releases, dates, paddedCount)
+  const releasePoints = releasePointModel(
+    releases,
+    dates,
+    upgrades,
+    upgradeSeries.dailyPoints,
+    paddedCount,
+    dim,
+  )
   const firstSeenIndex = isoWeekIndex(dates, pkg.first_seen)
 
   return {
@@ -89,9 +105,121 @@ function chartModel(pkg) {
     dim,
     lAxis,
     rAxis,
-    releaseWeeks,
+    releasePoints,
+    upgradeSeries,
     ...averages,
   }
+}
+
+export function upgradePointModel(weeklyUpgrades, weeklyDates, dailyUpgrades, dailyDates, dim) {
+  const dailyPoints = []
+  const dailyCount = Math.min(DAILY_UPGRADE_DAY_COUNT, dailyUpgrades.length, dailyDates.length)
+
+  for (let i = 0; i < dailyCount; i += 1) {
+    const x = chartXForDay(dailyDates[i], weeklyDates, dim)
+    if (x === null || x < 0) continue
+    const rollingValues = dailyUpgrades.slice(i, i + DAILY_UPGRADE_ROLLING_DAYS)
+    const rollingTotal = sum(rollingValues)
+    dailyPoints.push({
+      date: dailyDates[i],
+      rawValue: dailyUpgrades[i],
+      // A trailing seven-day total has the same units and typical scale as the
+      // weekly series. At the oldest edge, normalize any partial window.
+      value: rollingTotal * DAILY_UPGRADE_ROLLING_DAYS / rollingValues.length,
+      x,
+    })
+  }
+  dailyPoints.sort((a, b) => a.x - b.x)
+
+  const oldestDailyX = dailyPoints.length > 0
+    ? dailyPoints[dailyPoints.length - 1].x
+    : Number.NEGATIVE_INFINITY
+  // Resume weekly samples after the oldest daily point without overlapping
+  // the rolling daily window.
+  const weeklyPoints = weeklyUpgrades
+    .map((value, week_idx) => ({
+      rawValue: value,
+      value,
+      week_idx,
+      x: weekX(week_idx, dim),
+    }))
+    .filter(point => point.x > oldestDailyX)
+
+  return {
+    dailyPoints,
+    points: [...dailyPoints, ...weeklyPoints].sort((a, b) => a.x - b.x),
+    usesDaily: dailyPoints.length > 0,
+  }
+}
+
+export function releasePointModel(releases, weeklyDates, weeklyUpgrades, dailyPoints, maxWeekIdx, dim) {
+  const dailyPointsByDate = new Map(dailyPoints.map(point => [point.date, point]))
+  const dailyReleases = new Map()
+  const weeklyReleases = []
+
+  for (const release of releases) {
+    const date = release?.date?.slice(0, 10)
+    const dailyPoint = dailyPointsByDate.get(date)
+    if (!dailyPoint) {
+      weeklyReleases.push(release)
+      continue
+    }
+
+    if (!dailyReleases.has(date)) {
+      dailyReleases.set(date, { dailyPoint, releases: [] })
+    }
+    dailyReleases.get(date).releases.push(release)
+  }
+
+  const points = [...dailyReleases.entries()].map(([date, group]) => {
+    const weekIdx = isoWeekIndex(weeklyDates, date)
+    return {
+      date,
+      dailyValue: group.dailyPoint.rawValue,
+      has_stats: true,
+      period: 'daily',
+      rawValue: weeklyUpgrades[weekIdx] ?? 0,
+      value: group.dailyPoint.value,
+      versions: releaseVersions(group.releases),
+      week_idx: weekIdx,
+      x: group.dailyPoint.x,
+    }
+  })
+
+  for (const releaseWeek of releaseWeekModel(weeklyReleases, weeklyDates, maxWeekIdx)) {
+    const hasStats = releaseWeek.week_idx < weeklyUpgrades.length
+    const rawValue = hasStats ? weeklyUpgrades[releaseWeek.week_idx] : 0
+    points.push({
+      ...releaseWeek,
+      date: weeklyDates[releaseWeek.week_idx] ?? '',
+      has_stats: hasStats,
+      period: 'weekly',
+      rawValue,
+      value: rawValue,
+      x: weekX(releaseWeek.week_idx, dim),
+    })
+  }
+
+  return points
+    .sort((a, b) => a.x - b.x)
+    .map((point, id) => ({ ...point, id }))
+}
+
+function chartXForDay(dateInput, weeklyDates, dim) {
+  const anchorMonday = mondayOfIsoWeek(weeklyDates[0])
+  if (!anchorMonday) return null
+
+  // A daily aggregate sits at the midpoint of its UTC day.
+  const day = new Date(`${dateInput}T12:00:00Z`)
+  if (Number.isNaN(day.getTime())) return null
+
+  const nextMonday = new Date(anchorMonday)
+  nextMonday.setUTCDate(nextMonday.getUTCDate() + 7)
+  return ((nextMonday - day) / MS_PER_WEEK) * dim.bar_w_gap
+}
+
+function weekX(weekIdx, dim) {
+  return weekIdx * dim.bar_w_gap + (dim.bar_w / 2)
 }
 
 function renderChart(model) {
@@ -260,9 +388,10 @@ function renderAverageLines(model) {
 }
 
 function renderUpgradesOverlay(model) {
-  const { count, dim, rAxis, upgrades } = model
-  // Only show upgrades line and points when there is at least one upgrade.
-  if (sum(upgrades) <= 0) {
+  const { count, dim, rAxis, upgradeSeries } = model
+  const { points, usesDaily } = upgradeSeries
+  // Only show the upgrades line when there is at least one upgrade.
+  if (sum(points.map(point => point.value)) <= 0) {
     return ''
   }
 
@@ -283,36 +412,33 @@ function renderUpgradesOverlay(model) {
   //   This is a common Catmull–Rom to Bézier conversion that yields a
   //   smooth line passing through all data points.
 
-  const upgradeCount = upgrades.length
+  const upgradeCount = points.length
+  const startIndex = usesDaily ? 0 : 1
   let d = ''
-  if (upgradeCount > 1) {
-    const val1 = upgrades[1]
-    const yStart = rAxis.y_for(val1)
-    // Shift one bar to the right: draw solid line from first full week onwards.
-    const xStart = 1 * dim.bar_w_gap + (dim.bar_w / 2)
-    d = `M ${xStart} ${yStart}`
+  if (upgradeCount > startIndex) {
+    const firstPoint = points[startIndex]
+    d = `M ${firstPoint.x} ${rAxis.y_for(firstPoint.value)}`
 
-    // Build cubic segments, starting at i=1 to skip 0→1.
-    for (let i = 1; i < upgradeCount - 1; i += 1) {
-      const i0 = atLeast(i - 1, 1)
+    for (let i = startIndex; i < upgradeCount - 1; i += 1) {
+      const i0 = atLeast(i - 1, startIndex)
       const i1 = i
       const i2 = i + 1
       const i3 = atMost(i + 2, upgradeCount - 1)
 
-      const v0 = upgrades[i0]
-      const v1 = upgrades[i1]
-      const v2 = upgrades[i2]
-      const v3 = upgrades[i3]
+      const p0 = points[i0]
+      const p1 = points[i1]
+      const p2 = points[i2]
+      const p3 = points[i3]
 
-      const x0 = i0 * dim.bar_w_gap + (dim.bar_w / 2)
-      const x1 = i1 * dim.bar_w_gap + (dim.bar_w / 2)
-      const x2 = i2 * dim.bar_w_gap + (dim.bar_w / 2)
-      const x3 = i3 * dim.bar_w_gap + (dim.bar_w / 2)
+      const x0 = p0.x
+      const x1 = p1.x
+      const x2 = p2.x
+      const x3 = p3.x
 
-      const y0 = rAxis.y_for(v0)
-      const y1 = rAxis.y_for(v1)
-      const y2 = rAxis.y_for(v2)
-      const y3 = rAxis.y_for(v3)
+      const y0 = rAxis.y_for(p0.value)
+      const y1 = rAxis.y_for(p1.value)
+      const y2 = rAxis.y_for(p2.value)
+      const y3 = rAxis.y_for(p3.value)
 
       // Catmull–Rom → Bézier control points
       //
@@ -348,7 +474,7 @@ function renderUpgradesOverlay(model) {
     </clipPath>
     <g clip-path="url(#clip-upgrades)">
       <path d="${d}" class="upgrades-line" />
-      ${count > 1 ? renderRunningWeekUpgradeLine(model) : ''}
+      ${!usesDaily && count > 1 ? renderRunningWeekUpgradeLine(model) : ''}
     </g>
   `
 }
@@ -363,24 +489,24 @@ function renderRunningWeekUpgradeLine(model) {
 }
 
 function renderReleases(model) {
-  const { releaseWeeks } = model
-  if (!releaseWeeks || releaseWeeks.length === 0) {
+  const { releasePoints } = model
+  if (releasePoints.length === 0) {
     return ''
   }
 
   const defaultY = model.y_avg_net ?? model.lAxis.y_for(0)
-  const releaseCoords = releaseWeekCoords(releaseWeeks, model.upgrades, model.dim, model.rAxis, defaultY)
+  const releaseCoords = releasePointCoords(releasePoints, model.rAxis, defaultY)
 
   return html`
     ${renderReleaseInteractionStyle(model)}
-    ${releaseWeeks.map((release, i) => renderReleaseWeek(model, release, releaseCoords[i], i === 0))}
+    ${releasePoints.map((release, i) => renderReleasePoint(model, release, releaseCoords[i], i === 0))}
   `
 }
 
 function renderReleaseInteractionStyle(model) {
-  const { paddedCount, releaseWeeks } = model
-  const releaseNearest = releaseWeekNearestMap(releaseWeeks, paddedCount)
-  const defaultWeekIdx = releaseWeeks[0].week_idx
+  const { dim, paddedCount, releasePoints } = model
+  const releaseNearest = releasePointNearestMap(releasePoints, paddedCount, dim)
+  const defaultReleaseId = releasePoints[0].id
 
   return html`
     <style>
@@ -439,11 +565,11 @@ function renderReleaseInteractionStyle(model) {
         }
       }
       ${range(0, paddedCount).map((weekIdx) => {
-        const nearestWeekIdx = releaseNearest[weekIdx]
-        if (nearestWeekIdx === undefined || nearestWeekIdx === null) return ''
+        const nearestReleaseId = releaseNearest[weekIdx]
+        if (nearestReleaseId === undefined || nearestReleaseId === null) return ''
         return html`
           .install-chart:has(.week[data-week="${weekIdx}"]:hover) {
-            .release-week[data-week="${nearestWeekIdx}"] {
+            .release-week[data-release="${nearestReleaseId}"] {
               .release-callout-group {
                 opacity: 1;
                 transition-duration: .1s;
@@ -456,7 +582,7 @@ function renderReleaseInteractionStyle(model) {
                 opacity: 1;
               }
             }
-            ${nearestWeekIdx !== defaultWeekIdx
+            ${nearestReleaseId !== defaultReleaseId
               ? html`
                 .release-week.is-default {
                   .release-callout-group { opacity: 0; }
@@ -470,8 +596,8 @@ function renderReleaseInteractionStyle(model) {
           }
         `
       })}
-      ${releaseWeeks.map(release => html`
-        .install-chart:has(.release-week[data-week="${release.week_idx}"] .release-point-hit:hover) {
+      ${releasePoints.map(release => html`
+        .install-chart:has(.release-week[data-release="${release.id}"] .release-point-hit:hover) {
           .week[data-week="${release.week_idx}"] .bar {
             fill: var(--install-bar-hover-color);
           }
@@ -481,19 +607,21 @@ function renderReleaseInteractionStyle(model) {
   `
 }
 
-function renderReleaseWeek(model, release, rCoord, isLatestRelease) {
-  const releaseHasStats = rCoord.has_stats
-  let releaseTitle = model.dates[release.week_idx] ?? ''
+function renderReleasePoint(model, release, rCoord, isLatestRelease) {
+  const releaseHasStats = release.has_stats
+  let releaseTitle = release.date
   if (releaseHasStats) {
-    const releaseVal = model.upgrades[release.week_idx] || 0
-    releaseTitle += ` | upgrades: ${grouping(releaseVal)}`
+    releaseTitle += ` | upgrades: ${grouping(release.rawValue)}`
+    if (release.period === 'daily') {
+      releaseTitle += ` | ${grouping(release.dailyValue)} on that day`
+    }
   }
 
   const releaseWeekClass = classes('release-week', isLatestRelease && 'is-default')
   const releasePointClasses = classes('release-point', !releaseHasStats && 'release-point-in-the-void')
 
   return html`
-    <g class="${releaseWeekClass}" data-week="${release.week_idx}">
+    <g class="${releaseWeekClass}" data-release="${release.id}" data-week="${release.week_idx}">
       <circle
         cx="${rCoord.x}"
         cy="${rCoord.y}"
@@ -512,7 +640,7 @@ function renderReleaseWeek(model, release, rCoord, isLatestRelease) {
 }
 
 function renderReleaseCallout(model, release, rCoord) {
-  const { dim, installs, lAxis, paddedCount, rAxis, upgrades } = model
+  const { dim, installs, lAxis, paddedCount, rAxis, upgradeSeries } = model
   const gapToLineStart = 4
   const gapToText = 4
   const minimumLineLength = 12
@@ -526,7 +654,12 @@ function renderReleaseCallout(model, release, rCoord) {
   // everything else.
   const lookStart = atLeast(release.week_idx - 4, 0)
   const lookEnd = atMost(release.week_idx + 4, paddedCount - 1)
-  const maxUpgradeVal = max(upgrades.slice(lookStart, lookEnd + 1))
+  const lookStartX = lookStart * dim.bar_w_gap
+  const lookEndX = (lookEnd + 1) * dim.bar_w_gap
+  const nearbyUpgradeValues = upgradeSeries.points
+    .filter(point => point.x >= lookStartX && point.x <= lookEndX)
+    .map(point => point.value)
+  const maxUpgradeVal = max(nearbyUpgradeValues)
   const maxInstallVal = max(installs.slice(lookStart, lookEnd + 1))
 
   let lineEndY
@@ -632,54 +765,36 @@ export function releaseWeekModel(releases, dates, max_week_idx) {
 
   return weeks.map(week_idx => ({
     week_idx,
-    versions: releaseVersionsForWeek(releasesByWeek.get(week_idx) ?? []),
+    versions: releaseVersions(releasesByWeek.get(week_idx) ?? []),
   }))
 }
 
-export function releaseWeekNearestMap(release_weeks, max_week_idx) {
-  if (!Array.isArray(release_weeks) || !Number.isFinite(max_week_idx) || max_week_idx <= 0) {
-    return []
-  }
-
-  const week_idxs = release_weeks
-    .map(release => release?.week_idx)
-    .filter(idx => Number.isInteger(idx))
-
-  if (week_idxs.length === 0) return []
+function releasePointNearestMap(releasePoints, maxWeekIdx, dim) {
+  if (releasePoints.length === 0) return []
 
   const map = []
-  for (let i = 0; i < max_week_idx; i += 1) {
-    let nearest = week_idxs[0]
-    let best_dist = Math.abs(i - nearest)
-    for (const week_idx of week_idxs) {
-      const dist = Math.abs(i - week_idx)
-      if (dist < best_dist || (dist === best_dist && week_idx < nearest)) {
-        nearest = week_idx
-        best_dist = dist
+  for (let i = 0; i < maxWeekIdx; i += 1) {
+    const x = weekX(i, dim)
+    let nearest = releasePoints[0]
+    let bestDistance = Math.abs(x - nearest.x)
+    for (const release of releasePoints) {
+      const distance = Math.abs(x - release.x)
+      if (distance < bestDistance || (distance === bestDistance && release.x < nearest.x)) {
+        nearest = release
+        bestDistance = distance
       }
     }
-    map.push(nearest)
+    map.push(nearest.id)
   }
 
   return map
 }
 
-export function releaseWeekCoords(release_weeks, upgrades, dim, r_axis, default_y) {
-  if (!Array.isArray(release_weeks)) return []
-  const upgradesList = Array.isArray(upgrades) ? upgrades : []
-  const coords = []
-
-  for (const release of release_weeks) {
-    const week_idx = release.week_idx
-    const has_stats = week_idx < upgradesList.length
-    const x = week_idx * dim.bar_w_gap + (dim.bar_w / 2)
-    const y = has_stats
-      ? r_axis.y_for(upgradesList[week_idx])
-      : default_y
-    coords.push({ x, y, has_stats })
-  }
-
-  return coords
+function releasePointCoords(releasePoints, rAxis, defaultY) {
+  return releasePoints.map(release => ({
+    x: release.x,
+    y: release.has_stats ? rAxis.y_for(release.value) : defaultY,
+  }))
 }
 
 function drawAxisWithLabels(axis, xPos, dim, cssClass = 'tick', textAnchor = 'end', offset = 6) {
@@ -775,7 +890,7 @@ function calloutLabelPosition(label, baseX, chartW, margin, charWidth) {
   return { anchor: 'middle', x: baseX }
 }
 
-function releaseVersionsForWeek(releases) {
+function releaseVersions(releases) {
   const sortedReleases = [...releases].sort((a, b) => {
     const maxA = parseSublimeTextMax(a?.sublime_text)
     const maxB = parseSublimeTextMax(b?.sublime_text)
