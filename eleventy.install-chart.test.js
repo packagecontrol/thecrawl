@@ -280,9 +280,9 @@ describe('upgradePointModel', () => {
 
     expect(model.usesDaily).toBe(true)
     expect(model.dailyPoints).toHaveLength(28)
-    expect(model.dailyPoints[0]).toMatchObject({ date: '2026-09-04', rawValue: 1, value: 28 })
+    expect(model.dailyPoints[0]).toMatchObject({ dailyValue: 1, date: '2026-09-04', value: 28 })
     expect(model.dailyPoints[0].x).toBeCloseTo(13 * 2.5 / 7)
-    expect(model.dailyPoints[27]).toMatchObject({ date: '2026-08-08', rawValue: 28, value: 217 })
+    expect(model.dailyPoints[27]).toMatchObject({ dailyValue: 28, date: '2026-08-08', value: 217 })
     expect(model.points.slice(28).map(point => point.week_idx)).toEqual([4, 5])
   })
 
@@ -362,12 +362,11 @@ describe('releasePointModel', () => {
 
     expect(points).toHaveLength(2)
     expect(points[0]).toMatchObject({
-      date: '2026-09-04',
       dailyValue: 2,
-      period: 'daily',
-      rawValue: 10,
+      date: '2026-09-04',
       value: 35,
       versions: ['2.0.0'],
+      weeklyValue: 10,
       week_idx: 0,
     })
     expect(points[0].x).toBe(dailyPoints[0].x)

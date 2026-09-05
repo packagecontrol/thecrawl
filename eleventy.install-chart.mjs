@@ -124,8 +124,8 @@ export function upgradePointModel(weeklyUpgrades, weeklyDates, dailyUpgrades, da
     if (x === null || x < 0) continue
     const rollingValues = dailyUpgrades.slice(i, i + DAILY_UPGRADE_ROLLING_DAYS)
     dailyPoints.push({
+      dailyValue: dailyUpgrades[i],
       date: dailyDates[i],
-      rawValue: dailyUpgrades[i],
       // A trailing seven-day total has the same units and typical scale as the
       // weekly series.
       value: sum(rollingValues),
@@ -141,7 +141,6 @@ export function upgradePointModel(weeklyUpgrades, weeklyDates, dailyUpgrades, da
   // the rolling daily window.
   const weeklyPoints = weeklyUpgrades
     .map((value, week_idx) => ({
-      rawValue: value,
       value,
       week_idx,
       x: weekX(week_idx, dim),
@@ -177,12 +176,11 @@ export function releasePointModel(releases, weeklyDates, weeklyUpgrades, dailyPo
   const points = [...dailyReleases.entries()].map(([date, group]) => {
     const weekIdx = isoWeekIndex(weeklyDates, date)
     return {
+      dailyValue: group.dailyPoint.dailyValue,
       date,
-      dailyValue: group.dailyPoint.rawValue,
       has_stats: true,
-      period: 'daily',
-      rawValue: weeklyUpgrades[weekIdx] ?? 0,
       value: group.dailyPoint.value,
+      weeklyValue: weeklyUpgrades[weekIdx] ?? 0,
       versions: releaseVersions(group.releases),
       week_idx: weekIdx,
       x: group.dailyPoint.x,
@@ -191,14 +189,13 @@ export function releasePointModel(releases, weeklyDates, weeklyUpgrades, dailyPo
 
   for (const releaseWeek of releaseWeekModel(weeklyReleases, weeklyDates, maxWeekIdx)) {
     const hasStats = releaseWeek.week_idx < weeklyUpgrades.length
-    const rawValue = hasStats ? weeklyUpgrades[releaseWeek.week_idx] : 0
+    const weeklyValue = hasStats ? weeklyUpgrades[releaseWeek.week_idx] : 0
     points.push({
       ...releaseWeek,
       date: weeklyDates[releaseWeek.week_idx] ?? '',
       has_stats: hasStats,
-      period: 'weekly',
-      rawValue,
-      value: rawValue,
+      value: weeklyValue,
+      weeklyValue,
       x: weekX(releaseWeek.week_idx, dim),
     })
   }
@@ -614,8 +611,8 @@ function renderReleasePoint(model, release, rCoord, isLatestRelease) {
   const releaseHasStats = release.has_stats
   let releaseTitle = release.date
   if (releaseHasStats) {
-    releaseTitle += ` | upgrades: ${grouping(release.rawValue)}`
-    if (release.period === 'daily') {
+    releaseTitle += ` | upgrades: ${grouping(release.weeklyValue)}`
+    if (release.dailyValue !== undefined) {
       releaseTitle += ` | ${grouping(release.dailyValue)} on that day`
     }
   }
