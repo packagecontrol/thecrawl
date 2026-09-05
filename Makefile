@@ -1,5 +1,11 @@
 ARTIFACTS := registry.json channel.json logs.json
 
+ifeq ($(CI),true)
+NPM_INSTALL := npm ci --prefer-offline --no-audit --no-fund
+else
+NPM_INSTALL := npm install
+endif
+
 .PHONY: build dev test artifacts history dependencies clean
 
 build: history
@@ -26,7 +32,7 @@ history: dependencies artifacts
 dependencies: node_modules/.package-lock.json
 
 node_modules/.package-lock.json: package.json package-lock.json
-	npm ci
+	$(NPM_INSTALL)
 
 clean:
 	rm -rf _site
