@@ -41,7 +41,6 @@
     "https://raw.githubusercontent.com/haru01/EasyOpen/master/packages.json",
     "https://raw.githubusercontent.com/hellpf/GimpRun/master/packages.json",
     "https://raw.githubusercontent.com/Hexenon/FoxCode/master/packages.json",
-    "https://raw.githubusercontent.com/hgraca/sublime-text-2-php-refactor/master/packages.json",
     "https://raw.githubusercontent.com/himynameisjonas/sublime-ia-writer-opener/master/packages.json",
     "https://raw.githubusercontent.com/ikeike443/Sublime-Scalariform/master/packages.json",
     "https://raw.githubusercontent.com/ivancduran/krakensnippets/master/packages.json",
@@ -53,7 +52,6 @@
     "https://raw.githubusercontent.com/jfernandez/SublimeRailsEval/master/packages.json",
     "https://raw.githubusercontent.com/jfromaniello/sublime-unity-recents/master/packages.json",
     "https://raw.githubusercontent.com/joacodeviaje/aftersave/master/packages.json",
-    "https://raw.githubusercontent.com/joomlapro/joomla3-sublime-snippets/master/packages.json",
     "https://raw.githubusercontent.com/jrappen/sublime-packages/master/package_control_channel.json",
     "https://raw.githubusercontent.com/kairyou/sublime_packages/master/packages.json",
     "https://raw.githubusercontent.com/Kaizhi/SublimeUpdater/master/packages.json",
@@ -13753,6 +13751,26 @@
       "first_seen": "2026-06-18T14:28:47Z"
     },
     {
+      "details": "https://github.com/mwei-io/CompareLive",
+      "labels": [
+        "diff",
+        "compare",
+        "productivity",
+        "text manipulation",
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "CompareLive",
+      "first_seen": "2026-09-05T15:16:32Z"
+    },
+    {
       "name": "Compass",
       "details": "https://github.com/whatwedo/sublime-text-compass",
       "author": "whatwedo",
@@ -15243,16 +15261,9 @@
     },
     {
       "name": "CreativeCrocodile",
-      "details": "https://github.com/Abban/CreativeCrocodile",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2016-07-19T10:50:20Z"
+      "first_seen": "2016-07-19T10:50:20Z",
+      "removed": "2026-09-05T15:16:32Z"
     },
     {
       "name": "Creeper Reverse Polish Language",
@@ -22559,19 +22570,12 @@
     },
     {
       "name": "EXAPUNKS",
-      "details": "https://github.com/cafuneandchill/exapunks-syntax",
       "labels": [
         "language syntax"
       ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2021-07-22T17:44:02Z"
+      "first_seen": "2021-07-22T17:44:02Z",
+      "removed": "2026-09-05T15:16:32Z"
     },
     {
       "details": "https://github.com/SublimeText/ExcelExec",
@@ -38428,19 +38432,12 @@
     },
     {
       "name": "Kohana 2.x Snippets",
-      "details": "https://github.com/golf3gtiii/Kohana234-sublimeText2-plugin",
       "labels": [
         "snippets"
       ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "branch": "master"
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2013-05-19T02:11:37Z"
+      "first_seen": "2013-05-19T02:11:37Z",
+      "removed": "2026-09-05T15:16:32Z"
     },
     {
       "name": "Kohana 3 Snippets",
@@ -60322,6 +60319,23 @@
       "first_seen": "2014-10-15T14:05:31Z"
     },
     {
+      "name": "raylang",
+      "details": "https://github.com/ray-language/sublime-raylang",
+      "description": "Syntax highlighting for the raylang programming language (.ray), plus its compiled templates (.ray.html) and LSP setup.",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-05T15:16:32Z"
+    },
+    {
       "name": "Razor",
       "labels": [],
       "first_seen": "2013-09-19T12:45:23Z",
@@ -64897,19 +64911,12 @@
     },
     {
       "name": "SCSS Expander",
-      "details": "https://github.com/garetht/sublime-scss-expander",
       "labels": [
         "language syntax"
       ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2014-05-05T10:10:35Z"
+      "first_seen": "2014-05-05T10:10:35Z",
+      "removed": "2026-09-05T15:16:32Z"
     },
     {
       "name": "SCSS Snippets",
@@ -67331,16 +67338,9 @@
     },
     {
       "name": "SingularitySnippets",
-      "details": "https://github.com/blcook223/SingularitySnippets",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2015-02-09T19:08:02Z"
+      "first_seen": "2015-02-09T19:08:02Z",
+      "removed": "2026-09-05T15:16:32Z"
     },
     {
       "name": "Sinon",
@@ -85193,6 +85193,24 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2026-01-29T19:30:48Z"
+    },
+    {
+      "name": "Ungulate Theme",
+      "details": "https://github.com/dontwanttothink/ungulate-theme",
+      "homepage": "https://tangled.org/dontwanttoth.ink/ungulate-theme",
+      "description": "An adaptive theme based on Ayu.",
+      "labels": [
+        "theme"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-05T15:16:32Z"
     },
     {
       "name": "Unicode Character Highlighter",
