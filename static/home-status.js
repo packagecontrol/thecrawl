@@ -6,9 +6,13 @@ import {
 
 const shellEl = document.querySelector('[data-home-status]')
 const ribbonEl = document.querySelector('[data-home-status-ribbon]')
-const LOG_URL = document.querySelector(
+let logsUrl = document.querySelector(
   'meta[name="thecrawl-logs"]',
 )?.content
+const DATA_MANIFEST_URL = document.querySelector(
+  'meta[name="thecrawl-data-manifest"]',
+)?.content
+const LOG_REFRESH_MS = 10 * 60 * 1000
 init()
 
 function init() {
@@ -17,12 +21,34 @@ function init() {
   loadLogs().then(renderRibbon).catch((error) => {
     console.error('Failed to load homepage status:', error)
   })
+  startLogRefreshInterval()
 }
 
-async function loadLogs() {
-  const response = await fetch(LOG_URL)
+async function loadLogs(url = logsUrl) {
+  const response = await fetch(url)
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
   return response.json()
+}
+
+async function refreshLogs() {
+  try {
+    const response = await fetch(DATA_MANIFEST_URL, { cache: 'no-cache' })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+    const latestLogsUrl = (await response.json())?.logs_url
+    if (!latestLogsUrl || latestLogsUrl === logsUrl) return
+
+    const entries = await loadLogs(latestLogsUrl)
+    logsUrl = latestLogsUrl
+    renderRibbon(entries)
+  }
+  catch (error) {
+    console.error('Failed to refresh homepage status:', error)
+  }
+}
+
+function startLogRefreshInterval() {
+  window.setInterval(refreshLogs, LOG_REFRESH_MS)
 }
 
 function renderRibbon(entries) {
