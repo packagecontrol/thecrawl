@@ -20,11 +20,9 @@ build:
 		-o _site/channel_st3.json "https://github.com/packagecontrol/thecrawl/releases/download/the-st3-channel/channel_st3.json"
 
 update-data:
-	mkdir -p static
 	curl -L --fail --parallel \
 		-o workspace.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/workspace.json" \
-		-o stats.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/stats.json" \
-		-o static/logs.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/logs.json"
+		-o stats.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/stats.json"
 	curl -L --fail \
 		-o readmes.json "https://github.com/packagecontrol/thecrawl/releases/download/crawler-status/readmes.json" \
 		|| printf '{}\n' > readmes.json

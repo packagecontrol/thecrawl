@@ -20,8 +20,7 @@ The cache rules are ordered:
 2. Cache commit-busted source assets (`/static_*`) for one year at the edge and
    in browsers.
 3. Cache build-busted crawler data (`/data_*`) for one year at the edge and in
-   browsers. This includes `search-index.json`, `logs.json`, and generated label
-   icon sprites.
+   browsers. This includes `search-index.json` and generated label icon sprites.
 4. Cache site HTML for one day at the Cloudflare edge, with a short browser TTL.
 
 The response-header transform rules currently set short browser caching for
