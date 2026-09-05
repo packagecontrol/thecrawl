@@ -388,7 +388,7 @@ function renderAverageLines(model) {
 }
 
 function renderUpgradesOverlay(model) {
-  const { count, dim, rAxis, upgradeSeries } = model
+  const { dim, rAxis, upgradeSeries } = model
   const { points, usesDaily } = upgradeSeries
   // Only show the upgrades line when there is at least one upgrade.
   if (sum(points.map(point => point.value)) <= 0) {
@@ -474,18 +474,8 @@ function renderUpgradesOverlay(model) {
     </clipPath>
     <g clip-path="url(#clip-upgrades)">
       <path d="${d}" class="upgrades-line" />
-      ${!usesDaily && count > 1 ? renderRunningWeekUpgradeLine(model) : ''}
     </g>
   `
-}
-
-function renderRunningWeekUpgradeLine(model) {
-  const { dim, rAxis, upgrades } = model
-  const xWeek0 = dim.bar_w / 2
-  const yWeek0 = rAxis.y_for(upgrades[0])
-  const xWeek1 = 1 * dim.bar_w_gap + (dim.bar_w / 2)
-  const yWeek1 = rAxis.y_for(upgrades[1])
-  return line(xWeek0, yWeek0, xWeek1, yWeek1, 'upgrades-line upgrades-line-dashed')
 }
 
 function renderReleases(model) {

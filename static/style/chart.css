@@ -130,9 +130,6 @@ section:has(.chart-container)::after {
     pointer-events: none;
     transition: stroke-width .2s ease-in-out;
   }
-  .upgrades-line-dashed {
-    stroke-dasharray: 1 4;
-  }
   /*
     Interaction-heavy release callout selectors live in the chart renderer's
     dynamic <style> block in eleventy.install-chart.mjs.
