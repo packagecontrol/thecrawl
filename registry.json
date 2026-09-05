@@ -55708,7 +55708,7 @@
       "first_seen": "2014-05-25T11:00:44Z"
     },
     {
-      "details": "https://github.com/aziz/PlainTasks",
+      "details": "https://github.com/SublimeText/PlainTasks",
       "labels": [
         "language syntax",
         "todo",
@@ -55716,8 +55716,12 @@
       ],
       "releases": [
         {
-          "sublime_text": "*",
-          "branch": "master"
+          "sublime_text": "<3092",
+          "tags": "st2/"
+        },
+        {
+          "sublime_text": ">=3092",
+          "tags": "st3/"
         }
       ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
@@ -67554,6 +67558,22 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2014-03-15T01:10:47Z"
+    },
+    {
+      "name": "Slang",
+      "details": "https://github.com/jwortmann/sublime-slang",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-05T17:29:10Z"
     },
     {
       "name": "Slate",
