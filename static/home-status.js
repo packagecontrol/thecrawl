@@ -6,6 +6,7 @@ import {
 
 const shellEl = document.querySelector('[data-home-status]')
 const ribbonEl = document.querySelector('[data-home-status-ribbon]')
+const tooltipDateEl = document.querySelector('[data-home-status-tooltip-date]')
 let logsUrl = document.querySelector(
   'meta[name="thecrawl-logs"]',
 )?.content
@@ -22,6 +23,8 @@ function init() {
   loadLogs().then(renderRibbon).catch((error) => {
     console.error('Failed to load homepage status:', error)
   })
+  ribbonEl.addEventListener('pointerover', showRibbonDate)
+  ribbonEl.addEventListener('pointerleave', hideRibbonDate)
   startLogRefreshInterval()
 }
 
@@ -71,16 +74,31 @@ function renderRibbon(entries, animate = false) {
     const segment = document.createElement('span')
     segment.className = `home-status-segment is-${status}`
     segment.dataset.ribbonKey = ribbonSegmentKey(period)
+    segment.dataset.ribbonDate = formatRibbonDate(period.entry.date)
     segment.style.flexGrow = String(period.duration)
     applyDurationStops(segment, period.duration)
     fragment.appendChild(segment)
   }
 
   track.appendChild(fragment)
+  hideRibbonDate()
   ribbonEl.replaceChildren(track)
   ribbonEl.setAttribute('aria-label', ribbonLabel(periods, counts))
   ribbonEl.setAttribute('aria-busy', 'false')
   if (shouldAnimate) animateRibbonTrack(track, previousRects)
+}
+
+function showRibbonDate(event) {
+  const segment = event.target.closest?.('.home-status-segment')
+  const date = segment?.dataset.ribbonDate
+  if (!date || !tooltipDateEl) return
+
+  tooltipDateEl.textContent = date
+  shellEl.classList.add('is-date-hovered')
+}
+
+function hideRibbonDate() {
+  shellEl.classList.remove('is-date-hovered')
 }
 
 function ribbonSegmentRects() {
@@ -132,6 +150,12 @@ function ribbonLabel(periods, counts) {
     `Crawler status from ${earliest} to ${latest}.`,
     `${counts.okay} okay, ${counts.warning} warnings, and ${counts.error} errors.`,
   ].join(' ')
+}
+
+function formatRibbonDate(value) {
+  const timestamp = Date.parse(value || '')
+  if (!Number.isFinite(timestamp)) return ''
+  return `– ${new Date(timestamp).toISOString().slice(0, 10)} –`
 }
 
 function formatTimestamp(value) {

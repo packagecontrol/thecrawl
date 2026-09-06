@@ -92,9 +92,33 @@ html.page-home[data-theme='dark'] body::after {
   mask-image: linear-gradient(134deg, transparent, black);
 }
 
-html.page-home[data-theme='dark'] .home-status {
+html.page-home[data-theme='dark'] .home-status-link {
   filter: invert(1.1) brightness(1.1) hue-rotate(222deg)
-    drop-shadow(0px 0px 34px #eee) blur(60px);
+    drop-shadow(0 0 34px #eee) blur(60px);
+}
+
+html.page-home[data-theme='dark'] .home-status-tooltip {
+  top: 50%;
+  padding: 0.15em 0.7em;
+  border: 1px solid hsl(0deg 0% 93.62%);
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+html.page-home[data-theme='dark'] .home-status-tooltip [data-home-status-tooltip-date] {
+  display: none;
+}
+
+html.page-home[data-theme='dark'] .home-status-tooltip-action {
+  display: inline;
+}
+
+html.page-home[data-theme='dark'] .home-status-link:hover + .home-status-tooltip,
+html.page-home[data-theme='dark'] .home-status-link:focus-visible + .home-status-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(-50%, -50%);
+  transition-delay: 0s;
 }
 
 html.page-status[data-theme='dark'] {
@@ -339,11 +363,54 @@ svg {
 }
 
 .home-status-ribbon {
+  position: relative;
   height: clamp(1.35rem, 15.4vw, 7.05rem);
+  overflow: hidden;
   background: var(--background-3);
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
+}
+
+.home-status-tooltip {
+  --home-status-tooltip-fade-duration: 120ms;
+
+  position: absolute;
+  left: 50%;
+  z-index: 2;
+  visibility: hidden;
+  opacity: 0;
+  transform: translate(-50%, -46%);
+  letter-spacing: 0.055em;
+  pointer-events: none;
+  white-space: nowrap;
+  transition:
+    opacity var(--home-status-tooltip-fade-duration) ease,
+    transform var(--home-status-tooltip-fade-duration) ease,
+    visibility 0s linear var(--home-status-tooltip-fade-duration);
+}
+
+html.page-home[data-theme='light'] .home-status-tooltip {
+  top: 120%;
+  padding: 0.15em 0.7em;
+  border-radius: 3px;
+  color: hsl(0deg 11.03% 28.92%);
+  font-size: 12px;
+}
+
+.home-status-tooltip-action {
+  display: none;
+}
+
+.home-status.is-date-hovered .home-status-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(-50%, -50%);
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-status-tooltip {
+    transition: none;
+  }
 }
 
 .home-status-track {
