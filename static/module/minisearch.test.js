@@ -2,6 +2,7 @@ import MiniSearch from 'minisearch'
 import { beforeAll, describe, expect, it } from 'vitest'
 
 import { createMinisearch, customTokenizer } from './minisearch.js'
+import { Search } from './search.js'
 
 describe('MiniSearch.search', () => {
   const createSearch = packages => createMinisearch(MiniSearch, packages)
@@ -24,6 +25,32 @@ describe('MiniSearch.search', () => {
     const results = minisrch.search(query)
     expect(results.some(entry => entry.name === 'GitSavvy')).toBe(true)
   })
+
+  it.each(['ChineseChar', 'chinesechar', 'chinesech'])(
+    'matches the partial CamelCase query %s without matching separate words',
+    (query) => {
+      const minisrch = createSearch([
+        {
+          name: 'ConvertChineseCharacters',
+          description: '',
+          author: '',
+          platforms: [],
+          labels: [],
+        },
+        {
+          name: 'Auto-Spacing',
+          description: 'Adds spacing between Chinese characters',
+          author: '',
+          platforms: [],
+          labels: [],
+        },
+      ])
+      const search = new Search(minisrch)
+
+      expect(search.search(query).map(entry => entry.name))
+        .toEqual(['ConvertChineseCharacters'])
+    },
+  )
 
   it('stores both installation counts and the recent period for result cards', () => {
     const minisrch = createSearch([{
@@ -57,6 +84,24 @@ describe('MiniSearch.search', () => {
     ])
     const results = minisrch.search(query)
     expect(results.some(entry => entry.name === 'AlpineJS')).toBe(true)
+  })
+
+  it.each([
+    ['menu', ['menu', 'menu']],
+    ['GitSavvy', ['Git', 'Savvy', 'GitSavvy', 'GitSavvy']],
+    [
+      'ConvertChineseCharacters',
+      [
+        'Convert',
+        'Chinese',
+        'Characters',
+        'ConvertChineseCharacters',
+        'ConvertChineseCharacters',
+        'ChineseCharacters',
+      ],
+    ],
+  ])('weights literal token forms while adding search variants for %s', (input, expected) => {
+    expect(customTokenizer(input)).toEqual(expected)
   })
 
   it('normalizes exact programming language alias tokens', () => {

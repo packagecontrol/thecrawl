@@ -20,27 +20,18 @@ try {
   SPLIT_TOKEN_REGEX = /[^a-z0-9#+]+/i
 }
 
-function normalizeToken(token) {
-  for (const [pattern, replacement] of VARIANT_REPLACEMENTS) {
-    token = token.replace(pattern, replacement)
-  }
-  return token
+export function customTokenizer(str) {
+  return rawTokens(str).flatMap(indexTokens).map(normalizeToken)
 }
 
-export function customTokenizer(str) {
-  return str
-    .split(SPLIT_TOKEN_REGEX)
-    .flatMap((token) => {
-      if (!token) {
-        return []
-      }
-      return token
-        .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-        .split(SPLIT_TOKEN_REGEX)
-        .concat(token)
-    })
-    .map(normalizeToken)
+export function customSearchTokenizer(str) {
+  return rawTokens(str).map(normalizeToken)
+}
+
+export function createMinisearch(MiniSearch, data) {
+  const instance = createMinisearchInstance(MiniSearch)
+  instance.addAll(data)
+  return instance
 }
 
 function createMinisearchInstance(MiniSearch) {
@@ -70,12 +61,31 @@ function createMinisearchInstance(MiniSearch) {
     searchOptions: {
       boost: { author: 2, name: 2 },
       prefix: true,
+      tokenize: customSearchTokenizer,
     },
   })
 }
 
-export function createMinisearch(MiniSearch, data) {
-  const instance = createMinisearchInstance(MiniSearch)
-  instance.addAll(data)
-  return instance
+function rawTokens(str) {
+  return str.split(SPLIT_TOKEN_REGEX).filter(Boolean)
+}
+
+function indexTokens(token) {
+  const parts = splitCamelCase(token)
+  const suffixes = parts.slice(0, -1).map((_, index) => parts.slice(index).join(''))
+  return parts.concat(token, suffixes)
+}
+
+function splitCamelCase(token) {
+  return token
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .split(SPLIT_TOKEN_REGEX)
+}
+
+function normalizeToken(token) {
+  for (const [pattern, replacement] of VARIANT_REPLACEMENTS) {
+    token = token.replace(pattern, replacement)
+  }
+  return token
 }
