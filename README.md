@@ -21,7 +21,11 @@ npm install
 download all the data, e.g. using `gh`, the GitHub CLI:
 
 ```bash
-gh release download "crawler-status" --clobber
+gh release download "crawler-status" \
+  --pattern workspace.json \
+  --pattern stats.json \
+  --pattern readmes.json \
+  --clobber
 ```
 
 Now, just run eleventy directly in watch mode, e.g.

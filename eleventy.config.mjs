@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { spawnSync } from 'child_process'
 import { minify } from 'terser'
 import * as esbuild from 'esbuild'
 import { HtmlBasePlugin } from '@11ty/eleventy'
@@ -50,8 +49,6 @@ const MAGIC_WEIGHTS = {
   longevity: 0.1,
   recency: 0.05,
 }
-const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
-const STATUS_TAG_WINDOW_DAYS = 30
 const SUCCESSOR_NOTICE_WINDOW_DAYS = 365
 const HOME_SECTION_PACKAGE_LIMIT = 9
 const REMARKABLE_PACKAGE_LIMIT = 40
@@ -116,55 +113,6 @@ function toTimestamp(value) {
     : `${str.replace(' ', 'T')}Z`
   const parsed = Date.parse(isoCandidate)
   return Number.isNaN(parsed) ? null : parsed
-}
-
-function readStatusSemverTags() {
-  const git = spawnSync(
-    'git',
-    [
-      'for-each-ref',
-      '--sort=-taggerdate',
-      '--format=%(refname:short)\t%(taggerdate:iso-strict)',
-      'refs/tags',
-    ],
-    { encoding: 'utf8' },
-  )
-
-  if (git.status !== 0) {
-    const reason = (git.stderr || git.stdout || '').trim() || `exit code ${git.status}`
-    console.warn(`[eleventy] Failed to load git tags for status markers: ${reason}`)
-    return []
-  }
-
-  const semverTags = git.stdout
-    .split(/\r?\n/)
-    .map((line) => {
-      const [tag, taggerDate] = line.split('\t')
-      return { tag: String(tag || '').trim(), date: String(taggerDate || '').trim() }
-    })
-    .filter(({ tag, date }) => tag && date)
-    .filter(({ tag }) => SEMVER_TAG_RE.test(tag))
-    .filter(({ date }) => Number.isFinite(Date.parse(date)))
-
-  return statusTagsForChartWindow(semverTags)
-}
-
-function statusTagsForChartWindow(tags, {
-  days = STATUS_TAG_WINDOW_DAYS,
-  nowTimestamp = Date.now(),
-} = {}) {
-  const cutoff = nowTimestamp - Math.max(0, Math.floor(days)) * MS_IN_DAY
-  const selected = []
-
-  for (const tag of tags) {
-    // The status chart needs tags in its visible day window plus exactly the
-    // newest older tag for the left-edge overflow marker.
-    // Hence break after push.
-    selected.push(tag)
-    if (Date.parse(tag.date) < cutoff) break
-  }
-
-  return selected
 }
 
 function computeMagicMetadata(packages) {
@@ -396,12 +344,10 @@ export default async function (eleventyConfig) {
     { static: staticOutputDir },
     {
       filter: src => !src.endsWith('.test.js')
-        && !src.endsWith('logs.json')
         && !src.endsWith('label-icons.svg')
         && !src.endsWith('label-icons-extra.svg'),
     },
   )
-  eleventyConfig.addPassthroughCopy({ 'static/logs.json': `${dataOutputDir}/logs.json` })
   eleventyConfig.addWatchTarget('./eleventy.install-chart.mjs')
 
   eleventyConfig.on('eleventy.before', () => {
@@ -705,13 +651,6 @@ export default async function (eleventyConfig) {
     prodOrigin,
     devOrigin,
     disableLiveLink: Boolean(process.env.DISABLE_L_LINK),
-  })
-
-  // Send the full tag history so the browser can decide what is visible and
-  // what belongs behind the left-edge overflow pointer using the current day.
-  const statusTags = readStatusSemverTags()
-  eleventyConfig.addGlobalData('status_tag_dates_json', () => {
-    return JSON.stringify(statusTags)
   })
 
   // Default permalink: output files with their extension (e.g., /page.html)

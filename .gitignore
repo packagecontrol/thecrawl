@@ -56,7 +56,6 @@ _site/*
 .source_repositories/
 source-model.json
 channel.json
-logs.json
 readmes.json
 readmes_rendered.json
 registry.json
