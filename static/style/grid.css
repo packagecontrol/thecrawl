@@ -409,7 +409,11 @@ section[name="labels"] .grid {
 
 .card-result .description {
   font-size: 1rem;
-  max-width: calc(var(--max-line) * 5/6);
+  max-width: calc(var(--max-line) * 5 / 6);
   padding: 0;
   margin: 0;
+  overflow-wrap: anywhere;
+  text-indent: -0.5ch;
+  padding-left: 0.5ch;
+  text-wrap: pretty;
 }
