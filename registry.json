@@ -6284,16 +6284,9 @@
     },
     {
       "name": "Bidirectional text support",
-      "details": "https://github.com/praveenvijayan/Sublime-Text-2-BIDI",
-      "releases": [
-        {
-          "sublime_text": "<3000",
-          "branch": "master"
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2013-08-14T00:40:12Z"
+      "first_seen": "2013-08-14T00:40:12Z",
+      "removed": "2026-09-07T12:36:22Z"
     },
     {
       "name": "Bigine",
@@ -63093,6 +63086,26 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2018-09-11T22:39:12Z"
+    },
+    {
+      "name": "RTLAssistant",
+      "details": "https://github.com/jd1378/sublime_rtl_assistant",
+      "labels": [
+        "text manipulation",
+        "unicode"
+      ],
+      "previous_names": [
+        "Bidirectional text support"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-07T12:36:22Z"
     },
     {
       "name": "RuboCop",
