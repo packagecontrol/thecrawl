@@ -11,7 +11,6 @@ endif
 build:
 	$(NPM_INSTALL)
 	$(MAKE) up
-	$(MAKE) render-readmes
 	# compile eleventy (production)
 	ELEVENTY_ENV=production NODE_ENV=production npx @11ty/eleventy --quiet
 	# add compiled channels for public consumption
@@ -36,6 +35,7 @@ build-source-map:
 
 up:
 	$(MAKE) update-data
+	$(MAKE) render-readmes
 	$(MAKE) build-source-map
 
 build-emoji:
