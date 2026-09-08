@@ -150,7 +150,7 @@
   {% endif %}
 {% endmacro %}
 
-{% macro labels(pkg, with_icons=false) %}
+{% macro labels(pkg, with_icons=false, with_failure=false) %}
   {% set label_buttons -%}
     {%- for label in pkg.labels %}
       {% set q = searchQueryFor('label', label) %}
@@ -194,6 +194,16 @@
         {% endif %}
       </li>
     {%- endfor -%}
+
+    {%- if with_failure -%}
+      {% set failure_status = pkg.fail_reason | failure_status %}
+      {% if failure_status %}
+        <li class="package-failure">
+          <span aria-hidden="true">{{ util.icon('warning') }}</span>
+          <span>Server responded with "{{ failure_status }}"</span>
+        </li>
+      {% endif %}
+    {%- endif -%}
   {%- endset %}
 
   {% if label_buttons | trim %}
