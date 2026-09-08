@@ -68,7 +68,7 @@ async function animateArtifactCount(element, target, persist = true) {
   element.dataset.artifactCountValue = String(target)
   if (persist) writeSeenCount(name, target)
 
-  if (start === target) {
+  if (start === target || prefersReducedMotion()) {
     finishCountAnimation(element, target, revision)
     return
   }

@@ -2,4 +2,11 @@
 permalink: /data-manifest.json
 eleventyExcludeFromCollections: true
 ---
-{"logs_url":"{{ logs_url }}","crawl_history_url":"{{ crawl_history_url }}"}
+{
+  "logs_url": "{{ logs_url }}",
+  "crawl_history_url": "{{ crawl_history_url }}",
+  "artifact_counts": {
+    "channel": {{ artifact_counts.channelEntries }},
+    "registry": {{ artifact_counts.registryEntries }}
+  }
+}

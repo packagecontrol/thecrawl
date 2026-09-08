@@ -13,7 +13,7 @@ let logsUrl = document.querySelector(
 const DATA_MANIFEST_URL = document.querySelector(
   'meta[name="thecrawl-data-manifest"]',
 )?.content
-const LOG_REFRESH_MS = 10 * 60 * 1000
+const DATA_REFRESH_MS = 10 * 60 * 1000
 const RIBBON_TRANSITION_MS = 650
 init()
 
@@ -25,7 +25,7 @@ function init() {
   })
   ribbonEl.addEventListener('pointerover', showRibbonDate)
   ribbonEl.addEventListener('pointerleave', hideRibbonDate)
-  startLogRefreshInterval()
+  startDataRefreshInterval()
 }
 
 async function loadLogs(url = logsUrl) {
@@ -34,12 +34,15 @@ async function loadLogs(url = logsUrl) {
   return response.json()
 }
 
-async function refreshLogs() {
+async function refreshData() {
   try {
     const response = await fetch(DATA_MANIFEST_URL, { cache: 'no-cache' })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
-    const latestLogsUrl = (await response.json())?.logs_url
+    const manifest = await response.json()
+    refreshArtifactCounts(manifest?.artifact_counts)
+
+    const latestLogsUrl = manifest?.logs_url
     if (!latestLogsUrl || latestLogsUrl === logsUrl) return
 
     const entries = await loadLogs(latestLogsUrl)
@@ -47,12 +50,23 @@ async function refreshLogs() {
     renderRibbon(entries, true)
   }
   catch (error) {
-    console.error('Failed to refresh homepage status:', error)
+    console.error('Failed to refresh homepage data:', error)
   }
 }
 
-function startLogRefreshInterval() {
-  window.setInterval(refreshLogs, LOG_REFRESH_MS)
+function startDataRefreshInterval() {
+  window.setInterval(refreshData, DATA_REFRESH_MS)
+}
+
+async function refreshArtifactCounts(counts) {
+  if (!counts || typeof window.animateArtifactCounts !== 'function') return
+
+  try {
+    await window.animateArtifactCounts(counts)
+  }
+  catch (error) {
+    console.error('Failed to refresh homepage artifact counts:', error)
+  }
 }
 
 function renderRibbon(entries, animate = false) {
