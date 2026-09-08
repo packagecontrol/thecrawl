@@ -1,0 +1,18 @@
+{
+  "name": "default",
+  "phase": "http_response_cache_settings",
+  "rules": [
+    {
+      "description": "Tag volatile package site content",
+      "expression": "(http.host eq \"packages.sublimetext.io\" and not starts_with(http.request.uri.path, \"/static_\") and not starts_with(http.request.uri.path, \"/data_\"))",
+      "action": "set_cache_tags",
+      "action_parameters": {
+        "operation": "add",
+        "values": [
+          "package-site-volatile"
+        ]
+      },
+      "enabled": true
+    }
+  ]
+}
