@@ -531,6 +531,43 @@ html.page-home[data-theme='light'] .home-status-tooltip {
   margin-bottom: 0;
 }
 
+.artifact-count {
+  display: inline-block;
+  color: var(--foreground-1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition: color 140ms ease-out, text-shadow 220ms ease-out;
+}
+
+.artifact-count-visual {
+  display: inline-flex;
+  height: 1em;
+  line-height: 1;
+}
+
+.artifact-count-digit,
+.artifact-count-digit-window {
+  display: block;
+  width: 13px;
+  height: 1em;
+  flex: none;
+  text-align: center;
+}
+
+.artifact-count-digit-window {
+  overflow: hidden;
+}
+
+.artifact-count-digit-track {
+  display: block;
+  will-change: transform;
+}
+
+.artifact-count.is-rolling {
+  color: var(--orange-2);
+  text-shadow: 0 0 0.65em color-mix(in srgb, var(--orange-1) 28%, transparent);
+}
+
 .artifact-list a code {
   background: transparent;
   padding: 0;
@@ -807,6 +844,10 @@ html.page-home[data-theme='light'] .home-status-tooltip {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .artifact-count.is-rolling {
+    text-shadow: none;
+  }
+
   *,
   *::before,
   *::after {
