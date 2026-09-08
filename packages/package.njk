@@ -36,14 +36,15 @@ page_type: package
     <p class="description">{{ pkg.description }}</p>
   {% endif %}
 
-  {% if pkg.fail_reason and not pkg.removed %}
+  {% set failure_status = pkg.fail_reason | failure_status %}
+  {% if pkg.fail_reason and not pkg.removed and not failure_status %}
     {#
       after removal the failed state does not necessarily reflect the reason for removal
       the failure is basically only relevant for packages still in the registry
     #}
     <aside class="warning-message">
       {{ util.icon('warning') }}
-      <h2>Updating our information on this package failed:</h2>
+      <h2>Crawling this package failed:</h2>
       <p>{{ pkg.fail_reason }}</p>
     </aside>
   {% endif %}
@@ -124,7 +125,7 @@ page_type: package
 
   {% if (pkg.labels and pkg.labels | length) or (pkg.normalized_labels and pkg.normalized_labels | length) %}
     <div class="package-labels">
-      {{ pack.labels(pkg, true) }}
+      {{ pack.labels(pkg, true, not pkg.removed) }}
 
       {% if pkg.normalized_labels and pkg.normalized_labels | length %}
         <aside class="label-normalization-note">

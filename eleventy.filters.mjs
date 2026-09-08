@@ -22,6 +22,20 @@ const longDateFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }
 const compactNumberFormatter = new Intl.NumberFormat('en', { notation: 'compact' })
 const groupedNumberFormatter = new Intl.NumberFormat('en', { useGrouping: true })
 const labelSortCollator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' })
+const FAILURE_STATUS_DESCRIPTIONS = {
+  404: 'Not Found',
+  500: 'Internal Server Error',
+  501: 'Not Implemented',
+  502: 'Bad Gateway',
+  503: 'Service Unavailable',
+  504: 'Gateway Timeout',
+  505: 'HTTP Version Not Supported',
+  506: 'Variant Also Negotiates',
+  507: 'Insufficient Storage',
+  508: 'Loop Detected',
+  510: 'Not Extended',
+  511: 'Network Authentication Required',
+}
 {
   const rawSources = fs.readFileSync(sourcesPath, 'utf8')
   const sourcesData = JSON.parse(rawSources)
@@ -89,6 +103,21 @@ export function configureLabelIcons(labels, { minimumUsage = 1, preferredPackage
     primarySources: labelIconPrimarySourceSet,
     secondarySources: labelIconSecondarySourceSet,
   }
+}
+
+export function failure_status(reason) {
+  if (typeof reason !== 'string') return ''
+
+  const failure = reason.trim()
+  if (/^fatal:\s*404\b/.test(failure)) return formatFailureStatus('404')
+
+  const temporaryServerError = /^(5\d{2})\b/.exec(failure)
+  return temporaryServerError ? formatFailureStatus(temporaryServerError[1]) : ''
+}
+
+function formatFailureStatus(status) {
+  const description = FAILURE_STATUS_DESCRIPTIONS[status] ?? 'Server Error'
+  return `${status} ${description}`
 }
 
 export function label_normalization_note(changes) {
@@ -421,6 +450,29 @@ if (import.meta.vitest) {
 
     it('throws on invalid date input', () => {
       expect(() => date_time_format('not-a-date')).toThrow()
+    })
+  })
+
+  describe('failure_status', () => {
+    it.each([
+      ['fatal: 404 Not Found', '404 Not Found'],
+      ['fatal: 404 Could not resolve to a Repository', '404 Not Found'],
+      ['502 Provider-specific gateway message', '502 Bad Gateway'],
+      ['503 Something provider-specific', '503 Service Unavailable'],
+      ['500', '500 Internal Server Error'],
+      ['520 Unknown Error', '520 Server Error'],
+    ])('normalizes a reportable status from %s', (reason, expected) => {
+      expect(failure_status(reason)).toBe(expected)
+    })
+
+    it.each([
+      '403 Forbidden',
+      'fatal: 500 Server Error',
+      'Unhandled exception: HTTP 502',
+      '',
+      null,
+    ])('ignores non-reportable failure %j', (reason) => {
+      expect(failure_status(reason)).toBe('')
     })
   })
 

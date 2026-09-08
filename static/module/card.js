@@ -240,7 +240,7 @@ export class Card {
           break
         case 'FAILING':
           parent.appendChild(this.button(item,
-            'Package metadata updates are currently failing'))
+            'Crawling this package currently fails'))
           break
         case 'RIP':
           parent.appendChild(this.button(item,

@@ -321,6 +321,30 @@ section[name="package"] > ul.stats .platforms {
     width: 16px;
     height: 16px;
   }
+
+  .package-failure {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-left: 0.35rem;
+    color: var(--foreground-1);
+    white-space: nowrap;
+
+    > span {
+      padding: 0;
+      border: 0;
+    }
+
+    > span:first-child {
+      display: flex;
+      color: var(--red-1);
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
 }
 
 .warning-message {
