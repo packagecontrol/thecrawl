@@ -10521,6 +10521,13 @@
     {
       "name": "ClaudeSublime",
       "details": "https://gitlab.com/petr.jakub/claudesublime",
+      "labels": [
+        "claude",
+        "anthropic",
+        "ai",
+        "rsync",
+        "sync"
+      ],
       "releases": [
         {
           "sublime_text": ">=4107",
