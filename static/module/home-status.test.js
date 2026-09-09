@@ -4,6 +4,7 @@ import {
   homeStatusDurationStops,
   homeStatusForEntry,
   homeStatusPeriods,
+  homeStatusView,
 } from './home-status.js'
 
 describe('homepage status helpers', () => {
@@ -40,6 +41,53 @@ describe('homepage status helpers', () => {
 
     expect(homeStatusForEntry({ conclusion: 'failure', notes })).toBe('error')
     expect(homeStatusForEntry({ conclusion: 'timed_out', notes: '' })).toBe('error')
+  })
+
+  it('builds the shared server and client ribbon view', () => {
+    const view = homeStatusView([
+      {
+        run_id: 'failed',
+        date: '2026-08-14T05:00:00Z',
+        conclusion: 'failure',
+      },
+      {
+        run_id: 'okay',
+        date: '2026-08-14T00:00:00Z',
+        conclusion: 'success',
+      },
+      {
+        run_id: 'warning',
+        date: '2026-08-14T01:00:00Z',
+        conclusion: 'success',
+        notes: '#### Currently failing\n- **Package**\n  500 Server Error',
+      },
+    ])
+
+    expect(view.counts).toEqual({ okay: 1, warning: 1, error: 1 })
+    expect(view.segments).toEqual([
+      {
+        key: 'okay',
+        date: '– 2026-08-14 –',
+        className: 'home-status-segment is-okay',
+        style: 'flex-grow: 3600000',
+        status: 'okay',
+      },
+      {
+        key: 'warning',
+        date: '– 2026-08-14 –',
+        className: 'home-status-segment is-warning has-duration-warning has-duration-error',
+        style: 'flex-grow: 14400000; --duration-warning-stop: 50%; --duration-error-stop: 75%',
+        status: 'warning',
+      },
+      {
+        key: 'failed',
+        date: '– 2026-08-14 –',
+        className: 'home-status-segment is-error has-duration-warning',
+        style: 'flex-grow: 9000000; --duration-warning-stop: 80%',
+        status: 'error',
+      },
+    ])
+    expect(view.label).toContain('1 okay, 1 warnings, and 1 errors.')
   })
 
   it('orders periods earliest-first and sizes each to the next run', () => {

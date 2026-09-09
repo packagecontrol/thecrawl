@@ -1,8 +1,4 @@
-import {
-  homeStatusDurationStops,
-  homeStatusForEntry,
-  homeStatusPeriods,
-} from './module/home-status.js'
+import { homeStatusView } from './module/home-status.js'
 
 const shellEl = document.querySelector('[data-home-status]')
 const ribbonEl = document.querySelector('[data-home-status-ribbon]')
@@ -20,9 +16,11 @@ init()
 function init() {
   if (!shellEl || !ribbonEl) return
 
-  loadLogs().then(renderRibbon).catch((error) => {
-    console.error('Failed to load homepage status:', error)
-  })
+  if (!ribbonEl.querySelector('.home-status-track')) {
+    loadLogs().then(renderRibbon).catch((error) => {
+      console.error('Failed to load homepage status:', error)
+    })
+  }
   ribbonEl.addEventListener('pointerover', showRibbonDate)
   ribbonEl.addEventListener('pointerleave', hideRibbonDate)
   startDataRefreshInterval()
@@ -70,34 +68,29 @@ async function refreshArtifactCounts(counts) {
 }
 
 function renderRibbon(entries, animate = false) {
-  const periods = homeStatusPeriods(entries)
-  if (!periods.length) return
+  const view = homeStatusView(entries)
+  if (!view.segments.length) return
 
   const shouldAnimate = animate
     && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const previousRects = shouldAnimate ? ribbonSegmentRects() : new Map()
-  const counts = { okay: 0, warning: 0, error: 0 }
   const fragment = document.createDocumentFragment()
   const track = document.createElement('span')
   track.className = 'home-status-track'
 
-  for (const period of periods) {
-    const status = homeStatusForEntry(period.entry)
-    counts[status] += 1
-
+  for (const item of view.segments) {
     const segment = document.createElement('span')
-    segment.className = `home-status-segment is-${status}`
-    segment.dataset.ribbonKey = ribbonSegmentKey(period)
-    segment.dataset.ribbonDate = formatRibbonDate(period.entry.date)
-    segment.style.flexGrow = String(period.duration)
-    applyDurationStops(segment, period.duration)
+    segment.className = item.className
+    segment.dataset.ribbonKey = item.key
+    segment.dataset.ribbonDate = item.date
+    segment.setAttribute('style', item.style)
     fragment.appendChild(segment)
   }
 
   track.appendChild(fragment)
   hideRibbonDate()
   ribbonEl.replaceChildren(track)
-  ribbonEl.setAttribute('aria-label', ribbonLabel(periods, counts))
+  ribbonEl.setAttribute('aria-label', view.label)
   ribbonEl.setAttribute('aria-busy', 'false')
   if (shouldAnimate) animateRibbonTrack(track, previousRects)
 }
@@ -123,10 +116,6 @@ function ribbonSegmentRects() {
   ]))
 }
 
-function ribbonSegmentKey(period) {
-  return String(period.entry?.run_id || period.timestamp)
-}
-
 function animateRibbonTrack(track, previousRects) {
   let offset = 0
   for (const segment of track.children) {
@@ -143,49 +132,4 @@ function animateRibbonTrack(track, previousRects) {
     duration: RIBBON_TRANSITION_MS,
     easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
   })
-}
-
-function applyDurationStops(segment, duration) {
-  const stops = homeStatusDurationStops(duration)
-  if (!stops) return
-
-  segment.classList.add('has-duration-warning')
-  segment.style.setProperty('--duration-warning-stop', `${stops.warning}%`)
-  if (stops.error !== null) {
-    segment.classList.add('has-duration-error')
-    segment.style.setProperty('--duration-error-stop', `${stops.error}%`)
-  }
-}
-
-function ribbonLabel(periods, counts) {
-  const earliest = formatTimestamp(periods[0].entry.date)
-  const latest = formatTimestamp(periods[periods.length - 1].entry.date)
-  return [
-    `Crawler status from ${earliest} to ${latest}.`,
-    `${counts.okay} okay, ${counts.warning} warnings, and ${counts.error} errors.`,
-  ].join(' ')
-}
-
-function formatRibbonDate(value) {
-  const timestamp = Date.parse(value || '')
-  if (!Number.isFinite(timestamp)) return ''
-  return `– ${new Date(timestamp).toISOString().slice(0, 10)} –`
-}
-
-function formatTimestamp(value) {
-  const timestamp = Date.parse(value || '')
-  if (!Number.isFinite(timestamp)) return 'Unknown time'
-
-  const date = new Date(timestamp)
-  const datePart = date.toLocaleString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-  const timePart = date.toLocaleString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
-  return `${datePart} : ${timePart}`
 }

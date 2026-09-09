@@ -4,6 +4,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import * as esbuild from 'esbuild'
 
+import { homeStatusView } from './static/module/home-status.js'
+
 const SEMVER_TAG_RE = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/
 const PATH_PREFIX = normalizePathPrefix(
   process.env.SITE_PATH_PREFIX || '/thecrawl/',
@@ -67,6 +69,10 @@ export default function (eleventyConfig) {
     }
   })
   eleventyConfig.addGlobalData('artifact_counts', readArtifactCounts)
+  eleventyConfig.addGlobalData(
+    'home_status',
+    () => homeStatusView(readJson('logs.json')),
+  )
   eleventyConfig.addGlobalData(
     'status_tag_dates_json',
     () => JSON.stringify(readSemverTags()),

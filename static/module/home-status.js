@@ -8,6 +8,58 @@ const ERROR_CONCLUSIONS = new Set([
 ])
 
 /**
+ * Build the shared view model used to render the landing-page ribbon during
+ * the Eleventy build and during client-side data refreshes.
+ *
+ * @param {object[]} entries
+ * @returns {{
+ *   segments: {
+ *     key: string,
+ *     date: string,
+ *     className: string,
+ *     style: string,
+ *     status: 'okay' | 'warning' | 'error',
+ *   }[],
+ *   counts: { okay: number, warning: number, error: number },
+ *   label: string,
+ * }}
+ */
+export function homeStatusView(entries) {
+  const periods = homeStatusPeriods(entries)
+  const counts = { okay: 0, warning: 0, error: 0 }
+  const segments = periods.map((period) => {
+    const status = homeStatusForEntry(period.entry)
+    const stops = homeStatusDurationStops(period.duration)
+    const classNames = ['home-status-segment', `is-${status}`]
+    const styles = [`flex-grow: ${period.duration}`]
+    counts[status] += 1
+
+    if (stops) {
+      classNames.push('has-duration-warning')
+      styles.push(`--duration-warning-stop: ${stops.warning}%`)
+    }
+    if (stops?.error !== null && stops?.error !== undefined) {
+      classNames.push('has-duration-error')
+      styles.push(`--duration-error-stop: ${stops.error}%`)
+    }
+
+    return {
+      key: String(period.entry?.run_id || period.timestamp),
+      date: formatRibbonDate(period.entry?.date),
+      className: classNames.join(' '),
+      style: styles.join('; '),
+      status,
+    }
+  })
+
+  return {
+    segments,
+    counts,
+    label: periods.length ? ribbonLabel(periods, counts) : '',
+  }
+}
+
+/**
  * Map a crawler entry to one of the landing-page ribbon states.
  *
  * Workflow errors take precedence over warnings. Successful runs are warnings
@@ -74,6 +126,39 @@ export function homeStatusDurationStops(duration) {
     warning: ((2 * hour) / duration) * 100,
     error: duration > 3 * hour ? ((3 * hour) / duration) * 100 : null,
   }
+}
+
+function ribbonLabel(periods, counts) {
+  const earliest = formatTimestamp(periods[0].entry.date)
+  const latest = formatTimestamp(periods[periods.length - 1].entry.date)
+  return [
+    `Crawler status from ${earliest} to ${latest}.`,
+    `${counts.okay} okay, ${counts.warning} warnings, and ${counts.error} errors.`,
+  ].join(' ')
+}
+
+function formatRibbonDate(value) {
+  const timestamp = Date.parse(value || '')
+  if (!Number.isFinite(timestamp)) return ''
+  return `– ${new Date(timestamp).toISOString().slice(0, 10)} –`
+}
+
+function formatTimestamp(value) {
+  const timestamp = Date.parse(value || '')
+  if (!Number.isFinite(timestamp)) return 'Unknown time'
+
+  const date = new Date(timestamp)
+  const datePart = date.toLocaleString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  const timePart = date.toLocaleString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  return `${datePart} : ${timePart}`
 }
 
 function hasUnexpectedPackageFailure(notes) {

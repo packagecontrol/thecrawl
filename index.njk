@@ -11,9 +11,22 @@ page_type: home
       class="home-status-ribbon"
       data-home-status-ribbon
       role="img"
-      aria-busy="true"
-      aria-label="Crawler status loading"
-    ></span>
+      aria-busy="{{ 'false' if home_status.segments.length else 'true' }}"
+      aria-label="{{ home_status.label or 'Crawler status loading' }}"
+    >
+      {% if home_status.segments.length %}
+        <span class="home-status-track">
+          {% for segment in home_status.segments %}
+            <span
+              class="{{ segment.className }}"
+              data-ribbon-key="{{ segment.key }}"
+              data-ribbon-date="{{ segment.date }}"
+              style="{{ segment.style }}"
+            ></span>
+          {% endfor %}
+        </span>
+      {% endif %}
+    </span>
   </a>
   <span class="home-status-tooltip" aria-hidden="true">
     <span data-home-status-tooltip-date></span>
