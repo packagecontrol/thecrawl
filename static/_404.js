@@ -12,24 +12,26 @@
   if (!query) return
 
   const lower = query.toLowerCase()
-  const map = window?.__PKG_NAME_MAP || {}
+  const names = window?.__PKG_NAMES || []
   const suggestionEl = document.querySelector('#not-found-suggestion')
   const suggestions = []
+  const canonicalName = names.find(name => name.toLowerCase() === lower)
 
-  if (Object.prototype.hasOwnProperty.call(map, lower)) {
-    suggestions.push(map[lower])
+  if (canonicalName) {
+    suggestions.push(canonicalName)
   }
   else {
     const limit = 2
     const max_suggestions = 2
     const matches = []
-    for (const key of Object.keys(map)) {
+    for (const name of names) {
+      const key = name.toLowerCase()
       const dist = levenshtein(lower, key, limit)
-      if (dist <= limit) matches.push({ key, dist })
+      if (dist <= limit) matches.push({ name, key, dist })
     }
     matches.sort((a, b) => (a.dist - b.dist) || a.key.localeCompare(b.key))
     for (const match of matches) {
-      suggestions.push(map[match.key])
+      suggestions.push(match.name)
       if (suggestions.length === max_suggestions) break
     }
   }
