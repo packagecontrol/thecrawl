@@ -2,6 +2,7 @@
 layout: layout.njk
 permalink: 404.html
 title: 404
+isNotFoundPage: true
 eleventyExcludeFromCollections: true
 ---
 
@@ -17,10 +18,7 @@ eleventyExcludeFromCollections: true
   <p><a id="search-btn" style="display:inline-block" class="button" href="/#search-field">Search for something</a></p>
 </section>
 
-{#
-  Provide a package name map for case-insensitive lookup on 404s.
-  Map lowercased name -> correct-cased name.
-#}
+{# Map lowercased package names to their canonical case for 404 suggestions. #}
 <script>
   (function(){
     var map = {

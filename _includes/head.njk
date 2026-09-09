@@ -3,6 +3,34 @@
 <head>
 
   <meta charset="utf-8">
+
+  {% if isNotFoundPage %}
+    <script>
+      (() => {
+        const prefix = '{{ site.pathPrefix }}'
+        let path = location.pathname
+        if (prefix && path.startsWith(prefix + '/')) {
+          path = path.slice(prefix.length)
+        }
+        if (!path.startsWith('/packages/')) return
+
+        let name = path.slice('/packages/'.length).replace(/\/$/, '').replace(/\.html$/i, '')
+        // eslint-disable-next-line @stylistic/max-statements-per-line
+        try { name = decodeURIComponent(name) } catch { /* swallow */ }
+        const graveyardId = {
+{%- for pkg in collections.graveyard_packages -%}
+  {%- if pkg.graveyard_only %}
+          "{{ (pkg.name | string) | replace('\\', '\\\\') | replace('"','\\"') | lower }}": "{{ pkg.graveyard_id }}",
+  {%- endif -%}
+{% endfor -%}
+        }[name.trim().toLowerCase()]
+        if (graveyardId) {
+          location.replace(`${prefix}/graveyard#${graveyardId}`)
+        }
+      })()
+    </script>
+  {% endif %}
+
   <title>{{ title or 'Package Control R' }}</title>
 
   <meta name="description" content="{{ descr }}">
