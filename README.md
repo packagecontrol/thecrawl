@@ -7,6 +7,8 @@ _“The Crawl”_ is a fully transparent crawler for the Sublime Text package ec
 It fetches and verifies package metadata from registered channels, builds a reproducible
 registry, and generates a `channel.json` suitable for Package Control.
 
+Its artifacts also drive https://packages.sublimetext.io/
+
 ## Design goal
 
 This project is built for an open world, not just “public source.”
@@ -16,7 +18,9 @@ locally, without staring at logs.
 
 The crawler runs a GitHub [action](https://github.com/packagecontrol/thecrawl/blob/main/.github/workflows/crawl.yml) and produces release artifacts and notes.
 https://github.com/packagecontrol/thecrawl/releases
-Its logs are open by its very nature.
+Its logs are open by its very nature. 
+
+A stylized presentation of it running is https://packagecontrol.github.io/thecrawl/status/ 
 
 ## Usage locally
 
