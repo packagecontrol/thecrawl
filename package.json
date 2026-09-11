@@ -3,7 +3,7 @@
     "dev": "eleventy --serve",
     "devb": "run-p devb:*",
     "devb:build": "eleventy --watch --quiet",
-    "devb:serve": "http-server _site -c6",
+    "devb:serve": "http-server _site -c6 --silent",
     "test:build": "eleventy --quiet && http-server _site -o",
     "test": "vitest run",
     "test:watch": "vitest --watch",

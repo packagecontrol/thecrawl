@@ -1,5 +1,5 @@
-// Compatible selector for the labels sub page and homepage remarkable list.
-const CARD_SELECTOR = '.card, section[name="remarkable"] ul li, section[name="labels"] ul li'
+// Cards that participate in shared keyboard navigation.
+const CARD_SELECTOR = '.card, .supplementary-search-list li, section[name="remarkable"] ul li, section[name="labels"] ul li'
 const CARD_FOCUS_RETURN_KEY = 'the-packages-site:card-focus-return'
 const CARD_FOCUS_RESTORE_TIMEOUT = 5000
 
@@ -49,8 +49,15 @@ window.addEventListener('pageshow', (event) => {
   }
 })
 
+// Async scripts may miss pageshow on a history reload. In that case, wait for
+// load so the browser's own focus restoration cannot overwrite ours.
 if (isBackForwardNavigation()) {
-  queueActivatedCardFocusRestore()
+  if (document.readyState === 'complete') {
+    queueActivatedCardFocusRestore()
+  }
+  else {
+    window.addEventListener('load', queueActivatedCardFocusRestore, { once: true })
+  }
 }
 
 // Handle sequential card navigation via j/k keys.
@@ -606,7 +613,7 @@ function rememberActivatedCardLink(target) {
   const section = card.closest('section')
   try {
     window.sessionStorage.setItem(CARD_FOCUS_RETURN_KEY, JSON.stringify({
-      sourceUrl: comparableUrl(window.location.href),
+      sourceUrl: comparablePageUrl(window.location.href),
       cardHref: primaryCardHref(card),
       sectionName: section?.getAttribute('name') ?? '',
       sectionTarget: section?.dataset.listTarget ?? '',
@@ -631,7 +638,7 @@ function queueActivatedCardFocusRestore() {
     return
   }
 
-  if (!state || state.sourceUrl !== comparableUrl(window.location.href)) {
+  if (!state || state.sourceUrl !== comparablePageUrl(window.location.href)) {
     return
   }
 
@@ -674,10 +681,10 @@ function findStoredCardSection(state) {
 
 function primaryCardHref(card) {
   const anchor = primaryCardAnchor(card)
-  return anchor ? comparableUrl(anchor.href) : ''
+  return anchor?.href ?? ''
 }
 
-function comparableUrl(href) {
+function comparablePageUrl(href) {
   const url = new URL(href, window.location.href)
   url.hash = ''
   return url.href

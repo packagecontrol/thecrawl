@@ -57,6 +57,9 @@ function createMinisearchInstance(MiniSearch) {
       'magic_score',
       'magic',
       'outdated',
+      'graveyard',
+      'graveyard_id',
+      'graveyard_only',
     ],
     searchOptions: {
       boost: { author: 2, name: 2 },

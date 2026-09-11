@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   basePackage,
+  graveyardId,
   installHistoryFor,
   installPeriod,
+  isGraveyardOnlyPackage,
   packageSuccessionMetadata,
 } from './eleventy.config.mjs'
 
@@ -47,6 +49,27 @@ describe('packageSuccessionMetadata', () => {
     expect(metadata.get('New Name')).toEqual({
       predecessors: [{ name: 'Missing Name', has_tombstone: false }],
     })
+  })
+})
+
+describe('graveyard packages', () => {
+  const now = Date.parse('2026-09-05T12:00:00Z')
+
+  it('moves removed packages after nine months', () => {
+    expect(isGraveyardOnlyPackage({ removed: '2025-12-05T12:00:00Z' }, now)).toBe(true)
+    expect(isGraveyardOnlyPackage({ removed: '2025-12-05T12:00:01Z' }, now)).toBe(false)
+  })
+
+  it('keeps recent RIPs and ST2-only packages on full pages', () => {
+    expect(isGraveyardOnlyPackage({ removed: '2026-08-02T18:31:58Z' }, now)).toBe(false)
+    expect(isGraveyardOnlyPackage({ outdated: true }, now)).toBe(false)
+  })
+
+  it('uses stripped names plus hashes for distinct deep links', () => {
+    expect(graveyardId('C++')).toMatch(/^c-[a-f0-9]{7}$/)
+    expect(graveyardId('C#')).toMatch(/^c-[a-f0-9]{7}$/)
+    expect(graveyardId('C++')).not.toBe(graveyardId('C#'))
+    expect(graveyardId('Word Status')).toMatch(/^word-status-[a-f0-9]{7}$/)
   })
 })
 

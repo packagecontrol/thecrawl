@@ -2,6 +2,7 @@
 layout: layout.njk
 permalink: 404.html
 title: 404
+isNotFoundPage: true
 eleventyExcludeFromCollections: true
 ---
 
@@ -17,19 +18,13 @@ eleventyExcludeFromCollections: true
   <p><a id="search-btn" style="display:inline-block" class="button" href="/#search-field">Search for something</a></p>
 </section>
 
-{#
-  Provide a package name map for case-insensitive lookup on 404s.
-  Map lowercased name -> correct-cased name.
-#}
+{# Package names for case-insensitive lookup and typo suggestions. #}
 <script>
-  (function(){
-    var map = {
-{%- for p in collections.packages -%}
-      "{{ (p.name | string) | replace('\\', '\\\\') | replace('"','\\"') | lower }}": "{{ (p.name | string) | replace('\\', '\\\\') | replace('"','\\"') }}"{% if not loop.last %},{% endif -%}
+  window.__PKG_NAMES = [
+{%- for pkg in collections.packages -%}
+    "{{ (pkg.name | string) | replace('\\', '\\\\') | replace('"','\\"') }}"{% if not loop.last %},{% endif -%}
 {% endfor -%}
-    };
-    window.__PKG_NAME_MAP = map;
-  })();
+  ];
 </script>
 
 {% inline_js 'static/_404.js' %}

@@ -68,6 +68,17 @@ export function date_time_format(date) {
   return (new Date(date)).toISOString().slice(0, 16).replace('T', ' ')
 }
 
+export function graveyard_date(date) {
+  return String(new Date(date).getUTCFullYear())
+}
+
+export function graveyard_title_date(date) {
+  const value = new Date(date)
+  const day = String(value.getUTCDate()).padStart(2, '0')
+  const month = String(value.getUTCMonth() + 1).padStart(2, '0')
+  return `${day}.${month}.${value.getUTCFullYear()}`
+}
+
 export function package_name_breaks(name) {
   return escapeHtml(String(name))
     .replace(/([a-z\d])([A-Z])/g, '$1<wbr>$2')
@@ -175,11 +186,13 @@ function compactSearchPackage(pkg) {
     (pkg.labels ?? []).join(','),
   ]
 
-  if (pkg.outdated || pkg.removed || pkg.archived_at) {
+  if (pkg.outdated || pkg.removed || pkg.archived_at || pkg.graveyard) {
     row.push(
       pkg.outdated ? 1 : 0,
       timestamp(pkg.removed) || 0,
       timestamp(pkg.archived_at) || 0,
+      pkg.graveyard_id ?? '',
+      pkg.graveyard_only ? 1 : 0,
     )
   }
 
@@ -435,6 +448,16 @@ if (import.meta.vitest) {
 
     it('escapes HTML before adding break opportunities', () => {
       expect(package_name_breaks('<BadThing>')).toBe('&lt;Bad<wbr>Thing&gt;')
+    })
+  })
+
+  describe('graveyard dates', () => {
+    it('formats the year in UTC', () => {
+      expect(graveyard_date('2012-07-12T23:30:00Z')).toBe('2012')
+    })
+
+    it('formats the full title date in UTC', () => {
+      expect(graveyard_title_date('2014-12-21T23:30:00Z')).toBe('21.12.2014')
     })
   })
 

@@ -1,0 +1,268 @@
+@media (width > 50rem) and (width < 80rem) {
+  html.page-graveyard main {
+    padding-inline: 2rem;
+  }
+}
+
+.graveyard {
+  --graveyard-marker-first: var(--foreground-4);
+
+  margin-top: var(--grid-line);
+}
+
+.graveyard-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2rem;
+  margin: 0 0 16px;
+  flex-wrap: wrap;
+  row-gap: 0rem;
+
+  h1 {
+    margin: 0;
+    padding: 0;
+    color: var(--foreground-1);
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.15;
+    font-size: clamp(32px, 38px, 3.6vw);
+  }
+}
+
+.graveyard-sort-toggle {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 3px;
+  color: var(--foreground-4);
+  white-space: nowrap;
+
+  button {
+    all: unset;
+    color: var(--foreground-3);
+    cursor: pointer;
+    transition: color .1s ease-in-out;
+
+    &:hover {
+      color: var(--foreground-2);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--orange-1);
+      outline-offset: 2px;
+    }
+
+    &.is-active {
+      color: var(--foreground-1);
+      font-weight: 700;
+    }
+  }
+}
+
+.graveyard-group {
+  margin: 0;
+  padding: 0;
+}
+
+.graveyard-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.graveyard-card {
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--background-1);
+  border: 1px solid #cbcbcb;
+  border-radius: 0px;
+  box-shadow: -5px -2px 32px -28px #42445d;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  transition: outline-color .1s;
+  scroll-margin-block: 18px;
+
+  :root[data-theme='dark'] & {
+    border-color: #2a3545;
+  }
+
+  &:target {
+    outline-color: hsl(0deg 0% 36.53%);
+    background: #ffffff2b;
+  }
+}
+
+.graveyard-card-main {
+  display: grid;
+  grid-template-rows: auto;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.graveyard-package-name {
+  justify-self: start;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--foreground-1);
+  font-weight: 700;
+  line-height: 20px;
+  text-overflow: ellipsis;
+}
+
+.graveyard-dates {
+  display: flex;
+  gap: 8px;
+  color: var(--foreground-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  time:first-child {
+    color: var(--graveyard-marker-first);
+  }
+
+  time:last-child {
+    color: hsl(0deg 0.48% 49.94%);
+  }
+}
+
+.graveyard-relation {
+  overflow: hidden;
+  margin: 0;
+  padding-block: 5px 2px;
+  color: hsl(240deg 3% 60%);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 17px;
+  text-overflow: ellipsis;
+
+  a {
+    color: var(--foreground-2);
+    font-style: normal;
+    text-decoration-color: var(--foreground-4);
+
+    &:hover {
+      color: var(--orange-1);
+    }
+  }
+}
+
+.graveyard-search {
+  margin-top: calc(var(--grid-line) * 1.5);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.graveyard-search-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  color: var(--foreground-3);
+  font-size: 13px;
+  font-weight: 400;
+  white-space: nowrap;
+
+  &::before,
+  &::after {
+    height: 1px;
+    background: hsl(0deg 0% 72.59%);
+    content: '';
+  }
+
+  &::before {
+    width: 24px;
+  }
+
+  &::after {
+    flex: 1;
+  }
+
+  a {
+    color: hsl(240deg 6.57% 25.54%);
+
+    :root[data-theme='dark'] & {
+      color: var(--foreground-2);
+    }
+  }
+}
+
+.supplementary-search-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &[hidden] {
+    display: none;
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+    padding: 10px 12px;
+    background: var(--background-1);
+    border-radius: 5px;
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+    transition: outline-color .1s;
+
+    &:has(> .supplementary-search-name:hover),
+    &:focus-within {
+      outline-color: var(--orange-1);
+    }
+  }
+}
+
+.supplementary-search-name {
+  justify-self: start;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--foreground-1);
+  font-weight: 700;
+  line-height: 20px;
+  text-decoration: none;
+  text-overflow: ellipsis;
+
+  &:hover,
+  &:focus {
+    color: var(--orange-1);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.st2-search-list {
+  margin-top: 1rem;
+}
+
+.st2-search-reason {
+  padding: 1px 5px;
+  border: 1px solid var(--red-2);
+  border-radius: 3px;
+  color: var(--red-2);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.graveyard-search-reason {
+  flex: 0 0 auto;
+  color: var(--red-2);
+  font-size: 11px;
+  font-weight: 700;
+}
