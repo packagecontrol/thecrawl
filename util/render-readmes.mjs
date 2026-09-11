@@ -23,11 +23,22 @@ if (oldRenderedReadmes[RENDERED_READMES_ENVIRONMENT_KEY] !== renderedReadmesEnvi
 const renderedReadmes = {
   [RENDERED_READMES_ENVIRONMENT_KEY]: renderedReadmesEnvironment,
 }
+const readmes = Object.entries(rawReadmes).map(([url, text]) => ({
+  url,
+  text,
+  hash: createReadmeSourceHash(text),
+}))
+const renderCount = readmes.filter(
+  ({ url, hash }) => !oldRenderedReadmes[url] || oldRenderedReadmes[url][0] !== hash,
+).length
+
+console.log(
+  `Loaded ${readmes.length} README entries from ${args.input}. ${renderCount} need rendering.`,
+)
 
 configureMarked(marked)
 
-for (const [url, text] of Object.entries(rawReadmes)) {
-  const hash = createReadmeSourceHash(text)
+for (const { url, text, hash } of readmes) {
   if (oldRenderedReadmes[url] && oldRenderedReadmes[url][0] === hash) {
     renderedReadmes[url] = [hash, oldRenderedReadmes[url][1]]
     continue
@@ -41,7 +52,7 @@ for (const [url, text] of Object.entries(rawReadmes)) {
 }
 
 fs.writeFileSync(args.output, JSON.stringify(renderedReadmes, null, 2) + '\n')
-console.log(`Rendered ${Object.keys(rawReadmes).length} README files to ${args.output}`)
+console.log(`Collated ${readmes.length} rendered README files to ${args.output}.`)
 
 dom.window.close()
 
