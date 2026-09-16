@@ -48056,6 +48056,22 @@
       "first_seen": "2021-01-16T19:31:34Z"
     },
     {
+      "name": "MOOSE",
+      "details": "https://github.com/elcarrillo/moose-sublime",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3092",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-16T18:45:04Z"
+    },
+    {
       "name": "More Layouts",
       "details": "https://github.com/unknownuser88/morelayouts",
       "author": "David Bekoyan",
@@ -59718,14 +59734,19 @@
     },
     {
       "name": "Racket",
-      "details": "https://github.com/follesoe/sublime-racket",
+      "details": "https://github.com/17451k/sublime-racket",
       "labels": [
-        "language syntax"
+        "language syntax",
+        "racket"
       ],
       "releases": [
         {
-          "sublime_text": "*",
-          "branch": "master"
+          "sublime_text": ">=4000",
+          "tags": true
+        },
+        {
+          "sublime_text": "<4000",
+          "tags": "st3-"
         }
       ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
