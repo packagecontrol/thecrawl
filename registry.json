@@ -70807,6 +70807,23 @@
       "first_seen": "2013-12-15T06:10:50Z"
     },
     {
+      "name": "SubCalc",
+      "details": "https://github.com/vonbehr/SubCalc",
+      "labels": [
+        "utilities",
+        "calculator"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-17T21:58:53Z"
+    },
+    {
       "name": "Subclim",
       "details": "https://github.com/JulianEberius/Subclim",
       "releases": [
