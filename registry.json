@@ -29139,12 +29139,8 @@
       "details": "https://github.com/noahcoad/google-spell-check",
       "releases": [
         {
-          "sublime_text": ">=3000",
-          "branch": "st3"
-        },
-        {
-          "sublime_text": "<3000",
-          "branch": "st2"
+          "sublime_text": ">=4107",
+          "tags": true
         }
       ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
@@ -44767,6 +44763,24 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2020-02-05T16:30:17Z"
+    },
+    {
+      "name": "Markdown Nav",
+      "details": "https://github.com/noahcoad/SublimeMarkdownNav",
+      "labels": [
+        "markdown",
+        "code navigation",
+        "search"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-17T18:52:35Z"
     },
     {
       "name": "Markdown Numbered Headers",
