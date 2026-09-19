@@ -27964,6 +27964,23 @@
       "first_seen": "2016-07-18T02:03:03Z"
     },
     {
+      "name": "GitHubPullRequest",
+      "details": "https://github.com/ViBiOh/sublime-GitHubPullRequest",
+      "labels": [
+        "github",
+        "pull-request"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4083",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-19T16:44:16Z"
+    },
+    {
       "name": "GitHubTools",
       "details": "https://github.com/braver/GitHubTools",
       "donate": "https://ko-fi.com/koenlageveen",
