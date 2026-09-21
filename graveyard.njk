@@ -35,7 +35,7 @@ hasCompactSearch: true
                 <time datetime="{{ first_seen }}" title="First seen: {{ first_seen | graveyard_title_date }}">*{{ first_seen | graveyard_date }}</time>
               {% endif %}
               {% if removed %}
-                <time datetime="{{ removed }}" title="Removed: {{ removed | graveyard_title_date }}">+{{ removed | graveyard_date }}</time>
+                <time datetime="{{ removed }}" title="Removed: {{ removed | graveyard_title_date }}">✝{{ removed | graveyard_date }}</time>
               {% endif %}
             </span>
           </div>
