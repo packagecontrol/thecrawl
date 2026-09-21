@@ -87201,6 +87201,25 @@
       "first_seen": "2019-11-05T23:50:22Z"
     },
     {
+      "name": "VisuBezier",
+      "details": "https://github.com/mrcgrtz/visubezier",
+      "labels": [
+        "css",
+        "preview",
+        "hover",
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-21T13:45:59Z"
+    },
+    {
       "name": "Viv",
       "description": "Lightweight language support for the Viv DSL for emergent narrative in games and simulations.",
       "author": "Sifty",
