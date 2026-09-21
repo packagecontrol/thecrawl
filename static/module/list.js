@@ -242,7 +242,7 @@ export class List {
     for (const pkg of packages) {
       const item = document.createElement('li')
       const anchor = this.graveyardMatchLink(pkg)
-      item.append(anchor, this.graveyardMatchReason())
+      item.append(anchor, this.graveyardMatchReason(pkg))
       this.graveyardList.appendChild(item)
       firstAnchor ??= anchor
     }
@@ -273,11 +273,11 @@ export class List {
     return anchor
   }
 
-  graveyardMatchReason() {
+  graveyardMatchReason(pkg) {
     const marker = document.createElement('span')
     marker.className = 'graveyard-search-reason'
-    marker.textContent = '+'
-    marker.title = 'Removed from Package Control'
+    marker.textContent = '✝'
+    marker.title = `Removed: ${graveyardTitleDate(pkg.removed)}`
     return marker
   }
 
@@ -604,6 +604,13 @@ export class List {
     const latestLabel = this.monthShortFormatter.format(latest)
     return `${latestLabel}-${earliestLabel} ${latestYear}`
   }
+}
+
+function graveyardTitleDate(date) {
+  const value = new Date(date * 1000)
+  const day = String(value.getUTCDate()).padStart(2, '0')
+  const month = String(value.getUTCMonth() + 1).padStart(2, '0')
+  return `${day}.${month}.${value.getUTCFullYear()}`
 }
 
 export function splitSearchResults(results, hasQuery) {
