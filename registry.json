@@ -79053,6 +79053,25 @@
       "first_seen": "2012-02-20T08:55:55Z"
     },
     {
+      "name": "Task List",
+      "details": "https://github.com/noahcoad/SublimeTaskList",
+      "labels": [
+        "todo",
+        "tasks",
+        "gtd",
+        "markdown"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-21T19:08:59Z"
+    },
+    {
       "name": "Task Timer",
       "details": "https://github.com/jcowgar/sublime-task-timer",
       "releases": [
