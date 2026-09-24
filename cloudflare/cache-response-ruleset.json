@@ -4,7 +4,7 @@
   "rules": [
     {
       "description": "Tag volatile package site content",
-      "expression": "(http.host eq \"packages.sublimetext.io\" and not starts_with(http.request.uri.path, \"/static_\") and not starts_with(http.request.uri.path, \"/data_\"))",
+      "expression": "(http.host eq \"packages.sublimetext.io\" and not starts_with(http.request.uri.path, \"/static/\") and not starts_with(http.request.uri.path, \"/data/\") and not starts_with(http.request.uri.path, \"/static_\") and not starts_with(http.request.uri.path, \"/data_\"))",
       "action": "set_cache_tags",
       "action_parameters": {
         "operation": "add",

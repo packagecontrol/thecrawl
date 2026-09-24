@@ -391,18 +391,30 @@ export function site_path(value, pathPrefix = process.env.SITE_PATH_PREFIX) {
 // Cache bust source-controlled static files by commit.
 export function bust(p) {
   if (!isProd) return p
-  return p.replace('static/', 'static_' + util.gitHash + '/')
+  return p.replace('static/', `static/${util.gitHash}/`)
 }
 
 // Place crawler-derived files in the directory for this exact build.
 export function data_bust(p) {
   if (!isProd) return p
-  return p.replace('data/', 'data_' + util.dataVersion + '/')
+  return p.replace('data/', `data/${util.dataVersion}/`)
 }
 
 // Inline tests (Vitest)
 if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest
+
+  describe('versioned asset paths', () => {
+    it('places static assets under the commit hash in production', () => {
+      expect(bust('/static/styles.css'))
+        .toBe(isProd ? `/static/${util.gitHash}/styles.css` : '/static/styles.css')
+    })
+
+    it('places generated data under the build version in production', () => {
+      expect(data_bust('data/search-index.json'))
+        .toBe(isProd ? `data/${util.dataVersion}/search-index.json` : 'data/search-index.json')
+    })
+  })
 
   describe('site_path', () => {
     it('prefixes root paths without touching external URLs', () => {

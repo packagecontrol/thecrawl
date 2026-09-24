@@ -19,15 +19,17 @@ The cache rules are ordered:
 1. Bypass Package Control channel files:
    - `/channel.json`
    - `/channel_st3.json`
-2. Cache commit-busted source assets (`/static_*`) for one year at the edge and
-   in browsers.
-3. Cache build-busted crawler data (`/data_*`) for one year at the edge and in
-   browsers. This includes `search-index.json` and generated label icon sprites.
+2. Cache commit-busted source assets (`/static/<commit>/`) for one year at the
+   edge and in browsers.
+3. Cache build-busted crawler data (`/data/<build>/`) for one year at the edge
+   and in browsers. This includes `search-index.json` and generated label icon
+   sprites.
 4. Cache site HTML for one day at the Cloudflare edge, with a short browser TTL.
 
-The cache response rule tags all responses outside `/static_*` and `/data_*`
-as `package-site-volatile`. GitHub Actions purges that tag after successful
-GitHub Pages deploys, preserving immutable assets from earlier deployments.
+The cache response rule tags responses outside the versioned asset paths as
+`package-site-volatile`. Legacy `/static_*` and `/data_*` URLs also retain
+immutable caching so earlier deployments remain available. GitHub Actions
+purges the volatile tag after successful GitHub Pages deploys.
 
 The response-header transform rules currently set short browser caching for
 HTML-like pages and the RSS feed content type:
@@ -134,10 +136,10 @@ curl -sS -o /dev/null -D - --compressed \
   https://packages.sublimetext.io/packages/Abrase
 
 curl -sS -o /dev/null -D - --compressed \
-  https://packages.sublimetext.io/static_<commit>/styles.css
+  https://packages.sublimetext.io/static/<commit>/styles.css
 
 curl -sS -o /dev/null -D - --compressed \
-  https://packages.sublimetext.io/data_<build>/search-index.json
+  https://packages.sublimetext.io/data/<build>/search-index.json
 
 curl -sS -o /dev/null -D - --compressed \
   https://packages.sublimetext.io/channel.json
@@ -149,7 +151,7 @@ curl -sS -o /dev/null -D - --compressed \
 Expected highlights:
 
 - HTML package pages become `cf-cache-status: HIT` after the first request.
-- `/static_*` assets and `/data_*` artifacts return long browser cache headers.
+- `/static/<commit>/` assets and `/data/<build>/` artifacts return long browser cache headers.
 - Volatile responses carry the `package-site-volatile` cache tag internally.
 - Channel files are bypassed (`cf-cache-status: DYNAMIC`).
 - HTML-like pages return `Cache-Control: public, max-age=60, must-revalidate`.

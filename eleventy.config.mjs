@@ -335,8 +335,8 @@ export default async function (eleventyConfig) {
   const devOrigin = process.env.DEV_ORIGIN || 'http://localhost:8080'
   const siteOrigin = (process.env.SITE_ORIGIN || (isProd ? prodOrigin : devOrigin)).replace(/\/+$/, '')
   const sitePathPrefix = normalizeSitePathPrefix(process.env.SITE_PATH_PREFIX)
-  const staticOutputDir = isProd ? 'static_' + util.gitHash : 'static'
-  const dataOutputDir = isProd ? 'data_' + util.dataVersion : 'data'
+  const staticOutputDir = isProd ? `static/${util.gitHash}` : 'static'
+  const dataOutputDir = isProd ? `data/${util.dataVersion}` : 'data'
   const bundledScriptEntries = new Set()
   let labelIcons = null
 
@@ -370,7 +370,7 @@ export default async function (eleventyConfig) {
     }
 
     await bundleJs(path.join(outputDir, staticOutputDir), bundledScriptEntries, isProd)
-    bundleCss(path.join(outputDir, `static_${util.gitHash}`, 'styles.css'))
+    bundleCss(path.join(outputDir, staticOutputDir, 'styles.css'))
   })
 
   eleventyConfig.ignores.add('.AFileIcon')
@@ -895,7 +895,7 @@ function bundledScriptUrl(p, entries, isProd) {
     return p
   }
 
-  return `${leadingSlash}static_${util.gitHash}/bundle/${fileName}`
+  return `${leadingSlash}static/${util.gitHash}/bundle/${fileName}`
 }
 
 function jsBundleEntryPoints(staticOutputDir, entries) {
