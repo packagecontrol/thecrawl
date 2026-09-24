@@ -66162,23 +66162,42 @@
           "date": "2024-08-06 01:20:00"
         },
         {
-          "sublime_text": ">=4000",
+          "sublime_text": "4000 - 4204",
           "platforms": [
             "osx",
             "linux"
           ],
-          "version": "2.1.0",
-          "url": "https://codexns.io/packages/sftp/2.1.0-st4-posix/SFTP.sublime-package",
-          "date": "2024-08-06 01:20:00"
+          "version": "3.0.0",
+          "url": "https://codexns.io/packages/sftp/3.0.0-st4-py38-posix/SFTP.sublime-package",
+          "date": "2026-09-24 07:30:00"
         },
         {
-          "sublime_text": ">=4000",
+          "sublime_text": "4000 - 4204",
           "platforms": [
             "windows"
           ],
-          "version": "2.1.0",
-          "url": "https://codexns.io/packages/sftp/2.1.0-st4-win/SFTP.sublime-package",
-          "date": "2024-08-06 01:20:00"
+          "version": "3.0.0",
+          "url": "https://codexns.io/packages/sftp/3.0.0-st4-py38-win/SFTP.sublime-package",
+          "date": "2026-09-24 07:30:00"
+        },
+        {
+          "sublime_text": ">=4205",
+          "platforms": [
+            "osx",
+            "linux"
+          ],
+          "version": "3.0.0",
+          "url": "https://codexns.io/packages/sftp/3.0.0-st4-posix/SFTP.sublime-package",
+          "date": "2026-09-24 07:30:00"
+        },
+        {
+          "sublime_text": ">=4205",
+          "platforms": [
+            "windows"
+          ],
+          "version": "3.0.0",
+          "url": "https://codexns.io/packages/sftp/3.0.0-st4-win/SFTP.sublime-package",
+          "date": "2026-09-24 07:30:00"
         }
       ],
       "source": "https://codexns.io/packages/packages.json",
