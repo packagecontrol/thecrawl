@@ -7105,10 +7105,6 @@
       ],
       "releases": [
         {
-          "sublime_text": ">=4205",
-          "tags": "4205-"
-        },
-        {
           "sublime_text": ">=4201",
           "tags": "4201-"
         },
