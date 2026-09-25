@@ -39,6 +39,7 @@ import DOMPurify from './vendor/dompurify/purify.es.mjs'
 import { marked } from './vendor/marked/marked.esm.js'
 
 const notesEl = document.getElementById('status-notes')
+const indexNoticeEl = document.querySelector('[data-status-index-notice]')
 const artifactsEl = document.getElementById('status-artifacts')
 const dateEl = document.querySelector('[data-status-date]')
 const badgeEl = document.querySelector('[data-status-badge]')
@@ -319,6 +320,7 @@ function applyNotesSearchState(matcher, packageState) {
   )
   chart?.setSearchState(matcher, packageState)
   updatePackageLock(packageState)
+  updateIndexNotice(logs[index])
   highlightNotesSearchMatches()
 }
 
@@ -709,9 +711,24 @@ function render(targetIndex) {
 
   updateHeading(entry)
   renderNotes(entry, index)
+  updateIndexNotice(entry)
   updateButtons()
   chart?.highlight(entry)
   updateUrl(entry)
+}
+
+function updateIndexNotice(entry) {
+  if (!indexNoticeEl) return
+  indexNoticeEl.hidden = !crawlHistory || !entry?.run_id
+    || crawlHistory.availableRunIds.has(String(entry.run_id))
+  if (indexNoticeEl.hidden) return
+
+  indexNoticeEl.textContent = entry.notes
+    ? 'We don’t know which packages this run checked. Only its notes are searched.'
+    : 'We don’t know which packages this run checked.'
+  const firstParagraph = notesEl.querySelector('p')
+  if (firstParagraph) firstParagraph.after(indexNoticeEl)
+  else notesEl.prepend(indexNoticeEl)
 }
 
 async function refreshLogs() {
@@ -757,6 +774,7 @@ function setCrawlHistoryUrl(url) {
   crawlHistoryUrl = url
   crawlHistory = null
   crawlHistoryPromise = null
+  updateIndexNotice(logs[index])
   if (String(notesSearchInput?.value || '').trim()) updateNotesSearch()
 }
 
@@ -977,6 +995,7 @@ function renderEmptyState(message) {
   badgeLabelEl.textContent = '¯\\_(ツ)_/¯'
   badgeEl.className = 'status-badge status-badge-muted'
   if (runLinkGroupEl) runLinkGroupEl.hidden = true
+  if (indexNoticeEl) indexNoticeEl.hidden = true
   notesEl.classList.add('is-empty')
   notesEl.innerHTML = `<p>${message}</p>`
   if (artifactsEl) {

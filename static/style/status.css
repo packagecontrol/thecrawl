@@ -706,6 +706,14 @@ html.page-status main {
   border-color: transparent;
 }
 
+.status-index-notice {
+  color: var(--orange-2);
+}
+
+.status-index-notice[hidden] {
+  display: none;
+}
+
 .status-notes {
   --grid-line: 24px;
   background: var(--background-1);
