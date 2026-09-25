@@ -301,6 +301,46 @@ jobs:
             ./wrk/logs.json
           mv "$RUNNER_TEMP/enriched-logs.json" ./wrk/logs.json
 
+      - name: Record completed crawl run
+        if: github.event_name == 'workflow_run'
+        continue-on-error: true
+        env:
+          CRAWL_RUN_ID: ${{ github.event.workflow_run.id }}
+          CRAWL_STARTED_AT: ${{ github.event.workflow_run.run_started_at || github.event.workflow_run.created_at }}
+          CRAWL_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path('wrk/logs.json')
+          entries = json.loads(path.read_text(encoding='utf-8'))
+          run_id = os.environ['CRAWL_RUN_ID']
+          date = os.environ['CRAWL_STARTED_AT']
+          conclusion = os.environ['CRAWL_CONCLUSION']
+          entry = next((item for item in entries if item['run_id'] == run_id), None)
+          changed = False
+          if entry is None:
+              entry = {'run_id': run_id, 'date': date}
+              if conclusion:
+                  entry['conclusion'] = conclusion
+              entries.append(entry)
+              changed = True
+          elif conclusion and not entry.get('conclusion'):
+              entry['conclusion'] = conclusion
+              changed = True
+
+          if changed:
+              entries.sort(key=lambda item: item['date'], reverse=True)
+              temporary = path.with_suffix('.tmp')
+              try:
+                  temporary.write_text(json.dumps(entries, separators=(',', ':')), encoding='utf-8')
+                  temporary.replace(path)
+              finally:
+                  temporary.unlink(missing_ok=True)
+          PY
+
       - name: Upload logs.json
         run: |
           retry_5() {
