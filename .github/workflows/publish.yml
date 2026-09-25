@@ -314,7 +314,7 @@ jobs:
 
   website-after-build:
     runs-on: ubuntu-latest
-    needs: [enrich_logs, build-st4-channel]
+    needs: build-st4-channel
     if: needs.build-st4-channel.outputs.update_needed == 'true'
     steps:
       - name: Trigger website deployment
