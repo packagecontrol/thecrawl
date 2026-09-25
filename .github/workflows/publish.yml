@@ -244,7 +244,6 @@ jobs:
   enrich_logs:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch'
-    continue-on-error: true
     env:
       RELEASE_TAG: crawler-status
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -276,25 +275,34 @@ jobs:
           restore-keys: |
             wrk-cache-
 
+      - name: Check crawl logs cache
+        run: |
+          if [ ! -f ./wrk/logs.json ]; then
+            echo "Missing cached ./wrk/logs.json; cannot publish crawl logs." >&2
+            exit 1
+          fi
+
       - name: Fetch workflow metadata for logs enrichment
+        id: fetch-logs-metadata
+        continue-on-error: true
         run: |
           uv run -m scripts.fetch_logs_metadata \
             --runs-output "$RUNNER_TEMP/workflow_runs.json" \
             --artifacts-output "$RUNNER_TEMP/workflow_artifacts.json"
 
       - name: Enrich logs.json
+        if: steps.fetch-logs-metadata.outcome == 'success'
+        continue-on-error: true
         run: |
-          if [ ! -f ./wrk/logs.json ]; then
-            echo "Missing cached ./wrk/logs.json; failing." >&2
-            exit 1
-          fi
-          echo "Using cached ./wrk/logs.json"
-
           uv run -m scripts.enrich_logs \
             --runs "$RUNNER_TEMP/workflow_runs.json" \
             --artifacts "$RUNNER_TEMP/workflow_artifacts.json" \
+            --output "$RUNNER_TEMP/enriched-logs.json" \
             ./wrk/logs.json
+          mv "$RUNNER_TEMP/enriched-logs.json" ./wrk/logs.json
 
+      - name: Upload logs.json
+        run: |
           retry_5() {
             local n=1
             local max=5
