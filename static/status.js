@@ -1124,6 +1124,7 @@ function showHoverPreview(entry) {
   const previewIndex = findEntryIndex(entry)
   updateHeading(entry)
   renderNotes(entry, previewIndex)
+  updateIndexNotice(entry)
 }
 
 function restoreActiveEntry() {
