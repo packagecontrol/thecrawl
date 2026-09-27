@@ -66025,6 +66025,23 @@
       "first_seen": "2011-12-15T15:53:29Z"
     },
     {
+      "name": "SettingsUI",
+      "details": "https://github.com/mfuentesg/settings-ui",
+      "labels": [
+        "settings",
+        "preferences"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-27T21:06:23Z"
+    },
+    {
       "name": "SettingSwitcher",
       "details": "https://github.com/halfmoonvic/SettingSwitcher",
       "releases": [
