@@ -1101,7 +1101,7 @@
     },
     {
       "name": "Agentic",
-      "details": "https://github.com/alecGraves/Agentic",
+      "details": "https://github.com/ravengraves/Agentic",
       "labels": [
         "ai",
         "llm",
@@ -7970,6 +7970,10 @@
       "releases": [
         {
           "sublime_text": ">=4200",
+          "platforms": [
+            "osx",
+            "linux"
+          ],
           "tags": true
         }
       ],
@@ -35166,11 +35170,18 @@
       "name": "iRules",
       "details": "https://github.com/billchurch/sublime-iRules",
       "labels": [
-        "language syntax"
+        "language syntax",
+        "snippets",
+        "auto-complete",
+        "formatting"
       ],
       "releases": [
         {
-          "sublime_text": ">=3000",
+          "sublime_text": "3000 - 4106",
+          "tags": "st3-"
+        },
+        {
+          "sublime_text": ">=4107",
           "tags": true
         }
       ],
@@ -80432,11 +80443,16 @@
       "name": "Theme - Brackets",
       "details": "https://github.com/jwortmann/brackets-theme",
       "labels": [
-        "theme"
+        "theme",
+        "file icon theme"
       ],
       "releases": [
         {
-          "sublime_text": ">=4107",
+          "sublime_text": "4107 - 4205",
+          "tags": "4107-"
+        },
+        {
+          "sublime_text": ">=4206",
           "tags": true
         }
       ],
@@ -86258,29 +86274,37 @@
     },
     {
       "name": "Vala",
-      "labels": [
-        "language syntax",
-        "Vala"
+      "previous_names": [
+        "Vala-TMBundle"
       ],
-      "first_seen": "2012-01-11T01:06:02Z",
-      "removed": "2015-10-27T12:38:22Z"
-    },
-    {
-      "name": "Vala-TMBundle",
-      "details": "https://github.com/technosophos/Vala-TMBundle",
+      "details": "https://github.com/colinkiama/vala_sublime_text",
       "labels": [
         "language syntax",
-        "vala"
+        "build system",
+        "snippets",
+        "completions",
+        "vala",
+        "genie"
       ],
       "releases": [
         {
           "sublime_text": "*",
-          "branch": "master"
+          "tags": true
         }
       ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
-      "first_seen": "2014-03-06T21:35:54Z"
+      "first_seen": "2012-01-11T01:06:02Z"
+    },
+    {
+      "name": "Vala-TMBundle",
+      "labels": [
+        "language syntax",
+        "vala"
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "first_seen": "2014-03-06T21:35:54Z",
+      "removed": "2026-09-27T17:45:27Z"
     },
     {
       "name": "Vale",
@@ -88131,23 +88155,12 @@
     },
     {
       "name": "WebHare",
-      "details": "https://github.com/WebHare/sublime-package",
       "labels": [
         "language syntax"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=3092",
-          "platforms": [
-            "osx",
-            "linux"
-          ],
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2017-08-28T15:24:43Z"
+      "first_seen": "2017-08-28T15:24:43Z",
+      "removed": "2026-09-27T17:45:27Z"
     },
     {
       "name": "WebIDL",
