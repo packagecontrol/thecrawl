@@ -724,8 +724,8 @@ function updateIndexNotice(entry) {
   if (indexNoticeEl.hidden) return
 
   indexNoticeEl.textContent = entry.notes
-    ? 'We don’t know which packages this run checked. Only its notes are searched.'
-    : 'We don’t know which packages this run checked.'
+    ? 'Post-processing this run failed. For it, only the notes below are in the search index.'
+    : 'Post-processing this run failed.'
   const firstParagraph = notesEl.querySelector('p')
   if (firstParagraph) firstParagraph.after(indexNoticeEl)
   else notesEl.prepend(indexNoticeEl)
