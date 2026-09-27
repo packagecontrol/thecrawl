@@ -78396,6 +78396,22 @@
       "first_seen": "2015-08-03T18:09:01Z"
     },
     {
+      "name": "systemd",
+      "details": "https://github.com/macowie/sublime-systemd",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-27T13:03:24Z"
+    },
+    {
       "name": "SystemRDL",
       "details": "https://github.com/deanMaker/sublime-language-systemrdl",
       "labels": [
