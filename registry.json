@@ -4514,6 +4514,24 @@
       "first_seen": "2021-01-10T11:27:04Z"
     },
     {
+      "name": "AutoOpenReadme",
+      "details": "https://github.com/noahcoad/SublimeAutoOpenReadme",
+      "labels": [
+        "utilities",
+        "file navigation",
+        "project"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-28T18:37:56Z"
+    },
+    {
       "name": "AutoPEP8",
       "details": "https://github.com/wistful/SublimeAutoPEP8",
       "labels": [
