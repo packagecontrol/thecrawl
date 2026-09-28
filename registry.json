@@ -646,6 +646,25 @@
       "first_seen": "2014-01-24T01:15:08Z"
     },
     {
+      "name": "ACP",
+      "details": "https://github.com/debjan/sublime-acp",
+      "labels": [
+        "ai",
+        "agent",
+        "chat",
+        "acp"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-28T23:31:27Z"
+    },
+    {
       "name": "ACTG",
       "details": "https://github.com/hackerfriendly/ACTG",
       "labels": [
