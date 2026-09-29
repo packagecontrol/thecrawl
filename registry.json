@@ -25021,6 +25021,24 @@
       "first_seen": "2024-12-11T16:32:59Z"
     },
     {
+      "name": "FindInFilesWalker",
+      "details": "https://github.com/aletez/find_in_files_walker",
+      "labels": [
+        "search",
+        "navigation",
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-29T15:53:48Z"
+    },
+    {
       "name": "FindInProject",
       "labels": [
         "find",
