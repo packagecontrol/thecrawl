@@ -77960,6 +77960,24 @@
       "first_seen": "2023-06-06T20:15:30Z"
     },
     {
+      "name": "Symbols",
+      "details": "https://github.com/ziishaned/sublime-text-symbols",
+      "labels": [
+        "theme",
+        "file",
+        "icons"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3114",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-09-29T09:06:55Z"
+    },
+    {
       "name": "Symfony2 Override",
       "details": "https://github.com/igormukhingmailcom/sublimetext3-symfony2-override-package",
       "releases": [
