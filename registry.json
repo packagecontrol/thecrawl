@@ -74818,24 +74818,13 @@
     },
     {
       "name": "SublimeLinter-contrib-webhare",
-      "details": "https://github.com/WebHare/sublime-linter",
       "labels": [
         "linting",
         "SublimeLinter"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=3092",
-          "platforms": [
-            "osx",
-            "linux"
-          ],
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2018-04-16T09:52:00Z"
+      "first_seen": "2018-04-16T09:52:00Z",
+      "removed": "2026-10-01T13:55:50Z"
     },
     {
       "name": "SublimeLinter-contrib-wollok-checker",
