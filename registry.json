@@ -45244,6 +45244,24 @@
       "first_seen": "2026-07-28T08:40:15Z"
     },
     {
+      "name": "MarkdownPreviewOverlay",
+      "details": "https://github.com/flashmodel/MarkdownPreviewOverlay",
+      "labels": [
+        "markdown",
+        "preview",
+        "reader"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-02T15:33:24Z"
+    },
+    {
       "details": "https://github.com/naokazuterada/MarkdownTOC",
       "labels": [
         "markdown",
@@ -50753,6 +50771,23 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2014-09-09T21:25:05Z"
+    },
+    {
+      "name": "NotionSave",
+      "details": "https://github.com/adelhamad/sublime-notion-auto-save",
+      "labels": [
+        "utilities",
+        "productivity"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-02T15:33:24Z"
     },
     {
       "name": "NotmuchAddress",
