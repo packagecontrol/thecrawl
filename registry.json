@@ -59677,9 +59677,9 @@
       "description": "Live Scratchpad for JavaScript.",
       "releases": [
         {
-          "url": "https://github.com/wallabyjs/sublime-text-releases/releases/download/Quokka-1.0.236/Quokka.sublime-package",
-          "date": "2026-08-20 02:34:17",
-          "version": "1.0.236",
+          "url": "https://github.com/wallabyjs/sublime-text-releases/releases/download/Quokka-1.0.237/Quokka.sublime-package",
+          "date": "2026-10-02 03:02:52",
+          "version": "1.0.237",
           "sublime_text": ">=3000"
         }
       ],
@@ -87856,9 +87856,9 @@
       "description": "Super fast test runner with realtime time code coverage for JavaScript.",
       "releases": [
         {
-          "url": "https://github.com/wallabyjs/sublime-text-releases/releases/download/Wallaby-1.0.85/Wallaby.sublime-package",
-          "date": "2025-11-25 08:25:37",
-          "version": "1.0.85",
+          "url": "https://github.com/wallabyjs/sublime-text-releases/releases/download/Wallaby-1.0.86/Wallaby.sublime-package",
+          "date": "2026-10-02 03:05:19",
+          "version": "1.0.86",
           "sublime_text": ">=3000"
         }
       ],
