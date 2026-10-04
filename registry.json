@@ -336,7 +336,11 @@
       ],
       "releases": [
         {
-          "sublime_text": ">=3114",
+          "sublime_text": "3114 - 4205",
+          "tags": "st3-"
+        },
+        {
+          "sublime_text": ">=4206",
           "tags": true
         }
       ],
@@ -25334,20 +25338,13 @@
     },
     {
       "name": "Flask Hello",
-      "details": "https://github.com/tanrax/SublimeFlaskHello",
       "labels": [
         "auto-complete",
         "snippets"
       ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2017-10-20T13:41:40Z"
+      "first_seen": "2017-10-20T13:41:40Z",
+      "removed": "2026-10-04T12:09:16Z"
     },
     {
       "name": "Flask Starter",
@@ -43645,20 +43642,13 @@
     },
     {
       "name": "LuaAutocomplete",
-      "details": "https://github.com/ColonelThirtyTwo/LuaAutocomplete",
       "labels": [
         "auto-complete",
         "lua"
       ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2014-08-14T17:35:24Z"
+      "first_seen": "2014-08-14T17:35:24Z",
+      "removed": "2026-10-04T12:09:16Z"
     },
     {
       "name": "LuaComplete",
