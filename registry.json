@@ -18024,6 +18024,25 @@
       "first_seen": "2017-01-18T23:33:50Z"
     },
     {
+      "details": "https://github.com/djrobby/DeWatermark",
+      "labels": [
+        "utilities",
+        "text manipulation",
+        "clipboard",
+        "paste"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "DeWatermark",
+      "first_seen": "2026-10-04T19:56:47Z"
+    },
+    {
       "name": "DFML (for Dwarf Fortress raws)",
       "details": "https://github.com/philipguin/dfml-sublime-package",
       "labels": [
