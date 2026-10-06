@@ -42959,6 +42959,47 @@
       "first_seen": "2021-05-21T22:38:27Z"
     },
     {
+      "details": "https://github.com/sublimelsp/LSP-oxfmt",
+      "name": "LSP-oxfmt",
+      "labels": [
+        "lsp",
+        "javascript",
+        "typescript",
+        "json",
+        "css",
+        "markdown",
+        "yaml",
+        "toml"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4132",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-06T21:28:51Z"
+    },
+    {
+      "details": "https://github.com/sublimelsp/LSP-oxlint",
+      "name": "LSP-oxlint",
+      "labels": [
+        "lsp",
+        "javascript",
+        "typescript"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4132",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-06T21:28:51Z"
+    },
+    {
       "details": "https://github.com/NiceFeatures/LSP-pawnforge",
       "labels": [
         "lsp",
@@ -43398,6 +43439,23 @@
       "first_seen": "2025-09-23T22:18:01Z"
     },
     {
+      "details": "https://github.com/sublimelsp/LSP-tombi",
+      "name": "LSP-tombi",
+      "labels": [
+        "lsp",
+        "toml"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4132",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-06T21:28:51Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-tsgo",
       "name": "LSP-tsgo",
       "labels": [
@@ -43628,6 +43686,23 @@
       "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2020-04-27T18:13:11Z"
+    },
+    {
+      "name": "LSP-zuban",
+      "details": "https://github.com/sublimelsp/LSP-zuban",
+      "labels": [
+        "lsp",
+        "python"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-06T21:28:51Z"
     },
     {
       "name": "Lua Dev",
@@ -65308,13 +65383,13 @@
     },
     {
       "name": "Search in Project",
-      "details": "https://github.com/leonid-shevtsov/SearchInProject_SublimeText",
+      "details": "https://github.com/deese/SearchInProject_SublimeText",
       "labels": [
         "search"
       ],
       "releases": [
         {
-          "sublime_text": "*",
+          "sublime_text": ">=4200",
           "tags": true
         }
       ],
