@@ -9326,7 +9326,11 @@
           "tags": "st3-v"
         },
         {
-          "sublime_text": ">=4084",
+          "sublime_text": "4084 - 4212",
+          "tags": "st4084-v"
+        },
+        {
+          "sublime_text": ">=4213",
           "tags": true
         }
       ],
@@ -17575,6 +17579,22 @@
       ],
       "first_seen": "2020-06-06T23:57:08Z",
       "removed": "2021-08-30T08:24:55Z"
+    },
+    {
+      "name": "DeepSeaFoam",
+      "details": "https://github.com/Zanark/DeepSeaFoam-SublimeText",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-07T20:10:41Z"
     },
     {
       "name": "Default File Type",
@@ -50229,6 +50249,24 @@
       "removed": "2026-04-28T20:40:46Z"
     },
     {
+      "details": "https://github.com/aaortizb/niceDarkTheme",
+      "labels": [
+        "theme",
+        "color scheme",
+        "file icon theme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4206",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "niceDarkTheme",
+      "first_seen": "2026-10-07T20:10:41Z"
+    },
+    {
       "name": "Night Owl",
       "details": "https://github.com/VonHeikemen/night-owl-sublime-scheme",
       "labels": [
@@ -68942,6 +68980,22 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2015-08-17T21:56:40Z"
+    },
+    {
+      "name": "Sonokai",
+      "details": "https://github.com/huyhoang8398/Sonokai",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": "*",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-07T20:10:41Z"
     },
     {
       "name": "Sophia",
