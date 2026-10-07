@@ -24573,6 +24573,7 @@
     {
       "name": "FileIcons",
       "details": "https://github.com/braver/FileIcons",
+      "readme": "https://raw.githubusercontent.com/braver/FileIcons/color/README.md",
       "donate": "https://ko-fi.com/koenlageveen",
       "labels": [
         "file",
@@ -24606,6 +24607,25 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2018-07-04T03:27:46Z"
+    },
+    {
+      "name": "FileIcons Theme",
+      "details": "https://github.com/braver/FileIcons",
+      "donate": "https://ko-fi.com/koenlageveen",
+      "labels": [
+        "file",
+        "icons",
+        "file icon theme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4206",
+          "tags": "theme-"
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-07T14:32:02Z"
     },
     {
       "name": "FileList",
@@ -68811,7 +68831,9 @@
       "details": "https://github.com/braver/Solarized",
       "donate": "https://ko-fi.com/koenlageveen",
       "labels": [
-        "color scheme"
+        "color scheme",
+        "theme",
+        "file icon theme"
       ],
       "releases": [
         {
@@ -83699,6 +83721,10 @@
         "openai"
       ],
       "releases": [
+        {
+          "sublime_text": ">=4205",
+          "tags": "st4205-"
+        },
         {
           "sublime_text": ">=4000",
           "tags": true
