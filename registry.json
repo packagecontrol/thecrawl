@@ -24593,6 +24593,7 @@
     {
       "name": "FileIcons",
       "details": "https://github.com/braver/FileIcons",
+      "description": "Colorful file icons for older versions of Sublime Text",
       "readme": "https://raw.githubusercontent.com/braver/FileIcons/color/README.md",
       "donate": "https://ko-fi.com/koenlageveen",
       "labels": [
@@ -24612,6 +24613,7 @@
     {
       "name": "FileIcons Mono",
       "details": "https://github.com/braver/FileIcons",
+      "description": "Monochrome file icons for older versions of Sublime Text",
       "readme": "https://raw.githubusercontent.com/braver/FileIcons/mono/README.md",
       "donate": "https://ko-fi.com/koenlageveen",
       "labels": [
@@ -37242,6 +37244,26 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2018-11-26T04:37:41Z"
+    },
+    {
+      "name": "JSON Color Schemes",
+      "details": "https://github.com/lanz/sublime-json-color-schemes",
+      "author": "Lance Duvall",
+      "labels": [
+        "color scheme",
+        "json",
+        "monokai",
+        "dark"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4200",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-08T13:41:37Z"
     },
     {
       "name": "Json Colors And Navigation",
@@ -54218,16 +54240,9 @@
     },
     {
       "name": "Paste PDF Text Block",
-      "details": "https://github.com/compleatang/sublimetext-pastepdf",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "branch": "master"
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2013-01-18T05:45:50Z"
+      "first_seen": "2013-01-18T05:45:50Z",
+      "removed": "2026-10-08T13:41:37Z"
     },
     {
       "name": "Paste Plus",
@@ -70054,6 +70069,28 @@
       "first_seen": "2020-02-09T03:09:22Z"
     },
     {
+      "name": "SquareTable",
+      "author": "Jake Barlow (cjdbarlow)",
+      "details": "https://github.com/cjdbarlow/squaretable-st",
+      "labels": [
+        "markdown",
+        "textile",
+        "restructuredtext",
+        "pandoc",
+        "emacs org mode",
+        "text manipulation"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-08T13:41:37Z"
+    },
+    {
       "name": "Squib Snippets",
       "details": "https://github.com/andymeneely/sublime-squib",
       "labels": [
@@ -83776,11 +83813,11 @@
       ],
       "releases": [
         {
-          "sublime_text": ">=4205",
-          "tags": "st4205-"
+          "sublime_text": "4000 - 4204",
+          "tags": "py38-"
         },
         {
-          "sublime_text": ">=4000",
+          "sublime_text": ">=4205",
           "tags": true
         }
       ],
