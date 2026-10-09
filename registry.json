@@ -50592,6 +50592,22 @@
       "first_seen": "2014-12-04T22:50:34Z"
     },
     {
+      "name": "Noctis Color Scheme",
+      "details": "https://github.com/ziishaned/sublime-text-noctis",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4143",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-09T22:49:10Z"
+    },
+    {
       "name": "Nocturnal Color Scheme",
       "details": "https://github.com/noct/nocturnal-color-scheme",
       "labels": [
@@ -66404,7 +66420,6 @@
       "first_seen": "2017-01-30T13:04:59Z"
     },
     {
-      "fetching_source_failed": "2026-10-09T05:21:10Z",
       "name": "SFTP",
       "description": "Commercial SFTP/FTP plugin - upload, sync, browse, remote edit, diff and vcs integration",
       "author": "Will Bond (wbond)",
@@ -77789,7 +77804,6 @@
       "first_seen": "2017-04-04T17:20:26Z"
     },
     {
-      "fetching_source_failed": "2026-10-09T05:21:10Z",
       "name": "SVN",
       "description": "Full-featured commercial Subversion plugin with a focus on usability",
       "author": "Will Bond (wbond)",
