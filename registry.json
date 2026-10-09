@@ -66404,6 +66404,7 @@
       "first_seen": "2017-01-30T13:04:59Z"
     },
     {
+      "fetching_source_failed": "2026-10-09T05:21:10Z",
       "name": "SFTP",
       "description": "Commercial SFTP/FTP plugin - upload, sync, browse, remote edit, diff and vcs integration",
       "author": "Will Bond (wbond)",
@@ -77788,6 +77789,7 @@
       "first_seen": "2017-04-04T17:20:26Z"
     },
     {
+      "fetching_source_failed": "2026-10-09T05:21:10Z",
       "name": "SVN",
       "description": "Full-featured commercial Subversion plugin with a focus on usability",
       "author": "Will Bond (wbond)",
