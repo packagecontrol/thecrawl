@@ -1436,6 +1436,25 @@
       "first_seen": "2016-09-12T13:15:14Z"
     },
     {
+      "name": "Algorithm Competition Assistant",
+      "details": "https://github.com/chenmoulaile/cph-by-chenkx",
+      "labels": [
+        "c",
+        "c++",
+        "competitive programming",
+        "testing"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4095",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-10T19:10:41Z"
+    },
+    {
       "name": "Align Arguments",
       "details": "https://github.com/denniskempin/align-arguments",
       "labels": [
@@ -42442,6 +42461,24 @@
       "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2026-09-14T22:04:51Z"
+    },
+    {
+      "details": "https://github.com/upyesp/LSP-epher",
+      "labels": [
+        "lsp",
+        "epher",
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4132",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "name": "LSP-epher",
+      "first_seen": "2026-10-10T19:10:41Z"
     },
     {
       "details": "https://github.com/sublimelsp/LSP-eslint",
