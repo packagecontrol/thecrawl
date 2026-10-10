@@ -45290,6 +45290,23 @@
       "first_seen": "2016-07-18T15:48:50Z"
     },
     {
+      "details": "https://github.com/feibuilds/MarkdownGlance",
+      "labels": [
+        "markdown",
+        "preview"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4200",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "MarkdownGlance",
+      "first_seen": "2026-10-10T08:32:05Z"
+    },
+    {
       "name": "MarkdownHighlighting",
       "labels": [
         "markdown",
