@@ -42299,7 +42299,11 @@
       ],
       "releases": [
         {
-          "sublime_text": ">=4126",
+          "sublime_text": "4126 - 4205",
+          "tags": "4205-"
+        },
+        {
+          "sublime_text": ">=4206",
           "tags": true
         }
       ],
