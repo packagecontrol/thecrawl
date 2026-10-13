@@ -18985,17 +18985,6 @@
     },
     {
       "name": "DocBlockr 2021 (DoxyDoxygen powered)",
-      "description": "Create, Update, Translate comments for 50+ languages and 15+ documenting tools (including Doxygen, JsDoc3, PhpDoc). This edition of DoxyDoxygen includes some DocBlockr shortcuts that are not in the regular edition.",
-      "author": "20Tauri",
-      "homepage": "http://20tauri.free.fr/DoxyDoxygen/",
-      "issues": "https://github.com/20Tauri/DoxyDoxygen/issues",
-      "buy": "http://20tauri.free.fr/DoxyDoxygen/v2/page_buy.php",
-      "readme": "https://raw.githubusercontent.com/20Tauri/DoxyDoxygen/master/README.md",
-      "previous_names": [
-        "DocBlockr over DoxyDoxygen",
-        "DocBlockr with comments update",
-        "DocBlockr 2020 (DoxyDoxygen powered)"
-      ],
       "labels": [
         "documentation",
         "comments",
@@ -19004,29 +18993,9 @@
         "translate",
         "formatting"
       ],
-      "releases": [
-        {
-          "platforms": [
-            "*"
-          ],
-          "sublime_text": "<3000",
-          "version": "0.79.0",
-          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/0.79.0/ST2_DoxyDoxygen.sublime-package",
-          "date": "2021-02-09 18:11:49"
-        },
-        {
-          "platforms": [
-            "*"
-          ],
-          "sublime_text": ">=3000",
-          "version": "0.79.0",
-          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/0.79.0/ST3_DoxyDoxygen.sublime-package",
-          "date": "2021-02-09 18:11:49"
-        }
-      ],
       "source": "https://raw.githubusercontent.com/20Tauri/DoxyDoxygen/master/DoxyDoxygen.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2018-06-14T18:32:00Z"
+      "first_seen": "2018-06-14T18:32:00Z",
+      "removed": "2026-10-13T21:17:02Z"
     },
     {
       "name": "DocBlockr_Python",
@@ -19458,12 +19427,16 @@
       "name": "DoxyDoxygen",
       "description": "Make commenting easier. Supports Doxygen, JsDoc3, PhpDocumentor...",
       "author": "20Tauri",
-      "homepage": "http://20tauri.free.fr/DoxyDoxygen/",
+      "homepage": "https://20tauri.pages-perso.free.fr/DoxyDoxygen/",
       "issues": "https://github.com/20Tauri/DoxyDoxygen/issues",
-      "buy": "http://20tauri.free.fr/DoxyDoxygen/v2/page_buy.php",
+      "buy": "https://20tauri.pages-perso.free.fr/DoxyDoxygen/v2/page_buy.php",
       "readme": "https://raw.githubusercontent.com/20Tauri/DoxyDoxygen/master/README.md",
       "previous_names": [
-        "DocBlockr_with_update_capability"
+        "DocBlockr_with_update_capability",
+        "DocBlockr over DoxyDoxygen",
+        "DocBlockr with comments update",
+        "DocBlockr 2020 (DoxyDoxygen powered)",
+        "DocBlockr 2021 (DoxyDoxygen powered)"
       ],
       "labels": [
         "documentation",
@@ -19479,36 +19452,36 @@
             "*"
           ],
           "sublime_text": "<3000",
-          "version": "1.0.2",
-          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/1.0.2/ST2_DoxyDoxygen.sublime-package",
-          "date": "2024-12-09 20:53:27"
+          "version": "1.0.3",
+          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/1.0.3/ST2_DoxyDoxygen.sublime-package",
+          "date": "2026-10-05 19:27:36"
         },
         {
           "platforms": [
             "*"
           ],
           "sublime_text": "3000 - 3999",
-          "version": "1.0.2",
-          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/1.0.2/ST3_DoxyDoxygen.sublime-package",
-          "date": "2024-12-09 20:53:27"
+          "version": "1.0.3",
+          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/1.0.3/ST3_DoxyDoxygen.sublime-package",
+          "date": "2026-10-05 19:27:36"
         },
         {
           "platforms": [
             "*"
           ],
-          "sublime_text": "4000 - 4200",
-          "version": "1.0.2",
-          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/1.0.2/ST4_DoxyDoxygen.sublime-package",
-          "date": "2024-12-09 20:53:27"
+          "sublime_text": "4000 - 4204",
+          "version": "1.0.3",
+          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/1.0.3/ST4000_DoxyDoxygen.sublime-package",
+          "date": "2026-10-05 19:27:36"
         },
         {
           "platforms": [
             "*"
           ],
-          "sublime_text": ">=4201",
-          "version": "1.0.2",
-          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/1.0.2/ST3_DoxyDoxygen.sublime-package",
-          "date": "2024-12-09 20:53:27"
+          "sublime_text": ">=4205",
+          "version": "1.0.3",
+          "url": "https://github.com/20Tauri/DoxyDoxygen/releases/download/1.0.3/ST4205_DoxyDoxygen.sublime-package",
+          "date": "2026-10-05 19:27:36"
         }
       ],
       "source": "https://raw.githubusercontent.com/20Tauri/DoxyDoxygen/master/DoxyDoxygen.json",
@@ -19519,9 +19492,9 @@
       "name": "DoxyDoxygen (evolution)",
       "description": "Get the lastest DoxyDoxygen evolutions before everybody and help to create future.",
       "author": "20Tauri",
-      "homepage": "http://20tauri.free.fr/DoxyDoxygen/",
+      "homepage": "https://20tauri.pages-perso.free.fr/DoxyDoxygen/",
       "issues": "https://github.com/20Tauri/DoxyDoxygen/issues",
-      "buy": "http://20tauri.free.fr/DoxyDoxygen/v2/page_buy.php",
+      "buy": "https://20tauri.pages-perso.free.fr/DoxyDoxygen/v2/page_buy.php",
       "readme": "https://raw.githubusercontent.com/20Tauri/DoxyDoxygen/master/README.md",
       "previous_names": [],
       "labels": [
