@@ -42581,6 +42581,23 @@
       "first_seen": "2021-05-21T20:09:22Z"
     },
     {
+      "details": "https://github.com/forge-language/sublime-text",
+      "name": "LSP-Forge",
+      "labels": [
+        "lsp",
+        "forge"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4132",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-15T15:15:32Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-gh-actions",
       "name": "LSP-gh-actions",
       "labels": [
