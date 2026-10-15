@@ -24,12 +24,12 @@ const ERROR_CONCLUSIONS = new Set([
  *   label: string,
  * }}
  */
-export function homeStatusView(entries) {
-  const periods = homeStatusPeriods(entries)
+export function homeStatusView(entries, now = Date.now()) {
+  const periods = homeStatusPeriods(entries, now)
   const counts = { okay: 0, warning: 0, error: 0 }
   const segments = periods.map((period) => {
     const status = homeStatusForEntry(period.entry)
-    const stops = homeStatusDurationStops(period.duration)
+    const stops = homeStatusDurationStops(period.duration, period.baseline)
     const classNames = ['home-status-segment', `is-${status}`]
     const styles = [`flex-grow: ${period.duration}`]
     counts[status] += 1
@@ -78,53 +78,52 @@ export function homeStatusForEntry(entry) {
 
 /**
  * Turn newest- or oldest-first log data into oldest-first ribbon periods.
- * The newest run has no following timestamp, so it receives the median period
- * duration. This keeps its state visible at the right edge of the ribbon.
+ * Each baseline uses up to 30 positive, completed intervals preceding the run.
+ * The newest period extends to now; it never contributes to its own baseline.
  *
  * @template {{ date?: string }} T
  * @param {T[]} entries
- * @returns {{ entry: T, timestamp: number, duration: number }[]}
+ * @param {number} now
+ * @returns {{ entry: T, timestamp: number, duration: number, baseline: number }[]}
  */
-export function homeStatusPeriods(entries) {
+export function homeStatusPeriods(entries, now = Date.now()) {
   const datedEntries = (Array.isArray(entries) ? entries : [])
     .map(entry => ({ entry, timestamp: Date.parse(entry?.date || '') }))
     .filter(item => Number.isFinite(item.timestamp))
     .sort((a, b) => a.timestamp - b.timestamp)
 
   if (!datedEntries.length) return []
-  if (datedEntries.length === 1) {
-    return [{ ...datedEntries[0], duration: 1 }]
-  }
-
   const gaps = []
-  for (let i = 0; i < datedEntries.length - 1; i += 1) {
-    const gap = datedEntries[i + 1].timestamp - datedEntries[i].timestamp
-    if (gap > 0) gaps.push(gap)
-  }
-  const finalDuration = median(gaps) || 1
-
   return datedEntries.map((item, index) => {
-    const nextTimestamp = datedEntries[index + 1]?.timestamp
-    const duration = nextTimestamp > item.timestamp
-      ? nextTimestamp - item.timestamp
-      : finalDuration
-    return { ...item, duration }
+    const previousTimestamp = datedEntries[index - 1]?.timestamp
+    const gap = item.timestamp - previousTimestamp
+    if (gap > 0) {
+      gaps.push(gap)
+      if (gaps.length > 30) gaps.shift()
+    }
+    const baseline = median(gaps)
+    const end = datedEntries[index + 1]?.timestamp ?? now
+    const duration = Math.max(1, end - item.timestamp)
+    return { ...item, duration, baseline }
   })
 }
 
 /**
- * Locate the two-hour warning and three-hour error thresholds within a period.
- * Normal periods have no stops; warning periods have only a warning stop.
+ * Locate warning (1.5× median) and error (2× median) thresholds within a period.
+ * With no preceding intervals, there is no timing warning.
  *
  * @param {number} duration
+ * @param {number} baseline
  * @returns {{ warning: number, error: number | null } | null}
  */
-export function homeStatusDurationStops(duration) {
-  const hour = 60 * 60 * 1000
-  if (!Number.isFinite(duration) || duration <= 2 * hour) return null
+export function homeStatusDurationStops(duration, baseline) {
+  if (!Number.isFinite(duration) || !Number.isFinite(baseline) || baseline <= 0) return null
+  const warning = 1.5 * baseline
+  const error = 2 * baseline
+  if (duration <= warning) return null
   return {
-    warning: ((2 * hour) / duration) * 100,
-    error: duration > 3 * hour ? ((3 * hour) / duration) * 100 : null,
+    warning: (warning / duration) * 100,
+    error: duration > error ? (error / duration) * 100 : null,
   }
 }
 

@@ -11,16 +11,19 @@ const DATA_MANIFEST_URL = document.querySelector(
 )?.content
 const DATA_REFRESH_MS = 10 * 60 * 1000
 const RIBBON_TRANSITION_MS = 650
+let currentEntries = null
 init()
 
 function init() {
   if (!shellEl || !ribbonEl) return
 
-  if (!ribbonEl.querySelector('.home-status-track')) {
-    loadLogs().then(renderRibbon).catch((error) => {
-      console.error('Failed to load homepage status:', error)
-    })
-  }
+  // Load even server-rendered data so the latest period can age locally.
+  loadLogs().then(entries => renderRibbon(entries)).catch((error) => {
+    console.error('Failed to load homepage status:', error)
+  })
+  window.setInterval(() => {
+    if (currentEntries) renderRibbon(currentEntries)
+  }, 60 * 1000)
   ribbonEl.addEventListener('pointerover', showRibbonDate)
   ribbonEl.addEventListener('pointerleave', hideRibbonDate)
   startDataRefreshInterval()
@@ -41,7 +44,7 @@ async function refreshData() {
     refreshArtifactCounts(manifest?.artifact_counts)
 
     const latestLogsUrl = manifest?.logs_url
-    if (!latestLogsUrl || latestLogsUrl === logsUrl) return
+    if (!latestLogsUrl || (latestLogsUrl === logsUrl && currentEntries)) return
 
     const entries = await loadLogs(latestLogsUrl)
     logsUrl = latestLogsUrl
@@ -68,6 +71,7 @@ async function refreshArtifactCounts(counts) {
 }
 
 function renderRibbon(entries, animate = false) {
+  currentEntries = entries
   const view = homeStatusView(entries)
   if (!view.segments.length) return
 

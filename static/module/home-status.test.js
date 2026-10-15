@@ -61,7 +61,7 @@ describe('homepage status helpers', () => {
         conclusion: 'success',
         notes: '#### Currently failing\n- **Package**\n  500 Server Error',
       },
-    ])
+    ], Date.parse('2026-08-14T07:30:00Z'))
 
     expect(view.counts).toEqual({ okay: 1, warning: 1, error: 1 })
     expect(view.segments).toEqual([
@@ -76,14 +76,14 @@ describe('homepage status helpers', () => {
         key: 'warning',
         date: '– 2026-08-14 –',
         className: 'home-status-segment is-warning has-duration-warning has-duration-error',
-        style: 'flex-grow: 14400000; --duration-warning-stop: 50%; --duration-error-stop: 75%',
+        style: 'flex-grow: 14400000; --duration-warning-stop: 37.5%; --duration-error-stop: 50%',
         status: 'warning',
       },
       {
         key: 'failed',
         date: '– 2026-08-14 –',
-        className: 'home-status-segment is-error has-duration-warning',
-        style: 'flex-grow: 9000000; --duration-warning-stop: 80%',
+        className: 'home-status-segment is-error',
+        style: 'flex-grow: 9000000',
         status: 'error',
       },
     ])
@@ -95,7 +95,7 @@ describe('homepage status helpers', () => {
       { id: 'latest', date: '2026-08-14T03:00:00Z' },
       { id: 'earliest', date: '2026-08-14T00:00:00Z' },
       { id: 'middle', date: '2026-08-14T01:00:00Z' },
-    ])
+    ], Date.parse('2026-08-14T04:00:00Z'))
 
     expect(periods.map(period => period.entry.id)).toEqual([
       'earliest',
@@ -105,37 +105,85 @@ describe('homepage status helpers', () => {
     expect(periods.map(period => period.duration)).toEqual([
       60 * 60 * 1000,
       2 * 60 * 60 * 1000,
-      1.5 * 60 * 60 * 1000,
+      60 * 60 * 1000,
     ])
   })
 
-  it('marks two-hour warnings and three-hour errors within periods', () => {
+  it('marks 1.5× warnings and 2× errors relative to the baseline', () => {
     const hour = 60 * 60 * 1000
 
-    expect(homeStatusDurationStops(2 * hour)).toBeNull()
-    expect(homeStatusDurationStops(2.5 * hour)).toEqual({
+    expect(homeStatusDurationStops(3 * hour, 2 * hour)).toBeNull()
+    expect(homeStatusDurationStops(3.75 * hour, 2 * hour)).toEqual({
       warning: 80,
       error: null,
     })
-    expect(homeStatusDurationStops(3 * hour)).toEqual({
-      warning: (2 / 3) * 100,
+    expect(homeStatusDurationStops(4 * hour, 2 * hour)).toEqual({
+      warning: 75,
       error: null,
     })
-    expect(homeStatusDurationStops(4 * hour)).toEqual({
-      warning: 50,
-      error: 75,
+    expect(homeStatusDurationStops(5 * hour, 2 * hour)).toEqual({
+      warning: 60,
+      error: 80,
     })
+    expect(homeStatusDurationStops(5 * hour, 0)).toBeNull()
+    expect(homeStatusDurationStops(Infinity, hour)).toBeNull()
+    expect(homeStatusDurationStops(hour, NaN)).toBeNull()
+  })
+
+  it('uses only the preceding 30 completed intervals for each baseline', () => {
+    const hour = 60 * 60 * 1000
+    let timestamp = Date.parse('2026-08-01T00:00:00Z')
+    const entries = [{ date: new Date(timestamp).toISOString() }]
+    for (let i = 0; i < 60; i += 1) {
+      timestamp += (i < 30 ? 4 : 1) * hour
+      entries.push({ date: new Date(timestamp).toISOString() })
+    }
+    const periods = homeStatusPeriods(entries, timestamp + 10 * hour)
+
+    expect(periods[0].baseline).toBe(0)
+    expect(periods[1].baseline).toBe(4 * hour)
+    expect(periods[30].baseline).toBe(4 * hour)
+    expect(periods[45].baseline).toBe(2.5 * hour)
+    expect(periods[46].baseline).toBe(hour)
+    expect(periods.at(-1).baseline).toBe(hour)
+    expect(periods.at(-1).duration).toBe(10 * hour)
+    // Later runs must not change the earlier periods or their thresholds.
+    expect(homeStatusPeriods(entries.slice(0, 31), timestamp)[29]).toEqual(periods[29])
+  })
+
+  it('ages the newest segment without changing its baseline', () => {
+    const entries = [0, 4, 8].map(hour => ({
+      date: new Date(Date.UTC(2026, 7, 14, hour)).toISOString(),
+    }))
+    const viewAt = hour => homeStatusView(entries, Date.UTC(2026, 7, 14, hour))
+
+    expect(viewAt(9).segments.at(-1).className).toBe('home-status-segment is-okay')
+    expect(viewAt(15).segments.at(-1).className).toContain('has-duration-warning')
+    expect(viewAt(15).segments.at(-1).className).not.toContain('has-duration-error')
+    expect(viewAt(17).segments.at(-1).className).toContain('has-duration-error')
+    expect(viewAt(17).segments.slice(0, -1)).toEqual(viewAt(9).segments.slice(0, -1))
+  })
+
+  it('ignores duplicate timestamps in the baseline and clamps future periods', () => {
+    const entries = [0, 0, 4].map(hour => ({
+      date: new Date(Date.UTC(2026, 7, 14, hour)).toISOString(),
+    }))
+    const periods = homeStatusPeriods(entries, Date.UTC(2026, 7, 14, 3))
+    expect(periods.map(period => period.baseline)).toEqual([0, 0, 4 * 60 * 60 * 1000])
+    expect(periods[0].duration).toBe(1)
+    expect(periods.at(-1).duration).toBe(1)
   })
 
   it('ignores entries without valid dates', () => {
     expect(homeStatusPeriods([
       { id: 'invalid', date: 'not-a-date' },
       { id: 'valid', date: '2026-08-14T00:00:00Z' },
-    ])).toEqual([
+    ], Date.parse('2026-08-14T00:00:00Z'))).toEqual([
       {
         entry: { id: 'valid', date: '2026-08-14T00:00:00Z' },
         timestamp: Date.parse('2026-08-14T00:00:00Z'),
         duration: 1,
+        baseline: 0,
       },
     ])
   })
