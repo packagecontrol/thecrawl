@@ -32410,8 +32410,12 @@
           "tags": "version/st4201/"
         },
         {
-          "sublime_text": ">=4204",
+          "sublime_text": "4204 - 4207",
           "tags": "version/st4204/"
+        },
+        {
+          "sublime_text": ">=4208",
+          "tags": "version/st4208/"
         }
       ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
@@ -33402,6 +33406,23 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2019-01-13T05:15:49Z"
+    },
+    {
+      "name": "Icons - Catppuccin",
+      "details": "https://github.com/predragnikolic/catppuccin-sublime-icons",
+      "labels": [
+        "icons",
+        "file icon theme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4206",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-15T19:19:30Z"
     },
     {
       "details": "https://github.com/chrisborrowdale/Idiomatic-CSS-Comments-Snippets",
@@ -69047,6 +69068,24 @@
       "labels": [],
       "first_seen": "2017-07-19T21:11:37Z",
       "removed": "2020-07-20T01:17:07Z"
+    },
+    {
+      "name": "SOML",
+      "details": "https://github.com/soml-lang/sublime-soml",
+      "labels": [
+        "language syntax",
+        "formatting",
+        "soml"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4213",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-15T19:19:30Z"
     },
     {
       "name": "Sonic Pi",
