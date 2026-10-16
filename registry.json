@@ -33491,6 +33491,23 @@
       "first_seen": "2012-05-29T22:10:27Z"
     },
     {
+      "name": "IdraaakArticleAnchorChecker",
+      "details": "https://github.com/nedal-dev/idraaak-article-anchor-checker",
+      "labels": [
+        "html",
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-16T21:44:10Z"
+    },
+    {
       "name": "Idris Syntax",
       "details": "https://github.com/tellnobody1/sublime-idris-syntax",
       "labels": [
