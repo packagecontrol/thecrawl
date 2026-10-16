@@ -1889,6 +1889,24 @@
       "first_seen": "2013-01-16T23:26:53Z"
     },
     {
+      "name": "AMX Mod X Pawn",
+      "details": "https://github.com/NiceFeatures/sublime-pawn-syntax",
+      "labels": [
+        "language syntax",
+        "pawn",
+        "amxmodx"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-16T18:40:57Z"
+    },
+    {
       "name": "AmxxEditor",
       "details": "https://github.com/evandrocoan/AmxxEditor",
       "labels": [
@@ -42671,21 +42689,14 @@
       "first_seen": "2021-10-26T00:05:40Z"
     },
     {
-      "details": "https://github.com/sublimelsp/LSP-Grammarly",
       "name": "LSP-Grammarly",
       "labels": [
         "lsp",
         "spellcheck"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=4070",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2022-05-20T21:55:34Z"
+      "first_seen": "2022-05-20T21:55:34Z",
+      "removed": "2026-10-16T18:40:57Z"
     },
     {
       "details": "https://github.com/sublimelsp/LSP-graphql",
