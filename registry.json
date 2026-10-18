@@ -17632,6 +17632,29 @@
       "first_seen": "2013-08-31T06:05:35Z"
     },
     {
+      "name": "Deep JSON Color Schemes",
+      "details": "https://github.com/lanz/sublime-deep-json",
+      "author": "Lance Duvall",
+      "labels": [
+        "color scheme",
+        "json",
+        "monokai",
+        "dark"
+      ],
+      "previous_names": [
+        "JSON Color Schemes"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4200",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-18T17:09:26Z"
+    },
+    {
       "name": "DeepCodeAI",
       "labels": [
         "code analysis",
@@ -37323,23 +37346,15 @@
     },
     {
       "name": "JSON Color Schemes",
-      "details": "https://github.com/lanz/sublime-json-color-schemes",
-      "author": "Lance Duvall",
       "labels": [
         "color scheme",
         "json",
         "monokai",
         "dark"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=4200",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2026-10-08T13:41:37Z"
+      "first_seen": "2026-10-08T13:41:37Z",
+      "removed": "2026-10-18T17:09:26Z"
     },
     {
       "name": "Json Colors And Navigation",
