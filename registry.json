@@ -46458,6 +46458,23 @@
       "first_seen": "2014-07-23T22:05:43Z"
     },
     {
+      "name": "mdview",
+      "details": "https://github.com/mdview2026/sublime-mdview",
+      "labels": [
+        "markdown",
+        "preview"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-21T15:21:26Z"
+    },
+    {
       "name": "MDX",
       "details": "https://github.com/SublimeText/MDX",
       "labels": [
