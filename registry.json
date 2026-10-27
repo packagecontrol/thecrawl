@@ -3594,11 +3594,12 @@
       "details": "https://github.com/Fansaly/ASL-Syntax-Highlight",
       "author": "Fansaly",
       "labels": [
+        "completions",
         "language syntax"
       ],
       "releases": [
         {
-          "sublime_text": ">=3143",
+          "sublime_text": ">=4000",
           "tags": true
         }
       ],
@@ -34742,20 +34743,9 @@
     },
     {
       "name": "Instacode",
-      "details": "https://github.com/lindskogen/InstacodeSublime",
-      "releases": [
-        {
-          "sublime_text": ">=3000",
-          "branch": "master"
-        },
-        {
-          "sublime_text": "<3000",
-          "branch": "st2"
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2013-10-21T15:05:24Z"
+      "first_seen": "2013-10-21T15:05:24Z",
+      "removed": "2026-10-27T11:03:50Z"
     },
     {
       "name": "InstaGoogling",
@@ -60730,7 +60720,7 @@
       "details": "https://github.com/lindskogen/RandomHEXColor",
       "releases": [
         {
-          "sublime_text": "<3000",
+          "sublime_text": "*",
           "branch": "master"
         }
       ],
