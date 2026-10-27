@@ -43445,6 +43445,25 @@
       "first_seen": "2021-05-21T20:09:26Z"
     },
     {
+      "details": "https://github.com/statac-ssg/LSP-statac",
+      "issues": "https://git.statac.dev/statac/LSP-statac/issues",
+      "labels": [
+        "lsp",
+        "markdown",
+        "yaml"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4070",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "name": "LSP-statac",
+      "first_seen": "2026-10-27T16:42:11Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-stylelint",
       "name": "LSP-stylelint",
       "labels": [
