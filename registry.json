@@ -15454,6 +15454,22 @@
       "first_seen": "2017-10-20T13:28:25Z"
     },
     {
+      "name": "Cremisi Color Scheme",
+      "details": "https://github.com/vari-sh/cremisi-sublime",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3149",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-28T18:46:57Z"
+    },
+    {
       "details": "https://github.com/Siddley/Creole",
       "labels": [
         "language syntax"
