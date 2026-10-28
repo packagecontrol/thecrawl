@@ -3169,6 +3169,24 @@
       "first_seen": "2021-09-19T17:42:03Z"
     },
     {
+      "name": "Archive Nested Lines",
+      "details": "https://github.com/holgerl/archive-nested-lines",
+      "labels": [
+        "text manipulation",
+        "todo",
+        "notes"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-28T12:58:30Z"
+    },
+    {
       "name": "ArcticTypescript",
       "details": "https://github.com/Phaiax/ArcticTypescript",
       "labels": [
@@ -6646,6 +6664,22 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2016-11-06T18:54:52Z"
+    },
+    {
+      "name": "BlackboardForever Color Scheme",
+      "details": "https://github.com/danwolff/BlackboardForever",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-10-28T12:58:30Z"
     },
     {
       "name": "BlackRain",
