@@ -108,6 +108,7 @@ function chartModel(pkg) {
     rAxis,
     releasePoints,
     upgradeSeries,
+    upgradeCurve: upgradeCurveModel(upgradeSeries, rAxis),
     ...averages,
   }
 }
@@ -388,11 +389,25 @@ function renderAverageLines(model) {
 }
 
 function renderUpgradesOverlay(model) {
-  const { dim, rAxis, upgradeSeries } = model
-  const { points, usesDaily } = upgradeSeries
-  // Only show the upgrades line when there is at least one upgrade.
+  const { dim, upgradeCurve } = model
+  if (!upgradeCurve.d) return ''
+
+  // Reach the outer SVG edges on three sides so only the continuation past
+  // the right axis is clipped.
+  return html`
+    <clipPath id="clip-upgrades">
+      ${rect(-dim.left, -dim.top, dim.left + dim.chart_w, dim.svg_h)}
+    </clipPath>
+    <g clip-path="url(#clip-upgrades)">
+      <path d="${upgradeCurve.d}" class="upgrades-line" />
+    </g>
+  `
+}
+
+function upgradeCurveModel({ points, usesDaily }, rAxis) {
+  const segments = []
   if (sum(points.map(point => point.value)) <= 0) {
-    return ''
+    return { d: '', segments }
   }
 
   // Smoothed cubic Bézier via Catmull–Rom approximation
@@ -462,20 +477,12 @@ function renderUpgradesOverlay(model) {
       const c1y = clamp(y1 + (y2 - y0) / 6, segmentMinY, segmentMaxY)
       const c2y = clamp(y2 - (y3 - y1) / 6, segmentMinY, segmentMaxY)
 
+      segments.push({ x1, y1, c1x, c1y, c2x, c2y, x2, y2 })
       d += ` C ${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}`
     }
   }
 
-  // Reach the outer SVG edges on three sides so only the continuation past
-  // the right axis is clipped.
-  return html`
-    <clipPath id="clip-upgrades">
-      ${rect(-dim.left, -dim.top, dim.left + dim.chart_w, dim.svg_h)}
-    </clipPath>
-    <g clip-path="url(#clip-upgrades)">
-      <path d="${d}" class="upgrades-line" />
-    </g>
-  `
+  return { d, segments }
 }
 
 function renderReleases(model) {
@@ -485,7 +492,7 @@ function renderReleases(model) {
   }
 
   const defaultY = model.y_avg_net ?? model.lAxis.y_for(0)
-  const releaseCoords = releasePointCoords(releasePoints, model.rAxis, defaultY)
+  const releaseCoords = releasePointCoords(releasePoints, model.rAxis, defaultY, model.upgradeCurve)
 
   return html`
     ${renderReleaseInteractionStyle(model)}
@@ -780,11 +787,39 @@ function releasePointNearestMap(releasePoints, maxWeekIdx, dim) {
   return map
 }
 
-function releasePointCoords(releasePoints, rAxis, defaultY) {
+function releasePointCoords(releasePoints, rAxis, defaultY, curve) {
   return releasePoints.map(release => ({
     x: release.x,
-    y: release.has_stats ? rAxis.y_for(release.value) : defaultY,
+    // A weekly release can overlap the daily curve at the resolution boundary.
+    // Keep its week-center x and tooltip values, but use the rendered curve's y.
+    y: release.has_stats
+      ? (upgradeCurveYAt(curve, release.x) ?? rAxis.y_for(release.value))
+      : defaultY,
   }))
+}
+
+function upgradeCurveYAt(curve, x) {
+  const segment = curve.segments.find(s => s.x1 <= x && x <= s.x2)
+  if (!segment) return null
+  const { x1, y1, c1x, c1y, c2x, c2y, x2, y2 } = segment
+  if (x === x1) return y1
+  if (x === x2) return y2
+
+  // Daily/weekly spacing is unequal, so t is not a linear fraction of x.
+  // Invert the cubic's x coordinate before evaluating its y coordinate.
+  let low = 0
+  let high = 1
+  for (let i = 0; i < 50; i += 1) {
+    const t = (low + high) / 2
+    if (cubicAt(t, x1, c1x, c2x, x2) < x) low = t
+    else high = t
+  }
+  return cubicAt((low + high) / 2, y1, c1y, c2y, y2)
+}
+
+function cubicAt(t, p0, p1, p2, p3) {
+  return (1 - t) ** 3 * p0 + 3 * (1 - t) ** 2 * t * p1
+    + 3 * (1 - t) * t ** 2 * p2 + t ** 3 * p3
 }
 
 function drawAxisWithLabels(axis, xPos, dim, cssClass = 'tick', textAnchor = 'end', offset = 6) {
