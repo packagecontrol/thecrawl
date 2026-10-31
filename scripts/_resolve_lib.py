@@ -73,28 +73,42 @@ PLATFORM_TAG_PATTERNS = {
 }
 
 
-def build_default_asset_patterns(platform_tags: list[str]) -> list[AssetPattern]:
+def build_default_asset_patterns(
+    platform_tags: list[str], python_version: str
+) -> list[AssetPattern]:
+    """
+    Build the prioritized wheel patterns for one CPython version.
+
+    The CPython tags follow the order of `packaging.tags.cpython_tags`:
+    the version specific ABI, then `abi3` and `none` for the version itself,
+    then `abi3` of older versions down to 3.2.  Free-threaded and PyPy wheels
+    are never matched.  Pure platform wheels and `any` wheels come last.
+
+    Each group lists spellings of the same priority; e.g. `py2.py3` also
+    covers `py3`.
+    """
     version_var = "${version}"
-    py_var = "${py_version}"
-    py_tag = f"cp{py_var}"
-    abi_tags = [f"cp{py_var}m", f"cp{py_var}"]
+    major, minor = map(int, python_version.split("."))
+    py = f"{major}{minor}"
+    # The stable ABI exists since 3.2, newest first.
+    abi3_tags = [f"cp{major}{m}-abi3" for m in range(minor, 1, -1)] if major >= 3 else []
 
-    patterns = []
-
-    for platform_tag, abi_tag in product(platform_tags, abi_tags):
-        patterns.append(f"*-{version_var}-{py_tag}-{abi_tag}-{platform_tag}.whl")
-    for platform_tag in platform_tags:
-        patterns.append(f"*-{version_var}-py3-none-{platform_tag}.whl")
-        patterns.append(f"*-{version_var}-py2.py3-none-{platform_tag}.whl")
+    tag_groups = [
+        [f"cp{py}-cp{py}m", f"cp{py}-cp{py}"],
+        *[[tag] for tag in abi3_tags[:1]],
+        [f"cp{py}-none"],
+        *[[tag] for tag in abi3_tags[1:]],
+        ["py3-none", "py2.py3-none"],
+    ]
+    patterns = [
+        f"*-{version_var}-{tag}-{platform_tag}.whl"
+        for group in tag_groups
+        for platform_tag in platform_tags
+        for tag in group
+    ]
     patterns.append(f"*-{version_var}-py3-none-any.whl")
     patterns.append(f"*-{version_var}-py2.py3-none-any.whl")
     return patterns
-
-
-DEFAULT_ASSET_PATTERNS: dict[str, AssetPatterns] = {
-    platform: build_default_asset_patterns(platform_tags)
-    for platform, platform_tags in PLATFORM_TAG_PATTERNS.items()
-}
 
 
 class RegistryEntry(TypedDict, total=False):
@@ -330,8 +344,8 @@ def spell_out_constraint_variations(
     output: list[ConcreteReleaseDef] = []
     for st_specifier, py_ver, platform in product(sublime_text, python_versions, platforms):
         patterns = asset_patterns or (
-            DEFAULT_ASSET_PATTERNS.get(platform, [])
-            if auto_assets else []
+            build_default_asset_patterns(PLATFORM_TAG_PATTERNS[platform], py_ver)
+            if auto_assets and platform in PLATFORM_TAG_PATTERNS else []
         )
         st_build = normalize_st_build(st_specifier)
         py_version = py_ver.replace(".", "")
