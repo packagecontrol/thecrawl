@@ -73381,21 +73381,14 @@
     },
     {
       "name": "SublimeLinter-contrib-fasterer",
-      "details": "https://github.com/slapvanilla/SublimeLinter-contrib-fasterer",
       "labels": [
         "linting",
         "SublimeLinter",
         "ruby"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=3000",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2018-05-13T17:23:18Z"
+      "first_seen": "2018-05-13T17:23:18Z",
+      "removed": "2026-10-31T01:46:51Z"
     },
     {
       "name": "SublimeLinter-contrib-flog",
