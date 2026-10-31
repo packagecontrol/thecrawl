@@ -247,8 +247,24 @@ automatically from the platform and Python version(s):
 This expands to a prioritized pattern list like:
 - `*-${version}-cp313-cp313m-macosx_*_x86_64.whl`
 - `*-${version}-cp313-cp313-macosx_*_x86_64.whl`
+- `*-${version}-cp313-abi3-macosx_*_x86_64.whl`
+- `*-${version}-cp313-none-macosx_*_x86_64.whl`
+- `*-${version}-cp312-abi3-macosx_*_x86_64.whl`
+- ... (`abi3` down to `cp32`)
+- `*-${version}-py3-none-macosx_*_x86_64.whl`
+- `*-${version}-py2.py3-none-macosx_*_x86_64.whl`
 - `*-${version}-py3-none-any.whl`
 - `*-${version}-py2.py3-none-any.whl`
+
+(Each tag is also tried with `macosx_*_universal2` right after its
+`x86_64` variant.)
+
+The CPython tags are the ones of `packaging.tags.cpython_tags` in the same
+order, t.i. like pip we accept `cpXY-none` wheels and stable-ABI (`abi3`)
+wheels built for the same or an older CPython.  Free-threaded (`cp314t`)
+and PyPy wheels are never matched.  The newest
+version with any matching wheel wins; the order only decides between wheels
+of the same version.
 
 Example filenames for `lxml` that would match:
 - `lxml-6.0.2-cp313-cp313-macosx_10_13_x86_64.whl`
