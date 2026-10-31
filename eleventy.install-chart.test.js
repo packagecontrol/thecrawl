@@ -83,6 +83,82 @@ describe('renderInstallChart', () => {
     expect(output).not.toContain('7-day rate')
   })
 
+  it('places a boundary-week release on the daily curve without moving it sideways', () => {
+    const output = renderInstallChart({
+      allReleases: [{ date: '2026-10-06T20:22:35Z', version: '1.25.0' }],
+      weekly_dates: ['2026-W44', '2026-W43', '2026-W42', '2026-W41', '2026-W40'],
+      weekly_installs: [236, 299, 307, 311, 269],
+      weekly_upgrades: [2543, 4485, 9178, 17636, 127],
+      daily_dates: descendingDates('2026-10-30', 30),
+      daily_upgrades: [
+        391, 470, 524, 539, 619, 268, 262, 554, 687, 760,
+        787, 1167, 413, 400, 1008, 1327, 1643, 2154, 2233, 870,
+        1219, 2813, 6496, 6202, 20, 16, 7, 8, 9, 17,
+      ],
+    })
+    const [, x, y] = output.match(/<circle cx="([^"]+)" cy="([^"]+)"[^>]*class="release-point"/)
+
+    expect(Number(x)).toBe(45)
+    // The curve's axis maximum is 25,000. Evaluate its cubic at x=45,
+    // between the October 8 and October 9 daily samples (not a linear lerp).
+    expect(Number(y)).toBeCloseTo(71.55647155211645, 6)
+    expect(output).toContain('2026-W41 | upgrades: 17,636')
+    const [, hitY] = output.match(/<circle\s+cx="45"\s+cy="([^"]+)"/)
+    expect(Number(hitY)).toBe(Number(y))
+    const [, start, end] = output.match(/<line x1="45" y1="([^"]+)" x2="45" y2="([^"]+)" class="release-callout"/)
+    expect(Number(start) - Number(end)).toBeCloseTo(52)
+    expect(Number(start)).toBeLessThan(Number(y) - 6)
+    expect(output).toContain(`<polygon points="45,${start} `)
+  })
+
+  it.each([0, 1, 2, 3, 4, 5, 6])('aligns boundary markers with the curve for cutoff weekday %i', (offset) => {
+    const dailyDates = descendingDates(`2026-10-${25 + offset}`, 30)
+    const output = renderInstallChart({
+      allReleases: [
+        { date: dailyDates[0], version: '3' },
+        { date: dailyDates[23], version: '2' },
+        { date: dailyDates[24], version: '1' },
+        { date: '2026-09-21', version: '0' },
+      ],
+      weekly_dates: [offset === 0 ? '2026-W43' : '2026-W44'],
+      weekly_installs: Array(7).fill(1),
+      weekly_upgrades: [10, 20, 30, 40, 50, 60, 70],
+      daily_dates: dailyDates,
+      daily_upgrades: Array.from({ length: 30 }, (_, i) => (i * 17) % 31),
+    })
+    const path = output.match(/<path d="([^"]+)" class="upgrades-line"/)[1]
+    const markers = [...output.matchAll(/<circle cx="([^"]+)" cy="([^"]+)"[^>]*class="release-point"/g)]
+    expect(markers).toHaveLength(4)
+    for (const [, x, y] of markers) {
+      expect(Number(y)).toBeCloseTo(svgCurveYAt(path, Number(x)), 8)
+    }
+    // The recent and oldest daily markers, and the older weekly marker,
+    // must stay exactly on sample endpoints, without numerical drift.
+    const endpoints = path.split(' C ').map(part => part.replace(/^M /, '').split(' ').slice(-2).join(' '))
+    // On Thursday–Saturday the week-center fallback sorts before the
+    // oldest daily marker, even though its release date is older.
+    for (const index of [0, offset >= 4 ? 2 : 1, 3]) {
+      expect(endpoints).toContain(`${markers[index][1]} ${markers[index][2]}`)
+    }
+  })
+
+  it.each([
+    [[5, 10, 15], 5, true],
+    [[0, 0, 0], 0, false],
+    [[5], 5, false],
+  ])('preserves fallback placement outside the curve for %j', (upgrades, value, hasLine) => {
+    const output = renderInstallChart({
+      allReleases: [{ date: '2026-10-30', version: '1' }],
+      weekly_dates: ['2026-W44'],
+      weekly_installs: Array(upgrades.length).fill(1),
+      weekly_upgrades: upgrades,
+    })
+    const [, x, y] = output.match(/<circle cx="([^"]+)" cy="([^"]+)"[^>]*class="release-point"/)
+    expect(Number(x)).toBe(6)
+    expect(Number(y)).toBe(__test__.axisFor(upgrades, 5, 160).y_for(value))
+    expect(output.includes('class="upgrades-line"')).toBe(hasLine)
+  })
+
   it('keeps zero-to-zero upgrade curves flat on the x-axis', () => {
     const output = renderInstallChart({
       weekly_dates: Array(4).fill('2026-W17'),
@@ -392,6 +468,36 @@ describe('releaseWeekModel', () => {
     ])
   })
 })
+
+// Read the emitted SVG rather than the renderer's internal curve model.
+function svgCurveYAt(path, x) {
+  const parts = path.split(' C ')
+  let start = parts.shift().slice(2).split(' ').map(Number)
+  for (const part of parts) {
+    const numbers = part.split(' ').map(Number)
+    const controls = [start, numbers.slice(0, 2), numbers.slice(2, 4), numbers.slice(4, 6)]
+    const end = controls[3]
+    if (start[0] <= x && x <= end[0]) {
+      let low = 0
+      let high = 1
+      for (let i = 0; i < 60; i += 1) {
+        const t = (low + high) / 2
+        if (deCasteljau(controls, t)[0] < x) low = t
+        else high = t
+      }
+      return deCasteljau(controls, (low + high) / 2)[1]
+    }
+    start = end
+  }
+  throw new Error(`No curve segment at x=${x}`)
+}
+
+function deCasteljau(points, t) {
+  if (points.length === 1) return points[0]
+  return deCasteljau(points.slice(1).map((point, i) => point.map(
+    (coordinate, axis) => (1 - t) * points[i][axis] + t * coordinate,
+  )), t)
+}
 
 function descendingDates(latest, count) {
   const date = new Date(`${latest}T00:00:00Z`)
