@@ -81313,6 +81313,26 @@
       "first_seen": "2015-03-23T20:35:11Z"
     },
     {
+      "name": "Theme - Darkroom",
+      "details": "https://github.com/pioug/sublime-darkroom",
+      "labels": [
+        "theme",
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4197",
+          "platforms": [
+            "osx"
+          ],
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-01T14:56:34Z"
+    },
+    {
       "name": "Theme - DC",
       "details": "https://github.com/dubeg/theme-dc",
       "labels": [
