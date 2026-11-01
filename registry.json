@@ -13462,21 +13462,9 @@
     },
     {
       "name": "COLT",
-      "details": "https://github.com/code-orchestra/colt-sublime-plugin",
-      "releases": [
-        {
-          "sublime_text": "<3000",
-          "branch": "master"
-        },
-        {
-          "sublime_text": ">=3000",
-          "base": "https://github.com/code-orchestra/colt-sublime3-plugin",
-          "branch": "master"
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2013-11-28T16:40:05Z"
+      "first_seen": "2013-11-28T16:40:05Z",
+      "removed": "2026-11-01T22:59:39Z"
     },
     {
       "name": "Columbus Syntax",
@@ -86882,6 +86870,24 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2017-06-21T20:43:03Z"
+    },
+    {
+      "name": "Uxntal",
+      "details": "https://codeberg.org/jan_Mija/sublime-Uxntal",
+      "labels": [
+        "language syntax",
+        "build system",
+        "auto-complete"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4215",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-01T22:59:39Z"
     },
     {
       "name": "V",
