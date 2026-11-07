@@ -670,19 +670,12 @@
     },
     {
       "name": "ACTG",
-      "details": "https://github.com/hackerfriendly/ACTG",
       "labels": [
         "language syntax"
       ],
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2014-09-30T00:15:03Z"
+      "first_seen": "2014-09-30T00:15:03Z",
+      "removed": "2026-11-07T22:12:55Z"
     },
     {
       "name": "ActionScript 3",
@@ -880,19 +873,12 @@
     },
     {
       "name": "AddToFile",
-      "details": "https://github.com/nchauhan890/AddToFile",
       "labels": [
         "text manipulation"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=3114",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2018-07-25T01:15:05Z"
+      "first_seen": "2018-07-25T01:15:05Z",
+      "removed": "2026-11-07T22:12:55Z"
     },
     {
       "name": "Adept",
@@ -2367,20 +2353,13 @@
     },
     {
       "name": "AnonymousFile",
-      "details": "https://github.com/nchauhan890/anonymous-file",
       "labels": [
         "file creation",
         "testing"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=3000",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2019-01-08T18:43:37Z"
+      "first_seen": "2019-01-08T18:43:37Z",
+      "removed": "2026-11-07T22:12:55Z"
     },
     {
       "name": "Ansible",
@@ -26691,16 +26670,9 @@
     },
     {
       "name": "FT Origami",
-      "details": "https://github.com/Financial-Times/FTOrigamiSublimeText",
-      "releases": [
-        {
-          "sublime_text": "*",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2015-07-08T15:18:15Z"
+      "first_seen": "2015-07-08T15:18:15Z",
+      "removed": "2026-11-07T22:12:55Z"
     },
     {
       "name": "FTPSync",
@@ -88154,19 +88126,12 @@
     },
     {
       "name": "VS Code 2026 Color Scheme",
-      "details": "https://github.com/vector-foundry-dev/sublime-vscode-2026-color-scheme",
       "labels": [
         "color scheme"
       ],
-      "releases": [
-        {
-          "sublime_text": ">=4171",
-          "tags": true
-        }
-      ],
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
-      "schema_version": "3.0.0",
-      "first_seen": "2026-05-04T09:36:03Z"
+      "first_seen": "2026-05-04T09:36:03Z",
+      "removed": "2026-11-07T22:12:55Z"
     },
     {
       "name": "VSCMT",
