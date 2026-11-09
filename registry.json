@@ -18520,6 +18520,7 @@
       "first_seen": "2016-01-05T03:54:49Z"
     },
     {
+      "fetching_source_failed": "2026-11-09T20:58:35Z",
       "name": "DirectorySettings",
       "previous_names": [
         "SuperSettings"
@@ -94141,83 +94142,36 @@
         },
         {
           "base": "https://pypi.org/project/psutil",
-          "asset": "psutil-*-cp38-cp38-manylinux*_x86_64.whl",
+          "asset": "psutil-*-cp3*-abi3-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
           "python_versions": [
-            "3.8"
-          ]
-        },
-        {
-          "base": "https://pypi.org/project/psutil",
-          "asset": "psutil-*-cp38-cp38-macosx_*_arm64.whl",
-          "platforms": [
-            "osx-arm64"
-          ],
-          "python_versions": [
-            "3.8"
-          ]
-        },
-        {
-          "base": "https://pypi.org/project/psutil",
-          "asset": "psutil-*-cp38-cp38-macosx_*_x86_64.whl",
-          "platforms": [
-            "osx-x64"
-          ],
-          "python_versions": [
-            "3.8"
-          ]
-        },
-        {
-          "base": "https://pypi.org/project/psutil",
-          "asset": "psutil-*-cp38-cp38-win32.whl",
-          "platforms": [
-            "windows-x32"
-          ],
-          "python_versions": [
-            "3.8"
-          ]
-        },
-        {
-          "base": "https://pypi.org/project/psutil",
-          "asset": "psutil-*-cp38-cp38-win_amd64.whl",
-          "platforms": [
-            "windows-x64"
-          ],
-          "python_versions": [
-            "3.8"
-          ]
-        },
-        {
-          "base": "https://pypi.org/project/psutil",
-          "asset": "psutil-*-cp3*-abi3-*-manylinux*_x86_64.whl",
-          "platforms": [
-            "linux-x64"
-          ],
-          "python_versions": [
+            "3.8",
             "3.13",
             "3.14"
           ]
         },
         {
           "base": "https://pypi.org/project/psutil",
-          "asset": "psutil-*-cp3*-abi3-*-macosx_*_arm64.whl",
+          "asset": "psutil-*-cp3*-abi3-macosx_*_arm64.whl",
           "platforms": [
             "osx-arm64"
           ],
           "python_versions": [
+            "3.8",
             "3.13",
             "3.14"
           ]
         },
         {
           "base": "https://pypi.org/project/psutil",
-          "asset": "psutil-*-cp3*-abi3-*-macosx_*_x86_64.whl",
+          "asset": "psutil-*-cp3*-abi3-macosx_*_x86_64.whl",
           "platforms": [
             "osx-x64"
           ],
           "python_versions": [
+            "3.8",
             "3.13",
             "3.14"
           ]
@@ -94229,6 +94183,7 @@
             "windows-x32"
           ],
           "python_versions": [
+            "3.8",
             "3.13",
             "3.14"
           ]
@@ -94240,6 +94195,7 @@
             "windows-x64"
           ],
           "python_versions": [
+            "3.8",
             "3.13",
             "3.14"
           ]
@@ -96315,6 +96271,18 @@
         },
         {
           "base": "https://pypi.org/project/watchdog",
+          "asset": "watchdog-*-py3-none-win_arm64.whl",
+          "platforms": [
+            "windows-arm64"
+          ],
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchdog",
           "asset": "watchdog-*-py3-none-win32.whl",
           "platforms": [
             "windows-x32"
@@ -96339,19 +96307,7 @@
         },
         {
           "base": "https://pypi.org/project/watchdog",
-          "asset": "watchdog-*-py3-none-manylinux2014_x86_64.whl",
-          "platforms": [
-            "linux-x64"
-          ],
-          "python_versions": [
-            "3.8",
-            "3.13",
-            "3.14"
-          ]
-        },
-        {
-          "base": "https://pypi.org/project/watchdog",
-          "asset": "watchdog-*-py3-none-manylinux2014_aarch64.whl",
+          "asset": "watchdog-*-py3-none-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
@@ -96363,9 +96319,9 @@
         },
         {
           "base": "https://pypi.org/project/watchdog",
-          "asset": "watchdog-*-cp${py_version}-cp${py_version}-macosx_*_x86_64.whl",
+          "asset": "watchdog-*-py3-none-manylinux*_x86_64.whl",
           "platforms": [
-            "osx-x64"
+            "linux-x64"
           ],
           "python_versions": [
             "3.8",
@@ -96378,6 +96334,18 @@
           "asset": "watchdog-*-cp${py_version}-cp${py_version}-macosx_*_arm64.whl",
           "platforms": [
             "osx-arm64"
+          ],
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchdog",
+          "asset": "watchdog-*-cp${py_version}-cp${py_version}-macosx_*_x86_64.whl",
+          "platforms": [
+            "osx-x64"
           ],
           "python_versions": [
             "3.8",
@@ -96397,60 +96365,116 @@
       "releases": [
         {
           "base": "https://pypi.org/project/watchfiles",
-          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-win_amd64.whl",
+          "asset": "watchfiles-*-cp38-cp38-win_amd64.whl",
           "platforms": [
             "windows-x64"
           ],
           "python_versions": [
-            "3.8",
-            "3.13",
-            "3.14"
+            "3.8"
           ]
         },
         {
           "base": "https://pypi.org/project/watchfiles",
-          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-manylinux_*_aarch64.whl",
+          "asset": "watchfiles-*-cp38-cp38-manylinux*_aarch64.whl",
           "platforms": [
             "linux-arm64"
           ],
           "python_versions": [
-            "3.8",
-            "3.13",
-            "3.14"
+            "3.8"
           ]
         },
         {
           "base": "https://pypi.org/project/watchfiles",
-          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-manylinux_*_x86_64.whl",
+          "asset": "watchfiles-*-cp38-cp38-manylinux*_x86_64.whl",
           "platforms": [
             "linux-x64"
           ],
           "python_versions": [
-            "3.8",
-            "3.13",
-            "3.14"
+            "3.8"
           ]
         },
         {
           "base": "https://pypi.org/project/watchfiles",
-          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-macosx_*_arm64.whl",
+          "asset": "watchfiles-*-cp38-cp38-macosx_*_arm64.whl",
           "platforms": [
             "osx-arm64"
           ],
           "python_versions": [
-            "3.8",
+            "3.8"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp38-cp38-macosx_*_x86_64.whl",
+          "platforms": [
+            "osx-x64"
+          ],
+          "python_versions": [
+            "3.8"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp31?-abi3-win_arm64.whl",
+          "platforms": [
+            "windows-arm64"
+          ],
+          "python_versions": [
             "3.13",
             "3.14"
           ]
         },
         {
           "base": "https://pypi.org/project/watchfiles",
-          "asset": "watchfiles-*-cp${py_version}-cp${py_version}-macosx_*_x86_64.whl",
+          "asset": "watchfiles-*-cp31?-abi3-win_amd64.whl",
+          "platforms": [
+            "windows-x64"
+          ],
+          "python_versions": [
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp31?-abi3-manylinux*_aarch64.whl",
+          "platforms": [
+            "linux-arm64"
+          ],
+          "python_versions": [
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp31?-abi3-manylinux*_x86_64.whl",
+          "platforms": [
+            "linux-x64"
+          ],
+          "python_versions": [
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp31?-abi3-macosx_*_arm64.whl",
+          "platforms": [
+            "osx-arm64"
+          ],
+          "python_versions": [
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/watchfiles",
+          "asset": "watchfiles-*-cp31?-abi3-macosx_*_x86_64.whl",
           "platforms": [
             "osx-x64"
           ],
           "python_versions": [
-            "3.8",
             "3.13",
             "3.14"
           ]
@@ -96542,6 +96566,18 @@
           "asset": "websockets-*-cp${py_version}-cp${py_version}-win_amd64.whl",
           "platforms": [
             "windows-x64"
+          ],
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/websockets",
+          "asset": "websockets-*-cp${py_version}-cp${py_version}-win_arm64.whl",
+          "platforms": [
+            "windows-arm64"
           ],
           "python_versions": [
             "3.8",
