@@ -18520,7 +18520,6 @@
       "first_seen": "2016-01-05T03:54:49Z"
     },
     {
-      "fetching_source_failed": "2026-11-09T20:58:35Z",
       "name": "DirectorySettings",
       "previous_names": [
         "SuperSettings"
@@ -93831,6 +93830,18 @@
           "asset": "orjson-*-cp${py_version}-*-win32.whl",
           "platforms": [
             "windows-x32"
+          ],
+          "python_versions": [
+            "3.8",
+            "3.13",
+            "3.14"
+          ]
+        },
+        {
+          "base": "https://pypi.org/project/orjson",
+          "asset": "orjson-*-cp${py_version}-*-win_arm64.whl",
+          "platforms": [
+            "windows-arm64"
           ],
           "python_versions": [
             "3.8",
