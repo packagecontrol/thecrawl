@@ -29534,6 +29534,25 @@
       "first_seen": "2016-05-09T12:46:35Z"
     },
     {
+      "name": "GoSaveTool",
+      "details": "https://github.com/mitolocya/sublime-gosavetools",
+      "labels": [
+        "subtitles",
+        "captions",
+        "srt",
+        "webvtt"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-11T21:07:20Z"
+    },
+    {
       "name": "GoSnippets",
       "labels": [
         "go",
@@ -36602,7 +36621,11 @@
       ],
       "releases": [
         {
-          "sublime_text": "*",
+          "sublime_text": "<4083",
+          "tags": "st3-"
+        },
+        {
+          "sublime_text": ">=4083",
           "tags": true
         }
       ],
@@ -36853,7 +36876,11 @@
       ],
       "releases": [
         {
-          "sublime_text": ">=3092",
+          "sublime_text": "3092 - 4142",
+          "tags": "st3-"
+        },
+        {
+          "sublime_text": ">=4143",
           "tags": true
         }
       ],
@@ -54570,6 +54597,28 @@
       "first_seen": "2011-12-15T16:03:45Z"
     },
     {
+      "details": "https://github.com/shivamsupr/PasteImage",
+      "labels": [
+        "clipboard",
+        "image",
+        "markdown",
+        "paste"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "platforms": [
+            "osx"
+          ],
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "name": "PasteImage",
+      "first_seen": "2026-11-11T21:07:20Z"
+    },
+    {
       "name": "Pastel Paws Color Scheme",
       "details": "https://github.com/Ociidii-Works/pastel_paws",
       "author": "XenHat",
@@ -62157,6 +62206,25 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2017-07-04T15:19:03Z"
+    },
+    {
+      "name": "RemoteTreeFTP",
+      "details": "https://github.com/samoyluk/RemoteTreeFTP",
+      "labels": [
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "platforms": [
+            "osx"
+          ],
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-11T21:07:20Z"
     },
     {
       "name": "RemoveComments",
@@ -78698,6 +78766,23 @@
       "first_seen": "2018-04-12T19:47:13Z"
     },
     {
+      "name": "SyncSettingsReborn",
+      "details": "https://github.com/ZhangMing520/SyncSettingsReborn",
+      "labels": [
+        "settings",
+        "utilities"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4050",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-11T21:07:20Z"
+    },
+    {
       "name": "Synesthesia",
       "details": "https://github.com/dariusf/synesthesia",
       "releases": [
@@ -79049,7 +79134,11 @@
       ],
       "releases": [
         {
-          "sublime_text": ">=4000",
+          "sublime_text": ">=4205",
+          "tags": "st4.2-"
+        },
+        {
+          "sublime_text": "4000 - 4199",
           "tags": "st4-"
         },
         {
