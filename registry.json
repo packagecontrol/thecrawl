@@ -90,6 +90,7 @@
     "https://raw.githubusercontent.com/soncy/AutoComments-for-Sublime-Text-2/master/packages.json",
     "https://raw.githubusercontent.com/spectacles/CodeComplice/master/packages.json",
     "https://raw.githubusercontent.com/STealthy-and-haSTy/SublimePackages/master/packages.json",
+    "https://raw.githubusercontent.com/stranger-theme/stranger-theme/main/sublime-text/repository.json",
     "https://raw.githubusercontent.com/SublimeLinter/package_control_channel/master/packages.json",
     "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
     "https://raw.githubusercontent.com/superbob/SublimeTextLanguageFrench/master/packages.json",
@@ -71192,6 +71193,28 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2017-01-04T01:32:22Z"
+    },
+    {
+      "name": "Stranger Theme Color Schemes",
+      "description": "Six dark color schemes inspired by Stranger Things: Upside Down, Starcourt, Hawkins, The Lab, Tigers and Dimension X",
+      "author": "Stranger Theme",
+      "homepage": "https://github.com/stranger-theme/stranger-theme/tree/main/sublime-text",
+      "readme": "https://raw.githubusercontent.com/stranger-theme/stranger-theme/main/sublime-text/README.md",
+      "issues": "https://github.com/stranger-theme/stranger-theme/issues",
+      "labels": [
+        "color scheme"
+      ],
+      "releases": [
+        {
+          "version": "1.0.6",
+          "url": "https://github.com/stranger-theme/stranger-theme/releases/download/v1.0.6/StrangerTheme.sublime-package",
+          "date": "2026-11-11 23:46:16",
+          "sublime_text": "*"
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/stranger-theme/stranger-theme/main/sublime-text/repository.json",
+      "schema_version": "4.0.0",
+      "first_seen": "2026-11-12T10:06:31Z"
     },
     {
       "name": "Strapdown Markdown Preview",
