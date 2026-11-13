@@ -71206,9 +71206,9 @@
       ],
       "releases": [
         {
-          "version": "1.0.6",
-          "url": "https://github.com/stranger-theme/stranger-theme/releases/download/v1.0.6/StrangerTheme.sublime-package",
-          "date": "2026-11-11 23:46:16",
+          "version": "1.1.0",
+          "url": "https://github.com/stranger-theme/stranger-theme/releases/download/v1.1.0/StrangerTheme.sublime-package",
+          "date": "2026-11-13 03:05:16",
           "sublime_text": "*"
         }
       ],
