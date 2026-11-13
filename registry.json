@@ -53121,6 +53121,23 @@
       "first_seen": "2013-09-10T22:25:16Z"
     },
     {
+      "name": "OpenInObsidian",
+      "details": "https://github.com/thedanheller/sublime-text-open-in-obsidian",
+      "labels": [
+        "markdown",
+        "obsidian"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-13T20:55:24Z"
+    },
+    {
       "name": "OpenLastRPT",
       "details": "https://github.com/jonpas/Sublime-OpenLastRPT/",
       "labels": [
@@ -58435,6 +58452,23 @@
       "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
       "schema_version": "3.0.0",
       "first_seen": "2014-08-14T18:20:56Z"
+    },
+    {
+      "name": "PureMarkdownPreview",
+      "details": "https://github.com/piotrzielinski1994/sublime-pure-markdown",
+      "labels": [
+        "markdown",
+        "preview"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3150",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-13T20:55:24Z"
     },
     {
       "name": "PureScript",
