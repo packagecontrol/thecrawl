@@ -31506,6 +31506,26 @@
       "removed": "2022-02-15T02:13:53Z"
     },
     {
+      "name": "Heritage Themes",
+      "author": "Andrzej Piontek",
+      "details": "https://github.com/heritage-themes/heritage-themes-sublime",
+      "labels": [
+        "theme",
+        "color scheme",
+        "dark",
+        "light"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-14T14:52:46Z"
+    },
+    {
       "name": "Heta",
       "details": "https://github.com/hetalang/heta-highlight-sublime",
       "labels": [
