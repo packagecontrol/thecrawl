@@ -45227,6 +45227,23 @@
       "first_seen": "2013-07-11T10:23:34Z"
     },
     {
+      "name": "Markdown Formatting",
+      "details": "https://github.com/madmaxohyeah/sublime-md-format",
+      "labels": [
+        "formatting",
+        "markdown"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4215",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-16T20:05:53Z"
+    },
+    {
       "name": "Markdown HTML Preview",
       "details": "https://github.com/zeyon/MarkdownHtmlPreview",
       "labels": [
