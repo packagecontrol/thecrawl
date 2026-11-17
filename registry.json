@@ -6370,6 +6370,25 @@
       "first_seen": "2019-12-09T02:39:06Z"
     },
     {
+      "name": "Biblia",
+      "details": "https://github.com/Casara/biblia-sublime",
+      "labels": [
+        "bible",
+        "text manipulation",
+        "markdown",
+        "typst"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4000",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-17T20:01:25Z"
+    },
+    {
       "name": "Bibtex Bibliography Sort",
       "details": "https://github.com/wolfposd/Sublime-Bibtex-Sort",
       "releases": [
@@ -41029,6 +41048,22 @@
       "first_seen": "2024-06-19T19:50:42Z"
     },
     {
+      "name": "Lingo",
+      "details": "https://github.com/thewaysofwyrd/sublime-lingo",
+      "labels": [
+        "language syntax"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=3092",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-17T20:01:25Z"
+    },
+    {
       "name": "Linguist Syntax",
       "details": "https://github.com/hronro/sublime-linguist-syntax",
       "labels": [
@@ -41463,7 +41498,7 @@
     },
     {
       "name": "LiveReload",
-      "details": "https://github.com/alepez/LiveReload-sublimetext3",
+      "details": "https://github.com/aik099/LiveReload-sublimetext4",
       "releases": [
         {
           "sublime_text": ">=3000",
