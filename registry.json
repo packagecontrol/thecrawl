@@ -18540,7 +18540,6 @@
       "first_seen": "2016-01-05T03:54:49Z"
     },
     {
-      "fetching_source_failed": "2026-11-18T10:35:26Z",
       "name": "DirectorySettings",
       "previous_names": [
         "SuperSettings"
@@ -22690,7 +22689,7 @@
     },
     {
       "name": "Evernote",
-      "details": "https://github.com/bordaigorl/sublime-evernote",
+      "details": "https://github.com/chinakr/sublime-evernote",
       "labels": [
         "language syntax",
         "evernote",
@@ -22698,7 +22697,12 @@
       ],
       "releases": [
         {
-          "sublime_text": ">=3000",
+          "sublime_text": "<4000",
+          "base": "https://github.com/bordaigorl/sublime-evernote",
+          "tags": true
+        },
+        {
+          "sublime_text": ">=4000",
           "tags": true
         }
       ],
