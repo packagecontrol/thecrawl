@@ -18540,6 +18540,7 @@
       "first_seen": "2016-01-05T03:54:49Z"
     },
     {
+      "fetching_source_failed": "2026-11-18T10:35:26Z",
       "name": "DirectorySettings",
       "previous_names": [
         "SuperSettings"
