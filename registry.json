@@ -53756,6 +53756,24 @@
       "first_seen": "2017-08-18T13:00:23Z"
     },
     {
+      "name": "p3n",
+      "details": "https://github.com/Barabosik/p3n-sublime",
+      "labels": [
+        "ai",
+        "text manipulation",
+        "prose"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4107",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimehq/package_control_channel/refs/heads/master/repository.json",
+      "schema_version": "3.0.0",
+      "first_seen": "2026-11-18T02:26:23Z"
+    },
+    {
       "name": "P4 Syntax Highlighter",
       "details": "https://github.com/c3m3gyanesh/p4-syntax-highlighter",
       "labels": [
