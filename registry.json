@@ -42603,6 +42603,26 @@
       "first_seen": "2020-04-27T19:44:28Z"
     },
     {
+      "details": "https://github.com/dynotable/LSP-dynotable",
+      "labels": [
+        "lsp",
+        "sql",
+        "partiql",
+        "dynamodb",
+        "opensearch"
+      ],
+      "releases": [
+        {
+          "sublime_text": ">=4200",
+          "tags": true
+        }
+      ],
+      "source": "https://raw.githubusercontent.com/sublimelsp/repository/main/repository.json",
+      "schema_version": "3.0.0",
+      "name": "LSP-dynotable",
+      "first_seen": "2026-11-20T00:38:04Z"
+    },
+    {
       "details": "https://github.com/sublimelsp/LSP-elixir",
       "name": "LSP-elixir",
       "labels": [
